@@ -35,12 +35,12 @@ Praxis organizes knowledge into four primitives:
 
 | Primitive | Purpose | Example |
 |-----------|---------|---------|
-| **Context** | "This is who we are and how we think" | Company identity, coding conventions, mental models |
+| **Context** | "This is who we are and how we think" | Company identity, followed conventions, mental models |
 | **Roles** | "This is who you are" | A role definition with scope, boundaries, and personality |
 | **Responsibilities** | "This is what you own" | Discrete units of work delegated to a role |
 | **Reference** | "This is what things mean" | Vocabulary, indices, lookup tables |
 
-A **Role** is the central unit. Each role declares what context it needs, what responsibilities it owns, and what references it consults. When you run `praxis compile`, it reads each role's manifest, inlines all referenced content, and produces a single standalone markdown file — a compiled agent.
+A **Role** is the central unit. Each role declares what context it needs, what responsibilities it owns, and what references it consults. When you run `praxis compile`, it reads each role's manifest, inlines all referenced content, and produces a single standalone markdown file — a compiled agent profile.
 
 ```
 content/
@@ -58,7 +58,7 @@ content/
 
 ### Onboard an AI agent to your codebase
 
-Define your organization's identity, coding conventions, and architecture decisions in `context/`. Create a role like `code-reviewer` that references your conventions and has responsibilities like `review-pull-requests`. Compile it, and you have an agent that understands your standards.
+Define your organization's identity, coding conventions, and architecture decisions in `context/`. Create a role like `code-reviewer` that references your conventions and has responsibilities like `review-pull-requests`. Compile it, and you have an agent profile that understands your standards.
 
 ```yaml
 # content/roles/code-reviewer.md
@@ -66,14 +66,14 @@ Define your organization's identity, coding conventions, and architecture decisi
 title: Code Reviewer
 alias: reviewer
 agent_description: Reviews pull requests against team conventions
-context:
-  - conventions/*.md
-responsibilities:
-  - review-pull-requests
-  - enforce-style-guide
-reference:
-  - architecture-decisions
 constitution: true
+context:
+  - content/conventions/*.md
+responsibilities:
+  - content/context/responsibilities/review-pull-requests.md
+  - content/context/responsibilities/enforce-style-guide.md
+reference:
+  - content/context/references/architecture-decisions.md
 ---
 ```
 
