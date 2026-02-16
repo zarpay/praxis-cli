@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { join, relative } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { rmSync } from "node:fs";
@@ -7,12 +7,30 @@ import { rmSync } from "node:fs";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { initProject } from "@/commands/init.js";
-import { SCAFFOLD_FILES } from "@/scaffold/templates.js";
 import { Logger } from "@/core/logger.js";
+
+/** Resolved path to the scaffold directory at the project root. */
+const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
 
 /** Creates a fresh temporary directory for each test. */
 function makeTmpdir(): string {
   return join(tmpdir(), `praxis-init-test-${randomUUID()}`);
+}
+
+/**
+ * Recursively walks a directory and returns sorted relative file paths.
+ */
+function walkDir(dir: string, base = dir): string[] {
+  const results: string[] = [];
+  for (const entry of readdirSync(dir)) {
+    const fullPath = join(dir, entry);
+    if (statSync(fullPath).isDirectory()) {
+      results.push(...walkDir(fullPath, base));
+    } else {
+      results.push(relative(base, fullPath));
+    }
+  }
+  return results.sort();
 }
 
 describe("initProject", () => {
@@ -31,7 +49,7 @@ describe("initProject", () => {
     dirs.push(dir);
 
     expect(existsSync(dir)).toBe(false);
-    initProject(dir, logger);
+    initProject(dir, logger, SCAFFOLD_DIR);
     expect(existsSync(dir)).toBe(true);
   });
 
@@ -39,11 +57,11 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject(dir, logger);
+    initProject(dir, logger, SCAFFOLD_DIR);
 
-    for (const file of SCAFFOLD_FILES) {
-      const fullPath = join(dir, file.path);
-      expect(existsSync(fullPath), `expected ${file.path} to exist`).toBe(true);
+    for (const relPath of walkDir(SCAFFOLD_DIR)) {
+      const fullPath = join(dir, relPath);
+      expect(existsSync(fullPath), `expected ${relPath} to exist`).toBe(true);
     }
   });
 
@@ -51,12 +69,12 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject(dir, logger);
+    initProject(dir, logger, SCAFFOLD_DIR);
 
-    for (const file of SCAFFOLD_FILES) {
-      const fullPath = join(dir, file.path);
-      const content = readFileSync(fullPath, "utf-8");
-      expect(content, `content mismatch for ${file.path}`).toBe(file.content);
+    for (const relPath of walkDir(SCAFFOLD_DIR)) {
+      const expected = readFileSync(join(SCAFFOLD_DIR, relPath), "utf-8");
+      const actual = readFileSync(join(dir, relPath), "utf-8");
+      expect(actual, `content mismatch for ${relPath}`).toBe(expected);
     }
   });
 
@@ -64,7 +82,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject(dir, logger);
+    initProject(dir, logger, SCAFFOLD_DIR);
 
     const agentsDir = join(dir, "plugins", "praxis", "agents");
     expect(existsSync(agentsDir)).toBe(true);
@@ -79,7 +97,7 @@ describe("initProject", () => {
     const readmePath = join(dir, "README.md");
     writeFileSync(readmePath, "# My Custom README\n");
 
-    initProject(dir, logger);
+    initProject(dir, logger, SCAFFOLD_DIR);
 
     // Verify our custom content was preserved, not overwritten
     const content = readFileSync(readmePath, "utf-8");
@@ -90,13 +108,13 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject(dir, logger);
+    initProject(dir, logger, SCAFFOLD_DIR);
 
     // Modify one file to verify it's not overwritten
     const readmePath = join(dir, "README.md");
     writeFileSync(readmePath, "modified");
 
-    initProject(dir, logger);
+    initProject(dir, logger, SCAFFOLD_DIR);
 
     const content = readFileSync(readmePath, "utf-8");
     expect(content).toBe("modified");
@@ -111,7 +129,7 @@ describe("initProject", () => {
     writeFileSync(join(dir, "src", "app.ts"), "console.log('hello');\n");
     writeFileSync(join(dir, "package.json"), '{ "name": "my-app" }\n');
 
-    initProject(dir, logger);
+    initProject(dir, logger, SCAFFOLD_DIR);
 
     // Scaffold files exist
     expect(existsSync(join(dir, "content", "roles", "README.md"))).toBe(true);
@@ -125,13 +143,12 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject(dir, logger);
+    initProject(dir, logger, SCAFFOLD_DIR);
 
     const expectedDirs = [
       "content/context/constitution",
       "content/context/conventions",
       "content/context/lenses",
-      "content/context/specifications",
       "content/roles",
       "content/responsibilities",
       "content/reference",

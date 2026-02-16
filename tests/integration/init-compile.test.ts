@@ -10,6 +10,9 @@ import { initProject } from "@/commands/init.js";
 import { RoleCompiler } from "@/compiler/role-compiler.js";
 import { Logger } from "@/core/logger.js";
 
+/** Resolved path to the scaffold directory at the project root. */
+const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
+
 /**
  * Integration test: init → compile → verify output.
  *
@@ -25,7 +28,7 @@ describe("init → compile integration", () => {
     dir = join(tmpdir(), `praxis-integration-${randomUUID()}`);
 
     // Scaffold the project
-    initProject(dir, logger);
+    initProject(dir, logger, SCAFFOLD_DIR);
 
     // Create .git so Paths can find the project root
     mkdirSync(join(dir, ".git"), { recursive: true });

@@ -7,7 +7,8 @@
     "praxis": "./dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "scaffold"
   ],
   "scripts": {
     "build": "tsup",

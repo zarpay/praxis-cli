@@ -1,0 +1,10 @@
+{
+  "name": "praxis",
+  "description": "A plugin for integrating Praxis profiles with Claude.",
+  "author": {
+    "name": "Your Name"
+  },
+  "keywords": [
+    "productivity"
+  ]
+}

@@ -47,8 +47,7 @@ content/
 ├── context/
 │   ├── constitution/       # Who you are (identity, principles)
 │   ├── conventions/        # How you do things (standards, norms)
-│   ├── lenses/             # How you think (mental models)
-│   └── specifications/     # System specifications
+│   └── lenses/             # How you think (mental models)
 ├── roles/                  # Role definitions
 ├── responsibilities/       # Delegatable work units
 └── reference/              # Definitions, indices, templates
@@ -82,7 +81,7 @@ reference:
 The two built-in roles (Stewart and Remy) ship with every Praxis project. Stewart helps contributors navigate the framework — where content belongs, whether it follows conventions, and whether the framework is healthy. Remy challenges role and responsibility designs before they ship.
 
 ```bash
-praxis init my-project
+praxis init my-project && cd my-project
 praxis compile
 
 # Stewart and Remy are ready in plugins/praxis/agents/
@@ -131,13 +130,13 @@ title: My Agent
 type: role
 alias: my-agent
 agent_description: Does the thing you need done
-responsibilities:
-  - do-the-thing
-context:
-  - conventions/coding.md
-reference:
-  - api-reference
 constitution: true
+context:
+  - path/to/convention-docs.md
+responsibilities:
+  - path/to/responsibility-docs.md
+reference:
+  - path/to/referrence-docs.md
 ---
 
 # My Agent

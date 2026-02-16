@@ -1,15 +1,22 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 
 import type { Command } from "commander";
 
 import { Logger } from "@/core/logger.js";
-import { SCAFFOLD_FILES } from "@/scaffold/templates.js";
+
+/**
+ * Resolved path to the scaffold directory shipped with the package.
+ *
+ * At runtime, `import.meta.dirname` resolves to `dist/` (the built output).
+ * The scaffold directory sits one level up at the package root.
+ */
+const SCAFFOLD_DIR = join(import.meta.dirname, "..", "scaffold");
 
 /**
  * Registers the `praxis init` command.
  *
- * Scaffolds a new Praxis project by writing framework files,
+ * Scaffolds a new Praxis project by copying framework files,
  * placeholder content, and the Claude Code plugin structure
  * into the target directory.
  */
@@ -32,16 +39,18 @@ export function registerInitCommand(program: Command): void {
 }
 
 /**
- * Writes all scaffold files into the target directory.
+ * Copies all scaffold files into the target directory.
  *
- * Creates the directory structure as needed. Skips files that
+ * Recursively walks the scaffold directory and copies each file
+ * to the corresponding location in the target. Skips files that
  * already exist to avoid overwriting user content. Logs each
  * created file and prints next-steps guidance when complete.
  *
  * @param targetDir - Absolute path to the project root
  * @param logger - Logger instance for output
+ * @param scaffoldDir - Override scaffold source (for testing)
  */
-export function initProject(targetDir: string, logger: Logger): void {
+export function initProject(targetDir: string, logger: Logger, scaffoldDir = SCAFFOLD_DIR): void {
   if (!existsSync(targetDir)) {
     mkdirSync(targetDir, { recursive: true });
   }
@@ -49,21 +58,22 @@ export function initProject(targetDir: string, logger: Logger): void {
   let created = 0;
   let skipped = 0;
 
-  for (const file of SCAFFOLD_FILES) {
-    const fullPath = join(targetDir, file.path);
-    const dir = dirname(fullPath);
+  for (const relPath of walkDir(scaffoldDir)) {
+    const srcPath = join(scaffoldDir, relPath);
+    const destPath = join(targetDir, relPath);
+    const destDir = dirname(destPath);
 
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
+    if (!existsSync(destDir)) {
+      mkdirSync(destDir, { recursive: true });
     }
 
-    if (existsSync(fullPath)) {
+    if (existsSync(destPath)) {
       skipped++;
       continue;
     }
 
-    writeFileSync(fullPath, file.content);
-    logger.success(`Created ${file.path}`);
+    copyFileSync(srcPath, destPath);
+    logger.success(`Created ${relPath}`);
     created++;
   }
 
@@ -81,4 +91,26 @@ export function initProject(targetDir: string, logger: Logger): void {
   console.log("  2. Edit content/context/conventions/ to document your standards");
   console.log("  3. Run `praxis compile` to generate agent files");
   console.log("  4. Define new roles in content/roles/ as your organization grows");
+}
+
+/**
+ * Recursively walks a directory, yielding relative file paths.
+ *
+ * Returns paths sorted alphabetically for deterministic output.
+ */
+function walkDir(dir: string, base = dir): string[] {
+  const results: string[] = [];
+
+  for (const entry of readdirSync(dir)) {
+    const fullPath = join(dir, entry);
+    const stat = statSync(fullPath);
+
+    if (stat.isDirectory()) {
+      results.push(...walkDir(fullPath, base));
+    } else {
+      results.push(relative(base, fullPath));
+    }
+  }
+
+  return results.sort();
 }

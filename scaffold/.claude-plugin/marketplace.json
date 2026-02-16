@@ -1,0 +1,13 @@
+{
+  "name": "my-praxis",
+  "owner": {
+    "name": "Your Name"
+  },
+  "plugins": [
+    {
+      "name": "praxis",
+      "source": "./plugins/praxis",
+      "description": "A plugin for integrating Praxis profiles with Claude."
+    }
+  ]
+}
