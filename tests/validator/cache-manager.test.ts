@@ -51,16 +51,16 @@ describe("CacheManager", () => {
   });
 
   describe("cachePathFor()", () => {
-    it("generates path with document name and hash", () => {
-      const path = manager.cachePathFor("content/roles/my-role.md", "abcd1234");
+    it("generates path with document name", () => {
+      const path = manager.cachePathFor("content/roles/my-role.md");
 
-      expect(path).toBe(join(cacheRoot, "roles", "my-role_abcd1234.json"));
+      expect(path).toBe(join(cacheRoot, "roles", "my-role.json"));
     });
 
     it("handles absolute paths with /content/ segment", () => {
-      const path = manager.cachePathFor("/home/user/praxis/content/roles/test.md", "abcd1234");
+      const path = manager.cachePathFor("/home/user/praxis/content/roles/test.md");
 
-      expect(path).toBe(join(cacheRoot, "roles", "test_abcd1234.json"));
+      expect(path).toBe(join(cacheRoot, "roles", "test.json"));
     });
   });
 
@@ -161,6 +161,48 @@ describe("CacheManager", () => {
       expect(orphans.length).toBe(1);
       expect(orphans[0].reason).toBe("document_missing");
       expect(orphans[0].docName).toBe("deleted-role");
+    });
+  });
+
+  describe("text sanitization", () => {
+    const metadata = { documentType: "role", specPath: "content/roles/README.md" };
+
+    it("strips control characters and double quotes from reason and issues", () => {
+      const documentPath = "content/roles/test-role.md";
+      const hash = "abcd1234";
+      const result = {
+        compliant: false,
+        issues: ['issue with \x00 null byte and "quotes"'],
+        reason: 'No \x01\x02\x03 — bad chars here\x00 and "quoted text"',
+        severity: "error" as const,
+      };
+
+      manager.write({ documentPath, contentHash: hash, result, metadata });
+      const cached = manager.read({ documentPath, contentHash: hash });
+
+      expect(cached).not.toBeNull();
+      expect(cached!.reason).not.toContain("\x00");
+      expect(cached!.reason).not.toContain("\x01");
+      expect(cached!.reason).not.toContain('"');
+      expect(cached!.reason).toContain("'quoted text'");
+      expect(cached!.issues[0]).not.toContain("\x00");
+      expect(cached!.issues[0]).not.toContain('"');
+    });
+
+    it("preserves newlines and tabs in reason text", () => {
+      const documentPath = "content/roles/test-role.md";
+      const hash = "abcd1234";
+      const result = {
+        compliant: true,
+        issues: [] as string[],
+        reason: "Yes\n\tAll good\nNo issues",
+      };
+
+      manager.write({ documentPath, contentHash: hash, result, metadata });
+      const cached = manager.read({ documentPath, contentHash: hash });
+
+      expect(cached!.reason).toContain("\n");
+      expect(cached!.reason).toContain("\t");
     });
   });
 });

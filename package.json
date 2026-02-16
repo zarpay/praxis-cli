@@ -1,6 +1,6 @@
 {
   "name": "@zarpay/praxis-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI for the Praxis knowledge framework - organize knowledge for humans and AI agents",
   "type": "module",
   "bin": {

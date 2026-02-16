@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 
 import fg from "fast-glob";
@@ -34,19 +34,17 @@ interface CacheFileData {
 /** Information about an orphaned (stale) cache file. */
 export interface OrphanedCacheFile {
   file: string;
-  reason: "document_missing" | "stale_hash";
+  reason: "document_missing";
   docName: string;
   type: string;
-  expectedHash?: string;
-  actualHash?: string;
 }
 
 /**
  * Manages a file-based validation result cache.
  *
  * Cache files are stored as JSON under `.praxis/cache/validation/`
- * organized by document type. File names embed a content hash so that
- * cache entries auto-invalidate when either the document or its README
+ * organized by document type. Each file contains a content hash that
+ * auto-invalidates the cache when either the document or its README
  * specification changes.
  */
 export class CacheManager {
@@ -60,24 +58,23 @@ export class CacheManager {
    * Computes the filesystem path for a cache entry.
    *
    * @param documentPath - Path to the validated document
-   * @param contentHash - SHA256 hash prefix of document+readme content
    */
-  cachePathFor(documentPath: string, contentHash: string): string {
+  cachePathFor(documentPath: string): string {
     const relativePath = documentPath.includes("/content/")
       ? documentPath.split("/content/").pop()!
       : documentPath.replace(/^content\//, "");
 
     const dirPath = dirname(relativePath);
     const base = basename(relativePath, ".md");
-    const cacheFilename = `${base}_${contentHash}.json`;
 
-    return join(this.cacheRoot, dirPath, cacheFilename);
+    return join(this.cacheRoot, dirPath, `${base}.json`);
   }
 
   /**
    * Writes a validation result to the cache.
    *
-   * Creates parent directories as needed. Silently fails on I/O errors.
+   * Creates parent directories as needed. Sanitizes LLM-generated text
+   * and verifies JSON integrity before writing. Silently fails on I/O errors.
    */
   write({
     documentPath,
@@ -90,7 +87,13 @@ export class CacheManager {
     result: CachedValidationResult;
     metadata: { documentType: string; specPath: string };
   }): void {
-    const cachePath = this.cachePathFor(documentPath, contentHash);
+    const cachePath = this.cachePathFor(documentPath);
+
+    const sanitizedResult: CachedValidationResult = {
+      ...result,
+      reason: sanitizeText(result.reason),
+      issues: result.issues.map(sanitizeText),
+    };
 
     const cacheData: CacheFileData = {
       version: CACHE_VERSION,
@@ -101,13 +104,20 @@ export class CacheManager {
         type: metadata.documentType,
         spec_path: metadata.specPath,
       },
-      result,
+      result: sanitizedResult,
     };
 
     try {
       mkdirSync(dirname(cachePath), { recursive: true });
-      writeFileSync(cachePath, JSON.stringify(cacheData, null, 2));
+      const json = JSON.stringify(cacheData, null, 2);
+      JSON.parse(json); // verify integrity before writing
+      writeFileSync(cachePath, json);
     } catch (err) {
+      try {
+        if (existsSync(cachePath)) unlinkSync(cachePath);
+      } catch {
+        /* ignore cleanup failures */
+      }
       if (process.env["DEBUG"]) {
         console.warn(`Warning: Failed to write cache file (${(err as Error).message})`);
       }
@@ -127,7 +137,7 @@ export class CacheManager {
     documentPath: string;
     contentHash: string;
   }): CachedValidationResult | null {
-    const cachePath = this.cachePathFor(documentPath, contentHash);
+    const cachePath = this.cachePathFor(documentPath);
 
     if (!existsSync(cachePath)) {
       return null;
@@ -146,8 +156,13 @@ export class CacheManager {
 
       return cached.result;
     } catch (err) {
+      try {
+        unlinkSync(cachePath);
+      } catch {
+        /* ignore */
+      }
       if (process.env["DEBUG"]) {
-        console.warn(`Warning: Cache read failed for ${cachePath} (${(err as Error).message})`);
+        console.warn(`Warning: Removed corrupt cache file ${cachePath} (${(err as Error).message})`);
       }
       return null;
     }
@@ -181,8 +196,8 @@ export class CacheManager {
   /**
    * Finds cache files that no longer correspond to valid documents.
    *
-   * A cache file is orphaned if the source document was deleted,
-   * or if the content hash no longer matches the current document+readme.
+   * A cache file is orphaned if the source document was deleted.
+   * Stale hashes are no longer orphans — they get overwritten in-place.
    */
   orphanedCacheFiles(contentDir: string): OrphanedCacheFile[] {
     const validDocuments = this.buildDocumentMap(contentDir);
@@ -190,26 +205,13 @@ export class CacheManager {
     const cacheFiles = fg.sync("**/*.json", { cwd: this.cacheRoot, absolute: true });
 
     for (const cacheFile of cacheFiles) {
-      const filename = basename(cacheFile, ".json");
-      const parts = filename.split("_");
-      const hash = parts.pop();
-      const docName = parts.join("_");
-
+      const docName = basename(cacheFile, ".json");
       const relativePath = cacheFile.replace(`${this.cacheRoot}/`, "");
       const type = relativePath.split("/")[0] ?? "unknown";
       const docKey = `${type}/${docName}`;
 
       if (!validDocuments.has(docKey)) {
         orphans.push({ file: cacheFile, reason: "document_missing", docName, type });
-      } else if (validDocuments.get(docKey) !== hash) {
-        orphans.push({
-          file: cacheFile,
-          reason: "stale_hash",
-          docName,
-          type,
-          expectedHash: validDocuments.get(docKey),
-          actualHash: hash,
-        });
       }
     }
 
@@ -222,12 +224,12 @@ export class CacheManager {
   }
 
   /**
-   * Builds a map of document names to their current content hashes.
+   * Builds a set of valid document keys for orphan detection.
    *
-   * Used by orphan detection to compare against existing cache files.
+   * Used by orphan detection to check whether source documents still exist.
    */
-  private buildDocumentMap(contentDir: string): Map<string, string> {
-    const documents = new Map<string, string>();
+  private buildDocumentMap(contentDir: string): Set<string> {
+    const documents = new Set<string>();
 
     const documentTypes: Record<string, string> = {
       roles: "roles/README.md",
@@ -237,12 +239,9 @@ export class CacheManager {
       "context/constitution": "context/constitution/README.md",
     };
 
-    for (const [type, readmeRelativePath] of Object.entries(documentTypes)) {
+    for (const [type] of Object.entries(documentTypes)) {
       const typeDir = join(contentDir, type);
       if (!existsSync(typeDir)) continue;
-
-      const readmePath = join(contentDir, readmeRelativePath);
-      const readmeContent = existsSync(readmePath) ? readFileSync(readmePath, "utf-8") : "";
 
       const docFiles = fg.sync("*.md", { cwd: typeDir, absolute: true });
 
@@ -250,11 +249,8 @@ export class CacheManager {
         const base = basename(docPath, ".md");
         if (base === "README" || base.startsWith("_")) continue;
 
-        const docContent = readFileSync(docPath, "utf-8");
-        const hash = contentHash(docContent, readmeContent);
-
         const normalizedType = type.split("/").pop()!;
-        documents.set(`${normalizedType}/${base}`, hash);
+        documents.add(`${normalizedType}/${base}`);
       }
     }
 
@@ -270,4 +266,14 @@ export class CacheManager {
  */
 export function contentHash(documentContent: string, readmeContent: string): string {
   return createHash("sha256").update(documentContent + readmeContent).digest("hex").slice(0, 8);
+}
+
+/**
+ * Strips control characters and double quotes from a string to prevent
+ * malformed JSON in cache files. Preserves newlines, carriage returns, and tabs.
+ */
+function sanitizeText(text: string): string {
+  return text
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+    .replace(/"/g, "'");
 }
