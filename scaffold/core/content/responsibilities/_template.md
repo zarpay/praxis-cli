@@ -2,7 +2,6 @@
 title: "[Verb What]"
 type: responsibility
 owner: owner-role(s)
-framework: true/false
 refs:
   - content/reference/[relevant-reference].md
 ---

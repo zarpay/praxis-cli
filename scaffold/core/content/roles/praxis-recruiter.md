@@ -1,7 +1,6 @@
 ---
 title: Praxis Recruiter
 type: role
-framework: true
 manager: your-email@example.com
 alias: Remy
 agent_description: "Use this agent to create and refine roles and responsibilities within the Praxis framework. This agent should be invoked when designing new roles or responsibilities, when refining contributor scope, or when needing critical feedback on contributor design."

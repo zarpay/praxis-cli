@@ -1,5 +1,4 @@
 ---
-framework: true
 title: Audit Framework Health
 type: responsibility
 owner: praxis-steward

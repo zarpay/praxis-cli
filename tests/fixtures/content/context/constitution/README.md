@@ -1,7 +1,5 @@
 ---
 title: Constitution
-type: framework
-framework: true
 ---
 
 # Constitution

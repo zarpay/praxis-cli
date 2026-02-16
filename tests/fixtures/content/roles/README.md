@@ -1,7 +1,5 @@
 ---
 title: Roles
-type: framework
-framework: true
 ---
 
 # Roles

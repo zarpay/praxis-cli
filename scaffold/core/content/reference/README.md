@@ -1,7 +1,5 @@
 ---
 title: Reference
-type: framework
-framework: true
 description: Defines the Reference primitive in Praxis
 ---
 

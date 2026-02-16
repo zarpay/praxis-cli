@@ -1,7 +1,5 @@
 ---
 title: Roles
-type: framework
-framework: true
 description: Defines the Roles primitive in Praxis
 ---
 

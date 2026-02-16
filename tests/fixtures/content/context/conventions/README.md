@@ -1,7 +1,5 @@
 ---
 title: Conventions
-type: framework
-framework: true
 ---
 
 # Conventions

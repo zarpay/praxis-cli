@@ -1,7 +1,5 @@
 ---
 title: Reference
-type: framework
-framework: true
 ---
 
 # Reference

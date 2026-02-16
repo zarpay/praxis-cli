@@ -1,7 +1,5 @@
 ---
 title: Conventions
-type: framework
-framework: true
 description: Defines the Conventions subcategory in Praxis
 ---
 

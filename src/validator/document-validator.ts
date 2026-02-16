@@ -13,7 +13,6 @@ export type DocumentType =
   | "reference"
   | "convention"
   | "constitution"
-  | "framework"
   | "template"
   | "unknown";
 
@@ -231,10 +230,6 @@ Answer Yes, Maybe, or No with specific issues found.`;
 
     const frontmatter = this.extractFrontmatter();
 
-    if (frontmatter["framework"] === true) {
-      return "framework";
-    }
-
     const type = frontmatter["type"] as string | undefined;
     switch (type) {
       case "role":
@@ -247,8 +242,6 @@ Answer Yes, Maybe, or No with specific issues found.`;
         return "convention";
       case "constitution":
         return "constitution";
-      case "framework":
-        return "framework";
       default:
         return this.inferTypeFromPath();
     }

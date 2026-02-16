@@ -2,7 +2,6 @@
 title: Review Content Quality
 type: responsibility
 owner: praxis-steward
-framework: true
 schedule: triggered
 refs:
   - content/context/conventions/documentation.md

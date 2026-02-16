@@ -1,7 +1,5 @@
 ---
 title: Responsibilities
-type: framework
-framework: true
 ---
 
 # Responsibilities

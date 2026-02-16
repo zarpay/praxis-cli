@@ -2,7 +2,6 @@
 title: Challenge Contributor Design
 type: responsibility
 owner: praxis-recruiter
-framework: true
 schedule: triggered
 refs:
   - content/reference/praxis-vocabulary.md

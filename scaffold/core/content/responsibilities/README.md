@@ -1,7 +1,5 @@
 ---
 title: Responsibilities
-type: framework
-framework: true
 description: Defines the Responsibilities primitive in Praxis
 ---
 

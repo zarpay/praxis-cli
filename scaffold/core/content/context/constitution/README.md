@@ -1,7 +1,5 @@
 ---
 title: Constitution
-type: framework
-framework: true
 description: Defines the Constitution subcategory in Praxis
 ---
 

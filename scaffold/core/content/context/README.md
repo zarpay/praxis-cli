@@ -1,7 +1,5 @@
 ---
 title: Context
-type: framework
-framework: true
 description: Defines the Context primitive in Praxis
 ---
 

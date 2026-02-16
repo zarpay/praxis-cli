@@ -1,7 +1,5 @@
 ---
 title: Praxis
-type: framework
-framework: true
 description: A knowledge framework for humans and agents
 ---
 

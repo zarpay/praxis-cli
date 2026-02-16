@@ -1,7 +1,6 @@
 ---
 title: Praxis Vocabulary
 type: reference
-framework: true
 refs:
   - content/context/constitution/identity.md
 ---

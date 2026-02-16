@@ -103,14 +103,14 @@ describe("DocumentValidator", () => {
       expect(validator.documentType).toBe("template");
     });
 
-    it("detects framework type from frontmatter", () => {
+    it("infers type from path when no type in frontmatter", () => {
       const validator = new DocumentValidator({
         documentPath: join(tmpdir, "content", "roles", "README.md"),
         specPath: join(tmpdir, "content", "roles", "README.md"),
         useCache: false,
       });
 
-      expect(validator.documentType).toBe("framework");
+      expect(validator.documentType).toBe("role");
     });
   });
 
