@@ -5,7 +5,6 @@ import { Writable } from "node:stream";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { Logger } from "@/core/logger.js";
-import { PraxisConfig } from "@/core/config.js";
 import { RoleCompiler } from "@/compiler/role-compiler.js";
 
 import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";

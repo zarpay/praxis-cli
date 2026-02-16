@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
@@ -19,7 +19,6 @@ describe("CacheManager", () => {
     manager = new CacheManager(cacheRoot);
 
     cleanup = () => {
-      const { rmSync } = require("node:fs");
       rmSync(dir, { recursive: true, force: true });
     };
   });

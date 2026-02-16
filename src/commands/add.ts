@@ -112,18 +112,21 @@ function toTitleCase(name: string): string {
 /**
  * Fills template placeholders with the provided name.
  *
- * For roles: replaces `[Role Name]`, `[required short name]`, `[Alias]`
- * For responsibilities: replaces `[Verb What]`
+ * For roles: replaces `{role_name}`, `{required_alias}`, `[Role Name]`, `[Alias]`
+ * For responsibilities: replaces `{verb_what_title}`, `{owner_role_alias}`, `[Verb What]`
  */
 function fillTemplate(type: "role" | "responsibility", name: string, template: string): string {
   const titleCase = toTitleCase(name);
 
   if (type === "role") {
     return template
+      .replace(/\{role_name\}/g, titleCase)
+      .replace(/\{required_alias\}/g, name)
       .replace(/\[Role Name\]/g, titleCase)
-      .replace(/\[required short name\]/g, name)
       .replace(/\[Alias\]/g, titleCase);
   }
 
-  return template.replace(/\[Verb What\]/g, titleCase);
+  return template
+    .replace(/\{verb_what_title\}/g, titleCase)
+    .replace(/\[Verb What\]/g, titleCase);
 }

@@ -1,10 +1,13 @@
 {
-  "name": "praxis-cli",
+  "name": "@zarpay/praxis-cli",
   "version": "1.0.0",
   "description": "CLI for the Praxis knowledge framework - organize knowledge for humans and AI agents",
   "type": "module",
   "bin": {
     "praxis": "./dist/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "dist",
@@ -18,7 +21,8 @@
     "lint": "eslint src tests",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write src tests",
-    "format:check": "prettier --check src tests"
+    "format:check": "prettier --check src tests",
+    "prepublishOnly": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "keywords": [
     "praxis",
