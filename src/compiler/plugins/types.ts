@@ -27,4 +27,5 @@ export interface PluginOptions {
   root: string;
   logger: Logger;
   pluginsOutputDir?: string;
+  pluginName?: string;
 }

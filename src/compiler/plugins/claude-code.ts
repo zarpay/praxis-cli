@@ -8,17 +8,18 @@ import type { CompilerPlugin, PluginOptions } from "./types.js";
  * Claude Code compiler plugin.
  *
  * Takes a pure agent profile and wraps it with Claude Code YAML
- * frontmatter, then writes it to `plugins/praxis/agents/`.
+ * frontmatter, then writes it to `plugins/{pluginName}/agents/`.
  */
 export class ClaudeCodePlugin implements CompilerPlugin {
   readonly name = "claude-code";
 
   private readonly outputDir: string;
 
-  constructor({ root, pluginsOutputDir }: PluginOptions) {
+  constructor({ root, pluginsOutputDir, pluginName }: PluginOptions) {
+    const name = pluginName ?? "praxis";
     this.outputDir = pluginsOutputDir
-      ? join(pluginsOutputDir, "praxis", "agents")
-      : join(root, "plugins", "praxis", "agents");
+      ? join(pluginsOutputDir, name, "agents")
+      : join(root, "plugins", name, "agents");
   }
 
   /**

@@ -10,6 +10,7 @@ interface RawConfig {
   rolesDir?: string;
   responsibilitiesDir?: string;
   pluginsOutputDir?: string;
+  pluginName?: string;
 }
 
 const DEFAULT_CONFIG: Required<RawConfig> = {
@@ -19,6 +20,7 @@ const DEFAULT_CONFIG: Required<RawConfig> = {
   rolesDir: "roles",
   responsibilitiesDir: "responsibilities",
   pluginsOutputDir: "./plugins",
+  pluginName: "praxis",
 };
 
 /**
@@ -80,6 +82,11 @@ export class PraxisConfig {
     return resolve(this.root, this.data.pluginsOutputDir);
   }
 
+  /** Name used for the plugin subdirectory (e.g. "praxis" or "canon"). */
+  get pluginName(): string {
+    return this.data.pluginName;
+  }
+
   private load(): Required<RawConfig> {
     const configPath = join(this.root, CONFIG_FILE);
 
@@ -96,6 +103,7 @@ export class PraxisConfig {
       rolesDir: raw.rolesDir ?? DEFAULT_CONFIG.rolesDir,
       responsibilitiesDir: raw.responsibilitiesDir ?? DEFAULT_CONFIG.responsibilitiesDir,
       pluginsOutputDir: raw.pluginsOutputDir ?? DEFAULT_CONFIG.pluginsOutputDir,
+      pluginName: raw.pluginName ?? DEFAULT_CONFIG.pluginName,
     };
   }
 }

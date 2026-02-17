@@ -150,6 +150,7 @@ export class RoleCompiler {
       this.root,
       this.logger,
       this.config.pluginsOutputDir,
+      this.config.pluginName,
     );
     for (const plugin of plugins) {
       plugin.compile(profile, metadata, roleAlias);

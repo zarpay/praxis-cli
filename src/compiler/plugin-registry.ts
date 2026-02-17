@@ -23,6 +23,7 @@ export function resolvePlugins(
   root: string,
   logger: Logger,
   pluginsOutputDir?: string,
+  pluginName?: string,
 ): CompilerPlugin[] {
   return names.map((name) => {
     const Constructor = PLUGINS[name];
@@ -30,6 +31,6 @@ export function resolvePlugins(
       const available = Object.keys(PLUGINS).join(", ");
       throw new Error(`Unknown plugin: "${name}". Available plugins: ${available}`);
     }
-    return new Constructor({ root, logger, pluginsOutputDir });
+    return new Constructor({ root, logger, pluginsOutputDir, pluginName });
   });
 }
