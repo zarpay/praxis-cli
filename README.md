@@ -1,10 +1,8 @@
 # Praxis
 
-**A knowledge framework for humans and AI agents.**
+Praxis is a CLI tool that structures your team's knowledge so both humans and AI agents can operate effectively.
 
-Praxis is a CLI tool that structures your team's knowledge so both humans and AI agents can operate effectively. It treats agents as first-class contributors — not tools to be prompted, but workers to be onboarded, given roles, and delegated responsibilities.
-
-The premise is simple: **if you can't clearly explain how your organization works to a new team member, you can't effectively delegate to an agent.** Praxis forces that clarity.
+[![Praxis CLI Demo](https://img.youtube.com/vi/u34hHTgvr-Q/maxresdefault.jpg)](https://youtu.be/u34hHTgvr-Q)
 
 ## Install
 
@@ -42,6 +40,62 @@ Praxis organizes knowledge into four primitives:
 
 A **Role** is the central unit. Each role declares what context it needs, what responsibilities it owns, and what references it consults. When you run `praxis compile`, it reads each role's frontmatter manifest, resolves all referenced content via glob patterns, inlines everything, and produces a single standalone markdown file — a compiled agent profile.
 
+### Example: A Support Agent
+
+Here's a role file for a customer support agent. The frontmatter is the manifest — it declares which context, responsibilities, and references this role needs:
+
+```yaml
+---
+title: Customer Support Agent
+type: role
+alias: support-agent
+description: "Handle customer inquiries, troubleshoot product issues, and process returns."
+
+constitution:
+  - context/constitution/identity.md
+context:
+  - context/conventions/tone-of-voice.md
+responsibilities:
+  - responsibilities/handle-refund-requests.md
+  - responsibilities/troubleshoot-device-issues.md
+refs:
+  - reference/product-catalog.md
+  - reference/refund-policy.md
+---
+
+# Customer Support Agent
+
+Handles inbound customer inquiries with warmth and efficiency.
+
+## Scope
+
+### Responsible For
+- Answering product questions using the product catalog
+- Processing returns and refunds within policy
+- Escalating edge cases to the support manager
+
+### Not Responsible For
+- Negotiating custom pricing or enterprise deals
+- Making warranty exceptions without manager approval
+
+## Authorities
+- **Can** process refunds up to $300 without manager approval
+- **Cannot** override the refund policy
+```
+
+Running `praxis compile` resolves every path and glob in the frontmatter, pulls in the referenced files, and assembles one self-contained profile:
+
+```
+agent-profiles/support-agent.md
+├── Role: Customer Support Agent (identity, scope, authorities)
+├── Responsibilities: Handle Refund Requests, Troubleshoot Device Issues
+├── Constitution: Company Identity
+├── Context: Tone of Voice
+└── Reference: Product Catalog, Refund Policy
+```
+
+Change a policy, recompile — every agent stays in sync.
+
 ### Default Project Structure
 
 Running `praxis init` scaffolds this layout:
@@ -62,6 +116,110 @@ my-org/
 ```
 
 This structure is fully configurable — see [Configuration](#configuration).
+
+## Validation
+
+Every directory's `README.md` isn't just documentation — it's a **specification**. Each README defines the required structure for files in that directory: what frontmatter fields are needed, what sections to include, what format to follow.
+
+`praxis validate` checks every document against its directory's README using an LLM:
+
+```bash
+praxis validate all
+```
+```
+[PASS] roles/support-agent.md
+[WARN] responsibilities/handle-refund-requests.md
+    - Missing "Inputs" section (recommended by spec)
+[FAIL] reference/pricing.md
+    - Frontmatter field "type" is missing (required)
+
+==================================================
+Summary
+==================================================
+Total documents: 12
+[Compliant] 9
+[Warnings] 2
+[Errors] 1
+```
+
+Results are cached by content hash — unchanged documents aren't re-validated. There's a CI mode too: plug `praxis validate ci --strict` into your pipeline and PRs that break the spec don't merge.
+
+See [CLI Reference: `praxis validate`](#praxis-validate) for all subcommands and options.
+
+## CLI Reference
+
+### `praxis init [directory]`
+
+Scaffolds a new Praxis project with the full directory structure, two built-in roles (Stewart and Remy), and starter content. Skips files that already exist, making it safe to re-run.
+
+### `praxis add role <name>` / `praxis add responsibility <name>`
+
+Creates a new role or responsibility from `_template.md` with placeholders pre-filled. The name should be kebab-case (e.g., `code-reviewer`, `review-pull-requests`).
+
+```bash
+praxis add role code-reviewer
+# Creates roles/code-reviewer.md
+
+praxis add responsibility review-pull-requests
+# Creates responsibilities/review-pull-requests.md
+```
+
+Output paths are determined by `rolesDir` and `responsibilitiesDir` in your config.
+
+### `praxis compile [--alias <name>] [--watch]`
+
+Compiles all roles (or a single role by alias) into agent profiles. Each role's referenced content is resolved and inlined into a self-contained markdown file.
+
+```bash
+praxis compile                    # Compile all roles
+praxis compile --alias stewart    # Compile a single role
+praxis compile --watch            # Compile and watch for changes
+```
+
+The `--watch` flag monitors all directories listed in `sources` for file changes and automatically recompiles.
+
+Output is written to `agentProfilesOutputDir` (pure profiles) and to each enabled plugin's output location.
+
+### `praxis status`
+
+Shows a project health dashboard without requiring any API keys. Scans all `sources` directories, categorizes documents by their frontmatter `type:` field, and reports content counts alongside issues like dangling references, orphaned responsibilities, missing descriptions, and unmatched owners.
+
+Also displays validation coverage by reading cached validation results for every source document, showing how many are passing, have warnings, have errors, or haven't been validated yet.
+
+```bash
+praxis status
+```
+
+Exits with code 1 if issues are found, making it suitable for CI.
+
+### `praxis validate`
+
+AI-powered validation that checks documents against their directory's README specification.
+
+Any directory within your configured `sources` that contains a `README.md` becomes a validation domain. The README defines the spec, and every `.md` file in that directory (excluding `README.md` and `_`-prefixed files) is validated against it.
+
+```bash
+praxis validate document roles/my-role.md        # Validate a single document
+praxis validate all                               # Validate everything
+praxis validate all --type roles                  # Validate one type only
+praxis validate all --verbose                     # Show full AI reasoning
+praxis validate all --no-cache                    # Skip validation cache
+praxis validate ci --strict                       # CI mode (fail on warnings)
+praxis validate report roles/my-role.md           # Inspect cached validation status
+praxis validate report roles/my-role.md --verbose # Include full AI reasoning
+```
+
+#### `praxis validate report <path>`
+
+Displays a readable report of a document's cached validation status. Shows one of five states: **PASS**, **WARN**, **FAIL**, **STALE** (document changed since last validation), or **NOT VALIDATED** (no cached result). Does not call any API — it only reads from the local cache. Use `--verbose` to include the full AI reasoning.
+
+Validation results are cached in `.praxis/cache/validation/` and automatically invalidated when document or README content changes.
+
+Requires the `validation` section in `.praxis/config.json` (see [Configuration](#configuration)) and the configured API key environment variable set:
+
+```bash
+export OPENROUTER_API_KEY=your-key-here
+```
 
 ## Configuration
 
@@ -214,81 +372,6 @@ All paths are relative to the project root and support glob patterns.
 | `refs` | `string[]` | Reference files to include |
 
 The compiler resolves each path/glob, reads the referenced files, strips their frontmatter, and inlines the body content into the compiled profile under the appropriate section heading (Role, Responsibilities, Constitution, Context, Reference).
-
-## CLI Reference
-
-### `praxis init [directory]`
-
-Scaffolds a new Praxis project with the full directory structure, two built-in roles (Stewart and Remy), and starter content. Skips files that already exist, making it safe to re-run.
-
-### `praxis add role <name>` / `praxis add responsibility <name>`
-
-Creates a new role or responsibility from `_template.md` with placeholders pre-filled. The name should be kebab-case (e.g., `code-reviewer`, `review-pull-requests`).
-
-```bash
-praxis add role code-reviewer
-# Creates roles/code-reviewer.md
-
-praxis add responsibility review-pull-requests
-# Creates responsibilities/review-pull-requests.md
-```
-
-Output paths are determined by `rolesDir` and `responsibilitiesDir` in your config.
-
-### `praxis compile [--alias <name>] [--watch]`
-
-Compiles all roles (or a single role by alias) into agent profiles. Each role's referenced content is resolved and inlined into a self-contained markdown file.
-
-```bash
-praxis compile                    # Compile all roles
-praxis compile --alias stewart    # Compile a single role
-praxis compile --watch            # Compile and watch for changes
-```
-
-The `--watch` flag monitors all directories listed in `sources` for file changes and automatically recompiles.
-
-Output is written to `agentProfilesOutputDir` (pure profiles) and to each enabled plugin's output location.
-
-### `praxis status`
-
-Shows a project health dashboard without requiring any API keys. Scans all `sources` directories, categorizes documents by their frontmatter `type:` field, and reports content counts alongside issues like dangling references, orphaned responsibilities, missing descriptions, and unmatched owners.
-
-Also displays validation coverage by reading cached validation results for every source document, showing how many are passing, have warnings, have errors, or haven't been validated yet.
-
-```bash
-praxis status
-```
-
-Exits with code 1 if issues are found, making it suitable for CI.
-
-### `praxis validate`
-
-AI-powered validation that checks documents against their directory's README specification.
-
-Any directory within your configured `sources` that contains a `README.md` becomes a validation domain. The README defines the spec, and every `.md` file in that directory (excluding `README.md` and `_`-prefixed files) is validated against it.
-
-```bash
-praxis validate document roles/my-role.md        # Validate a single document
-praxis validate all                               # Validate everything
-praxis validate all --type roles                  # Validate one type only
-praxis validate all --verbose                     # Show full AI reasoning
-praxis validate all --no-cache                    # Skip validation cache
-praxis validate ci --strict                       # CI mode (fail on warnings)
-praxis validate report roles/my-role.md           # Inspect cached validation status
-praxis validate report roles/my-role.md --verbose # Include full AI reasoning
-```
-
-#### `praxis validate report <path>`
-
-Displays a readable report of a document's cached validation status. Shows one of five states: **PASS**, **WARN**, **FAIL**, **STALE** (document changed since last validation), or **NOT VALIDATED** (no cached result). Does not call any API — it only reads from the local cache. Use `--verbose` to include the full AI reasoning.
-
-Validation results are cached in `.praxis/cache/validation/` and automatically invalidated when document or README content changes.
-
-Requires the `validation` section in `.praxis/config.json` (see [Configuration](#configuration)) and the configured API key environment variable set:
-
-```bash
-export OPENROUTER_API_KEY=your-key-here
-```
 
 ## Claude Code Plugin
 
