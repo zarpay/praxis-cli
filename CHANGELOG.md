@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`paths` frontmatter in spec files** — Spec files can now declare a `paths` array in YAML frontmatter listing glob patterns (relative to the project root) for the documents they validate. This breaks the previous constraint that a spec could only validate sibling files in its own directory, enabling a single spec to cover documents spread across multiple directories or nested subtrees.
+- **`specFilePattern` in validation config** — The `validation` section of `.praxis/config.json` now accepts an optional `specFilePattern` field to configure which filename is treated as the directory spec (defaults to `README.md`). Glob patterns are supported, allowing non-standard spec filenames like `SPEC.md` or `*.spec.md`.
+- **`CacheManager.readAllRaw()`** — New method that returns all cached validation entries for a document across every spec that has validated it, as an array of `CacheFileData` objects.
+
+### Changed
+
+- **Multi-spec validation cache (v2.0 format)** — The cache file format has been upgraded from a flat single-result structure (v1.0) to a `validations` map keyed by an 8-char hash of the spec's project-relative path (v2.0). A document validated by multiple specs now stores each result independently in the same `.json` file, so no result overwrites another. Existing v1.0 cache files are transparently migrated to v2.0 on the next write — no cold cache required on upgrade.
+- **`CacheManager.read()`** — Now requires a `specPath` parameter to look up the correct entry in the v2.0 validations map.
+- **`CacheManager.readRaw()`** — Now accepts an optional `specPath` parameter; when omitted, returns the first cached entry (preserves existing behavior for single-spec documents).
+
 ## [1.2.1] - 2026-02-20
 
 ### Added
