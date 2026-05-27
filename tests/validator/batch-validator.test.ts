@@ -1,7 +1,4 @@
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir as osTmpdir } from "node:os";
-import { randomUUID } from "node:crypto";
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { http, HttpResponse } from "msw";
@@ -12,6 +9,7 @@ import { CacheManager } from "@/validator/cache-manager.js";
 import { PraxisConfig } from "@/core/config.js";
 
 import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
+import { createValidatorTmpdir } from "../helpers/validator-tmpdir.js";
 
 /** MSW server for intercepting OpenRouter API calls. */
 const server = setupServer();
@@ -144,23 +142,17 @@ describe("BatchValidator", () => {
     it("discovers spec files with custom pattern and excludes them from validation", async () => {
       useCompliantFixture();
 
-      const dir = join(osTmpdir(), `praxis-batch-spec-${randomUUID()}`);
-      const rolesDir = join(dir, "roles");
-      mkdirSync(rolesDir, { recursive: true });
-      mkdirSync(join(dir, ".praxis"), { recursive: true });
-
-      writeFileSync(join(rolesDir, "SPEC.md"), "# Roles Spec\nRequired: name, type");
-      writeFileSync(join(rolesDir, "engineer.md"), "---\ntype: role\n---\n# Engineer");
-      writeFileSync(
-        join(dir, ".praxis", "config.json"),
-        JSON.stringify({
-          sources: ["roles"],
-          validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "test", specFilePattern: "SPEC.md" },
-        }),
-      );
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["roles"],
+        files: {
+          "roles/SPEC.md": "# Roles Spec\nRequired: name, type",
+          "roles/engineer.md": "---\ntype: role\n---\n# Engineer",
+        },
+        validation: { specFilePattern: "SPEC.md" },
+      });
 
       const batch = new BatchValidator({
-        root: dir,
+        root,
         sources: ["roles"],
         useCache: false,
         apiKeyEnvVar: "OPENROUTER_API_KEY",
@@ -173,7 +165,7 @@ describe("BatchValidator", () => {
       expect(results).toHaveLength(1);
       expect(results[0].filename).toBe("engineer.md");
 
-      rmSync(dir, { recursive: true, force: true });
+      cleanup();
     });
   });
 
@@ -181,30 +173,17 @@ describe("BatchValidator", () => {
     it("validates files in other directories when spec has paths", async () => {
       useCompliantFixture();
 
-      const dir = join(osTmpdir(), `praxis-paths-${randomUUID()}`);
-      const specsDir = join(dir, "specs");
-      const docsDir = join(dir, "docs");
-      const nestedDir = join(dir, "docs", "nested");
-      mkdirSync(specsDir, { recursive: true });
-      mkdirSync(nestedDir, { recursive: true });
-      mkdirSync(join(dir, ".praxis"), { recursive: true });
-
-      writeFileSync(
-        join(specsDir, "README.md"),
-        "---\npaths:\n  - docs/**/*.md\n---\n# Docs Spec\nRequired: title",
-      );
-      writeFileSync(join(docsDir, "guide.md"), "---\ntitle: Guide\n---\n# Guide");
-      writeFileSync(join(nestedDir, "deep.md"), "---\ntitle: Deep\n---\n# Deep");
-      writeFileSync(
-        join(dir, ".praxis", "config.json"),
-        JSON.stringify({
-          sources: ["specs", "docs"],
-          validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "test" },
-        }),
-      );
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["specs", "docs"],
+        files: {
+          "specs/README.md": "---\npaths:\n  - docs/**/*.md\n---\n# Docs Spec\nRequired: title",
+          "docs/guide.md": "---\ntitle: Guide\n---\n# Guide",
+          "docs/nested/deep.md": "---\ntitle: Deep\n---\n# Deep",
+        },
+      });
 
       const batch = new BatchValidator({
-        root: dir,
+        root,
         sources: ["specs", "docs"],
         useCache: false,
         apiKeyEnvVar: "OPENROUTER_API_KEY",
@@ -216,35 +195,23 @@ describe("BatchValidator", () => {
 
       expect(filenames).toEqual(["deep.md", "guide.md"]);
 
-      rmSync(dir, { recursive: true, force: true });
+      cleanup();
     });
 
     it("excludes spec files and templates from paths results", async () => {
       useCompliantFixture();
 
-      const dir = join(osTmpdir(), `praxis-paths-excl-${randomUUID()}`);
-      const specsDir = join(dir, "specs");
-      const docsDir = join(dir, "docs");
-      mkdirSync(specsDir, { recursive: true });
-      mkdirSync(docsDir, { recursive: true });
-      mkdirSync(join(dir, ".praxis"), { recursive: true });
-
-      writeFileSync(
-        join(specsDir, "README.md"),
-        "---\npaths:\n  - docs/**/*.md\n---\n# Spec",
-      );
-      writeFileSync(join(docsDir, "good.md"), "# Good doc");
-      writeFileSync(join(docsDir, "_template.md"), "# Template");
-      writeFileSync(
-        join(dir, ".praxis", "config.json"),
-        JSON.stringify({
-          sources: ["specs", "docs"],
-          validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "test" },
-        }),
-      );
+      const { root, abs, cleanup } = createValidatorTmpdir({
+        sources: ["specs", "docs"],
+        files: {
+          "specs/README.md": "---\npaths:\n  - docs/**/*.md\n---\n# Spec",
+          "docs/good.md": "# Good doc",
+          "docs/_template.md": "# Template",
+        },
+      });
 
       const batch = new BatchValidator({
-        root: dir,
+        root,
         sources: ["specs", "docs"],
         useCache: false,
         apiKeyEnvVar: "OPENROUTER_API_KEY",
@@ -253,32 +220,27 @@ describe("BatchValidator", () => {
 
       const results = await batch.validateAll();
       const filenames = results.map((r) => r.filename);
+      const paths = results.map((r) => r.path);
 
       expect(filenames).toEqual(["good.md"]);
+      expect(paths).toEqual([abs("docs/good.md")]);
 
-      rmSync(dir, { recursive: true, force: true });
+      cleanup();
     });
 
     it("preserves same-directory behavior when no paths frontmatter", async () => {
       useCompliantFixture();
 
-      const dir = join(osTmpdir(), `praxis-paths-none-${randomUUID()}`);
-      const rolesDir = join(dir, "roles");
-      mkdirSync(rolesDir, { recursive: true });
-      mkdirSync(join(dir, ".praxis"), { recursive: true });
-
-      writeFileSync(join(rolesDir, "README.md"), "# Roles Spec\nNo paths frontmatter");
-      writeFileSync(join(rolesDir, "engineer.md"), "# Engineer");
-      writeFileSync(
-        join(dir, ".praxis", "config.json"),
-        JSON.stringify({
-          sources: ["roles"],
-          validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "test" },
-        }),
-      );
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["roles"],
+        files: {
+          "roles/README.md": "# Roles Spec\nNo paths frontmatter",
+          "roles/engineer.md": "# Engineer",
+        },
+      });
 
       const batch = new BatchValidator({
-        root: dir,
+        root,
         sources: ["roles"],
         useCache: false,
         apiKeyEnvVar: "OPENROUTER_API_KEY",
@@ -290,7 +252,7 @@ describe("BatchValidator", () => {
       expect(results).toHaveLength(1);
       expect(results[0].filename).toBe("engineer.md");
 
-      rmSync(dir, { recursive: true, force: true });
+      cleanup();
     });
   });
 
