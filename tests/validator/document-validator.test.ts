@@ -12,14 +12,26 @@ import { CacheManager } from "@/validator/cache-manager.js";
 
 import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
 
-/** MSW fixture responses for OpenRouter API calls. */
+/** MSW fixture responses for OpenRouter API calls (tool-call format). */
 const fixtures = {
   compliant: {
     choices: [
       {
         message: {
-          content:
-            "Yes — the document complies with all requirements in the README specification.",
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            {
+              id: "call_compliant",
+              type: "function",
+              function: {
+                name: "validation_pass",
+                arguments: JSON.stringify({
+                  reason: "The file satisfies all criteria defined in the specification.",
+                }),
+              },
+            },
+          ],
         },
       },
     ],
@@ -28,8 +40,24 @@ const fixtures = {
     choices: [
       {
         message: {
-          content:
-            "Maybe — minor issues found:\n- Missing optional `schedule` field\n- Description could be more detailed",
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            {
+              id: "call_warning",
+              type: "function",
+              function: {
+                name: "validation_warn",
+                arguments: JSON.stringify({
+                  reason: "Minor deviations from the specification.",
+                  issues: [
+                    "Missing optional `schedule` field",
+                    "Description could be more detailed",
+                  ],
+                }),
+              },
+            },
+          ],
         },
       },
     ],
@@ -38,8 +66,25 @@ const fixtures = {
     choices: [
       {
         message: {
-          content:
-            "No — major issues found:\n- Missing required `owner` field in frontmatter\n- Missing Objective section\n- Missing Criteria section",
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            {
+              id: "call_error",
+              type: "function",
+              function: {
+                name: "validation_fail",
+                arguments: JSON.stringify({
+                  reason: "Required criteria are not met.",
+                  issues: [
+                    "Missing required `owner` field in frontmatter",
+                    "Missing Objective section",
+                    "Missing Criteria section",
+                  ],
+                }),
+              },
+            },
+          ],
         },
       },
     ],
@@ -171,7 +216,7 @@ describe("DocumentValidator", () => {
       expect(result.issues.length).toBeGreaterThan(0);
     });
 
-    it("parses issues from bullet points in response", async () => {
+    it("returns structured issues from tool call response", async () => {
       useFixture("error");
       process.env["OPENROUTER_API_KEY"] = "test-key";
 

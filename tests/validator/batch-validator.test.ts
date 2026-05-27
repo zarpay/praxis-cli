@@ -25,7 +25,20 @@ function useCompliantFixture(): void {
       return HttpResponse.json({
         choices: [
           {
-            message: { content: "Yes — fully compliant." },
+            message: {
+              role: "assistant",
+              content: null,
+              tool_calls: [
+                {
+                  id: "call_pass",
+                  type: "function",
+                  function: {
+                    name: "validation_pass",
+                    arguments: JSON.stringify({ reason: "Fully compliant." }),
+                  },
+                },
+              ],
+            },
           },
         ],
       });
@@ -41,7 +54,21 @@ function useErrorFixture(): void {
         choices: [
           {
             message: {
-              content: "No — major issues:\n- Missing required field\n- Wrong structure",
+              role: "assistant",
+              content: null,
+              tool_calls: [
+                {
+                  id: "call_fail",
+                  type: "function",
+                  function: {
+                    name: "validation_fail",
+                    arguments: JSON.stringify({
+                      reason: "Required criteria are not met.",
+                      issues: ["Missing required field", "Wrong structure"],
+                    }),
+                  },
+                },
+              ],
             },
           },
         ],

@@ -10,9 +10,8 @@ import {
   type CachedValidationResult,
   CacheManager,
   contentHash,
-  type Severity,
 } from "./cache-manager.js";
-import { SYSTEM_PROMPT } from "./prompts.js";
+import { SYSTEM_PROMPT, VALIDATION_TOOLS } from "./prompts.js";
 import { hasGlobChars } from "./spec-pattern.js";
 
 /** Known document types within the Praxis content structure. */
@@ -115,8 +114,7 @@ export class DocumentValidator {
     }
 
     this.wasCacheHit = false;
-    const response = await this.callOpenRouter();
-    this.result = this.parseResponse(response);
+    this.result = await this.callOpenRouter();
 
     if (this.cacheManager && this.result) {
       this.cacheManager.write({
@@ -134,11 +132,15 @@ export class DocumentValidator {
   }
 
   /**
-   * Calls the OpenRouter API with the validation prompt.
+   * Calls the OpenRouter API and returns a structured validation result via tool call.
    *
-   * @throws Error if OPENROUTER_API_KEY is not set or the API returns an error
+   * Sends the spec and file content to the model along with three validation tools.
+   * The model is required to call exactly one tool, eliminating text parsing entirely.
+   *
+   * @throws Error if config is missing, the API returns an error, or the model
+   *   does not return a tool call (e.g., the model does not support tool calling).
    */
-  private async callOpenRouter(): Promise<string> {
+  private async callOpenRouter(): Promise<CachedValidationResult> {
     const envVarName = this.apiKeyEnvVar;
     if (!envVarName) {
       throw new Error(
@@ -172,6 +174,8 @@ export class DocumentValidator {
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: this.buildValidationQuestion() },
         ],
+        tools: VALIDATION_TOOLS,
+        tool_choice: "required",
         temperature: 0.1,
       }),
     });
@@ -181,84 +185,60 @@ export class DocumentValidator {
       throw new Error(`OpenRouter API error (${response.status}): ${body}`);
     }
 
-    const data = (await response.json()) as {
-      choices: Array<{ message: { content: string } }>;
-    };
+    interface ToolCall {
+      id: string;
+      type: "function";
+      function: { name: string; arguments: string };
+    }
+    interface OpenRouterResponse {
+      choices: Array<{
+        message: { role: string; content: string | null; tool_calls?: ToolCall[] };
+      }>;
+    }
 
-    return data.choices[0]?.message?.content ?? "";
+    const data = (await response.json()) as OpenRouterResponse;
+    const toolCall = data.choices[0]?.message?.tool_calls?.[0];
+
+    if (!toolCall) {
+      throw new Error(
+        "Model did not return a tool call. Ensure the configured model supports tool calling.",
+      );
+    }
+
+    const args = JSON.parse(toolCall.function.arguments) as {
+      reason: string;
+      issues?: string[];
+    };
+    const { reason, issues = [] } = args;
+
+    switch (toolCall.function.name) {
+      case "validation_pass":
+        return { compliant: true, issues: [], reason };
+      case "validation_warn":
+        return { compliant: false, severity: "warning", issues, reason };
+      case "validation_fail":
+        return { compliant: false, severity: "error", issues, reason };
+      default:
+        throw new Error(`Unexpected validation tool call: ${toolCall.function.name}`);
+    }
   }
 
   /** Builds the user prompt sent to the LLM for validation. */
   private buildValidationQuestion(): string {
-    return `## README SPECIFICATION
+    return `## SPECIFICATION
 
-The following README defines what documents in this directory should contain.
-Use this as your validation criteria:
-
-\`\`\`markdown
+\`\`\`
 ${this.readmeContent}
 \`\`\`
 
-## DOCUMENT TO VALIDATE
+## FILE TO VALIDATE
 
 File: ${basename(this.documentPath)}
 Directory: ${dirname(this.documentPath)}
-Detected Type: ${this.documentType}
 
-\`\`\`markdown
-${this.documentContent}
 \`\`\`
-
-## VALIDATION TASK
-
-Does this document comply with the README specification?
-
-Check for:
-1. All required frontmatter fields mentioned in the README
-2. All required sections mentioned in the README
-3. Naming conventions described in the README
-4. Content expectations described in the README
-5. Proper markdown formatting
-
-Answer Yes, Maybe, or No with specific issues found.`;
-  }
-
-  /**
-   * Parses the LLM response into a structured validation result.
-   *
-   * Looks for Yes/Maybe/No at the start of the response to determine
-   * compliance status and severity.
-   */
-  private parseResponse(response: string): CachedValidationResult {
-    const trimmed = response.trim();
-    const firstWord = trimmed.split(/[\s,.:]/)[0]?.toLowerCase() ?? "";
-
-    if (firstWord === "yes") {
-      return { compliant: true, issues: [], reason: trimmed };
-    }
-
-    const issues = this.parseIssues(trimmed);
-    const severity: Severity = firstWord === "maybe" ? "warning" : "error";
-
-    return { compliant: false, issues, reason: trimmed, severity };
-  }
-
-  /**
-   * Extracts individual issues from the LLM's explanation text.
-   *
-   * Looks for bullet points or numbered list items.
-   */
-  private parseIssues(reason: string): string[] {
-    const issues: string[] = [];
-
-    for (const line of reason.split("\n")) {
-      const trimmedLine = line.trim();
-      if (/^[-*•]\s+/.test(trimmedLine) || /^\d+\.\s+/.test(trimmedLine)) {
-        issues.push(trimmedLine.replace(/^[-*•\d.]+\s*/, ""));
-      }
-    }
-
-    return issues.length > 0 ? issues : [reason];
+${this.documentContent}
+\`\`\``;
   }
 
   /** Detects the document type from frontmatter or path inference. */
