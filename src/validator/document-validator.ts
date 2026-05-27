@@ -6,11 +6,7 @@ import yaml from "js-yaml";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 
-import {
-  type CachedValidationResult,
-  CacheManager,
-  contentHash,
-} from "./cache-manager.js";
+import { type CachedValidationResult, CacheManager, contentHash } from "./cache-manager.js";
 import { SYSTEM_PROMPT, VALIDATION_TOOLS } from "./prompts.js";
 import { hasGlobChars } from "./spec-pattern.js";
 
