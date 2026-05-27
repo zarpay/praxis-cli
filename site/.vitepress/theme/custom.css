@@ -1,0 +1,30 @@
+:root {
+  --vp-c-brand-1: #4f46e5;
+  --vp-c-brand-2: #6366f1;
+  --vp-c-brand-3: #3730a3;
+  --vp-c-bg: #f5f5fb;
+  --vp-c-bg-alt: #ebebf5;
+  --vp-c-bg-soft: #fafafd;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-border: rgba(79, 70, 229, 0.16);
+  --vp-c-divider: rgba(79, 70, 229, 0.12);
+
+  --vp-custom-block-tip-border: rgba(79, 70, 229, 0.28);
+  --vp-custom-block-tip-bg: rgba(79, 70, 229, 0.07);
+  --vp-custom-block-tip-text: #3730a3;
+  --vp-custom-block-tip-code-bg: rgba(255, 255, 255, 0.60);
+
+  --vp-custom-block-warning-border: rgba(172, 116, 42, 0.32);
+  --vp-custom-block-warning-bg: rgba(172, 116, 42, 0.08);
+  --vp-custom-block-warning-text: #5d4520;
+  --vp-custom-block-warning-code-bg: rgba(255, 255, 255, 0.55);
+
+  --vp-custom-block-danger-border: rgba(150, 50, 50, 0.30);
+  --vp-custom-block-danger-bg: rgba(150, 50, 50, 0.08);
+  --vp-custom-block-danger-text: #5d2828;
+  --vp-custom-block-danger-code-bg: rgba(255, 255, 255, 0.55);
+}
+
+.custom-block div[class*='language-'] {
+  background-color: rgba(255, 255, 255, 0.45);
+}
