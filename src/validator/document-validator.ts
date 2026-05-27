@@ -6,7 +6,12 @@ import yaml from "js-yaml";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 
-import { type CachedValidationResult, CacheManager, contentHash, type Severity } from "./cache-manager.js";
+import {
+  type CachedValidationResult,
+  CacheManager,
+  contentHash,
+  type Severity,
+} from "./cache-manager.js";
 import { SYSTEM_PROMPT } from "./prompts.js";
 import { hasGlobChars } from "./spec-pattern.js";
 
@@ -99,6 +104,7 @@ export class DocumentValidator {
       const cachedResult = this.cacheManager.read({
         documentPath: this.documentPath,
         contentHash: hash,
+        specPath: this.readmePath,
       });
 
       if (cachedResult) {
@@ -316,9 +322,7 @@ Answer Yes, Maybe, or No with specific issues found.`;
     if (!hasGlobChars(this.specFilePattern)) {
       const specPath = join(baseDir, this.specFilePattern);
       if (existsSync(specPath)) return specPath;
-      throw new Error(
-        `No ${this.specFilePattern} found in ${baseDir} for ${this.documentPath}`,
-      );
+      throw new Error(`No ${this.specFilePattern} found in ${baseDir} for ${this.documentPath}`);
     }
 
     const matches = fg.sync(this.specFilePattern, {

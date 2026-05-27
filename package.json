@@ -38,7 +38,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@types/picomatch": "^4.0.3",
     "chalk": "^5.4.1",
     "commander": "^13.1.0",
     "fast-glob": "^3.3.3",
@@ -48,6 +47,7 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.13.4",
+    "@types/picomatch": "^4.0.3",
     "eslint": "^9.20.0",
     "msw": "^2.7.3",
     "prettier": "^3.5.2",
