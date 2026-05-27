@@ -2,6 +2,7 @@ import { basename, dirname, join, relative } from "node:path";
 
 import fg from "fast-glob";
 
+import { Frontmatter } from "@/compiler/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 
 import { CacheManager, type CachedValidationResult } from "./cache-manager.js";
@@ -32,11 +33,12 @@ export interface ValidationSummary {
   >;
 }
 
-/** A validation domain: a directory with a README.md spec. */
+/** A validation domain: a spec file and the documents it validates. */
 interface ValidationDomain {
   dir: string;
   readmePath: string;
   type: string;
+  targetFiles?: string[];
 }
 
 /**
@@ -116,18 +118,13 @@ export class BatchValidator {
 
     const domains = await this.discoverValidationDomains();
 
-    for (const { dir, readmePath, type } of domains) {
+    for (const domain of domains) {
       if (this.stoppedEarly) break;
 
-      const docPaths = fg.sync("*.md", { cwd: dir, onlyFiles: true, absolute: true });
-
-      for (const docPath of docPaths) {
+      for (const docPath of this.resolveDocuments(domain)) {
         if (this.stoppedEarly) break;
 
-        const name = basename(docPath);
-        if (isSpecFile(name, this.specFilePattern) || name.startsWith("_")) continue;
-
-        await this.validateDocument(docPath, readmePath, type);
+        await this.validateDocument(docPath, domain.readmePath, domain.type);
         this.checkFailFast();
       }
     }
@@ -155,18 +152,13 @@ export class BatchValidator {
       throw new Error(`Unknown document type: ${type}`);
     }
 
-    for (const { dir, readmePath, type: domainType } of matching) {
+    for (const domain of matching) {
       if (this.stoppedEarly) break;
 
-      const docPaths = fg.sync("*.md", { cwd: dir, onlyFiles: true, absolute: true });
-
-      for (const docPath of docPaths) {
+      for (const docPath of this.resolveDocuments(domain)) {
         if (this.stoppedEarly) break;
 
-        const name = basename(docPath);
-        if (isSpecFile(name, this.specFilePattern) || name.startsWith("_")) continue;
-
-        await this.validateDocument(docPath, readmePath, domainType);
+        await this.validateDocument(docPath, domain.readmePath, domain.type);
         this.checkFailFast();
       }
     }
@@ -230,27 +222,65 @@ export class BatchValidator {
   }
 
   /**
+   * Returns the list of documents a domain should validate.
+   *
+   * Uses `targetFiles` when the spec declared `paths` frontmatter,
+   * otherwise scans the spec's own directory for sibling .md files.
+   */
+  private resolveDocuments(domain: ValidationDomain): string[] {
+    if (domain.targetFiles) {
+      return domain.targetFiles;
+    }
+    return fg
+      .sync("*.md", { cwd: domain.dir, onlyFiles: true, absolute: true })
+      .filter((f) => {
+        const name = basename(f);
+        return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
+      });
+  }
+
+  /**
    * Discovers validation domains by scanning source directories.
    *
-   * For each source directory, recursively finds all directories
-   * containing a README.md file. Each such directory becomes a
-   * validation domain.
+   * For each spec file found, checks for an optional `paths` frontmatter
+   * field. When present, the glob patterns are expanded against the project
+   * root to build an explicit target file list. Otherwise the spec validates
+   * sibling files in its own directory.
    */
   private async discoverValidationDomains(): Promise<ValidationDomain[]> {
     const domains: ValidationDomain[] = [];
 
     for (const source of this.sources) {
       const sourceAbsPath = join(this.root, source);
-      const readmePaths = fg.sync(`**/${this.specFilePattern}`, {
+      const specPaths = fg.sync(`**/${this.specFilePattern}`, {
         cwd: sourceAbsPath,
         onlyFiles: true,
         absolute: true,
       });
 
-      for (const readmePath of readmePaths) {
-        const dir = dirname(readmePath);
+      for (const specPath of specPaths) {
+        const dir = dirname(specPath);
         const type = relative(this.root, dir) || basename(dir);
-        domains.push({ dir, readmePath, type });
+
+        const fm = new Frontmatter(specPath);
+        const pathPatterns = fm.array("paths") as string[];
+
+        if (pathPatterns.length > 0) {
+          const targetFiles = fg
+            .sync(pathPatterns, {
+              cwd: this.root,
+              onlyFiles: true,
+              absolute: true,
+            })
+            .filter((f) => {
+              const name = basename(f);
+              return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
+            });
+
+          domains.push({ dir, readmePath: specPath, type, targetFiles });
+        } else {
+          domains.push({ dir, readmePath: specPath, type });
+        }
       }
     }
 

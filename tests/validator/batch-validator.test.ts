@@ -177,6 +177,123 @@ describe("BatchValidator", () => {
     });
   });
 
+  describe("paths frontmatter", () => {
+    it("validates files in other directories when spec has paths", async () => {
+      useCompliantFixture();
+
+      const dir = join(osTmpdir(), `praxis-paths-${randomUUID()}`);
+      const specsDir = join(dir, "specs");
+      const docsDir = join(dir, "docs");
+      const nestedDir = join(dir, "docs", "nested");
+      mkdirSync(specsDir, { recursive: true });
+      mkdirSync(nestedDir, { recursive: true });
+      mkdirSync(join(dir, ".praxis"), { recursive: true });
+
+      writeFileSync(
+        join(specsDir, "README.md"),
+        "---\npaths:\n  - docs/**/*.md\n---\n# Docs Spec\nRequired: title",
+      );
+      writeFileSync(join(docsDir, "guide.md"), "---\ntitle: Guide\n---\n# Guide");
+      writeFileSync(join(nestedDir, "deep.md"), "---\ntitle: Deep\n---\n# Deep");
+      writeFileSync(
+        join(dir, ".praxis", "config.json"),
+        JSON.stringify({
+          sources: ["specs", "docs"],
+          validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "test" },
+        }),
+      );
+
+      const batch = new BatchValidator({
+        root: dir,
+        sources: ["specs", "docs"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+      });
+
+      const results = await batch.validateAll();
+      const filenames = results.map((r) => r.filename).sort();
+
+      expect(filenames).toEqual(["deep.md", "guide.md"]);
+
+      rmSync(dir, { recursive: true, force: true });
+    });
+
+    it("excludes spec files and templates from paths results", async () => {
+      useCompliantFixture();
+
+      const dir = join(osTmpdir(), `praxis-paths-excl-${randomUUID()}`);
+      const specsDir = join(dir, "specs");
+      const docsDir = join(dir, "docs");
+      mkdirSync(specsDir, { recursive: true });
+      mkdirSync(docsDir, { recursive: true });
+      mkdirSync(join(dir, ".praxis"), { recursive: true });
+
+      writeFileSync(
+        join(specsDir, "README.md"),
+        "---\npaths:\n  - docs/**/*.md\n---\n# Spec",
+      );
+      writeFileSync(join(docsDir, "good.md"), "# Good doc");
+      writeFileSync(join(docsDir, "_template.md"), "# Template");
+      writeFileSync(
+        join(dir, ".praxis", "config.json"),
+        JSON.stringify({
+          sources: ["specs", "docs"],
+          validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "test" },
+        }),
+      );
+
+      const batch = new BatchValidator({
+        root: dir,
+        sources: ["specs", "docs"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+      });
+
+      const results = await batch.validateAll();
+      const filenames = results.map((r) => r.filename);
+
+      expect(filenames).toEqual(["good.md"]);
+
+      rmSync(dir, { recursive: true, force: true });
+    });
+
+    it("preserves same-directory behavior when no paths frontmatter", async () => {
+      useCompliantFixture();
+
+      const dir = join(osTmpdir(), `praxis-paths-none-${randomUUID()}`);
+      const rolesDir = join(dir, "roles");
+      mkdirSync(rolesDir, { recursive: true });
+      mkdirSync(join(dir, ".praxis"), { recursive: true });
+
+      writeFileSync(join(rolesDir, "README.md"), "# Roles Spec\nNo paths frontmatter");
+      writeFileSync(join(rolesDir, "engineer.md"), "# Engineer");
+      writeFileSync(
+        join(dir, ".praxis", "config.json"),
+        JSON.stringify({
+          sources: ["roles"],
+          validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "test" },
+        }),
+      );
+
+      const batch = new BatchValidator({
+        root: dir,
+        sources: ["roles"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+      });
+
+      const results = await batch.validateAll();
+
+      expect(results).toHaveLength(1);
+      expect(results[0].filename).toBe("engineer.md");
+
+      rmSync(dir, { recursive: true, force: true });
+    });
+  });
+
   describe("summary()", () => {
     it("aggregates results correctly", async () => {
       useCompliantFixture();
