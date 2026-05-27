@@ -1,8 +1,8 @@
 # Praxis
 
-Praxis is a CLI tool that organizes team knowledge — roles, responsibilities, context, and reference — into compiled agent profiles that any LLM platform can consume. Write structured markdown, declare dependencies in frontmatter, run `praxis compile`, get a single self-contained file ready to load into any agent.
+Every codebase has patterns that can't be caught by a syntax checker — service objects with architectural conventions, decision records with agreed-upon formats, agent role definitions with structural requirements. Nobody enforces them. They drift. Praxis fixes that.
 
-It also includes AI-powered validation: every directory's `README.md` doubles as a spec, and `praxis validate` checks your documents against it using an LLM — with content-hash caching so unchanged documents are never re-validated.
+Praxis is a **conceptual linter and knowledge compiler**. Write a README spec for any directory that defines what valid documents look like, then run `praxis validate` to enforce it — for any type of file, in CI, with AI. When those documents are knowledge files, `praxis compile` assembles them into agent profiles: self-contained subject matter experts of their source material, deployable to any LLM platform.
 
 **→ Full documentation at [zarpay.github.io/praxis-cli](https://zarpay.github.io/praxis-cli/)**
 

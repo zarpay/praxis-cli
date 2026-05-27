@@ -1,17 +1,14 @@
 # Writing Specs
 
-A spec is an ordinary `README.md` file that doubles as a machine-readable specification. Writing a good spec is the most important part of making validation useful.
+## The README as a lint rule
 
-## The basic idea
+Every directory with organized files has implicit standards. The question is whether anything enforces them.
 
-When `praxis validate` runs, it sends two things to the LLM:
+A Praxis spec makes those standards explicit. The README in any directory is your `.eslintrc` for that directory — it defines what valid documents look like, and `praxis validate` is the linter that checks every document against it.
 
-1. The spec file content
-2. The document content
+This isn't specific to knowledge documents. A `app/services/` directory can have a README that says every service must have a single public `#call` method and return a `Result` type. A `decisions/` directory can have a README that says every ADR must have Context, Decision, and Consequences sections. A `roles/` directory can have a README that says every role must declare its boundaries and authorities.
 
-It then asks: *does this document comply with this spec?*
-
-The LLM reads your spec as instructions. Write it clearly and specifically in human language — that is what makes the validation meaningful.
+Write the spec in clear human language — the LLM reads it as instructions.
 
 ## A minimal spec
 
@@ -34,19 +31,35 @@ Every role document must have a `## Scope` section that contains both:
 - `### Not Responsible For` — bullet list of explicit exclusions
 ```
 
-This spec tells the LLM exactly what to check: four frontmatter fields and two required markdown sections. A document missing any of those will get a FAIL or WARN.
+This tells the LLM exactly what to check: four frontmatter fields and two required markdown sections. A document missing any of those will get a FAIL or WARN.
 
-## What makes a good spec
+## A non-knowledge example
 
-**Be specific about required fields.** Don't say "include the usual frontmatter." Say which fields, what type, and what valid values are.
+The same mechanism works for any directory:
 
-**Be specific about required sections.** Name the sections. State whether they need specific sub-structure.
+```markdown
+# Service Objects
 
-**Distinguish required from recommended.** The LLM respects that distinction. Use language like "must include" for required things and "should include" or "recommended" for optional things — the LLM will return WARN for missing recommended items and FAIL for missing required ones.
+Every file in `app/services/` must follow our service object pattern.
 
-**Include examples when the format is non-obvious.** If you expect a particular writing style or structure, show a short example inline in the spec.
+## Required structure
 
-## Recommended vs required
+- One public method: `#call` — no other public methods
+- Return type: always a `Result` object (success or failure)
+- Header comment: one paragraph explaining what the service does and when to use it
+
+## Not allowed
+
+- Instance variables that persist state across calls
+- Raising exceptions for expected failure cases — use `Result.failure` instead
+- Direct database writes — call a repository instead
+```
+
+`praxis validate all` checks every `.rb` file in `app/services/` against this spec. PRs that add a service with extra public methods, no Result type, or no header comment get flagged before they merge.
+
+## Required vs recommended
+
+The LLM respects the distinction between required and recommended:
 
 ```markdown
 ## Required
@@ -60,38 +73,23 @@ This spec tells the LLM exactly what to check: four frontmatter fields and two r
 - `description` field with a one-sentence summary
 ```
 
-Documents missing a recommended item will receive a WARN (yellow) result. Documents missing a required item will receive a FAIL (red) result.
+Documents missing a **required** item receive a FAIL result. Documents missing a **recommended** item receive a WARN. Use language like "must include" for required things and "should include" or "recommended" for optional things.
 
-## Example: a responsibilities spec
+## What makes a good spec
 
-```markdown
-# Responsibilities
+**Be specific about required fields.** Don't say "include the usual frontmatter." Say which fields, what type, and what valid values are.
 
-Each document in this directory describes one discrete unit of delegatable work.
+**Be specific about required sections.** Name the sections. State whether they need specific sub-structure.
 
-## Required frontmatter
+**Include examples when the format is non-obvious.** If you expect a particular writing style or structure, show a short example inline in the spec.
 
-- `title` (string) — name of the responsibility in title case
-- `type` (string) — must be `"responsibility"`
-
-## Required sections
-
-- `## Inputs` — what the agent receives when this responsibility is triggered
-- `## Outputs` — what the agent produces when this responsibility completes
-- `## Criteria` — the conditions under which this responsibility is considered done
-
-## Guidelines
-
-Keep each responsibility focused on one thing. If a document describes two distinct workflows, split it into two files.
-
-Inputs and Outputs should use bullet lists. Criteria should use numbered steps or bullet points.
-```
+**State what's explicitly not allowed.** The LLM will flag violations of negative constraints just as reliably as missing required elements.
 
 ## Spec file location
 
-By default, the spec file is `README.md` in the directory it governs. You can change the filename via `validation.specFilePattern` in config.
+By default, the spec file is `README.md` in the directory it governs. You can change the filename via `validation.specFilePattern` in config — useful if you use READMEs for human documentation and want a separate `SPEC.md` for lint rules.
 
-For cross-directory domains, the spec declares a `paths` frontmatter field. See [Cross-Directory Validation](/validation/cross-directory).
+For cross-directory domains where one spec governs files across multiple directories, see [Cross-Directory Validation](/validation/cross-directory).
 
 ## See also
 

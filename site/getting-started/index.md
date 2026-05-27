@@ -1,6 +1,14 @@
 # Quick Start
 
-This page gets a Praxis project running and produces your first compiled agent profile.
+## The situation this solves
+
+Your team codifies its service object conventions in `app/services/README.md`. It says every service must have a single public `#call` method, return a `Result` type, and include a header comment explaining its purpose.
+
+Six months pass. Three developers contribute. The README still says the same thing, but half the service objects have grown extra public methods, dropped the `Result` type, or skipped the comment entirely. Nothing caught it.
+
+That's conceptual drift — and Praxis is the tool for it.
+
+Praxis does two things: it **lints concepts** (checks that documents in any directory meet the standards defined in that directory's README spec) and it **compiles knowledge** (assembles knowledge documents into agent profiles — SMEs of their source material). This quick start covers both.
 
 ## Install
 
@@ -17,7 +25,7 @@ praxis init my-org
 cd my-org
 ```
 
-This creates the full directory structure with two built-in roles (Praxis Steward and Praxis Recruiter) and starter content. The `.praxis/` directory is the project root marker — Praxis walks up from any working directory until it finds one.
+This creates a full directory structure with two built-in roles and starter content. The `.praxis/` directory is the project root marker.
 
 ```
 my-org/
@@ -40,7 +48,7 @@ my-org/
 praxis add role code-reviewer
 ```
 
-This creates `roles/code-reviewer.md` from a template with placeholders pre-filled. Open it and fill in the frontmatter:
+This creates `roles/code-reviewer.md` from a template. Open it and fill in the frontmatter — the manifest that tells the compiler what to include:
 
 ```yaml
 ---
@@ -61,53 +69,16 @@ refs:
 
 # Code Reviewer
 
-Reviews pull requests with an eye for correctness, readability, and alignment with team conventions.
+Reviews pull requests with an eye for correctness and alignment with team conventions.
 
 ## Scope
 
 ### Responsible For
 - Reviewing all pull requests before merge
 - Flagging violations of the agreed coding standards
-- Suggesting improvements without blocking on style preferences
 
 ### Not Responsible For
 - Making final merge decisions on security-sensitive changes
-- Approving infrastructure changes
-```
-
-## Add a responsibility
-
-```bash
-praxis add responsibility review-pull-requests
-```
-
-Edit `responsibilities/review-pull-requests.md`:
-
-```markdown
----
-title: Review Pull Requests
-type: responsibility
----
-
-# Review Pull Requests
-
-Check each pull request for correctness, test coverage, and adherence to team conventions before approval.
-
-## Inputs
-
-- Pull request diff and description
-- Linked issue or ticket
-
-## Outputs
-
-- Approval or request for changes
-- Inline comments on specific lines
-
-## Criteria
-
-- All tests pass
-- No obvious regressions introduced
-- Code follows the conventions in `context/conventions/code-style.md`
 ```
 
 ## Compile
@@ -116,30 +87,44 @@ Check each pull request for correctness, test coverage, and adherence to team co
 praxis compile
 ```
 
-Output:
+The compiled file at `agent-profiles/reviewer.md` contains the role body, every referenced file inlined, and the full constitution — one self-contained document. That's the SME. Change the conventions file, recompile, and this agent picks up the update automatically.
 
+## Add a README spec and lint it
+
+Open `roles/README.md`. It already exists from `praxis init`. Tighten the spec to be explicit about what every role document must contain:
+
+```markdown
+# Roles
+
+## Required frontmatter
+
+- `title` — display name of the role
+- `type` — must be "role"
+- `alias` — short identifier used for the compiled filename
+- `description` — one-sentence summary
+
+## Required sections
+
+Every role must have `## Scope` with both:
+- `### Responsible For`
+- `### Not Responsible For`
 ```
-Compiling reviewer...
-  ✓ agent-profiles/reviewer.md
-Done. 1 role compiled.
-```
 
-The compiled file at `agent-profiles/reviewer.md` contains:
-- The role body
-- The `review-pull-requests` responsibility inlined
-- The company constitution inlined
-- The code-style convention inlined
-- The architecture reference inlined
-
-One self-contained file, ready to load into any agent or paste into a system prompt.
-
-## Watch for changes
+Now validate:
 
 ```bash
-praxis compile --watch
+export OPENROUTER_API_KEY=your-key-here
+praxis validate all
 ```
 
-Praxis watches all configured source directories and recompiles automatically when any file changes.
+```
+[PASS] roles/code-reviewer.md
+[PASS] roles/praxis-steward.md
+
+Summary: 2 compliant, 0 warnings, 0 errors
+```
+
+That README spec is your lint rule. Any future role that skips the required structure will get a WARN or FAIL — in local runs and in CI. The same mechanism works for any directory: `app/services/`, `decisions/`, `api/specs/` — anything with a README that says what valid looks like.
 
 ## Check project health
 
@@ -147,22 +132,11 @@ Praxis watches all configured source directories and recompiles automatically wh
 praxis status
 ```
 
-Shows document counts, missing descriptions, dangling references, and validation coverage without requiring an API key.
-
-## Validate documents
-
-If you have an [OpenRouter](https://openrouter.ai) API key, validation checks every document against its directory's README spec using an LLM:
-
-```bash
-export OPENROUTER_API_KEY=your-key-here
-praxis validate all
-```
-
-Results are cached by content hash — unchanged documents aren't re-validated on subsequent runs.
+Shows document counts, validation coverage, missing descriptions, dangling references — without requiring an API key.
 
 ## Next steps
 
-- Read [Knowledge Primitives](/concepts/knowledge-primitives) to understand the full model
+- Read [Conceptual Linting as a Practice](/design/decisions#conceptual-linting-as-a-practice) to understand why this exists
+- Read [Writing Specs](/validation/writing-specs) to write effective lint rules
 - Read [The Compiler Pipeline](/concepts/compiler-pipeline) to understand what `praxis compile` does
 - Read [Claude Code Plugin](/plugins/claude-code) to generate Claude Code agent files
-- Read [Validation](/validation/writing-specs) to make your READMEs into enforceable specs

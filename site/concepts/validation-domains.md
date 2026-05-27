@@ -1,22 +1,24 @@
 # Validation Domains
 
-A validation domain is a directory (or a set of files) governed by a single spec. Understanding how domains are discovered and how they match documents to specs is the foundation of `praxis validate`.
+A validation domain is a directory (or set of files) governed by a single spec. The spec is the lint rule; the domain is the scope it applies to.
 
 ## The rule
 
-Any directory within your configured `sources` that contains a spec file (default: `README.md`) becomes a validation domain. Every `.md` file in that directory — excluding the spec itself and `_`-prefixed templates — is validated against that spec.
+Any directory within your configured `sources` that contains a spec file (default: `README.md`) becomes a validation domain. Every `.md` file in that directory — excluding the spec itself and `_`-prefixed templates — is linted against that spec.
 
 ```
 roles/
-├── README.md          ← spec for this domain
-├── code-reviewer.md   ← validated against README.md
-├── support-agent.md   ← validated against README.md
+├── README.md          ← the lint rule for this domain
+├── code-reviewer.md   ← linted against README.md
+├── support-agent.md   ← linted against README.md
 └── _template.md       ← skipped (template)
 ```
 
+The same pattern works for any directory with organized documents — `app/services/`, `decisions/`, `api/specs/`. Any directory that has a README describing what valid documents look like can be a validation domain.
+
 ## The spec file
 
-The spec file is an ordinary README that doubles as a machine-readable specification. It tells the LLM what valid documents in that directory look like:
+The spec file defines what the LLM should check. Write it in clear human language — the LLM reads it as instructions for a code reviewer who knows nothing else about the project:
 
 ```markdown
 # Roles
@@ -35,13 +37,9 @@ Documents in this directory define agent roles.
 Every role must have a `## Scope` section that contains both:
 - A `### Responsible For` subsection
 - A `### Not Responsible For` subsection
-
-## Optional
-
-- `## Authorities` — explicit permissions the role holds
 ```
 
-When `praxis validate` runs, it sends this spec along with the document content to an LLM and asks whether the document conforms. The LLM returns Yes / Maybe / No with specific issues.
+When `praxis validate` runs, it sends this spec and the document content to an LLM and asks whether the document conforms. The LLM returns Yes / Maybe / No with specific issues.
 
 ## Configurable spec file name
 
@@ -65,7 +63,7 @@ Glob patterns are also supported, which is useful if specs live at different nes
 
 ## Cross-directory domains
 
-Spec files can declare a `paths` frontmatter field to govern files outside their own directory. This is useful when one spec should cover a spread of files across multiple directories.
+Spec files can declare a `paths` frontmatter field to govern files outside their own directory. This is useful when one lint rule should apply across multiple directories:
 
 ```yaml
 ---
@@ -74,20 +72,20 @@ paths:
   - guides/**/*.md
 ---
 
-# Documentation Spec
+# Documentation Standard
 
 All docs and guides must have a title, a summary paragraph, and ...
 ```
 
-The glob patterns are resolved against the project root. Any file matched by `paths` is validated against this spec, regardless of where it physically lives.
+The glob patterns are resolved against the project root. Any file matched by `paths` is linted against this spec regardless of where it physically lives.
 
 ::: tip When to use cross-directory domains
-Use `paths` when the same quality standard applies across multiple directories — for example, a "technical writing" spec that covers both `docs/` and `guides/`, or a "decision record" spec that covers records spread across several team folders.
+Use `paths` when the same quality standard applies across multiple directories — a "technical writing" spec that covers both `docs/` and `guides/`, or an "ADR format" spec that covers records spread across several team folders.
 :::
 
 ## How multiple specs interact
 
-A document can be validated by more than one spec — either because it lives in a directory with a local spec and is also matched by another spec's `paths` glob, or because multiple specs have overlapping `paths` patterns.
+A document can be linted by more than one spec — either because it lives in a directory with a local spec and is also matched by another spec's `paths` glob, or because multiple specs have overlapping `paths` patterns.
 
 Each (document, spec) pair is validated and cached independently. The results are displayed separately in `praxis validate all`.
 

@@ -1,6 +1,10 @@
 # Agent Profiles
 
-An agent profile is the compiled output of a role — a single, self-contained markdown file that contains everything an agent needs to know about who it is and what it does.
+An agent profile is the compiled output of a role — a self-contained subject matter expert of its source material.
+
+The code reviewer agent compiled from your coding conventions, team principles, and responsibility definitions is not just a bundled file. It is the SME on code review for your team: it knows your standards, owns the right responsibilities, and understands the context that shaped those decisions. That knowledge lives in one auditable markdown file that any LLM platform can consume.
+
+The SME framing is what makes compilation worthwhile. Update your coding conventions, recompile, and every agent that references those conventions becomes a more accurate SME automatically.
 
 ## What a profile contains
 
