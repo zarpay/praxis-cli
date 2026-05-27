@@ -16,12 +16,17 @@ export interface PluginConfigEntry {
 /** Raw plugin entry as it appears in config JSON. */
 export type RawPluginEntry = string | PluginConfigEntry;
 
+/** Default spec file pattern when none is configured. */
+export const DEFAULT_SPEC_FILE_PATTERN = "README.md";
+
 /** Validation configuration for the OpenRouter-based document validator. */
 export interface ValidationConfig {
   /** Name of the environment variable containing the API key. */
   apiKeyEnvVar: string;
   /** OpenRouter model identifier to use for validation. */
   model: string;
+  /** Filename or glob pattern for spec files (default: "README.md"). */
+  specFilePattern?: string;
 }
 
 interface RawConfig {

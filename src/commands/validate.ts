@@ -5,7 +5,7 @@ import type { Command } from "commander";
 
 import chalk from "chalk";
 
-import { PraxisConfig, type ValidationConfig } from "@/core/config.js";
+import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig, type ValidationConfig } from "@/core/config.js";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 import {
@@ -48,12 +48,14 @@ export function registerValidateCommand(program: Command): void {
         checkApiKey(validation.apiKeyEnvVar, logger);
 
         const cacheManager = options.cache ? new CacheManager(undefined, paths.root) : undefined;
+        const specFilePattern = validation.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
 
         console.log(`Validating ${path}...`);
 
         const validator = new DocumentValidator({
           documentPath: path,
           specPath: options.spec,
+          specFilePattern,
           useCache: options.cache,
           cacheManager,
           apiKeyEnvVar: validation.apiKeyEnvVar,
@@ -93,6 +95,7 @@ export function registerValidateCommand(program: Command): void {
           checkApiKey(validation.apiKeyEnvVar, logger);
 
           const cacheManager = options.cache ? new CacheManager(undefined, paths.root) : undefined;
+          const specFilePattern = validation.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
 
           const batch = new BatchValidator({
             root: paths.root,
@@ -102,6 +105,7 @@ export function registerValidateCommand(program: Command): void {
             cacheManager,
             apiKeyEnvVar: validation.apiKeyEnvVar,
             model: validation.model,
+            specFilePattern,
           });
 
           let results: BatchValidationResult[];
@@ -152,11 +156,14 @@ export function registerValidateCommand(program: Command): void {
         const validation = requireValidationConfig(config, logger);
         checkApiKey(validation.apiKeyEnvVar, logger);
 
+        const specFilePattern = validation.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
+
         const batch = new BatchValidator({
           root: paths.root,
           sources: config.sources,
           apiKeyEnvVar: validation.apiKeyEnvVar,
           model: validation.model,
+          specFilePattern,
         });
 
         console.log("Running CI validation...");
@@ -194,11 +201,13 @@ export function registerValidateCommand(program: Command): void {
           process.exit(1);
         }
 
+        const config = new PraxisConfig(paths.root);
+        const specFilePattern = config.validation?.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
         const cacheData = cacheManager.readRaw({ documentPath: absolutePath });
 
         // Use spec_path from cache if available, otherwise auto-detect
         const specPath = cacheData?.document.spec_path ?? undefined;
-        const currentHash = computeCurrentHash(absolutePath, specPath);
+        const currentHash = computeCurrentHash(absolutePath, specPath, specFilePattern);
 
         const report = buildReport(absolutePath, cacheData, currentHash);
         displayValidationReport(report, options.verbose);

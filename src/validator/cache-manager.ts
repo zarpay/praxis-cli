@@ -4,6 +4,10 @@ import { basename, dirname, join } from "node:path";
 
 import fg from "fast-glob";
 
+import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
+
+import { isSpecFile } from "./spec-pattern.js";
+
 /** Cache format version for backwards-compatibility checks. */
 const CACHE_VERSION = "1.0";
 
@@ -243,8 +247,12 @@ export class CacheManager {
    * @param root - Project root directory
    * @param sources - Array of source directory paths relative to root
    */
-  orphanedCacheFiles(root: string, sources: string[]): OrphanedCacheFile[] {
-    const validDocuments = this.buildDocumentMap(root, sources);
+  orphanedCacheFiles(
+    root: string,
+    sources: string[],
+    specFilePattern: string = DEFAULT_SPEC_FILE_PATTERN,
+  ): OrphanedCacheFile[] {
+    const validDocuments = this.buildDocumentMap(root, sources, specFilePattern);
     const orphans: OrphanedCacheFile[] = [];
     const cacheFiles = fg.sync("**/*.json", { cwd: this.cacheRoot, absolute: true });
 
@@ -274,7 +282,7 @@ export class CacheManager {
    * Scans source directories for .md files and builds keys matching
    * the cache path structure (source-relative paths without extension).
    */
-  private buildDocumentMap(root: string, sources: string[]): Set<string> {
+  private buildDocumentMap(root: string, sources: string[], specFilePattern: string): Set<string> {
     const documents = new Set<string>();
 
     for (const source of sources) {
@@ -284,8 +292,8 @@ export class CacheManager {
       const docFiles = fg.sync("**/*.md", { cwd: sourceDir, absolute: false });
 
       for (const relFile of docFiles) {
-        const name = basename(relFile, ".md");
-        if (name === "README" || name.startsWith("_")) continue;
+        const name = basename(relFile);
+        if (isSpecFile(name, specFilePattern) || basename(relFile, ".md").startsWith("_")) continue;
 
         const key = join(source, relFile).replace(/\.md$/, "");
         documents.add(key);

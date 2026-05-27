@@ -2,8 +2,11 @@ import { basename, dirname, join, relative } from "node:path";
 
 import fg from "fast-glob";
 
+import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
+
 import { CacheManager, type CachedValidationResult } from "./cache-manager.js";
 import { DocumentValidator } from "./document-validator.js";
+import { isSpecFile } from "./spec-pattern.js";
 
 /** Extended validation result that includes file path and type information. */
 export interface BatchValidationResult extends CachedValidationResult {
@@ -54,6 +57,7 @@ export class BatchValidator {
   private readonly cacheManager: CacheManager | null;
   private readonly apiKeyEnvVar?: string;
   private readonly model?: string;
+  private readonly specFilePattern: string;
   private results: BatchValidationResult[] = [];
   private stoppedEarly = false;
   private sourceDocCount = 0;
@@ -66,6 +70,7 @@ export class BatchValidator {
     cacheManager,
     apiKeyEnvVar,
     model,
+    specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
   }: {
     root: string;
     sources: string[];
@@ -74,6 +79,7 @@ export class BatchValidator {
     cacheManager?: CacheManager;
     apiKeyEnvVar?: string;
     model?: string;
+    specFilePattern?: string;
   }) {
     this.root = root;
     this.sources = sources;
@@ -83,6 +89,7 @@ export class BatchValidator {
     this.cacheStats = { hits: 0, misses: 0 };
     this.apiKeyEnvVar = apiKeyEnvVar;
     this.model = model;
+    this.specFilePattern = specFilePattern;
   }
 
   /** Whether validation was stopped early due to fail-fast. */
@@ -118,7 +125,7 @@ export class BatchValidator {
         if (this.stoppedEarly) break;
 
         const name = basename(docPath);
-        if (name === "README.md" || name.startsWith("_")) continue;
+        if (isSpecFile(name, this.specFilePattern) || name.startsWith("_")) continue;
 
         await this.validateDocument(docPath, readmePath, type);
         this.checkFailFast();
@@ -157,7 +164,7 @@ export class BatchValidator {
         if (this.stoppedEarly) break;
 
         const name = basename(docPath);
-        if (name === "README.md" || name.startsWith("_")) continue;
+        if (isSpecFile(name, this.specFilePattern) || name.startsWith("_")) continue;
 
         await this.validateDocument(docPath, readmePath, domainType);
         this.checkFailFast();
@@ -214,7 +221,7 @@ export class BatchValidator {
 
       for (const file of allMdFiles) {
         const name = basename(file);
-        if (name === "README.md" || name.startsWith("_")) continue;
+        if (isSpecFile(name, this.specFilePattern) || name.startsWith("_")) continue;
         count++;
       }
     }
@@ -234,19 +241,13 @@ export class BatchValidator {
 
     for (const source of this.sources) {
       const sourceAbsPath = join(this.root, source);
-      const readmePaths = fg.sync("**/README.md", {
+      const readmePaths = fg.sync(`**/${this.specFilePattern}`, {
         cwd: sourceAbsPath,
         onlyFiles: true,
         absolute: true,
       });
 
-      // Also check if the source dir itself has a README
-      const sourceReadme = join(sourceAbsPath, "README.md");
-      const allReadmes = readmePaths.includes(sourceReadme)
-        ? readmePaths
-        : [...readmePaths];
-
-      for (const readmePath of allReadmes) {
+      for (const readmePath of readmePaths) {
         const dir = dirname(readmePath);
         const type = relative(this.root, dir) || basename(dir);
         domains.push({ dir, readmePath, type });
@@ -282,6 +283,7 @@ export class BatchValidator {
       const validator = new DocumentValidator({
         documentPath: docPath,
         specPath,
+        specFilePattern: this.specFilePattern,
         useCache: this.useCache,
         cacheManager: this.cacheManager ?? undefined,
         apiKeyEnvVar: this.apiKeyEnvVar,

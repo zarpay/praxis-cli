@@ -1,4 +1,7 @@
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir as osTmpdir } from "node:os";
+import { randomUUID } from "node:crypto";
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { http, HttpResponse } from "msw";
@@ -224,6 +227,59 @@ describe("DocumentValidator", () => {
       expect(result.compliant).toBe(true);
 
       delete process.env["CUSTOM_API_KEY"];
+    });
+  });
+
+  describe("custom specFilePattern", () => {
+    it("finds spec file by exact custom name", () => {
+      const dir = join(osTmpdir(), `praxis-spec-test-${randomUUID()}`);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "SPEC.md"), "# Spec\nRequired fields: name");
+      writeFileSync(join(dir, "doc.md"), "---\ntype: role\n---\n# Doc");
+
+      const validator = new DocumentValidator({
+        documentPath: join(dir, "doc.md"),
+        specFilePattern: "SPEC.md",
+        useCache: false,
+      });
+
+      expect(validator.readmePath).toBe(join(dir, "SPEC.md"));
+
+      rmSync(dir, { recursive: true, force: true });
+    });
+
+    it("finds spec file by glob pattern", () => {
+      const dir = join(osTmpdir(), `praxis-spec-test-${randomUUID()}`);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "README.roles.md"), "# Roles Spec");
+      writeFileSync(join(dir, "doc.md"), "---\ntype: role\n---\n# Doc");
+
+      const validator = new DocumentValidator({
+        documentPath: join(dir, "doc.md"),
+        specFilePattern: "README.*.md",
+        useCache: false,
+      });
+
+      expect(validator.readmePath).toBe(join(dir, "README.roles.md"));
+
+      rmSync(dir, { recursive: true, force: true });
+    });
+
+    it("throws when custom spec file not found", () => {
+      const dir = join(osTmpdir(), `praxis-spec-test-${randomUUID()}`);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "doc.md"), "---\ntype: role\n---\n# Doc");
+
+      expect(
+        () =>
+          new DocumentValidator({
+            documentPath: join(dir, "doc.md"),
+            specFilePattern: "SPEC.md",
+            useCache: false,
+          }),
+      ).toThrow("No SPEC.md found");
+
+      rmSync(dir, { recursive: true, force: true });
     });
   });
 

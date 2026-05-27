@@ -3,17 +3,15 @@ import { basename, join } from "node:path";
 
 import fg from "fast-glob";
 
-import { PraxisConfig } from "@/core/config.js";
+import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
 import { Logger } from "@/core/logger.js";
+import { isSpecFile } from "@/validator/spec-pattern.js";
 
 import { Frontmatter } from "./frontmatter.js";
 import { GlobExpander } from "./glob-expander.js";
 import { Markdown } from "./markdown.js";
 import { type AgentMetadata, OutputBuilder } from "./output-builder.js";
 import { resolvePlugins } from "./plugin-registry.js";
-
-/** Files excluded when scanning the roles directory for compilation. */
-const EXCLUDED_FILES = ["_template.md", "README.md"];
 
 /**
  * Compiles role definition files into agent profiles and plugin-specific output.
@@ -43,7 +41,8 @@ export class RoleCompiler {
     this.root = root;
     this.logger = logger;
     this.config = config ?? new PraxisConfig(root);
-    this.globExpander = new GlobExpander(root);
+    const specFilePattern = this.config.validation?.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
+    this.globExpander = new GlobExpander(root, specFilePattern);
   }
 
   /**
@@ -84,9 +83,11 @@ export class RoleCompiler {
 
     let compiled = 0;
 
+    const specFilePattern = this.config.validation?.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
+
     for (const roleFile of roleFiles) {
       const name = basename(roleFile);
-      if (EXCLUDED_FILES.includes(name)) {
+      if (name === "_template.md" || isSpecFile(name, specFilePattern)) {
         continue;
       }
 

@@ -7,13 +7,11 @@ import fg from "fast-glob";
 
 import { Frontmatter } from "@/compiler/frontmatter.js";
 import { GlobExpander } from "@/compiler/glob-expander.js";
-import { PraxisConfig } from "@/core/config.js";
+import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 import { CacheManager } from "@/validator/cache-manager.js";
-
-/** Files excluded from content counts. */
-const EXCLUDED_FILES = ["_template.md", "README.md"];
+import { isSpecFile } from "@/validator/spec-pattern.js";
 
 /** Structured report of project health. */
 export interface StatusReport {
@@ -81,18 +79,19 @@ export function registerStatusCommand(program: Command): void {
  * @param config - PraxisConfig instance
  */
 export async function analyzeProject(root: string, config: PraxisConfig): Promise<StatusReport> {
-  const globExpander = new GlobExpander(root);
+  const specFilePattern = config.validation?.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
+  const globExpander = new GlobExpander(root, specFilePattern);
 
   // Count content files by type using config-driven paths
-  const roleFiles = await listContentFiles(config.rolesDir);
-  const respFiles = await listContentFiles(config.responsibilitiesDir);
+  const roleFiles = await listContentFiles(config.rolesDir, false, specFilePattern);
+  const respFiles = await listContentFiles(config.responsibilitiesDir, false, specFilePattern);
 
   // Scan all sources for reference and context files by frontmatter type
   let references = 0;
   let contextCount = 0;
   for (const source of config.sources) {
     const sourceDir = resolve(root, source);
-    const allFiles = await listContentFiles(sourceDir, true);
+    const allFiles = await listContentFiles(sourceDir, true, specFilePattern);
     for (const file of allFiles) {
       const fm = new Frontmatter(file);
       const type = fm.value("type") as string | undefined;
@@ -168,7 +167,7 @@ export async function analyzeProject(root: string, config: PraxisConfig): Promis
 
   // Scan cached validation results for all source documents
   const cacheManager = new CacheManager(undefined, root);
-  const allSourceFiles = await listAllSourceFiles(root, config.sources);
+  const allSourceFiles = await listAllSourceFiles(root, config.sources, specFilePattern);
   const validation = { pass: 0, warn: 0, fail: 0, notValidated: 0 };
 
   for (const filePath of allSourceFiles) {
@@ -206,14 +205,18 @@ export async function analyzeProject(root: string, config: PraxisConfig): Promis
  * @param dir - Absolute path to the content directory
  * @param recursive - Whether to search subdirectories
  */
-async function listContentFiles(dir: string, recursive = false): Promise<string[]> {
+async function listContentFiles(
+  dir: string,
+  recursive = false,
+  specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
+): Promise<string[]> {
   if (!existsSync(dir)) return [];
 
   const pattern = recursive ? "**/*.md" : "*.md";
   const files = await fg(pattern, { cwd: dir, onlyFiles: true, absolute: true });
 
   return files.filter(
-    (f) => !EXCLUDED_FILES.includes(basename(f)) && !basename(f).startsWith("_"),
+    (f) => !isSpecFile(f, specFilePattern) && !basename(f).startsWith("_"),
   );
 }
 
@@ -223,7 +226,11 @@ async function listContentFiles(dir: string, recursive = false): Promise<string[
  * Recursively scans each source directory, excluding templates and READMEs.
  * Returns absolute paths suitable for cache lookups.
  */
-async function listAllSourceFiles(root: string, sources: string[]): Promise<string[]> {
+async function listAllSourceFiles(
+  root: string,
+  sources: string[],
+  specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
+): Promise<string[]> {
   const files: string[] = [];
 
   for (const source of sources) {
@@ -233,7 +240,7 @@ async function listAllSourceFiles(root: string, sources: string[]): Promise<stri
     const mdFiles = await fg("**/*.md", { cwd: sourceDir, onlyFiles: true, absolute: true });
     for (const f of mdFiles) {
       const name = basename(f);
-      if (name === "README.md" || name.startsWith("_")) continue;
+      if (isSpecFile(name, specFilePattern) || name.startsWith("_")) continue;
       files.push(f);
     }
   }

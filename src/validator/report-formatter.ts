@@ -1,10 +1,14 @@
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 
 import chalk from "chalk";
+import fg from "fast-glob";
+
+import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 
 import type { CacheFileData } from "./cache-manager.js";
 import { contentHash } from "./cache-manager.js";
+import { hasGlobChars } from "./spec-pattern.js";
 
 /** All possible report states. */
 export type ReportStatus = "not_validated" | "pass" | "warn" | "fail" | "stale";
@@ -53,27 +57,46 @@ export function buildReport(
 /**
  * Computes the current content hash for a document.
  *
- * Returns null if the document or its README spec cannot be read.
+ * Returns null if the document or its spec file cannot be read.
  */
-export function computeCurrentHash(documentPath: string, readmePath?: string): string | null {
+export function computeCurrentHash(
+  documentPath: string,
+  readmePath?: string,
+  specFilePattern?: string,
+): string | null {
   try {
     const docContent = readFileSync(documentPath, "utf-8");
-    const resolvedReadme = readmePath ?? findReadmeForDocument(documentPath);
+    const resolvedSpec =
+      readmePath ?? findSpecForDocument(documentPath, specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN);
 
-    if (!resolvedReadme || !existsSync(resolvedReadme)) return null;
+    if (!resolvedSpec || !existsSync(resolvedSpec)) return null;
 
-    const readmeContent = readFileSync(resolvedReadme, "utf-8");
-    return contentHash(docContent, readmeContent);
+    const specContent = readFileSync(resolvedSpec, "utf-8");
+    return contentHash(docContent, specContent);
   } catch {
     return null;
   }
 }
 
-/** Finds the README.md in the same directory as the document. */
-function findReadmeForDocument(documentPath: string): string | null {
+/** Finds the spec file in the same directory as the document. */
+function findSpecForDocument(
+  documentPath: string,
+  specFilePattern: string,
+): string | null {
   const dir = dirname(documentPath);
-  const readme = dir + "/README.md";
-  return existsSync(readme) ? readme : null;
+
+  if (!hasGlobChars(specFilePattern)) {
+    const specPath = join(dir, specFilePattern);
+    return existsSync(specPath) ? specPath : null;
+  }
+
+  const matches = fg.sync(specFilePattern, {
+    cwd: dir,
+    onlyFiles: true,
+    absolute: true,
+  });
+
+  return matches.length > 0 ? matches[0] : null;
 }
 
 /** Divider line width for the report. */

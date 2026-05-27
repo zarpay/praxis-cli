@@ -185,4 +185,26 @@ describe("PraxisConfig", () => {
 
     expect(config.validation).toBeUndefined();
   });
+
+  it("loads specFilePattern from validation config", () => {
+    const dir = makeTmpdir();
+    writeConfig(dir, {
+      validation: { apiKeyEnvVar: "MY_KEY", model: "some-model", specFilePattern: "*.validate.md" },
+    });
+
+    const config = new PraxisConfig(dir);
+
+    expect(config.validation?.specFilePattern).toBe("*.validate.md");
+  });
+
+  it("returns undefined specFilePattern when not specified", () => {
+    const dir = makeTmpdir();
+    writeConfig(dir, {
+      validation: { apiKeyEnvVar: "MY_KEY", model: "some-model" },
+    });
+
+    const config = new PraxisConfig(dir);
+
+    expect(config.validation?.specFilePattern).toBeUndefined();
+  });
 });

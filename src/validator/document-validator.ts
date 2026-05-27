@@ -1,10 +1,14 @@
 import { basename, dirname, join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 
+import fg from "fast-glob";
 import yaml from "js-yaml";
+
+import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 
 import { type CachedValidationResult, CacheManager, contentHash, type Severity } from "./cache-manager.js";
 import { SYSTEM_PROMPT } from "./prompts.js";
+import { hasGlobChars } from "./spec-pattern.js";
 
 /** Known document types within the Praxis content structure. */
 export type DocumentType =
@@ -40,9 +44,12 @@ export class DocumentValidator {
   private readonly apiKeyEnvVar?: string;
   private readonly model?: string;
 
+  private readonly specFilePattern: string;
+
   constructor({
     documentPath,
     specPath,
+    specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
     useCache = true,
     cacheManager,
     apiKeyEnvVar,
@@ -50,6 +57,7 @@ export class DocumentValidator {
   }: {
     documentPath: string;
     specPath?: string;
+    specFilePattern?: string;
     useCache?: boolean;
     cacheManager?: CacheManager;
     apiKeyEnvVar?: string;
@@ -58,7 +66,8 @@ export class DocumentValidator {
     this.documentPath = documentPath;
     this.documentContent = readFileSync(documentPath, "utf-8");
     this.documentType = this.detectDocumentType();
-    this.readmePath = specPath ?? this.findReadme();
+    this.specFilePattern = specFilePattern;
+    this.readmePath = specPath ?? this.findSpec();
     this.readmeContent = readFileSync(this.readmePath, "utf-8");
     this.useCache = useCache;
     this.cacheManager = cacheManager ?? (useCache ? new CacheManager() : null);
@@ -300,14 +309,27 @@ Answer Yes, Maybe, or No with specific issues found.`;
     }
   }
 
-  /** Finds the README.md spec file in the document's directory. */
-  private findReadme(): string {
+  /** Finds the spec file in the document's directory using the configured pattern. */
+  private findSpec(): string {
     const baseDir = dirname(this.documentPath);
-    const readme = join(baseDir, "README.md");
-    if (existsSync(readme)) {
-      return readme;
+
+    if (!hasGlobChars(this.specFilePattern)) {
+      const specPath = join(baseDir, this.specFilePattern);
+      if (existsSync(specPath)) return specPath;
+      throw new Error(
+        `No ${this.specFilePattern} found in ${baseDir} for ${this.documentPath}`,
+      );
     }
 
-    throw new Error(`No README.md found in ${baseDir} for ${this.documentPath}`);
+    const matches = fg.sync(this.specFilePattern, {
+      cwd: baseDir,
+      onlyFiles: true,
+      absolute: true,
+    });
+
+    if (matches.length > 0) return matches[0];
+    throw new Error(
+      `No file matching '${this.specFilePattern}' found in ${baseDir} for ${this.documentPath}`,
+    );
   }
 }

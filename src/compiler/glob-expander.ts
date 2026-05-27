@@ -2,21 +2,23 @@ import { basename } from "node:path";
 
 import fg from "fast-glob";
 
-/** Files excluded from glob expansion results. */
-const EXCLUDED_FILES = ["_template.md", "README.md"];
+import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
+import { isSpecFile } from "@/validator/spec-pattern.js";
 
 /**
  * Expands glob patterns to matching file paths within a project root.
  *
  * Handles both glob patterns (containing `*`, `?`, or `[`) and plain
- * file paths. Always excludes `_template.md` and `README.md` from results.
+ * file paths. Always excludes `_template.md` and spec files from results.
  * Returns paths relative to the project root, sorted alphabetically.
  */
 export class GlobExpander {
   private readonly root: string;
+  private readonly specFilePattern: string;
 
-  constructor(root: string) {
+  constructor(root: string, specFilePattern = DEFAULT_SPEC_FILE_PATTERN) {
     this.root = root;
+    this.specFilePattern = specFilePattern;
   }
 
   /**
@@ -61,6 +63,6 @@ export class GlobExpander {
   /** Checks whether a file path ends with an excluded filename. */
   private isExcluded(filePath: string): boolean {
     const name = basename(filePath);
-    return EXCLUDED_FILES.includes(name);
+    return name === "_template.md" || isSpecFile(name, this.specFilePattern);
   }
 }

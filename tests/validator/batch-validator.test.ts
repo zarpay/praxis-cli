@@ -1,4 +1,7 @@
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir as osTmpdir } from "node:os";
+import { randomUUID } from "node:crypto";
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { http, HttpResponse } from "msw";
@@ -134,6 +137,43 @@ describe("BatchValidator", () => {
       await batch.validateAll();
 
       expect(batch.stopped).toBe(true);
+    });
+  });
+
+  describe("specFilePattern", () => {
+    it("discovers spec files with custom pattern and excludes them from validation", async () => {
+      useCompliantFixture();
+
+      const dir = join(osTmpdir(), `praxis-batch-spec-${randomUUID()}`);
+      const rolesDir = join(dir, "roles");
+      mkdirSync(rolesDir, { recursive: true });
+      mkdirSync(join(dir, ".praxis"), { recursive: true });
+
+      writeFileSync(join(rolesDir, "SPEC.md"), "# Roles Spec\nRequired: name, type");
+      writeFileSync(join(rolesDir, "engineer.md"), "---\ntype: role\n---\n# Engineer");
+      writeFileSync(
+        join(dir, ".praxis", "config.json"),
+        JSON.stringify({
+          sources: ["roles"],
+          validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "test", specFilePattern: "SPEC.md" },
+        }),
+      );
+
+      const batch = new BatchValidator({
+        root: dir,
+        sources: ["roles"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "SPEC.md",
+      });
+
+      const results = await batch.validateAll();
+
+      expect(results).toHaveLength(1);
+      expect(results[0].filename).toBe("engineer.md");
+
+      rmSync(dir, { recursive: true, force: true });
     });
   });
 
