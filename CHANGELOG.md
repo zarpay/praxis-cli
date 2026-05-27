@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.0] - 2026-05-27
 
 ### Added
 
@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Structured tool-call validation** — `praxis validate` now uses OpenRouter's tool-calling API instead of parsing free-text LLM responses. The model is required to call one of three structured tools (`validation_pass`, `validation_warn`, `validation_fail`) with typed arguments, eliminating fragile regex extraction. The configured model must support tool calling.
 - **Multi-spec validation cache (v2.0 format)** — The cache file format has been upgraded from a flat single-result structure (v1.0) to a `validations` map keyed by an 8-char hash of the spec's project-relative path (v2.0). A document validated by multiple specs now stores each result independently in the same `.json` file, so no result overwrites another. Existing v1.0 cache files are transparently migrated to v2.0 on the next write — no cold cache required on upgrade.
 - **`CacheManager.read()`** — Now requires a `specPath` parameter to look up the correct entry in the v2.0 validations map.
 - **`CacheManager.readRaw()`** — Now accepts an optional `specPath` parameter; when omitted, returns the first cached entry (preserves existing behavior for single-spec documents).
@@ -114,6 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project root detection via directory marker.
 - `praxis.config.json` with `agentProfilesDir` and `plugins` options.
 
+[1.3.0]: https://github.com/zarpay/praxis-cli/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/zarpay/praxis-cli/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/zarpay/praxis-cli/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/zarpay/praxis-cli/compare/v1.0.1...v1.1.0
