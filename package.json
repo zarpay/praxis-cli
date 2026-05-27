@@ -22,7 +22,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write src tests",
     "format:check": "prettier --check src tests",
-    "prepublishOnly": "npm run lint && npm run typecheck && npm test && npm run build"
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "praxis",
@@ -32,6 +32,10 @@
     "organizational-knowledge",
     "cli"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zarpay/praxis-cli.git"
+  },
   "author": "Sebastian Scholl",
   "license": "MIT",
   "engines": {

@@ -5,8 +5,8 @@ on:
     types: [published]
 
 permissions:
-  contents: read
   id-token: write
+  contents: read
 
 jobs:
   publish:
@@ -22,7 +22,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: 'https://registry.npmjs.org'
+
+      - name: Upgrade npm
+        run: npm install -g npm@latest
 
       - name: Verify tag matches package version
         run: |
@@ -44,9 +46,6 @@ jobs:
 
       - name: Test
         run: npm test
-
-      - name: Build
-        run: npm run build
 
       - name: Publish to NPM
         run: npm publish --access public --provenance
