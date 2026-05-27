@@ -4,7 +4,7 @@
   "description": "CLI for the Praxis knowledge framework - organize knowledge for humans and AI agents",
   "type": "module",
   "bin": {
-    "praxis": "./dist/index.js"
+    "praxis": "dist/index.js"
   },
   "publishConfig": {
     "access": "public"
