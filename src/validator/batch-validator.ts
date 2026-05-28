@@ -1,5 +1,6 @@
 import { basename, dirname, join, relative } from "node:path";
 
+import chalk from "chalk";
 import fg from "fast-glob";
 
 import { Frontmatter } from "@/compiler/frontmatter.js";
@@ -64,6 +65,8 @@ export class BatchValidator {
   private results: BatchValidationResult[] = [];
   private stoppedEarly = false;
   private sourceDocCount = 0;
+  private validatedCount = 0;
+  private totalToValidate = 0;
 
   constructor({
     root,
@@ -121,16 +124,17 @@ export class BatchValidator {
     this.sourceDocCount = this.countAllSourceDocuments();
 
     const domains = await this.discoverValidationDomains();
+    const queue = domains.flatMap((domain) =>
+      this.resolveDocuments(domain).map((docPath) => ({ docPath, domain })),
+    );
 
-    for (const domain of domains) {
+    this.validatedCount = 0;
+    this.totalToValidate = queue.length;
+
+    for (const { docPath, domain } of queue) {
       if (this.stoppedEarly) break;
-
-      for (const docPath of this.resolveDocuments(domain)) {
-        if (this.stoppedEarly) break;
-
-        await this.validateDocument(docPath, domain.readmePath, domain.type);
-        this.checkFailFast();
-      }
+      await this.validateDocument(docPath, domain.readmePath, domain.type);
+      this.checkFailFast();
     }
 
     return this.results;
@@ -154,15 +158,17 @@ export class BatchValidator {
       throw new Error(`Unknown document type: ${type}`);
     }
 
-    for (const domain of matching) {
+    const queue = matching.flatMap((domain) =>
+      this.resolveDocuments(domain).map((docPath) => ({ docPath, domain })),
+    );
+
+    this.validatedCount = 0;
+    this.totalToValidate = queue.length;
+
+    for (const { docPath, domain } of queue) {
       if (this.stoppedEarly) break;
-
-      for (const docPath of this.resolveDocuments(domain)) {
-        if (this.stoppedEarly) break;
-
-        await this.validateDocument(docPath, domain.readmePath, domain.type);
-        this.checkFailFast();
-      }
+      await this.validateDocument(docPath, domain.readmePath, domain.type);
+      this.checkFailFast();
     }
 
     return this.results;
@@ -308,7 +314,13 @@ export class BatchValidator {
    * Tracks cache hit/miss statistics for reporting.
    */
   private async validateDocument(docPath: string, specPath: string, type: string): Promise<void> {
-    console.log(`Validating ${docPath}`);
+    this.validatedCount++;
+    const index = this.validatedCount;
+    const total = this.totalToValidate;
+    const totalWidth = total.toString().length;
+    const counter = chalk.dim(`[${index}/${total}]`);
+
+    console.log(`\n${counter} ${chalk.bold(basename(docPath))}`);
 
     try {
       const validator = new DocumentValidator({
@@ -329,13 +341,27 @@ export class BatchValidator {
         this.cacheStats.misses++;
       }
 
-      this.results.push({
+      const batchResult: BatchValidationResult = {
         ...result,
         path: docPath,
         type,
         filename: basename(docPath),
-      });
+      };
+
+      if (result.compliant) {
+        console.log(`\t${chalk.green("✓ PASS")}`);
+      } else if (result.severity === "warning") {
+        console.log(`\t${chalk.yellow("⚠ WARN")}`);
+        result.issues.forEach((issue) => console.log(`\t${chalk.dim("·")} ${issue}`));
+      } else {
+        console.log(`\t${chalk.red("✗ FAIL")}`);
+        result.issues.forEach((issue) => console.log(`\t${chalk.dim("·")} ${issue}`));
+      }
+
+      this.results.push(batchResult);
     } catch (err) {
+      console.log(`\t${chalk.red("✗ ERROR")}`);
+      console.log(`\t${chalk.dim("·")} ${(err as Error).message}`);
       this.results.push({
         path: docPath,
         type,

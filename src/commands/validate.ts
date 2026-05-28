@@ -114,8 +114,6 @@ export function registerValidateCommand(program: Command): void {
             results = await batch.validateAll();
           }
 
-          displayBatchResults(results);
-
           if (batch.stopped) {
             console.log();
             console.log(chalk.yellow("[STOPPED]") + " Validation stopped early due to --fail-fast");

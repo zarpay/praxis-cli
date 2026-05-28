@@ -8,7 +8,7 @@ import { registerStatusCommand } from "@/commands/status.js";
 import { registerValidateCommand } from "@/commands/validate.js";
 
 /** CLI version, kept in sync with package.json. */
-const VERSION = "1.3.4";
+const VERSION = "1.3.5";
 
 /**
  * Creates and configures the root CLI program.
