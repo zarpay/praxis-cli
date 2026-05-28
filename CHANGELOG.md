@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.4] - 2026-05-28
+
+### Fixed
+
+- **`--fail-fast` defaulted to `true`** — `praxis validate all` stopped on the first error even without the flag. Default is now `false`; pass `--fail-fast` explicitly to stop on first error.
+
 ## [1.3.3] - 2026-05-28
 
 ### Fixed
@@ -139,6 +145,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project root detection via directory marker.
 - `praxis.config.json` with `agentProfilesDir` and `plugins` options.
 
+[1.3.4]: https://github.com/zarpay/praxis-cli/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/zarpay/praxis-cli/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/zarpay/praxis-cli/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/zarpay/praxis-cli/compare/v1.3.0...v1.3.1

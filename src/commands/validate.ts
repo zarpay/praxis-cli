@@ -77,7 +77,7 @@ export function registerValidateCommand(program: Command): void {
     .description("Validate all documents")
     .option("--type <type>", "only validate documents of this type")
     .option("--verbose", "show full AI reasoning", false)
-    .option("--fail-fast", "stop on first error", true)
+    .option("--fail-fast", "stop on first error", false)
     .option("--no-cache", "disable validation cache")
     .action(
       async (options: { type?: string; verbose: boolean; failFast: boolean; cache: boolean }) => {
