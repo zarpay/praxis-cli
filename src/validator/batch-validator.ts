@@ -317,7 +317,6 @@ export class BatchValidator {
     this.validatedCount++;
     const index = this.validatedCount;
     const total = this.totalToValidate;
-    const totalWidth = total.toString().length;
     const counter = chalk.dim(`[${index}/${total}]`);
 
     console.log(`\n${counter} ${chalk.bold(basename(docPath))}`);

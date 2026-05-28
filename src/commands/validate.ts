@@ -10,7 +10,6 @@ import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 import {
   BatchValidator,
-  type BatchValidationResult,
   type ValidationSummary,
 } from "@/validator/batch-validator.js";
 import { CacheManager } from "@/validator/cache-manager.js";
@@ -104,14 +103,12 @@ export function registerValidateCommand(program: Command): void {
             specFilePattern,
           });
 
-          let results: BatchValidationResult[];
-
           if (options.type) {
             console.log(`Validating all ${options.type} documents...`);
-            results = await batch.validateType(options.type);
+            await batch.validateType(options.type);
           } else {
             console.log("Validating all documents...");
-            results = await batch.validateAll();
+            await batch.validateAll();
           }
 
           if (batch.stopped) {
@@ -273,23 +270,6 @@ function displayResult(
 
   if (verbose) {
     console.log(`\nReasoning:\n${result.reason}`);
-  }
-}
-
-/**
- * Displays all results from a batch validation run.
- */
-function displayBatchResults(results: BatchValidationResult[]): void {
-  console.log();
-  for (const result of results) {
-    if (result.compliant) {
-      console.log(`${chalk.green("[PASS]")} ${result.filename}`);
-    } else if (result.severity === "warning") {
-      console.log(`${chalk.yellow("[WARN]")} ${result.filename}`);
-    } else {
-      console.log(`${chalk.red("[FAIL]")} ${result.filename}`);
-      result.issues.forEach((issue) => console.log(`    ${issue}`));
-    }
   }
 }
 
