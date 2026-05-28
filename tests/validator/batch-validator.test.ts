@@ -283,6 +283,73 @@ describe("BatchValidator", () => {
     });
   });
 
+  describe("ignore does not affect spec discovery", () => {
+    it("discovers specs inside ignored directories", async () => {
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          // Spec lives in an ignored directory
+          "docs/smes/events.sme.md":
+            "---\npaths:\n  - \"docs/content/*.md\"\n---\n# Spec\nAll docs need a title.",
+          // Target lives outside the ignored directory
+          "docs/content/article.md": "# Article",
+        },
+      });
+
+      useCompliantFixture();
+
+      const batch = new BatchValidator({
+        root,
+        sources: ["docs"],
+        ignore: ["docs/smes/**"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.sme.md",
+      });
+
+      const results = await batch.validateAll();
+
+      // The spec was discovered despite being in an ignored directory
+      expect(results).toHaveLength(1);
+      expect(results[0].filename).toBe("article.md");
+
+      cleanup();
+    });
+
+    it("still excludes ignored files from being validated as documents", async () => {
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/smes/events.sme.md":
+            "---\npaths:\n  - \"docs/content/*.md\"\n---\n# Spec",
+          "docs/content/article.md": "# Article",
+          "docs/smes/other.md": "# This is in the ignored dir — should not be validated",
+        },
+      });
+
+      useCompliantFixture();
+
+      const batch = new BatchValidator({
+        root,
+        sources: ["docs"],
+        ignore: ["docs/smes/**"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.sme.md",
+      });
+
+      const results = await batch.validateAll();
+
+      // only article.md validated; other.md in ignored dir is excluded from paths expansion
+      expect(results).toHaveLength(1);
+      expect(results[0].filename).toBe("article.md");
+
+      cleanup();
+    });
+  });
+
   describe("ignore patterns", () => {
     it("excludes files matching ignore from document count", () => {
       const { root, abs, cleanup } = createValidatorTmpdir({

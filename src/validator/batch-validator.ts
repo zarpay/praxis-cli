@@ -259,7 +259,6 @@ export class BatchValidator {
         onlyFiles: true,
         absolute: true,
         dot: true,
-        ignore: this.absoluteIgnore,
       });
 
       for (const specPath of specPaths) {
