@@ -40,9 +40,7 @@ export class GlobExpander {
       onlyFiles: true,
     });
 
-    return matches
-      .filter((match) => !this.isExcluded(match))
-      .sort();
+    return matches.filter((match) => !this.isExcluded(match)).sort();
   }
 
   /**

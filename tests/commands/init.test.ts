@@ -157,11 +157,13 @@ describe("initProject", () => {
     writeFileSync(
       join(dir, ".praxis", "config.json"),
       JSON.stringify({
-        plugins: [{
-          name: "claude-code",
-          outputDir: "./my-plugins/custom",
-          claudeCodePluginName: "my-org",
-        }],
+        plugins: [
+          {
+            name: "claude-code",
+            outputDir: "./my-plugins/custom",
+            claudeCodePluginName: "my-org",
+          },
+        ],
       }),
     );
 

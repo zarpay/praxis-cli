@@ -18,10 +18,7 @@ const VERSION = "1.2.1";
 function createProgram(): Command {
   const program = new Command();
 
-  program
-    .name("praxis")
-    .description("CLI for the Praxis knowledge framework")
-    .version(VERSION);
+  program.name("praxis").description("CLI for the Praxis knowledge framework").version(VERSION);
 
   registerInitCommand(program);
   registerCompileCommand(program);

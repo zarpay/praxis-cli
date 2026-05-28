@@ -144,9 +144,7 @@ export class BatchValidator {
     this.sourceDocCount = this.countAllSourceDocuments();
 
     const domains = await this.discoverValidationDomains();
-    const matching = domains.filter(
-      (d) => d.type === type || basename(d.dir) === type,
-    );
+    const matching = domains.filter((d) => d.type === type || basename(d.dir) === type);
 
     if (matching.length === 0) {
       throw new Error(`Unknown document type: ${type}`);
@@ -231,12 +229,10 @@ export class BatchValidator {
     if (domain.targetFiles) {
       return domain.targetFiles;
     }
-    return fg
-      .sync("*.md", { cwd: domain.dir, onlyFiles: true, absolute: true })
-      .filter((f) => {
-        const name = basename(f);
-        return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
-      });
+    return fg.sync("*.md", { cwd: domain.dir, onlyFiles: true, absolute: true }).filter((f) => {
+      const name = basename(f);
+      return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
+    });
   }
 
   /**
@@ -302,11 +298,7 @@ export class BatchValidator {
    *
    * Tracks cache hit/miss statistics for reporting.
    */
-  private async validateDocument(
-    docPath: string,
-    specPath: string,
-    type: string,
-  ): Promise<void> {
+  private async validateDocument(docPath: string, specPath: string, type: string): Promise<void> {
     console.log(`Validating ${docPath}`);
 
     try {

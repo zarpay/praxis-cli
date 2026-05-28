@@ -169,7 +169,7 @@ export class RoleCompiler {
     }
     if (raw === true) {
       this.logger.warn(
-        "constitution: true is deprecated. Use an explicit path like: constitution: \"context/constitution/*.md\"",
+        'constitution: true is deprecated. Use an explicit path like: constitution: "context/constitution/*.md"',
       );
       return [];
     }

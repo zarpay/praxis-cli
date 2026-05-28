@@ -215,9 +215,7 @@ async function listContentFiles(
   const pattern = recursive ? "**/*.md" : "*.md";
   const files = await fg(pattern, { cwd: dir, onlyFiles: true, absolute: true });
 
-  return files.filter(
-    (f) => !isSpecFile(f, specFilePattern) && !basename(f).startsWith("_"),
-  );
+  return files.filter((f) => !isSpecFile(f, specFilePattern) && !basename(f).startsWith("_"));
 }
 
 /**

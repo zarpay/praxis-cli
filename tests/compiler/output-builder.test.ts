@@ -187,7 +187,7 @@ describe("OutputBuilder", () => {
       const builder = new OutputBuilder({
         agentMetadata: {
           name: "test-agent",
-          description: 'Use this agent to do: things & stuff [here]',
+          description: "Use this agent to do: things & stuff [here]",
         },
       });
       builder.addRole("Role body");

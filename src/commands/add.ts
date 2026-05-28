@@ -22,9 +22,7 @@ const SCAFFOLD_DIR = join(import.meta.dirname, "..", "scaffold");
  * from templates with placeholders pre-filled.
  */
 export function registerAddCommand(program: Command): void {
-  const add = program
-    .command("add")
-    .description("Add new content from templates");
+  const add = program.command("add").description("Add new content from templates");
 
   add
     .command("role <name>")
@@ -122,9 +120,7 @@ function fillTemplate(type: "role" | "responsibility", name: string, template: s
   const titleCase = toTitleCase(name);
 
   if (type === "role") {
-    return template
-      .replace(/\{role_name\}/g, titleCase)
-      .replace(/\{required_alias\}/g, name);
+    return template.replace(/\{role_name\}/g, titleCase).replace(/\{required_alias\}/g, name);
   }
 
   return template.replace(/\{verb_what_title\}/g, titleCase);

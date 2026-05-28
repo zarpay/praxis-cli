@@ -80,12 +80,7 @@ export function registerValidateCommand(program: Command): void {
     .option("--fail-fast", "stop on first error", true)
     .option("--no-cache", "disable validation cache")
     .action(
-      async (options: {
-        type?: string;
-        verbose: boolean;
-        failFast: boolean;
-        cache: boolean;
-      }) => {
+      async (options: { type?: string; verbose: boolean; failFast: boolean; cache: boolean }) => {
         const logger = new Logger();
 
         try {

@@ -66,10 +66,7 @@ describe("GlobExpander", () => {
 
   describe("expandAll()", () => {
     it("expands multiple patterns and flattens results", async () => {
-      const patterns = [
-        "content/context/constitution/*.md",
-        "content/context/conventions/*.md",
-      ];
+      const patterns = ["content/context/constitution/*.md", "content/context/conventions/*.md"];
       const result = await expander.expandAll(patterns);
 
       expect(result).toContain("content/context/constitution/identity.md");

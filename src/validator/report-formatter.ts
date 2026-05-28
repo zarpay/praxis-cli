@@ -79,10 +79,7 @@ export function computeCurrentHash(
 }
 
 /** Finds the spec file in the same directory as the document. */
-function findSpecForDocument(
-  documentPath: string,
-  specFilePattern: string,
-): string | null {
+function findSpecForDocument(documentPath: string, specFilePattern: string): string | null {
   const dir = dirname(documentPath);
 
   if (!hasGlobChars(specFilePattern)) {
@@ -145,7 +142,11 @@ export function displayReport(report: ValidationReport, verbose: boolean): void 
   }
 
   // Issues
-  if (report.cacheData && !report.cacheData.result.compliant && report.cacheData.result.issues.length > 0) {
+  if (
+    report.cacheData &&
+    !report.cacheData.result.compliant &&
+    report.cacheData.result.issues.length > 0
+  ) {
     console.log();
     console.log("  Issues:");
     for (const issue of report.cacheData.result.issues) {

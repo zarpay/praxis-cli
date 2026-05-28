@@ -84,9 +84,7 @@ export function watchAndRecompile(
 
       timer = setTimeout(async () => {
         try {
-          logger.info(
-            `Change detected${filename ? `: ${String(filename)}` : ""}, recompiling...`,
-          );
+          logger.info(`Change detected${filename ? `: ${String(filename)}` : ""}, recompiling...`);
           await compiler.compileAll();
         } catch (err) {
           logger.error(err instanceof Error ? err.message : String(err));

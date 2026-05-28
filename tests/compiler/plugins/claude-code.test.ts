@@ -29,7 +29,11 @@ describe("ClaudeCodePlugin", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
-    plugin.compile("# Role\n\nTest content\n", { name: "tester", description: "A test agent" }, "Tester");
+    plugin.compile(
+      "# Role\n\nTest content\n",
+      { name: "tester", description: "A test agent" },
+      "Tester",
+    );
 
     const outputFile = join(root, "plugins", "praxis", "agents", "tester.md");
     expect(existsSync(outputFile)).toBe(true);
@@ -39,7 +43,11 @@ describe("ClaudeCodePlugin", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
-    plugin.compile("# Role\n\nTest content\n", { name: "tester", description: "A test agent" }, "Tester");
+    plugin.compile(
+      "# Role\n\nTest content\n",
+      { name: "tester", description: "A test agent" },
+      "Tester",
+    );
 
     const content = readFileSync(join(root, "plugins", "praxis", "agents", "tester.md"), "utf-8");
     expect(content).toMatch(/^---\n/);
@@ -52,13 +60,17 @@ describe("ClaudeCodePlugin", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
-    plugin.compile("# Role\n\nContent\n", {
-      name: "tester",
-      description: "A test agent",
-      tools: "Read, Glob, Grep",
-      model: "opus",
-      permissionMode: "plan",
-    }, "Tester");
+    plugin.compile(
+      "# Role\n\nContent\n",
+      {
+        name: "tester",
+        description: "A test agent",
+        tools: "Read, Glob, Grep",
+        model: "opus",
+        permissionMode: "plan",
+      },
+      "Tester",
+    );
 
     const content = readFileSync(join(root, "plugins", "praxis", "agents", "tester.md"), "utf-8");
     expect(content).toContain("tools: Read, Glob, Grep");
@@ -81,10 +93,14 @@ describe("ClaudeCodePlugin", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
-    plugin.compile("# Role\n\nContent\n", {
-      name: "tester",
-      description: "Use this agent to do: things & stuff [here]",
-    }, "Tester");
+    plugin.compile(
+      "# Role\n\nContent\n",
+      {
+        name: "tester",
+        description: "Use this agent to do: things & stuff [here]",
+      },
+      "Tester",
+    );
 
     const content = readFileSync(join(root, "plugins", "praxis", "agents", "tester.md"), "utf-8");
     expect(content).toContain('description: "Use this agent to do: things & stuff [here]"');

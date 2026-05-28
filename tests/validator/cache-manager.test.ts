@@ -93,7 +93,11 @@ describe("CacheManager", () => {
 
     it("returns null for non-existent cache entries", () => {
       const documentPath = join(projectRoot, "roles", "test-role.md");
-      const cached = manager.read({ documentPath, contentHash: "nonexist", specPath: metadata.specPath });
+      const cached = manager.read({
+        documentPath,
+        contentHash: "nonexist",
+        specPath: metadata.specPath,
+      });
 
       expect(cached).toBeNull();
     });
@@ -101,7 +105,11 @@ describe("CacheManager", () => {
     it("returns null when hash does not match", () => {
       const documentPath = join(projectRoot, "roles", "test-role.md");
       manager.write({ documentPath, contentHash: hash, result, metadata });
-      const cached = manager.read({ documentPath, contentHash: "different", specPath: metadata.specPath });
+      const cached = manager.read({
+        documentPath,
+        contentHash: "different",
+        specPath: metadata.specPath,
+      });
 
       expect(cached).toBeNull();
     });
@@ -138,8 +146,16 @@ describe("CacheManager", () => {
       manager.write({ documentPath, contentHash: "hash1", result: result1, metadata: metadata1 });
       manager.write({ documentPath, contentHash: "hash2", result: result2, metadata: metadata2 });
 
-      const cached1 = manager.read({ documentPath, contentHash: "hash1", specPath: metadata1.specPath });
-      const cached2 = manager.read({ documentPath, contentHash: "hash2", specPath: metadata2.specPath });
+      const cached1 = manager.read({
+        documentPath,
+        contentHash: "hash1",
+        specPath: metadata1.specPath,
+      });
+      const cached2 = manager.read({
+        documentPath,
+        contentHash: "hash2",
+        specPath: metadata2.specPath,
+      });
 
       expect(cached1).toEqual(result1);
       expect(cached2).toEqual(result2);
@@ -195,8 +211,16 @@ describe("CacheManager", () => {
         metadata,
       });
 
-      const first = manager.read({ documentPath, contentHash: "stablehash", specPath: metadata.specPath });
-      const second = manager.read({ documentPath, contentHash: "stablehash", specPath: metadata.specPath });
+      const first = manager.read({
+        documentPath,
+        contentHash: "stablehash",
+        specPath: metadata.specPath,
+      });
+      const second = manager.read({
+        documentPath,
+        contentHash: "stablehash",
+        specPath: metadata.specPath,
+      });
 
       expect(first).toEqual(second);
       expect(first).not.toBeNull();
@@ -361,7 +385,11 @@ describe("CacheManager", () => {
       const documentPath = join(projectRoot, "roles", "test-role.md");
       manager.write({ documentPath, contentHash: hash, result, metadata });
 
-      const readResult = manager.read({ documentPath, contentHash: "different", specPath: metadata.specPath });
+      const readResult = manager.read({
+        documentPath,
+        contentHash: "different",
+        specPath: metadata.specPath,
+      });
       expect(readResult).toBeNull();
 
       const rawResult = manager.readRaw({ documentPath, specPath: metadata.specPath });
@@ -396,7 +424,12 @@ describe("CacheManager", () => {
       manager.write({
         documentPath,
         contentHash: "hash2",
-        result: { compliant: false, issues: ["issue"], reason: "spec B fail", severity: "error" as const },
+        result: {
+          compliant: false,
+          issues: ["issue"],
+          reason: "spec B fail",
+          severity: "error" as const,
+        },
         metadata: metadata2,
       });
 
