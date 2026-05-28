@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2026-05-28
+
+### Added
+
+- **`validates` role frontmatter key** — Roles can now declare `validates: [glob, ...]` in their frontmatter. The compiled pure profile gets a `paths:` YAML block prepended and the Claude Code agent file gets `paths:` in its frontmatter — making the compiled SME profile a valid spec file for `praxis validate`. The agent you chat with and the spec that lints your files are the same artifact.
+- **`ignore` config key** — New top-level `ignore: string[]` in `.praxis/config.json` accepts project-root-relative glob patterns to exclude from all source scans. Ignored paths are skipped in `praxis status` document counts, `praxis validate` spec discovery and document counts, and cache orphan detection. Supports both directory globs (`docs/generated/**`) and filename patterns (`**/.*.md`).
+
+### Fixed
+
+- **Hidden directories included in validation** — All `fast-glob` calls in the validator now pass `dot: true`, so source directories and `paths` globs correctly traverse hidden directories (e.g. `.claude/rules/`, `.devcontainer/`). Previously, any `.md` files inside hidden directories were silently excluded from document counts and validation runs.
+
 ## [1.3.1] - 2026-05-28
 
 ### Added
@@ -122,6 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project root detection via directory marker.
 - `praxis.config.json` with `agentProfilesDir` and `plugins` options.
 
+[1.3.2]: https://github.com/zarpay/praxis-cli/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/zarpay/praxis-cli/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/zarpay/praxis-cli/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/zarpay/praxis-cli/compare/v1.2.0...v1.2.1

@@ -350,8 +350,9 @@ export class CacheManager {
     root: string,
     sources: string[],
     specFilePattern: string = DEFAULT_SPEC_FILE_PATTERN,
+    ignore: string[] = [],
   ): OrphanedCacheFile[] {
-    const validDocuments = this.buildDocumentMap(root, sources, specFilePattern);
+    const validDocuments = this.buildDocumentMap(root, sources, specFilePattern, ignore);
     const orphans: OrphanedCacheFile[] = [];
     const cacheFiles = fg.sync("**/*.json", { cwd: this.cacheRoot, absolute: true });
 
@@ -460,14 +461,15 @@ export class CacheManager {
    * Scans source directories for .md files and builds keys matching
    * the cache path structure (source-relative paths without extension).
    */
-  private buildDocumentMap(root: string, sources: string[], specFilePattern: string): Set<string> {
+  private buildDocumentMap(root: string, sources: string[], specFilePattern: string, ignore: string[] = []): Set<string> {
     const documents = new Set<string>();
+    const absoluteIgnore = ignore.map((p) => join(root, p));
 
     for (const source of sources) {
       const sourceDir = join(root, source);
       if (!existsSync(sourceDir)) continue;
 
-      const docFiles = fg.sync("**/*.md", { cwd: sourceDir, absolute: false });
+      const docFiles = fg.sync("**/*.md", { cwd: sourceDir, absolute: false, ignore: absoluteIgnore });
 
       for (const relFile of docFiles) {
         const name = basename(relFile);

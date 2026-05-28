@@ -95,6 +95,7 @@ export function registerValidateCommand(program: Command): void {
           const batch = new BatchValidator({
             root: paths.root,
             sources: config.sources,
+            ignore: config.ignore,
             failFast: options.failFast,
             useCache: options.cache,
             cacheManager,
@@ -156,6 +157,7 @@ export function registerValidateCommand(program: Command): void {
         const batch = new BatchValidator({
           root: paths.root,
           sources: config.sources,
+          ignore: config.ignore,
           apiKeyEnvVar: validation.apiKeyEnvVar,
           model: validation.model,
           specFilePattern,

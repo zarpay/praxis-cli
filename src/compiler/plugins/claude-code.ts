@@ -166,6 +166,12 @@ export class ClaudeCodePlugin implements CompilerPlugin {
     if (metadata.permissionMode) {
       lines.push(`permissionMode: ${metadata.permissionMode}`);
     }
+    if (metadata.validates && metadata.validates.length > 0) {
+      lines.push("paths:");
+      for (const p of metadata.validates) {
+        lines.push(`  - "${p}"`);
+      }
+    }
 
     lines.push("---");
     return lines.join("\n");

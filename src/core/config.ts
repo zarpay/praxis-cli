@@ -33,6 +33,7 @@ interface RawConfig {
   agentProfilesOutputDir?: string | false;
   plugins?: RawPluginEntry[];
   sources?: string[];
+  ignore?: string[];
   rolesDir?: string;
   responsibilitiesDir?: string;
   validation?: ValidationConfig;
@@ -42,6 +43,7 @@ interface NormalizedConfig {
   agentProfilesOutputDir: string | false;
   plugins: PluginConfigEntry[];
   sources: string[];
+  ignore: string[];
   rolesDir: string;
   responsibilitiesDir: string;
   validation?: ValidationConfig;
@@ -51,6 +53,7 @@ const DEFAULT_CONFIG: NormalizedConfig = {
   agentProfilesOutputDir: "./agent-profiles",
   plugins: [],
   sources: ["roles", "responsibilities", "reference", "context"],
+  ignore: [],
   rolesDir: "roles",
   responsibilitiesDir: "responsibilities",
 };
@@ -104,6 +107,11 @@ export class PraxisConfig {
     return this.data.sources;
   }
 
+  /** Project-root-relative glob patterns to exclude from all source scans. */
+  get ignore(): string[] {
+    return this.data.ignore;
+  }
+
   /** Absolute path to the roles directory for compilation. */
   get rolesDir(): string {
     return resolve(this.root, this.data.rolesDir);
@@ -132,6 +140,7 @@ export class PraxisConfig {
       agentProfilesOutputDir: raw.agentProfilesOutputDir ?? DEFAULT_CONFIG.agentProfilesOutputDir,
       plugins: this.normalizePlugins(raw.plugins ?? []),
       sources: raw.sources ?? DEFAULT_CONFIG.sources,
+      ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
       rolesDir: raw.rolesDir ?? DEFAULT_CONFIG.rolesDir,
       responsibilitiesDir: raw.responsibilitiesDir ?? DEFAULT_CONFIG.responsibilitiesDir,
       validation: raw.validation,

@@ -142,7 +142,12 @@ export class RoleCompiler {
       if (!existsSync(profilesDir)) {
         mkdirSync(profilesDir, { recursive: true });
       }
-      writeFileSync(join(profilesDir, `${roleAlias.toLowerCase()}.md`), profile);
+      const validates = metadata?.validates;
+      const content =
+        validates && validates.length > 0
+          ? `---\npaths:\n${validates.map((p) => `  - "${p}"`).join("\n")}\n---\n\n${profile}`
+          : profile;
+      writeFileSync(join(profilesDir, `${roleAlias.toLowerCase()}.md`), content);
     }
 
     // Run each enabled plugin
@@ -266,6 +271,9 @@ export class RoleCompiler {
 
     const permissionMode = fm.value("agent_permission_mode") as string | undefined;
     if (permissionMode) metadata.permissionMode = permissionMode;
+
+    const validates = fm.array("validates") as string[];
+    if (validates.length > 0) metadata.validates = validates;
 
     return metadata;
   }

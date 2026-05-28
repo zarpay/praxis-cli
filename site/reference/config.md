@@ -7,6 +7,7 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
 ```json
 {
   "sources": ["roles", "responsibilities", "reference", "context"],
+  "ignore": ["docs/generated/**", "**/.*.md"],
   "rolesDir": "roles",
   "responsibilitiesDir": "responsibilities",
   "agentProfilesOutputDir": "./agent-profiles",
@@ -44,6 +45,21 @@ Any directory within sources that contains a spec file (default: `README.md`) be
 ```json
 { "sources": ["agents/roles", "agents/responsibilities", "knowledge/reference"] }
 ```
+
+---
+
+## `ignore`
+
+**Type:** `string[]`
+**Default:** `[]`
+
+Glob patterns for files and directories to exclude from all source scans. Patterns are project-root-relative and support the same glob syntax as `paths` frontmatter.
+
+```json
+{ "ignore": ["docs/generated/**", "**/.*.md", "backend/vendor/**"] }
+```
+
+Ignored paths are excluded everywhere sources are scanned: document counts in `praxis status`, spec discovery in `praxis validate`, and the status dashboard. Literal subdirectory paths and filename patterns are both supported.
 
 ---
 

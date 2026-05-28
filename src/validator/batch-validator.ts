@@ -60,6 +60,7 @@ export class BatchValidator {
   private readonly apiKeyEnvVar?: string;
   private readonly model?: string;
   private readonly specFilePattern: string;
+  private readonly absoluteIgnore: string[];
   private results: BatchValidationResult[] = [];
   private stoppedEarly = false;
   private sourceDocCount = 0;
@@ -67,6 +68,7 @@ export class BatchValidator {
   constructor({
     root,
     sources,
+    ignore = [],
     failFast = false,
     useCache = true,
     cacheManager,
@@ -76,6 +78,7 @@ export class BatchValidator {
   }: {
     root: string;
     sources: string[];
+    ignore?: string[];
     failFast?: boolean;
     useCache?: boolean;
     cacheManager?: CacheManager;
@@ -92,6 +95,7 @@ export class BatchValidator {
     this.apiKeyEnvVar = apiKeyEnvVar;
     this.model = model;
     this.specFilePattern = specFilePattern;
+    this.absoluteIgnore = ignore.map((p) => join(root, p));
   }
 
   /** Whether validation was stopped early due to fail-fast. */
@@ -207,6 +211,8 @@ export class BatchValidator {
       const allMdFiles = fg.sync("**/*.md", {
         cwd: sourceAbsPath,
         onlyFiles: true,
+        dot: true,
+        ignore: this.absoluteIgnore,
       });
 
       for (const file of allMdFiles) {
@@ -229,7 +235,7 @@ export class BatchValidator {
     if (domain.targetFiles) {
       return domain.targetFiles;
     }
-    return fg.sync("*.md", { cwd: domain.dir, onlyFiles: true, absolute: true }).filter((f) => {
+    return fg.sync("*.md", { cwd: domain.dir, onlyFiles: true, absolute: true, dot: true, ignore: this.absoluteIgnore }).filter((f) => {
       const name = basename(f);
       return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
     });
@@ -252,6 +258,8 @@ export class BatchValidator {
         cwd: sourceAbsPath,
         onlyFiles: true,
         absolute: true,
+        dot: true,
+        ignore: this.absoluteIgnore,
       });
 
       for (const specPath of specPaths) {
@@ -267,6 +275,8 @@ export class BatchValidator {
               cwd: this.root,
               onlyFiles: true,
               absolute: true,
+              dot: true,
+              ignore: this.absoluteIgnore,
             })
             .filter((f) => {
               const name = basename(f);

@@ -91,8 +91,17 @@ By default, the spec file is `README.md` in the directory it governs. You can ch
 
 For cross-directory domains where one spec governs files across multiple directories, see [Cross-Directory Validation](/validation/cross-directory).
 
+## Compiled profiles as specs
+
+A spec doesn't have to be a hand-authored file. A compiled agent profile — assembled from your source knowledge documents — can itself be the spec file.
+
+Add `validates:` to a role's frontmatter with the glob patterns for the files it should validate. The compiled output gets a `paths:` YAML block that makes it a valid spec. The agent you chat with and the spec that lints your code are the same file.
+
+See [Agent Profiles — Profiles as spec files](/concepts/agent-profiles#profiles-as-spec-files) for the full setup.
+
 ## See also
 
 - [Validation Domains](/concepts/validation-domains)
 - [Cross-Directory Validation](/validation/cross-directory)
+- [Agent Profiles](/concepts/agent-profiles)
 - [praxis validate](/commands/validate)

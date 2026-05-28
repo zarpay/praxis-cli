@@ -89,6 +89,39 @@ describe("ClaudeCodePlugin", () => {
     expect(content).toContain("# Role");
   });
 
+  it("includes paths: in frontmatter when metadata.validates is set", () => {
+    const root = makeTmpdir();
+    const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
+
+    plugin.compile(
+      "# Role\n\nContent\n",
+      {
+        name: "servus-expert",
+        description: "SME on Servus",
+        validates: ["backend/app/services/**/*.rb", "backend/app/events/**/*.rb"],
+      },
+      "ServusExpert",
+    );
+
+    const content = readFileSync(
+      join(root, "plugins", "praxis", "agents", "servusexpert.md"),
+      "utf-8",
+    );
+    expect(content).toContain("paths:");
+    expect(content).toContain('  - "backend/app/services/**/*.rb"');
+    expect(content).toContain('  - "backend/app/events/**/*.rb"');
+  });
+
+  it("omits paths: from frontmatter when metadata.validates is absent", () => {
+    const root = makeTmpdir();
+    const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
+
+    plugin.compile("# Role\n\nContent\n", { name: "tester", description: "A test agent" }, "Tester");
+
+    const content = readFileSync(join(root, "plugins", "praxis", "agents", "tester.md"), "utf-8");
+    expect(content).not.toContain("paths:");
+  });
+
   it("quotes description with special YAML characters", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });

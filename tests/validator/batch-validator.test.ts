@@ -283,6 +283,70 @@ describe("BatchValidator", () => {
     });
   });
 
+  describe("ignore patterns", () => {
+    it("excludes files matching ignore from document count", () => {
+      const { root, abs, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/roles.praxis.md": "# Spec\nAll docs need a title.",
+          "docs/counted.md": "# Counted",
+          "docs/generated/output.md": "# Generated — should be ignored",
+        },
+      });
+
+      const batch = new BatchValidator({
+        root,
+        sources: ["docs"],
+        ignore: ["docs/generated/**"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.praxis.md",
+      });
+
+      // countAllSourceDocuments is private; trigger it via summary() after validateAll
+      // The total count should exclude the ignored file
+      const count = batch["countAllSourceDocuments"]();
+      expect(count).toBe(1); // only counted.md; generated/output.md is ignored
+
+      cleanup();
+      void abs; // suppress unused warning
+    });
+
+    it("excludes ignored directories from spec discovery", async () => {
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/valid/roles.praxis.md":
+            "# Spec\nAll docs need a title.",
+          "docs/valid/counted.md": "# Counted",
+          "docs/ignored/spec.praxis.md": "# Ignored spec — should not discover",
+          "docs/ignored/doc.md": "# Ignored doc",
+        },
+      });
+
+      useCompliantFixture();
+
+      const batch = new BatchValidator({
+        root,
+        sources: ["docs"],
+        ignore: ["docs/ignored/**"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.praxis.md",
+      });
+
+      const results = await batch.validateAll();
+
+      // Only counted.md in docs/valid/ should be validated; nothing from docs/ignored/
+      expect(results).toHaveLength(1);
+      expect(results[0].filename).toBe("counted.md");
+
+      cleanup();
+    });
+  });
+
   describe("summary()", () => {
     it("aggregates results correctly", async () => {
       useCompliantFixture();

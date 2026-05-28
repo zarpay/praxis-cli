@@ -219,6 +219,41 @@ describe("RoleCompiler", () => {
     });
   });
 
+  describe("validates frontmatter", () => {
+    it("prepends paths: YAML block to pure profile when validates is set", async () => {
+      const roleFile = join(rolesDir, "validates-role.md");
+
+      await compiler.compile(roleFile);
+      const profile = readFileSync(join(agentProfilesDir, "servusexpert.md"), "utf-8");
+
+      expect(profile).toMatch(/^---\n/);
+      expect(profile).toContain("paths:");
+      expect(profile).toContain('  - "backend/app/services/**/*.rb"');
+      expect(profile).toContain('  - "backend/app/events/**/*.rb"');
+      expect(profile).toContain("# Servus Expert");
+    });
+
+    it("pure profile has no frontmatter when validates is absent", async () => {
+      const roleFile = join(rolesDir, "test-role.md");
+
+      await compiler.compile(roleFile);
+      const profile = readFileSync(join(agentProfilesDir, "tester.md"), "utf-8");
+
+      expect(profile).not.toMatch(/^---\n/);
+    });
+
+    it("includes paths: in Claude Code plugin frontmatter when validates is set", async () => {
+      const roleFile = join(rolesDir, "validates-role.md");
+
+      await compiler.compile(roleFile);
+      const agent = readFileSync(join(agentsOutputDir, "servusexpert.md"), "utf-8");
+
+      expect(agent).toContain("paths:");
+      expect(agent).toContain('  - "backend/app/services/**/*.rb"');
+      expect(agent).toContain('  - "backend/app/events/**/*.rb"');
+    });
+  });
+
   describe("missing ref warnings", () => {
     it("warns when a referenced file does not exist", async () => {
       const roleFile = join(rolesDir, "bad-ref.md");

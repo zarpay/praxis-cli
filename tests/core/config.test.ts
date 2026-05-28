@@ -197,6 +197,22 @@ describe("PraxisConfig", () => {
     expect(config.validation?.specFilePattern).toBe("*.validate.md");
   });
 
+  it("loads ignore patterns from config", () => {
+    const dir = makeTmpdir();
+    writeConfig(dir, { ignore: ["docs/generated/**", "**/.*.md"] });
+
+    const config = new PraxisConfig(dir);
+
+    expect(config.ignore).toEqual(["docs/generated/**", "**/.*.md"]);
+  });
+
+  it("defaults ignore to empty array when not in config", () => {
+    const dir = makeTmpdir();
+    const config = new PraxisConfig(dir);
+
+    expect(config.ignore).toEqual([]);
+  });
+
   it("returns undefined specFilePattern when not specified", () => {
     const dir = makeTmpdir();
     writeConfig(dir, {

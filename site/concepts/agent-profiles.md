@@ -112,6 +112,45 @@ You can disable pure profile output entirely if you only want plugin output:
 { "agentProfilesOutputDir": false }
 ```
 
+## Profiles as spec files
+
+A compiled profile is the SME on its source material. The natural extension is to let that same file serve as the spec that validates the code it knows about — collapsing two artifacts into one. The agent you chat with *is* the spec that runs `praxis validate`.
+
+Add a `validates:` key to the role's frontmatter with an array of glob patterns:
+
+```yaml
+---
+alias: servus-expert
+description: SME on the Servus event/service framework
+validates:
+  - "backend/app/services/**/*.rb"
+  - "backend/app/events/**/*.rb"
+---
+```
+
+When compiled, the pure profile gets a `paths:` YAML frontmatter block prepended:
+
+```markdown
+---
+paths:
+  - "backend/app/services/**/*.rb"
+  - "backend/app/events/**/*.rb"
+---
+
+# Servus Expert
+
+...compiled knowledge...
+```
+
+The Claude Code agent file gets the same `paths:` block in its YAML frontmatter. Both outputs are valid spec files — the validator reads `paths:` to know which files to check, and uses the profile body as the specification.
+
+To make `praxis validate` discover the profile as a spec, ensure:
+
+1. `agentProfilesOutputDir` points to a directory within `sources` (so the validator scans it)
+2. `specFilePattern` matches the output filename (e.g. `"*.md"` if the profiles directory only contains compiled profiles)
+
+The payoff: your team runs `praxis validate all` and the Servus Expert SME — assembled from all the source documents that define how Servus should be used — checks every service and event file for compliance.
+
 ## Keeping profiles in git
 
 It is generally good practice to commit compiled profiles alongside source documents. This lets you:

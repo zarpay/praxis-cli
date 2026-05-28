@@ -21,6 +21,8 @@ export interface AgentMetadata {
   model?: string;
   /** Permission mode (e.g. "plan"). */
   permissionMode?: string;
+  /** Glob patterns for files this profile validates (written as paths: in output). */
+  validates?: string[];
 }
 
 /**
