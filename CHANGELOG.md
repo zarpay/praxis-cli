@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`paths` frontmatter in spec files** — Spec files can now declare a `paths` array in YAML frontmatter listing glob patterns (relative to the project root) for the documents they validate. This breaks the previous constraint that a spec could only validate sibling files in its own directory, enabling a single spec to cover documents spread across multiple directories or nested subtrees.
 - **`specFilePattern` in validation config** — The `validation` section of `.praxis/config.json` now accepts an optional `specFilePattern` field to configure which filename is treated as the directory spec (defaults to `README.md`). Glob patterns are supported, allowing non-standard spec filenames like `SPEC.md` or `*.spec.md`.
 - **`CacheManager.readAllRaw()`** — New method that returns all cached validation entries for a document across every spec that has validated it, as an array of `CacheFileData` objects.
+- **`praxis config show`** — Prints `.praxis/config.json` with a formatted header and the full JSON contents. No API key required.
+- **`praxis config edit`** — Opens `.praxis/config.json` in the editor resolved from `$VISUAL`, `$EDITOR`, or `vi`.
 
 ### Changed
 
