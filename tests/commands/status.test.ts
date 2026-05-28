@@ -111,7 +111,12 @@ describe("analyzeProject", () => {
     writeFileSync(
       join(tmpdir, ".praxis", "config.json"),
       JSON.stringify({
-        sources: ["content/roles", "content/responsibilities", "content/reference", "content/context"],
+        sources: [
+          "content/roles",
+          "content/responsibilities",
+          "content/reference",
+          "content/context",
+        ],
         rolesDir: "content/roles",
         responsibilitiesDir: "content/responsibilities",
         agentProfilesOutputDir: "./agent-profiles",

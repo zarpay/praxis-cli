@@ -241,10 +241,18 @@ export class BatchValidator {
     if (domain.targetFiles) {
       return domain.targetFiles;
     }
-    return fg.sync("*.md", { cwd: domain.dir, onlyFiles: true, absolute: true, dot: true, ignore: this.absoluteIgnore }).filter((f) => {
-      const name = basename(f);
-      return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
-    });
+    return fg
+      .sync("*.md", {
+        cwd: domain.dir,
+        onlyFiles: true,
+        absolute: true,
+        dot: true,
+        ignore: this.absoluteIgnore,
+      })
+      .filter((f) => {
+        const name = basename(f);
+        return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
+      });
   }
 
   /**

@@ -290,7 +290,7 @@ describe("BatchValidator", () => {
         files: {
           // Spec lives in an ignored directory
           "docs/smes/events.sme.md":
-            "---\npaths:\n  - \"docs/content/*.md\"\n---\n# Spec\nAll docs need a title.",
+            '---\npaths:\n  - "docs/content/*.md"\n---\n# Spec\nAll docs need a title.',
           // Target lives outside the ignored directory
           "docs/content/article.md": "# Article",
         },
@@ -321,8 +321,7 @@ describe("BatchValidator", () => {
       const { root, cleanup } = createValidatorTmpdir({
         sources: ["docs"],
         files: {
-          "docs/smes/events.sme.md":
-            "---\npaths:\n  - \"docs/content/*.md\"\n---\n# Spec",
+          "docs/smes/events.sme.md": '---\npaths:\n  - "docs/content/*.md"\n---\n# Spec',
           "docs/content/article.md": "# Article",
           "docs/smes/other.md": "# This is in the ignored dir — should not be validated",
         },
@@ -384,8 +383,7 @@ describe("BatchValidator", () => {
       const { root, cleanup } = createValidatorTmpdir({
         sources: ["docs"],
         files: {
-          "docs/valid/roles.praxis.md":
-            "# Spec\nAll docs need a title.",
+          "docs/valid/roles.praxis.md": "# Spec\nAll docs need a title.",
           "docs/valid/counted.md": "# Counted",
           "docs/ignored/spec.praxis.md": "# Ignored spec — should not discover",
           "docs/ignored/doc.md": "# Ignored doc",

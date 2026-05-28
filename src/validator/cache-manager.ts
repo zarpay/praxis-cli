@@ -461,7 +461,12 @@ export class CacheManager {
    * Scans source directories for .md files and builds keys matching
    * the cache path structure (source-relative paths without extension).
    */
-  private buildDocumentMap(root: string, sources: string[], specFilePattern: string, ignore: string[] = []): Set<string> {
+  private buildDocumentMap(
+    root: string,
+    sources: string[],
+    specFilePattern: string,
+    ignore: string[] = [],
+  ): Set<string> {
     const documents = new Set<string>();
     const absoluteIgnore = ignore.map((p) => join(root, p));
 
@@ -469,7 +474,11 @@ export class CacheManager {
       const sourceDir = join(root, source);
       if (!existsSync(sourceDir)) continue;
 
-      const docFiles = fg.sync("**/*.md", { cwd: sourceDir, absolute: false, ignore: absoluteIgnore });
+      const docFiles = fg.sync("**/*.md", {
+        cwd: sourceDir,
+        absolute: false,
+        ignore: absoluteIgnore,
+      });
 
       for (const relFile of docFiles) {
         const name = basename(relFile);

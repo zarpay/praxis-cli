@@ -44,9 +44,7 @@ export function editConfig(configPath: string): void {
 }
 
 export function registerConfigCommand(program: Command): void {
-  const config = program
-    .command("config")
-    .description("View or edit the project configuration");
+  const config = program.command("config").description("View or edit the project configuration");
 
   config
     .command("show")

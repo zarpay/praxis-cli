@@ -73,7 +73,9 @@ describe("config commands", () => {
     });
 
     it("throws when the editor spawn fails", () => {
-      vi.mocked(spawnSync).mockReturnValueOnce({ error: new Error("editor not found") } as ReturnType<typeof spawnSync>);
+      vi.mocked(spawnSync).mockReturnValueOnce({
+        error: new Error("editor not found"),
+      } as ReturnType<typeof spawnSync>);
       expect(() => editConfig(configPath)).toThrow("editor not found");
     });
   });

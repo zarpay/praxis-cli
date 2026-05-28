@@ -116,7 +116,11 @@ describe("ClaudeCodePlugin", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
-    plugin.compile("# Role\n\nContent\n", { name: "tester", description: "A test agent" }, "Tester");
+    plugin.compile(
+      "# Role\n\nContent\n",
+      { name: "tester", description: "A test agent" },
+      "Tester",
+    );
 
     const content = readFileSync(join(root, "plugins", "praxis", "agents", "tester.md"), "utf-8");
     expect(content).not.toContain("paths:");

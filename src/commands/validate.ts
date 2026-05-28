@@ -8,10 +8,7 @@ import chalk from "chalk";
 import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig, type ValidationConfig } from "@/core/config.js";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
-import {
-  BatchValidator,
-  type ValidationSummary,
-} from "@/validator/batch-validator.js";
+import { BatchValidator, type ValidationSummary } from "@/validator/batch-validator.js";
 import { CacheManager } from "@/validator/cache-manager.js";
 import { DocumentValidator } from "@/validator/document-validator.js";
 import {

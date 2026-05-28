@@ -86,7 +86,12 @@ export async function analyzeProject(root: string, config: PraxisConfig): Promis
 
   // Count content files by type using config-driven paths
   const roleFiles = await listContentFiles(config.rolesDir, false, specFilePattern, absoluteIgnore);
-  const respFiles = await listContentFiles(config.responsibilitiesDir, false, specFilePattern, absoluteIgnore);
+  const respFiles = await listContentFiles(
+    config.responsibilitiesDir,
+    false,
+    specFilePattern,
+    absoluteIgnore,
+  );
 
   // Scan all sources for reference and context files by frontmatter type
   let references = 0;
@@ -169,7 +174,12 @@ export async function analyzeProject(root: string, config: PraxisConfig): Promis
 
   // Scan cached validation results for all source documents
   const cacheManager = new CacheManager(undefined, root);
-  const allSourceFiles = await listAllSourceFiles(root, config.sources, specFilePattern, absoluteIgnore);
+  const allSourceFiles = await listAllSourceFiles(
+    root,
+    config.sources,
+    specFilePattern,
+    absoluteIgnore,
+  );
   const validation = { pass: 0, warn: 0, fail: 0, notValidated: 0 };
 
   for (const filePath of allSourceFiles) {
@@ -239,7 +249,12 @@ async function listAllSourceFiles(
     const sourceDir = resolve(root, source);
     if (!existsSync(sourceDir)) continue;
 
-    const mdFiles = await fg("**/*.md", { cwd: sourceDir, onlyFiles: true, absolute: true, ignore });
+    const mdFiles = await fg("**/*.md", {
+      cwd: sourceDir,
+      onlyFiles: true,
+      absolute: true,
+      ignore,
+    });
     for (const f of mdFiles) {
       const name = basename(f);
       if (isSpecFile(name, specFilePattern) || name.startsWith("_")) continue;
