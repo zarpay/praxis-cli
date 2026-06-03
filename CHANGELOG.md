@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.6] - 2026-06-03
+
+### Fixed
+
+- **`praxis status` validation counts include non-`.md` targets** — Status now discovers validation targets the same way `praxis validate` does, using spec `paths:` frontmatter. Previously it only scanned for `.md` files, so files of any other extension (e.g. `.rb`) targeted by a spec were invisible to status. Validated and not-validated counts now reflect the true set of files any spec covers.
+
 ## [1.3.5] - 2026-05-28
 
 ### Changed
@@ -151,6 +157,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project root detection via directory marker.
 - `praxis.config.json` with `agentProfilesDir` and `plugins` options.
 
+[1.3.6]: https://github.com/zarpay/praxis-cli/compare/v1.3.5...v1.3.6
 [1.3.5]: https://github.com/zarpay/praxis-cli/compare/v1.3.4...v1.3.5
 [1.3.4]: https://github.com/zarpay/praxis-cli/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/zarpay/praxis-cli/compare/v1.3.2...v1.3.3

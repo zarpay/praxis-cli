@@ -10,6 +10,7 @@ import { GlobExpander } from "@/compiler/glob-expander.js";
 import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
+import { BatchValidator } from "@/validator/batch-validator.js";
 import { CacheManager } from "@/validator/cache-manager.js";
 import { isSpecFile } from "@/validator/spec-pattern.js";
 
@@ -172,14 +173,15 @@ export async function analyzeProject(root: string, config: PraxisConfig): Promis
     }
   }
 
-  // Scan cached validation results for all source documents
+  // Discover all validation targets via spec paths (any file extension)
   const cacheManager = new CacheManager(undefined, root);
-  const allSourceFiles = await listAllSourceFiles(
+  const batchValidator = new BatchValidator({
     root,
-    config.sources,
+    sources: config.sources,
+    ignore: config.ignore,
     specFilePattern,
-    absoluteIgnore,
-  );
+  });
+  const allSourceFiles = await batchValidator.listTargetFiles();
   const validation = { pass: 0, warn: 0, fail: 0, notValidated: 0 };
 
   for (const filePath of allSourceFiles) {
@@ -231,39 +233,6 @@ async function listContentFiles(
   return files.filter((f) => !isSpecFile(f, specFilePattern) && !basename(f).startsWith("_"));
 }
 
-/**
- * Lists all .md content files across all source directories.
- *
- * Recursively scans each source directory, excluding templates and READMEs.
- * Returns absolute paths suitable for cache lookups.
- */
-async function listAllSourceFiles(
-  root: string,
-  sources: string[],
-  specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
-  ignore: string[] = [],
-): Promise<string[]> {
-  const files: string[] = [];
-
-  for (const source of sources) {
-    const sourceDir = resolve(root, source);
-    if (!existsSync(sourceDir)) continue;
-
-    const mdFiles = await fg("**/*.md", {
-      cwd: sourceDir,
-      onlyFiles: true,
-      absolute: true,
-      ignore,
-    });
-    for (const f of mdFiles) {
-      const name = basename(f);
-      if (isSpecFile(name, specFilePattern) || name.startsWith("_")) continue;
-      files.push(f);
-    }
-  }
-
-  return files;
-}
 
 /**
  * Displays the status report to the console.

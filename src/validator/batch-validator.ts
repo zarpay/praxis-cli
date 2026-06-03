@@ -174,6 +174,17 @@ export class BatchValidator {
     return this.results;
   }
 
+  /**
+   * Returns all files targeted by discovered validation specs.
+   *
+   * Includes files of any extension targeted via spec `paths:` frontmatter,
+   * not just .md files. Used by status to compute accurate coverage counts.
+   */
+  async listTargetFiles(): Promise<string[]> {
+    const domains = await this.discoverValidationDomains();
+    return domains.flatMap((domain) => this.resolveDocuments(domain));
+  }
+
   /** Computes an aggregated summary of all validation results. */
   summary(): ValidationSummary {
     const byType: ValidationSummary["byType"] = {};

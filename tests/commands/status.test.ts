@@ -7,6 +7,7 @@ import { analyzeProject } from "@/commands/status.js";
 import { PraxisConfig } from "@/core/config.js";
 
 import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
+import { createValidatorTmpdir } from "../helpers/validator-tmpdir.js";
 
 describe("analyzeProject", () => {
   let tmpdir: string;
@@ -130,6 +131,29 @@ describe("analyzeProject", () => {
     // validates-role.md is in the roles dir but should be excluded
     const baseReport = await analyzeProject(tmpdir, config);
     expect(report.counts.roles).toBe(baseReport.counts.roles - 1);
+  });
+
+  it("counts non-.md validation targets from spec paths: frontmatter", async () => {
+    const { root, cleanup } = createValidatorTmpdir({
+      sources: ["docs"],
+      files: {
+        // Spec targets .rb files via paths:
+        "docs/events.sme.md":
+          "---\npaths:\n  - \"src/**/*.rb\"\n---\n# Spec\nAll Ruby files need a comment.",
+        "src/account_event.rb": "# AccountEvent",
+        "src/user_event.rb": "# UserEvent",
+      },
+      validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "test", specFilePattern: "*.sme.md" },
+    });
+
+    const nonMdConfig = new PraxisConfig(root);
+    const report = await analyzeProject(root, nonMdConfig);
+
+    // Both .rb files should appear as not-validated (in cache coverage)
+    expect(report.validation.notValidated).toBe(2);
+    expect(report.validation.pass + report.validation.warn + report.validation.fail).toBe(0);
+
+    cleanup();
   });
 
   it("reports clean for a healthy project", async () => {
