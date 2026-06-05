@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.7] - 2026-06-05
+
+### Changed
+
+- **`/validate` replaced with `/praxis-resolve`** — The Claude Code plugin now generates a structured three-phase resolution command instead of the pre-CLI manual validation command. `/praxis-resolve` runs a discovery phase to enumerate all failures upfront, works through them one at a time with verify-before-moving-on discipline, and closes with a final sweep. Accepts `--no-warns`, `--warns-only`, a `--type` filter, or specific file paths.
+- **New `praxis` skill** — The plugin now generates a `skills/praxis/SKILL.md` reference covering what Praxis does, the CLI commands, how specs and the cache work, and project structure.
+
 ## [1.3.6] - 2026-06-03
 
 ### Fixed
@@ -157,6 +164,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project root detection via directory marker.
 - `praxis.config.json` with `agentProfilesDir` and `plugins` options.
 
+[1.3.7]: https://github.com/zarpay/praxis-cli/compare/v1.3.6...v1.3.7
 [1.3.6]: https://github.com/zarpay/praxis-cli/compare/v1.3.5...v1.3.6
 [1.3.5]: https://github.com/zarpay/praxis-cli/compare/v1.3.4...v1.3.5
 [1.3.4]: https://github.com/zarpay/praxis-cli/compare/v1.3.3...v1.3.4
