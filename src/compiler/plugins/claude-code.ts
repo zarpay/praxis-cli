@@ -12,42 +12,168 @@ const DEFAULT_PLUGIN_JSON = {
   keywords: ["productivity"],
 };
 
-/** Content for the /validate slash command. */
-const VALIDATE_COMMAND = `---
-description: Validate a Praxis document against its directory's README specification
+/** Content for the /praxis-resolve slash command. */
+const PRAXIS_RESOLVE_COMMAND = `---
+description: Iteratively resolve Praxis spec violations — review, fix, and verify until all targeted files are compliant.
 ---
 
-Validate a Praxis document against the specification defined in its directory's README.
+Work through Praxis spec violations one at a time: discover the full scope first, fix each file, verify it passes, move on.
 
-## Instructions
+## Arguments
 
-1. Read the document at the path: $ARGUMENTS
-2. Find and read the README.md file in the same directory as the document
-3. The README is the source of truth for what documents in that directory should contain
+\`$ARGUMENTS\` accepts any combination of:
 
-## Validation Criteria
+- **Empty** — resolve all specs, FAILs and WARNs (default)
+- **\`--no-warns\`** — resolve FAILs only, leave WARNs
+- **\`--warns-only\`** — resolve WARNs only, skip FAILs
+- **Type filter** — a \`--type\` label from the "By type:" summary (e.g. \`.claude/agents\`)
+- **File paths** — one or more specific files
+- **Combinations** — \`backend/app/events/account_secured_event.rb --no-warns\`
 
-Check the document for compliance with the README specification:
+**Default: resolve both FAILs and WARNs.** Warnings are real deviations from the spec.
 
-1. All required frontmatter fields mentioned in the README
-2. All required sections mentioned in the README
-3. Naming conventions described in the README
-4. Content expectations described in the README
-5. Proper markdown formatting
+---
 
-## Response Format
+## Phase 1 — Discovery
 
-Start your response with exactly one of these words:
+Run validation across the full scope **without** \`--fail-fast\` to see everything before touching anything:
 
-- **Yes** — Document fully complies with all requirements in the README
-- **Maybe** — Minor issues exist (formatting, style) but structure is correct
-- **No** — Major issues exist (missing sections, wrong type, broken structure)
+\`\`\`bash
+# All specs:
+praxis validate all
 
-Then explain your reasoning. When identifying issues:
+# Scoped to a type:
+praxis validate all --type <type>
 
-- Quote the problematic section if applicable
-- Reference the specific rule from the README being violated
-- Suggest how to fix it
+# Specific files (force fresh evaluation):
+praxis validate document <path> --no-cache --verbose
+\`\`\`
+
+Build a numbered checklist of every item to resolve. Do not begin fixing until the full list is in front of you.
+
+---
+
+## Phase 2 — Resolve loop
+
+Work through the checklist one item at a time.
+
+**For each item:**
+
+1. **Read the file** and understand the violation. Use \`praxis validate report <path> --verbose\` to see cached reasoning, or \`praxis validate document <path> --verbose\` if no cached entry yet.
+
+2. **Fix** — apply the minimum change that satisfies the reported issue. Do not refactor unrelated code.
+
+3. **Verify** — the edit auto-invalidates the cache entry. Run:
+   \`\`\`bash
+   praxis validate document <path>
+   \`\`\`
+   - \`✓ PASS\` or \`⚠ WARN\` (when only fixing FAILs) → check off, move to next
+   - Still failing → re-read the issue, fix again, verify again
+   - Confirmed false positive → note it explicitly, skip, move to next
+
+4. Mark the checklist item done before moving on.
+
+---
+
+## Phase 3 — Final sweep
+
+After all items are addressed, run the full scope once more to confirm no regressions:
+
+\`\`\`bash
+praxis validate all
+\`\`\`
+
+---
+
+## Summary
+
+Report:
+- Files resolved and the common violation patterns
+- Any WARNs left and why (if \`--no-warns\` was used)
+- False positives encountered — these may indicate the spec needs clarification
+`;
+
+/** Content for the praxis skill. */
+const PRAXIS_SKILL = `---
+description: Reference for the Praxis CLI — what it does, how to use it, and how the cache and specs work.
+---
+
+# Praxis
+
+Praxis is a CLI tool with two complementary functions:
+
+**Conceptual linting** — spec files define what valid documents look like for a given set of files. \`praxis validate\` runs each file through its spec via an LLM and caches the result. The cache is content-hash keyed: editing a file auto-invalidates its entry. Never delete the cache manually.
+
+**Knowledge compilation** — role files in the configured \`rolesDir\` are compiled into self-contained SME agent profiles and written to the Claude Code agents directory.
+
+---
+
+## Project structure
+
+\`\`\`
+.praxis/config.json        — sources, ignore patterns, model config, specFilePattern
+.praxis/cache/             — committed LLM validation results (keyed by content hash)
+docs/roles/                — role definitions compiled into SME agent profiles
+.claude/agents/*.sme.md   — compiled agent profiles; also the spec files for validation
+\`\`\`
+
+Config is loaded from the nearest \`.praxis/\` directory walking up from cwd.
+
+---
+
+## Key CLI commands
+
+\`\`\`bash
+# Project health: document counts, validation coverage, orphaned refs
+praxis status
+
+# Validate all targeted files (all specs)
+praxis validate all
+
+# Validate scoped to one spec's files (use the "By type:" label from validate all output)
+praxis validate all --type <type>
+
+# Stop on first error — useful for sequential fixing
+praxis validate all --fail-fast
+
+# Validate a single file against its spec
+praxis validate document <path>
+
+# Force re-evaluation without editing the file
+praxis validate document <path> --no-cache
+
+# Show full AI reasoning for a result
+praxis validate document <path> --verbose
+
+# Read cached result without an API call
+praxis validate report <path> --verbose
+
+# Recompile role files into SME agent profiles
+praxis compile
+
+# Inspect or edit .praxis/config.json
+praxis config show
+praxis config edit
+\`\`\`
+
+---
+
+## How specs work
+
+Spec files match \`specFilePattern\` (default: \`README.md\`, configured per project). In this project: \`*.sme.md\`.
+
+A spec file with \`paths:\` frontmatter targets those glob patterns — files of any extension. Without \`paths:\`, it validates sibling files in the same directory.
+
+The compiled SME profile IS the spec: the LLM reads the profile content as the specification when evaluating each targeted file.
+
+---
+
+## Cache behaviour
+
+- Content-hash keyed: edit a file → its cache entry is automatically invalidated on next run
+- Both the document and the spec content are hashed — changing the spec invalidates all entries for files it covers
+- \`--no-cache\` forces re-evaluation without editing (use sparingly, mainly to check LLM non-determinism on borderline results)
+- Never delete \`.praxis/cache/\` — it accumulates valid results and saves API calls
 `;
 
 /**
@@ -130,12 +256,16 @@ export class ClaudeCodePlugin implements CompilerPlugin {
    */
   private ensureCommands(): void {
     const commandsDir = join(this.outputDir, "commands");
-
     if (!existsSync(commandsDir)) {
       mkdirSync(commandsDir, { recursive: true });
     }
+    writeFileSync(join(commandsDir, "praxis-resolve.md"), PRAXIS_RESOLVE_COMMAND);
 
-    writeFileSync(join(commandsDir, "validate.md"), VALIDATE_COMMAND);
+    const skillDir = join(this.outputDir, "skills", "praxis");
+    if (!existsSync(skillDir)) {
+      mkdirSync(skillDir, { recursive: true });
+    }
+    writeFileSync(join(skillDir, "SKILL.md"), PRAXIS_SKILL);
   }
 
   /**

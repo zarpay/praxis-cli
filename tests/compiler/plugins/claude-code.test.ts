@@ -258,22 +258,22 @@ describe("ClaudeCodePlugin", () => {
     expect(pluginJson.keywords).toEqual(["ai", "agents"]);
   });
 
-  it("writes validate command to commands/ directory", () => {
+  it("writes praxis-resolve command to commands/ directory", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
     plugin.compile("Content", { name: "tester", description: "Test" }, "Tester");
 
-    const commandPath = join(root, "plugins", "praxis", "commands", "validate.md");
+    const commandPath = join(root, "plugins", "praxis", "commands", "praxis-resolve.md");
     expect(existsSync(commandPath)).toBe(true);
 
     const content = readFileSync(commandPath, "utf-8");
-    expect(content).toContain("description: Validate a Praxis document");
+    expect(content).toContain("Iteratively resolve Praxis spec violations");
     expect(content).toContain("$ARGUMENTS");
-    expect(content).toContain("README.md");
+    expect(content).toContain("praxis validate all");
   });
 
-  it("writes validate command to custom outputDir", () => {
+  it("writes praxis-resolve command to custom outputDir", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({
       root,
@@ -283,8 +283,23 @@ describe("ClaudeCodePlugin", () => {
 
     plugin.compile("Content", { name: "tester", description: "Test" }, "Tester");
 
-    const commandPath = join(root, "my-plugins", "custom", "commands", "validate.md");
+    const commandPath = join(root, "my-plugins", "custom", "commands", "praxis-resolve.md");
     expect(existsSync(commandPath)).toBe(true);
+  });
+
+  it("writes praxis skill to skills/praxis/SKILL.md", () => {
+    const root = makeTmpdir();
+    const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
+
+    plugin.compile("Content", { name: "tester", description: "Test" }, "Tester");
+
+    const skillPath = join(root, "plugins", "praxis", "skills", "praxis", "SKILL.md");
+    expect(existsSync(skillPath)).toBe(true);
+
+    const content = readFileSync(skillPath, "utf-8");
+    expect(content).toContain("praxis validate");
+    expect(content).toContain("praxis compile");
+    expect(content).toContain("praxis status");
   });
 
   it("writes plugin.json only once for multiple compile calls", () => {
