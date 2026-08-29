@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { ClaudeCodePlugin } from "@/compiler/plugins/claude-code.js";
 import { Logger } from "@/core/logger.js";
+import { readJsonFile } from "../../helpers/read-json.js";
 
 describe("ClaudeCodePlugin", () => {
   const dirs: string[] = [];
@@ -187,7 +188,7 @@ describe("ClaudeCodePlugin", () => {
     const pluginJsonPath = join(root, "plugins", "praxis", ".claude-plugin", "plugin.json");
     expect(existsSync(pluginJsonPath)).toBe(true);
 
-    const pluginJson = JSON.parse(readFileSync(pluginJsonPath, "utf-8"));
+    const pluginJson = readJsonFile<{ name: string }>(pluginJsonPath);
     expect(pluginJson.name).toBe("praxis");
   });
 
@@ -202,7 +203,7 @@ describe("ClaudeCodePlugin", () => {
     plugin.compile("Content", { name: "tester", description: "Test" }, "Tester");
 
     const pluginJsonPath = join(root, "plugins", "praxis", ".claude-plugin", "plugin.json");
-    const pluginJson = JSON.parse(readFileSync(pluginJsonPath, "utf-8"));
+    const pluginJson = readJsonFile<{ name: string }>(pluginJsonPath);
     expect(pluginJson.name).toBe("my-org");
   });
 
@@ -224,8 +225,8 @@ describe("ClaudeCodePlugin", () => {
     expect(existsSync(join(root, "my-plugins", "custom", "agents", "tester.md"))).toBe(true);
 
     // plugin.json in custom output dir with custom name
-    const pluginJson = JSON.parse(
-      readFileSync(join(root, "my-plugins", "custom", ".claude-plugin", "plugin.json"), "utf-8"),
+    const pluginJson = readJsonFile<{ name: string }>(
+      join(root, "my-plugins", "custom", ".claude-plugin", "plugin.json"),
     );
     expect(pluginJson.name).toBe("my-org");
   });
@@ -249,7 +250,12 @@ describe("ClaudeCodePlugin", () => {
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
     plugin.compile("Content", null, "test");
 
-    const pluginJson = JSON.parse(readFileSync(join(pluginDir, "plugin.json"), "utf-8"));
+    const pluginJson = readJsonFile<{
+      name: string;
+      description: string;
+      author: { name: string };
+      keywords: string[];
+    }>(join(pluginDir, "plugin.json"));
     // Name should be updated
     expect(pluginJson.name).toBe("praxis");
     // Custom fields should be preserved

@@ -157,7 +157,7 @@ export class OutputBuilder {
    * Prevents YAML parsing issues in the generated frontmatter.
    */
   private quoteIfNeeded(str: string): string {
-    if (/[:\[\]{}#&*!|>'"%@`\\]/.test(str) || str.includes("\n")) {
+    if (/[:[\]{}#&*!|>'"%@`\\]/.test(str) || str.includes("\n")) {
       const escaped = str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
       return `"${escaped}"`;
     }

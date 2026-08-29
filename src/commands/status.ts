@@ -181,7 +181,7 @@ export async function analyzeProject(root: string, config: PraxisConfig): Promis
     ignore: config.ignore,
     specFilePattern,
   });
-  const allSourceFiles = await batchValidator.listTargetFiles();
+  const allSourceFiles = batchValidator.listTargetFiles();
   const validation = { pass: 0, warn: 0, fail: 0, notValidated: 0 };
 
   for (const filePath of allSourceFiles) {
@@ -232,7 +232,6 @@ async function listContentFiles(
 
   return files.filter((f) => !isSpecFile(f, specFilePattern) && !basename(f).startsWith("_"));
 }
-
 
 /**
  * Displays the status report to the console.

@@ -1,15 +1,15 @@
 import { type FSWatcher, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { Writable } from "node:stream";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { watchAndRecompile } from "@/commands/compile.js";
 import { RoleCompiler } from "@/compiler/role-compiler.js";
 import { PraxisConfig } from "@/core/config.js";
-import { Logger } from "@/core/logger.js";
+import type { Logger } from "@/core/logger.js";
 
 import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
+import { createCaptureLogger } from "../helpers/capture-logger.js";
 
 /** Helper to wait for a given number of milliseconds. */
 function sleep(ms: number): Promise<void> {
@@ -19,7 +19,7 @@ function sleep(ms: number): Promise<void> {
 describe("watchAndRecompile", () => {
   let tmpdir: string;
   let cleanup: () => void;
-  let logOutput: string;
+  let logOutput: () => string;
   let logger: Logger;
   let compiler: RoleCompiler;
   let config: PraxisConfig;
@@ -30,14 +30,9 @@ describe("watchAndRecompile", () => {
     tmpdir = ctx.tmpdir;
     cleanup = ctx.cleanup;
 
-    logOutput = "";
-    const stream = new Writable({
-      write(chunk, _encoding, callback) {
-        logOutput += chunk.toString();
-        callback();
-      },
-    });
-    logger = new Logger({ output: stream, color: false });
+    const capture = createCaptureLogger();
+    logger = capture.logger;
+    logOutput = capture.output;
     config = new PraxisConfig(tmpdir);
     compiler = new RoleCompiler({ root: tmpdir, logger, config });
   });
@@ -62,8 +57,8 @@ describe("watchAndRecompile", () => {
   it("logs watching message on start", () => {
     watchers = watchAndRecompile(tmpdir, config, compiler, logger, { debounceMs: 50 });
 
-    expect(logOutput).toContain("Watching");
-    expect(logOutput).toContain("for changes");
+    expect(logOutput()).toContain("Watching");
+    expect(logOutput()).toContain("for changes");
   });
 
   it("triggers recompile on file change", async () => {
@@ -78,8 +73,8 @@ describe("watchAndRecompile", () => {
     // Wait for debounce + processing
     await sleep(300);
 
-    expect(logOutput).toContain("Change detected");
-    expect(logOutput).toContain("recompiling");
+    expect(logOutput()).toContain("Change detected");
+    expect(logOutput()).toContain("recompiling");
   });
 
   it("debounces rapid changes", async () => {
@@ -97,7 +92,7 @@ describe("watchAndRecompile", () => {
     await sleep(400);
 
     // Should see "Change detected" only once (debounced)
-    const changeCount = (logOutput.match(/Change detected/g) || []).length;
+    const changeCount = (logOutput().match(/Change detected/g) ?? []).length;
     expect(changeCount).toBe(1);
   });
 });

@@ -176,7 +176,7 @@ export function registerValidateCommand(program: Command): void {
     .command("report <path>")
     .description("Show cached validation status for a document")
     .option("--verbose", "show full AI reasoning", false)
-    .action(async (path: string, options: { verbose: boolean }) => {
+    .action((path: string, options: { verbose: boolean }) => {
       const logger = new Logger();
 
       try {
@@ -215,7 +215,7 @@ export function registerValidateCommand(program: Command): void {
  */
 function requireValidationConfig(config: PraxisConfig, logger: Logger): ValidationConfig {
   const validation = config.validation;
-  if (!validation || !validation.apiKeyEnvVar || !validation.model) {
+  if (!validation?.apiKeyEnvVar || !validation.model) {
     logger.error("Missing validation configuration in .praxis/config.json");
     logger.error("");
     logger.error("Add a 'validation' section to your config:");

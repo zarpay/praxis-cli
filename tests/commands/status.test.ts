@@ -139,11 +139,15 @@ describe("analyzeProject", () => {
       files: {
         // Spec targets .rb files via paths:
         "docs/events.sme.md":
-          "---\npaths:\n  - \"src/**/*.rb\"\n---\n# Spec\nAll Ruby files need a comment.",
+          '---\npaths:\n  - "src/**/*.rb"\n---\n# Spec\nAll Ruby files need a comment.',
         "src/account_event.rb": "# AccountEvent",
         "src/user_event.rb": "# UserEvent",
       },
-      validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "test", specFilePattern: "*.sme.md" },
+      validation: {
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.sme.md",
+      },
     });
 
     const nonMdConfig = new PraxisConfig(root);

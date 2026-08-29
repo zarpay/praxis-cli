@@ -12,13 +12,7 @@ import { hasGlobChars } from "./spec-pattern.js";
 
 /** Known document types within the Praxis content structure. */
 export type DocumentType =
-  | "role"
-  | "responsibility"
-  | "reference"
-  | "convention"
-  | "constitution"
-  | "template"
-  | "unknown";
+  "role" | "responsibility" | "reference" | "convention" | "constitution" | "template" | "unknown";
 
 /**
  * AI-powered document validator using the OpenRouter API.
@@ -187,9 +181,9 @@ export class DocumentValidator {
       function: { name: string; arguments: string };
     }
     interface OpenRouterResponse {
-      choices: Array<{
+      choices: {
         message: { role: string; content: string | null; tool_calls?: ToolCall[] };
-      }>;
+      }[];
     }
 
     const data = (await response.json()) as OpenRouterResponse;

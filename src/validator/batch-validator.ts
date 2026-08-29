@@ -123,7 +123,7 @@ export class BatchValidator {
     this.stoppedEarly = false;
     this.sourceDocCount = this.countAllSourceDocuments();
 
-    const domains = await this.discoverValidationDomains();
+    const domains = this.discoverValidationDomains();
     const queue = domains.flatMap((domain) =>
       this.resolveDocuments(domain).map((docPath) => ({ docPath, domain })),
     );
@@ -151,7 +151,7 @@ export class BatchValidator {
     this.stoppedEarly = false;
     this.sourceDocCount = this.countAllSourceDocuments();
 
-    const domains = await this.discoverValidationDomains();
+    const domains = this.discoverValidationDomains();
     const matching = domains.filter((d) => d.type === type || basename(d.dir) === type);
 
     if (matching.length === 0) {
@@ -180,8 +180,8 @@ export class BatchValidator {
    * Includes files of any extension targeted via spec `paths:` frontmatter,
    * not just .md files. Used by status to compute accurate coverage counts.
    */
-  async listTargetFiles(): Promise<string[]> {
-    const domains = await this.discoverValidationDomains();
+  listTargetFiles(): string[] {
+    const domains = this.discoverValidationDomains();
     return domains.flatMap((domain) => this.resolveDocuments(domain));
   }
 
@@ -274,7 +274,7 @@ export class BatchValidator {
    * root to build an explicit target file list. Otherwise the spec validates
    * sibling files in its own directory.
    */
-  private async discoverValidationDomains(): Promise<ValidationDomain[]> {
+  private discoverValidationDomains(): ValidationDomain[] {
     const domains: ValidationDomain[] = [];
 
     for (const source of this.sources) {

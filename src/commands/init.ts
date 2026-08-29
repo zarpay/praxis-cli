@@ -33,7 +33,7 @@ export function registerInitCommand(program: Command): void {
     .command("init")
     .description("Initialize a new Praxis project")
     .argument("[directory]", "target directory (defaults to current directory)", ".")
-    .action(async (directory: string) => {
+    .action((directory: string) => {
       const logger = new Logger();
       const targetDir = resolve(directory);
 

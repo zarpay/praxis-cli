@@ -18,9 +18,7 @@ export class Paths {
 
   /** The project root directory (parent of `.praxis/`). */
   get root(): string {
-    if (!this.cachedRoot) {
-      this.cachedRoot = this.findRoot();
-    }
+    this.cachedRoot ??= this.findRoot();
     return this.cachedRoot;
   }
 

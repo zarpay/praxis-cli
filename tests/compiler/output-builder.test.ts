@@ -35,7 +35,7 @@ describe("OutputBuilder", () => {
       const output = builder.build();
 
       expect(output).toContain("Only responsibility.");
-      const dashCount = (output.match(/---/g) || []).length;
+      const dashCount = (output.match(/---/g) ?? []).length;
       expect(dashCount).toBeLessThanOrEqual(1);
     });
 

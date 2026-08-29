@@ -27,9 +27,7 @@ export class Frontmatter {
    * Results are cached after the first call.
    */
   parse(): Record<string, unknown> {
-    if (!this.cached) {
-      this.cached = this.extractAndParse();
-    }
+    this.cached ??= this.extractAndParse();
     return this.cached;
   }
 

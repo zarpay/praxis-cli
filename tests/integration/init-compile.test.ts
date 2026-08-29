@@ -9,6 +9,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { initProject } from "@/commands/init.js";
 import { RoleCompiler } from "@/compiler/role-compiler.js";
 import { Logger } from "@/core/logger.js";
+import { readJsonFile } from "../helpers/read-json.js";
 
 /** Resolved path to the scaffold directory at the project root. */
 const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
@@ -71,7 +72,7 @@ describe("init → compile integration", () => {
     const pluginJsonPath = join(dir, "plugins", "praxis", ".claude-plugin", "plugin.json");
     expect(existsSync(pluginJsonPath)).toBe(true);
 
-    const pluginJson = JSON.parse(readFileSync(pluginJsonPath, "utf-8"));
+    const pluginJson = readJsonFile<{ name: string }>(pluginJsonPath);
     expect(pluginJson.name).toBe("praxis");
   });
 

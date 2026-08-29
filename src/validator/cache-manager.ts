@@ -203,7 +203,7 @@ export class CacheManager {
       if (fileData.version === CACHE_VERSION) {
         const v2 = fileData as CacheFileDataV2;
         const entry = v2.validations[this.specHash(specPath)];
-        if (!entry || entry.content_hash !== contentHash) return null;
+        if (entry?.content_hash !== contentHash) return null;
         return entry.result;
       }
 
@@ -269,7 +269,7 @@ export class CacheManager {
         if (specPath && this.specHash(v1.document.spec_path) !== this.specHash(specPath)) {
           return null;
         }
-        return v1 as CacheFileData;
+        return v1;
       }
 
       return null;
@@ -511,5 +511,6 @@ export function contentHash(documentContent: string, readmeContent: string): str
  * malformed JSON in cache files. Preserves newlines, carriage returns, and tabs.
  */
 function sanitizeText(text: string): string {
+  // eslint-disable-next-line no-control-regex -- stripping control characters is the point
   return text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").replace(/"/g, "'");
 }

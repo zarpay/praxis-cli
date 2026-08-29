@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { initProject } from "@/commands/init.js";
 import { Logger } from "@/core/logger.js";
+import { readJsonFile } from "../helpers/read-json.js";
 
 /** Resolved path to the scaffold directory at the project root. */
 const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
@@ -90,7 +91,13 @@ describe("initProject", () => {
     const configPath = join(dir, ".praxis", "config.json");
     expect(existsSync(configPath)).toBe(true);
 
-    const config = JSON.parse(readFileSync(configPath, "utf-8"));
+    const config = readJsonFile<{
+      agentProfilesOutputDir: string;
+      plugins: string[];
+      sources: string[];
+      rolesDir: string;
+      validation: { apiKeyEnvVar: string; model: string };
+    }>(configPath);
     expect(config.agentProfilesOutputDir).toBe("./agent-profiles");
     expect(config.plugins).toEqual([]);
     expect(config.sources).toEqual(["roles", "responsibilities", "reference", "context"]);
@@ -140,8 +147,8 @@ describe("initProject", () => {
 
     initProject(dir, logger, SCAFFOLD_DIR);
 
-    const pluginJson = JSON.parse(
-      readFileSync(join(dir, "plugins", "praxis", ".claude-plugin", "plugin.json"), "utf-8"),
+    const pluginJson = readJsonFile<{ name: string }>(
+      join(dir, "plugins", "praxis", ".claude-plugin", "plugin.json"),
     );
     // Default claudeCodePluginName is "praxis"
     expect(pluginJson.name).toBe("praxis");
@@ -172,7 +179,7 @@ describe("initProject", () => {
     const pluginJsonPath = join(dir, "my-plugins", "custom", ".claude-plugin", "plugin.json");
     expect(existsSync(pluginJsonPath)).toBe(true);
 
-    const pluginJson = JSON.parse(readFileSync(pluginJsonPath, "utf-8"));
+    const pluginJson = readJsonFile<{ name: string }>(pluginJsonPath);
     expect(pluginJson.name).toBe("my-org");
   });
 
