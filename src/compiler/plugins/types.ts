@@ -25,7 +25,9 @@ export interface CompilerPlugin {
 
 /** Options passed to plugin constructors. */
 export interface PluginOptions {
+  /** Project root the plugin resolves output paths against. */
   root: string;
+  /** Logger for plugin diagnostics. */
   logger: Logger;
   /** Per-plugin configuration from config.json. */
   pluginConfig?: PluginConfigEntry;

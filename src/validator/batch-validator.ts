@@ -22,11 +22,17 @@ export interface BatchValidationResult extends CachedValidationResult {
 
 /** Aggregated validation summary across all documents. */
 export interface ValidationSummary {
+  /** All documents seen: source .md docs plus any paths:-targeted files. */
   total: number;
+  /** Documents whose result was compliant. */
   compliant: number;
+  /** Non-compliant results with warning severity. */
   warnings: number;
+  /** Non-compliant results with error severity. */
   errors: number;
+  /** Documents no result covers (no spec, or skipped by fail-fast). */
   notValidated: number;
+  /** Per-type breakdown, keyed by validation domain type label. */
   byType: Record<
     string,
     {

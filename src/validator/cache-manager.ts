@@ -19,9 +19,13 @@ export type Severity = "warning" | "error";
 
 /** Result of a single document validation, as stored in cache. */
 export interface CachedValidationResult {
+  /** Whether the document satisfies its spec. */
   compliant: boolean;
+  /** Specific deviations reported by the model (empty when compliant). */
   issues: string[];
+  /** The model's overall explanation of the verdict. */
   reason: string;
+  /** Present only when non-compliant: warning or error. */
   severity?: Severity;
 }
 
@@ -314,6 +318,8 @@ export class CacheManager {
 
   /**
    * Returns statistics about the current cache.
+   *
+   * Not yet surfaced by any CLI command; kept for cache tooling.
    */
   stats(): { totalFiles: number; totalSize: number; byType: Record<string, number> } {
     const cacheFiles = fg.sync("**/*.json", { cwd: this.cacheRoot, absolute: true });
@@ -341,6 +347,10 @@ export class CacheManager {
    *
    * A cache file is orphaned if the source document was deleted.
    * Stale hashes are no longer orphans — they get overwritten in-place.
+   *
+   * Known limitation: only deleted documents are detected. Entries whose
+   * spec was deleted (while the document still exists) are not reported.
+   * Not yet surfaced by any CLI command; kept for cache tooling.
    *
    * @param root - Project root directory
    * @param sources - Array of source directory paths relative to root

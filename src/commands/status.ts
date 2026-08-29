@@ -16,22 +16,29 @@ import { isSpecFile } from "@/validator/spec-pattern.js";
 
 /** Structured report of project health. */
 export interface StatusReport {
+  /** Document counts by content type. */
   counts: {
     roles: number;
     responsibilities: number;
     references: number;
     context: number;
   };
+  /** Cached validation verdict counts across all spec targets. */
   validation: {
     pass: number;
     warn: number;
     fail: number;
     notValidated: number;
   };
+  /** Responsibility files no role references. */
   orphanedResponsibilities: string[];
+  /** Role references pointing at files that do not exist. */
   danglingRefs: { role: string; ref: string }[];
+  /** Role files missing the `description` frontmatter field. */
   rolesMissingDescription: string[];
+  /** Role glob references that match no files. */
   zeroMatchGlobs: { role: string; pattern: string }[];
+  /** Responsibilities whose `owner` matches no role alias. */
   unmatchedOwners: { responsibility: string; owner: string }[];
 }
 
