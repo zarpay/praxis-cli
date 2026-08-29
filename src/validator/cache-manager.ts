@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 
 import fg from "fast-glob";
@@ -261,7 +261,7 @@ export class CacheManager {
           ? v2.validations[this.specHash(specPath)]
           : Object.values(v2.validations)[0];
         if (!entry) return null;
-        return this.entrytoCacheFileData(documentPath, entry);
+        return this.entryToCacheFileData(documentPath, entry);
       }
 
       if (fileData.version === CACHE_VERSION_V1) {
@@ -298,7 +298,7 @@ export class CacheManager {
       if (fileData.version === CACHE_VERSION) {
         const v2 = fileData as CacheFileDataV2;
         return Object.values(v2.validations).map((entry) =>
-          this.entrytoCacheFileData(documentPath, entry),
+          this.entryToCacheFileData(documentPath, entry),
         );
       }
 
@@ -323,8 +323,7 @@ export class CacheManager {
 
     for (const file of cacheFiles) {
       try {
-        const stat = readFileSync(file);
-        totalSize += stat.length;
+        totalSize += statSync(file).size;
       } catch {
         /* skip unreadable files */
       }
@@ -420,7 +419,7 @@ export class CacheManager {
   }
 
   /** Constructs a CacheFileData view from a SpecCacheEntry (for backwards-compat callers). */
-  private entrytoCacheFileData(documentPath: string, entry: SpecCacheEntry): CacheFileData {
+  private entryToCacheFileData(documentPath: string, entry: SpecCacheEntry): CacheFileData {
     return {
       version: CACHE_VERSION,
       cached_at: entry.cached_at,
@@ -494,14 +493,15 @@ export class CacheManager {
 }
 
 /**
- * Computes a cache-key hash from document and readme content.
+ * Computes a cache-key hash from document and spec content.
  *
- * Returns the first 8 characters of the SHA256 hex digest, matching
- * the Ruby implementation's behavior for cache compatibility.
+ * Returns the first 8 characters of the SHA256 hex digest. Both inputs
+ * participate so that editing either the document or its spec
+ * invalidates the cached verdict.
  */
-export function contentHash(documentContent: string, readmeContent: string): string {
+export function contentHash(documentContent: string, specContent: string): string {
   return createHash("sha256")
-    .update(documentContent + readmeContent)
+    .update(documentContent + specContent)
     .digest("hex")
     .slice(0, 8);
 }

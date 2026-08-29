@@ -2,8 +2,8 @@ import { basename, dirname, join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 
 import fg from "fast-glob";
-import yaml from "js-yaml";
 
+import { Frontmatter } from "@/compiler/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 
 import { type CachedValidationResult, CacheManager, contentHash } from "./cache-manager.js";
@@ -14,21 +14,36 @@ import { hasGlobChars } from "./spec-pattern.js";
 export type DocumentType =
   "role" | "responsibility" | "reference" | "convention" | "constitution" | "template" | "unknown";
 
+/** Document types that can be declared via the `type` frontmatter field. */
+const FRONTMATTER_TYPES: readonly DocumentType[] = [
+  "role",
+  "responsibility",
+  "reference",
+  "convention",
+  "constitution",
+];
+
 /**
  * AI-powered document validator using the OpenRouter API.
  *
- * Validates a Praxis document against the README specification in its
- * directory. Uses the Grok model via OpenRouter to evaluate compliance,
- * returning structured results with compliance status, issues, and severity.
+ * Validates a Praxis document against the spec file for its directory
+ * (or an explicitly provided spec). The configured model evaluates
+ * compliance and reports via a required tool call, producing structured
+ * results with compliance status, issues, and severity.
  *
  * Supports caching: if a valid cached result exists for the current
- * content hash (document + readme), it is returned without making an API call.
+ * content hash (document + spec), it is returned without an API call.
  */
 export class DocumentValidator {
+  /** Path of the document under validation. */
   readonly documentPath: string;
-  readonly readmePath: string;
+  /** Path of the spec the document is validated against. */
+  readonly specPath: string;
+  /** Document content as read at construction time. */
   readonly documentContent: string;
-  readonly readmeContent: string;
+  /** Spec content as read at construction time. */
+  readonly specContent: string;
+  /** Detected type of the document (frontmatter or path-derived). */
   readonly documentType: DocumentType;
 
   private result: CachedValidationResult | null = null;
@@ -61,8 +76,8 @@ export class DocumentValidator {
     this.documentContent = readFileSync(documentPath, "utf-8");
     this.documentType = this.detectDocumentType();
     this.specFilePattern = specFilePattern;
-    this.readmePath = specPath ?? this.findSpec();
-    this.readmeContent = readFileSync(this.readmePath, "utf-8");
+    this.specPath = specPath ?? this.findSpec();
+    this.specContent = readFileSync(this.specPath, "utf-8");
     this.useCache = useCache;
     this.cacheManager = cacheManager ?? (useCache ? new CacheManager() : null);
     this.apiKeyEnvVar = apiKeyEnvVar;
@@ -74,16 +89,16 @@ export class DocumentValidator {
     return this.wasCacheHit;
   }
 
-  /** Computes a content hash for cache invalidation (SHA256 of doc+readme, first 8 chars). */
+  /** Computes a content hash for cache invalidation (SHA256 of doc+spec, first 8 chars). */
   getContentHash(): string {
-    return contentHash(this.documentContent, this.readmeContent);
+    return contentHash(this.documentContent, this.specContent);
   }
 
   /**
-   * Validates the document against its README specification.
+   * Validates the document against its specification.
    *
-   * Checks the cache first; on miss, calls the OpenRouter API.
-   * Caches the result on API call completion.
+   * Checks the cache first; on miss, calls the OpenRouter API and
+   * caches the result.
    *
    * @returns Structured validation result
    */
@@ -93,7 +108,7 @@ export class DocumentValidator {
       const cachedResult = this.cacheManager.read({
         documentPath: this.documentPath,
         contentHash: hash,
-        specPath: this.readmePath,
+        specPath: this.specPath,
       });
 
       if (cachedResult) {
@@ -113,7 +128,7 @@ export class DocumentValidator {
         result: this.result,
         metadata: {
           documentType: this.documentType,
-          specPath: this.readmePath,
+          specPath: this.specPath,
         },
       });
     }
@@ -218,7 +233,7 @@ export class DocumentValidator {
     return `## SPECIFICATION
 
 \`\`\`
-${this.readmeContent}
+${this.specContent}
 \`\`\`
 
 ## FILE TO VALIDATE
@@ -231,29 +246,24 @@ ${this.documentContent}
 \`\`\``;
   }
 
-  /** Detects the document type from frontmatter or path inference. */
+  /**
+   * Detects the document type from frontmatter or path inference.
+   *
+   * Files starting with `_` are templates. Otherwise, the `type`
+   * frontmatter field wins when it names a known type; failing that,
+   * the type is inferred from the document's directory path.
+   */
   private detectDocumentType(): DocumentType {
     if (basename(this.documentPath).startsWith("_")) {
       return "template";
     }
 
-    const frontmatter = this.extractFrontmatter();
-
-    const type = frontmatter["type"] as string | undefined;
-    switch (type) {
-      case "role":
-        return "role";
-      case "responsibility":
-        return "responsibility";
-      case "reference":
-        return "reference";
-      case "convention":
-        return "convention";
-      case "constitution":
-        return "constitution";
-      default:
-        return this.inferTypeFromPath();
+    const type = Frontmatter.fromContent(this.documentContent).value("type");
+    if (typeof type === "string" && (FRONTMATTER_TYPES as string[]).includes(type)) {
+      return type as DocumentType;
     }
+
+    return this.inferTypeFromPath();
   }
 
   /** Infers document type from its filesystem path. */
@@ -264,25 +274,6 @@ ${this.documentContent}
     if (this.documentPath.includes("/conventions/")) return "convention";
     if (this.documentPath.includes("/constitution/")) return "constitution";
     return "unknown";
-  }
-
-  /** Extracts and parses YAML frontmatter from the document content. */
-  private extractFrontmatter(): Record<string, unknown> {
-    if (!this.documentContent.startsWith("---\n")) {
-      return {};
-    }
-
-    const endIndex = this.documentContent.indexOf("\n---", 4);
-    if (endIndex === -1) {
-      return {};
-    }
-
-    try {
-      const yamlStr = this.documentContent.slice(4, endIndex);
-      return (yaml.load(yamlStr) as Record<string, unknown>) ?? {};
-    } catch {
-      return {};
-    }
   }
 
   /** Finds the spec file in the document's directory using the configured pattern. */

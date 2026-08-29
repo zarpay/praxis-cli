@@ -4,8 +4,10 @@ import type { PluginConfigEntry } from "@/core/config.js";
 import { ClaudeCodePlugin } from "./plugins/claude-code.js";
 import type { CompilerPlugin, PluginOptions } from "./plugins/types.js";
 
+/** Constructor signature every compiler plugin class must satisfy. */
 type PluginConstructor = new (options: PluginOptions) => CompilerPlugin;
 
+/** Registry of available plugins, keyed by the name used in config.json. */
 const PLUGINS: Record<string, PluginConstructor> = {
   "claude-code": ClaudeCodePlugin,
 };

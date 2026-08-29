@@ -135,7 +135,7 @@ async function findRoleByAlias(rolesDir: string, targetAlias: string): Promise<s
   });
 
   for (const roleFile of roleFiles) {
-    const fm = new Frontmatter(roleFile);
+    const fm = Frontmatter.fromFile(roleFile);
     const alias = fm.value("alias") as string | undefined;
     if (alias?.toLowerCase() === targetAlias.toLowerCase()) {
       return roleFile;

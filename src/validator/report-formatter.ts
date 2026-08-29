@@ -61,13 +61,13 @@ export function buildReport(
  */
 export function computeCurrentHash(
   documentPath: string,
-  readmePath?: string,
+  specPath?: string,
   specFilePattern?: string,
 ): string | null {
   try {
     const docContent = readFileSync(documentPath, "utf-8");
     const resolvedSpec =
-      readmePath ?? findSpecForDocument(documentPath, specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN);
+      specPath ?? findSpecForDocument(documentPath, specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN);
 
     if (!resolvedSpec || !existsSync(resolvedSpec)) return null;
 

@@ -8,6 +8,7 @@ import chalk from "chalk";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 
+/** Horizontal rule used in the config header output. */
 const DIVIDER = chalk.cyan("─".repeat(42));
 
 /**
@@ -43,6 +44,12 @@ export function editConfig(configPath: string): void {
   }
 }
 
+/**
+ * Registers the `praxis config` command group.
+ *
+ * Provides subcommands for viewing (`show`) and editing (`edit`)
+ * the project's .praxis/config.json.
+ */
 export function registerConfigCommand(program: Command): void {
   const config = program.command("config").description("View or edit the project configuration");
 

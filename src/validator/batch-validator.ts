@@ -12,8 +12,11 @@ import { isSpecFile } from "./spec-pattern.js";
 
 /** Extended validation result that includes file path and type information. */
 export interface BatchValidationResult extends CachedValidationResult {
+  /** Absolute path of the validated document. */
   path: string;
+  /** Type label of the domain that validated it (spec directory, root-relative). */
   type: string;
+  /** Basename of the validated document. */
   filename: string;
 }
 
@@ -36,9 +39,13 @@ export interface ValidationSummary {
 
 /** A validation domain: a spec file and the documents it validates. */
 interface ValidationDomain {
+  /** Directory containing the spec file. */
   dir: string;
-  readmePath: string;
+  /** Absolute path to the spec file. */
+  specPath: string;
+  /** Type label derived from the spec's directory (root-relative path). */
   type: string;
+  /** Explicit target list when the spec declares `paths:` frontmatter. */
   targetFiles?: string[];
 }
 
@@ -51,9 +58,13 @@ interface ValidationDomain {
  * optional fail-fast behavior and cache statistics.
  */
 export class BatchValidator {
+  /** Project root all paths resolve against. */
   readonly root: string;
+  /** Source directories (relative to root) scanned for spec files. */
   readonly sources: string[];
+  /** Whether validation stops at the first error result. */
   readonly failFast: boolean;
+  /** Cache hit/miss counts accumulated across the run. */
   readonly cacheStats: { hits: number; misses: number };
 
   private readonly useCache: boolean;
@@ -64,7 +75,7 @@ export class BatchValidator {
   private readonly absoluteIgnore: string[];
   private results: BatchValidationResult[] = [];
   private stoppedEarly = false;
-  private sourceDocCount = 0;
+  private sourceDocs = new Set<string>();
   private validatedCount = 0;
   private totalToValidate = 0;
 
@@ -114,30 +125,11 @@ export class BatchValidator {
   /**
    * Validates all documents across all discovered validation domains.
    *
-   * Scans source directories for directories containing README.md,
-   * then validates all .md files in those directories.
-   * Skips READMEs and template files. Respects fail-fast if enabled.
+   * Scans source directories for spec files, then validates every
+   * document each spec targets. Respects fail-fast if enabled.
    */
   async validateAll(): Promise<BatchValidationResult[]> {
-    this.results = [];
-    this.stoppedEarly = false;
-    this.sourceDocCount = this.countAllSourceDocuments();
-
-    const domains = this.discoverValidationDomains();
-    const queue = domains.flatMap((domain) =>
-      this.resolveDocuments(domain).map((docPath) => ({ docPath, domain })),
-    );
-
-    this.validatedCount = 0;
-    this.totalToValidate = queue.length;
-
-    for (const { docPath, domain } of queue) {
-      if (this.stoppedEarly) break;
-      await this.validateDocument(docPath, domain.readmePath, domain.type);
-      this.checkFailFast();
-    }
-
-    return this.results;
+    return this.runValidation(this.discoverValidationDomains());
   }
 
   /**
@@ -147,10 +139,6 @@ export class BatchValidator {
    * @throws Error if no matching type is found
    */
   async validateType(type: string): Promise<BatchValidationResult[]> {
-    this.results = [];
-    this.stoppedEarly = false;
-    this.sourceDocCount = this.countAllSourceDocuments();
-
     const domains = this.discoverValidationDomains();
     const matching = domains.filter((d) => d.type === type || basename(d.dir) === type);
 
@@ -158,7 +146,20 @@ export class BatchValidator {
       throw new Error(`Unknown document type: ${type}`);
     }
 
-    const queue = matching.flatMap((domain) =>
+    return this.runValidation(matching);
+  }
+
+  /**
+   * Resets state and validates every document targeted by the given domains.
+   *
+   * Shared implementation behind validateAll() and validateType().
+   */
+  private async runValidation(domains: ValidationDomain[]): Promise<BatchValidationResult[]> {
+    this.results = [];
+    this.stoppedEarly = false;
+    this.sourceDocs = this.collectSourceDocuments();
+
+    const queue = domains.flatMap((domain) =>
       this.resolveDocuments(domain).map((docPath) => ({ docPath, domain })),
     );
 
@@ -167,7 +168,7 @@ export class BatchValidator {
 
     for (const { docPath, domain } of queue) {
       if (this.stoppedEarly) break;
-      await this.validateDocument(docPath, domain.readmePath, domain.type);
+      await this.validateDocument(docPath, domain.specPath, domain.type);
       this.checkFailFast();
     }
 
@@ -185,7 +186,15 @@ export class BatchValidator {
     return domains.flatMap((domain) => this.resolveDocuments(domain));
   }
 
-  /** Computes an aggregated summary of all validation results. */
+  /**
+   * Computes an aggregated summary of all validation results.
+   *
+   * `total` covers every document seen: all .md documents in the source
+   * directories plus any files validated via spec `paths:` targeting
+   * (which may live outside the sources and have any extension).
+   * `notValidated` is the count of those documents no result covers —
+   * source documents without a spec, or targets skipped by fail-fast.
+   */
   summary(): ValidationSummary {
     const byType: ValidationSummary["byType"] = {};
 
@@ -201,33 +210,35 @@ export class BatchValidator {
       }
     }
 
-    const validated = this.results.length;
+    const validatedPaths = new Set(this.results.map((r) => r.path));
+    const allDocs = new Set([...this.sourceDocs, ...validatedPaths]);
 
     return {
-      total: this.sourceDocCount > 0 ? this.sourceDocCount : validated,
+      total: allDocs.size,
       compliant: this.results.filter((r) => r.compliant).length,
       warnings: this.results.filter((r) => !r.compliant && r.severity === "warning").length,
       errors: this.results.filter((r) => !r.compliant && r.severity === "error").length,
-      notValidated: this.sourceDocCount > 0 ? this.sourceDocCount - validated : 0,
+      notValidated: allDocs.size - validatedPaths.size,
       byType,
     };
   }
 
   /**
-   * Counts all .md documents across source directories.
+   * Collects the absolute paths of all .md documents across source directories.
    *
-   * Includes documents in directories without a README.md spec,
-   * providing the true total of source documents. Excludes READMEs
-   * and template files (those starting with `_`).
+   * Includes documents in directories without a spec file, providing the
+   * true universe of source documents for summary() denominators.
+   * Excludes spec files and templates (files starting with `_`).
    */
-  private countAllSourceDocuments(): number {
-    let count = 0;
+  private collectSourceDocuments(): Set<string> {
+    const docs = new Set<string>();
 
     for (const source of this.sources) {
       const sourceAbsPath = join(this.root, source);
       const allMdFiles = fg.sync("**/*.md", {
         cwd: sourceAbsPath,
         onlyFiles: true,
+        absolute: true,
         dot: true,
         ignore: this.absoluteIgnore,
       });
@@ -235,11 +246,11 @@ export class BatchValidator {
       for (const file of allMdFiles) {
         const name = basename(file);
         if (isSpecFile(name, this.specFilePattern) || name.startsWith("_")) continue;
-        count++;
+        docs.add(file);
       }
     }
 
-    return count;
+    return docs;
   }
 
   /**
@@ -290,7 +301,7 @@ export class BatchValidator {
         const dir = dirname(specPath);
         const type = relative(this.root, dir) || basename(dir);
 
-        const fm = new Frontmatter(specPath);
+        const fm = Frontmatter.fromFile(specPath);
         const pathPatterns = fm.array("paths") as string[];
 
         if (pathPatterns.length > 0) {
@@ -307,9 +318,9 @@ export class BatchValidator {
               return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
             });
 
-          domains.push({ dir, readmePath: specPath, type, targetFiles });
+          domains.push({ dir, specPath, type, targetFiles });
         } else {
-          domains.push({ dir, readmePath: specPath, type });
+          domains.push({ dir, specPath, type });
         }
       }
     }

@@ -332,8 +332,8 @@ describe("BatchValidator", () => {
         specFilePattern: "*.praxis.md",
       });
 
-      const count = batch["countAllSourceDocuments"]();
-      expect(count).toBe(1); // only counted.md; generated/output.md is ignored
+      const docs = batch["collectSourceDocuments"]();
+      expect(docs.size).toBe(1); // only counted.md; generated/output.md is ignored
 
       cleanup();
     });
@@ -372,6 +372,42 @@ describe("BatchValidator", () => {
   });
 
   describe("summary()", () => {
+    it("counts non-.md targets without going negative", async () => {
+      useCompliantFixture();
+
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          // One spec targeting three .rb files; no other .md source docs.
+          "docs/events.sme.md": '---\npaths:\n  - "src/**/*.rb"\n---\n# Spec',
+          "src/a.rb": "# A",
+          "src/b.rb": "# B",
+          "src/c.rb": "# C",
+        },
+        validation: { specFilePattern: "*.sme.md" },
+      });
+
+      const batch = new BatchValidator({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.sme.md",
+      });
+
+      await batch.validateAll();
+      const summary = batch.summary();
+
+      // Three validated targets outnumber the zero .md source docs;
+      // the totals must reflect the targets, never a negative remainder.
+      expect(summary.total).toBe(3);
+      expect(summary.compliant).toBe(3);
+      expect(summary.notValidated).toBe(0);
+
+      cleanup();
+    });
+
     it("aggregates results correctly", async () => {
       useCompliantFixture();
 

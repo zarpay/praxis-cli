@@ -168,6 +168,13 @@ describe("PraxisConfig", () => {
     expect(config.responsibilitiesDir).toBe(join(dir, "knowledge", "responsibilities"));
   });
 
+  it("throws a descriptive error for invalid JSON", () => {
+    const dir = makeTmpdir();
+    writeFileSync(join(dir, ".praxis", "config.json"), "not json{{{");
+
+    expect(() => new PraxisConfig(dir)).toThrow(/Invalid JSON in .*config\.json/);
+  });
+
   it("loads validation config from config file", () => {
     const dir = makeTmpdir();
     writeConfig(dir, {

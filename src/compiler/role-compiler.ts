@@ -12,6 +12,7 @@ import { GlobExpander } from "./glob-expander.js";
 import { Markdown } from "./markdown.js";
 import { type AgentMetadata, OutputBuilder } from "./output-builder.js";
 import { resolvePlugins } from "./plugin-registry.js";
+import type { CompilerPlugin } from "./plugins/types.js";
 
 /**
  * Compiles role definition files into agent profiles and plugin-specific output.
@@ -28,6 +29,8 @@ export class RoleCompiler {
   private readonly logger: Logger;
   private readonly config: PraxisConfig;
   private readonly globExpander: GlobExpander;
+  private readonly specFilePattern: string;
+  private readonly plugins: CompilerPlugin[];
 
   constructor({
     root,
@@ -41,8 +44,12 @@ export class RoleCompiler {
     this.root = root;
     this.logger = logger;
     this.config = config ?? new PraxisConfig(root);
-    const specFilePattern = this.config.validation?.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
-    this.globExpander = new GlobExpander(root, specFilePattern);
+    this.specFilePattern = this.config.validation?.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
+    this.globExpander = new GlobExpander(root, this.specFilePattern);
+    // Plugins are stateful (e.g. the Claude Code plugin writes its
+    // manifest once per run), so they are instantiated once here rather
+    // than per compiled role.
+    this.plugins = resolvePlugins(this.config.plugins, this.root, this.logger);
   }
 
   /**
@@ -52,7 +59,7 @@ export class RoleCompiler {
    * @returns The role alias, or null if the role was skipped
    */
   async compile(roleFile: string): Promise<string | null> {
-    const fm = new Frontmatter(roleFile);
+    const fm = Frontmatter.fromFile(roleFile);
     const roleAlias = fm.value("alias") as string | undefined;
 
     if (!roleAlias) {
@@ -70,7 +77,8 @@ export class RoleCompiler {
   /**
    * Compiles all role files found in the project's roles directory.
    *
-   * Skips `_template.md`, `README.md`, and roles without an alias.
+   * Skips templates (`_template.md`), spec files, and roles without
+   * an alias (compile() logs a warning for the latter).
    *
    * @returns Summary with the count of compiled agents
    */
@@ -83,25 +91,14 @@ export class RoleCompiler {
 
     let compiled = 0;
 
-    const specFilePattern = this.config.validation?.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
-
     for (const roleFile of roleFiles) {
       const name = basename(roleFile);
-      if (name === "_template.md" || isSpecFile(name, specFilePattern)) {
+      if (name === "_template.md" || isSpecFile(name, this.specFilePattern)) {
         continue;
       }
 
-      const fm = new Frontmatter(roleFile);
-      const roleAlias = fm.value("alias") as string | undefined;
-      if (!roleAlias) {
-        continue;
-      }
-
-      const { profile, metadata } = await this.buildRoleProfile(roleFile, fm, roleAlias);
-      this.writeOutputs(profile, metadata, roleAlias);
-
-      this.logger.success(`Compiled ${roleAlias.toLowerCase()}.md`);
-      compiled++;
+      const alias = await this.compile(roleFile);
+      if (alias) compiled++;
     }
 
     this.logger.info(`Compiled ${compiled} agent(s) (up-to-date)`);
@@ -151,8 +148,7 @@ export class RoleCompiler {
     }
 
     // Run each enabled plugin
-    const plugins = resolvePlugins(this.config.plugins, this.root, this.logger);
-    for (const plugin of plugins) {
+    for (const plugin of this.plugins) {
       plugin.compile(profile, metadata, roleAlias);
     }
   }
@@ -195,22 +191,14 @@ export class RoleCompiler {
       this.logger.warn("Constitution patterns matched zero files");
     }
 
-    return expanded
-      .map((relPath) => {
-        const fullPath = join(this.root, relPath);
-        if (!existsSync(fullPath)) {
-          this.logger.warn(`Constitution file not found: ${relPath}`);
-          return null;
-        }
-        return new Markdown(fullPath).body();
-      })
-      .filter((body): body is string => body !== null);
+    return this.readBodies(expanded, "Constitution file not found");
   }
 
   /**
    * Expands frontmatter array references and inlines their body content.
    *
-   * Used for responsibilities, context, and refs sections.
+   * Used for responsibilities, context, and refs sections. Warns on
+   * glob patterns that match nothing so authors catch typos early.
    *
    * @param fm - The parsed frontmatter
    * @param key - The frontmatter key to read (e.g. "responsibilities", "context", "refs")
@@ -218,23 +206,33 @@ export class RoleCompiler {
    */
   private async inlineRefs(fm: Frontmatter, key: string): Promise<string[]> {
     const patterns = fm.array(key) as string[];
+    const expanded: string[] = [];
 
     for (const pattern of patterns) {
-      if (this.globExpander.isGlob(pattern)) {
-        const matches = await this.globExpander.expand(pattern);
-        if (matches.length === 0) {
-          this.logger.warn(`Glob pattern matched zero files: ${pattern}`);
-        }
+      const matches = await this.globExpander.expand(pattern);
+      if (this.globExpander.isGlob(pattern) && matches.length === 0) {
+        this.logger.warn(`Glob pattern matched zero files: ${pattern}`);
       }
+      expanded.push(...matches);
     }
 
-    const expanded = await this.globExpander.expandAll(patterns);
+    return this.readBodies(expanded, "Referenced file not found");
+  }
 
-    return expanded
+  /**
+   * Reads the markdown body of each referenced file, skipping (and
+   * warning about) any that do not exist.
+   *
+   * @param relPaths - Paths relative to the project root
+   * @param missingLabel - Warning prefix used when a file is absent
+   * @returns Array of body strings with frontmatter stripped
+   */
+  private readBodies(relPaths: string[], missingLabel: string): string[] {
+    return relPaths
       .map((relPath) => {
         const fullPath = join(this.root, relPath);
         if (!existsSync(fullPath)) {
-          this.logger.warn(`Referenced file not found: ${relPath}`);
+          this.logger.warn(`${missingLabel}: ${relPath}`);
           return null;
         }
         return new Markdown(fullPath).body();

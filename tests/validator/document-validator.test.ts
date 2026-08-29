@@ -259,7 +259,7 @@ describe("DocumentValidator", () => {
         useCache: false,
       });
 
-      expect(validator.readmePath).toBe(join(dir, "SPEC.md"));
+      expect(validator.specPath).toBe(join(dir, "SPEC.md"));
 
       rmSync(dir, { recursive: true, force: true });
     });
@@ -276,7 +276,7 @@ describe("DocumentValidator", () => {
         useCache: false,
       });
 
-      expect(validator.readmePath).toBe(join(dir, "README.roles.md"));
+      expect(validator.specPath).toBe(join(dir, "README.roles.md"));
 
       rmSync(dir, { recursive: true, force: true });
     });
