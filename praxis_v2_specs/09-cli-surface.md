@@ -43,6 +43,32 @@ Typical flows:
 
 The fast loop (08) needs no delivery mechanism beyond this: the agent (or a harness hook) runs `praxis validate document <path> --json` after editing; the output *is* the feedback — matched violations carry their axiom (ID, statement, examples, grounding), unmatched ones carry the raw critique. Whether the harness triggers that run via a hook, a rule, or the agent's own habit is the harness's business, which is exactly the point.
 
+## Display and interaction
+
+One CLI, two reading styles. The split is by **command default plus `--json`**, never by separate commands — the human view and the agent view of the same state must never disagree.
+
+### For humans
+
+- **Summary last.** In a terminal, the bottom of the output is what's on screen when the command finishes. Detail scrolls; the verdict stays. (v1's `validate all` already ends with the summary block — keep.)
+- **Every number wears its denominator** (07's rules surface here): `12 violations / 84 opportunities`, `coverage 62% (52/84 files)`. A bare count is a display bug.
+- **Fixed color semantics**: green pass · yellow warn · red fail · gray meta/unvalidated. `NO_COLOR` and non-TTY degrade gracefully (v1's Logger already does both).
+- **Inline progress for long runs** (`[n/total]` with per-file verdicts — v1 1.3.5) so a validation run reads as a live stream, not a silence followed by a wall.
+- **Epoch boundaries are visible furniture**: reports print the named boundary line ("── epoch: model → sonnet-4.6, 2026-08-12 ──") wherever a trend crosses one.
+- **Drill-down, not dumps.** Broad surfaces stay terse and name the next command: `status` → `validate report <path>` → `axioms show <id>`. Consistent noun-verb grammar means the next step is guessable.
+- **Bare `praxis` is the orientation screen**: counts and staleness at a glance — last run, epoch status, pending triage, calibration freshness, debt/paydown one-liner — each with the command that acts on it. The entry point for a human returning after a week *and* an agent's cheapest situational poll.
+
+### Interaction
+
+- **Ratification is the one deliberately interactive moment.** `praxis axioms ratify <id>` shows the proposed axiom, its supporting critiques, its gate verdict and spec traceability, then confirms. It is a human-only verb by design (LLM proposes, human ratifies) — so it may prompt, but every prompt has a flag equivalent (`--yes`, `--reject "reason"`) so it scripts.
+- **Agent-reachable commands never prompt** (rule above, restated because it is the boundary of interactivity).
+- **No TUI.** Richness comes from good text and drill-down, not modes. If a surface ever genuinely needs more than text (trend charts), that is an export (`--json` piped to the user's tooling), not an interactive screen.
+
+### For agents
+
+- **Terse by default, deterministic always.** Stable sort orders on every list; no decorative framing that parsers must skip; the same state prints the same bytes.
+- **One situational poll**: `praxis status --json` carries the pending-work facts (`pending_triage`, `calibration_stale`, `epoch_boundary_detected`, counts) so an agent learns what needs doing from a single cheap call instead of a discovery crawl.
+- **Feedback is compact by reference.** Fast-loop output (08) carries axiom IDs with statements; the agent that wants depth runs `axioms show <id>`. Don't inline every example into every violation — the drill-down grammar is token economy.
+
 ## Surface inventory (v2 additions, gathered from the other docs)
 
 - `praxis validate document <path> [--json]` — extended output: axioms on matched critiques (04, 08)

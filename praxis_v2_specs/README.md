@@ -57,7 +57,8 @@ Two loops share the machinery: the **fast loop** — violations feed straight ba
 | [06-calibration.md](./06-calibration.md) | Measuring the judge; drift protocol; interpretability gating | Early draft |
 | [07-metrics.md](./07-metrics.md) | Hard reporting rules; report surfaces | Early draft |
 | [08-harness-feedback.md](./08-harness-feedback.md) | Briefs, diagnosis, agent-drafted PRs, intervention tracking | Early draft |
-| [09-cli-surface.md](./09-cli-surface.md) | Fully CLI-driven; agents as first-class CLI users; harness-agnostic by design | Draft |
+| [09-cli-surface.md](./09-cli-surface.md) | Fully CLI-driven; agents as first-class CLI users; display and interaction | Draft |
+| [10-workspace.md](./10-workspace.md) | `.praxis/` layout: closed top level, ownership split, commit policy | Draft |
 
 Docs 01–03 are the load-bearing patterns; 04–08 capture the design conversation and should be revisited after 01–03 settle.
 
