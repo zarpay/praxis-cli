@@ -22,6 +22,8 @@ Distinct from the brief (the slow loop, below): when validation runs during live
 
 No new matching machinery is required: the channel a critique arrived through *is* the match decision. The fast loop also writes to the ledger like any run — live corrections are still evidence.
 
+Delivery is the CLI (09): the agent or a harness hook runs `praxis validate document <path> --json` and the output is the feedback. No tool wrapper, no skill packaging — which is what keeps the fast loop harness-agnostic.
+
 ## The brief
 
 Structured output (JSON + rendered markdown) built from ledger + metrics:
