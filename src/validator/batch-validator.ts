@@ -78,9 +78,11 @@ export class BatchValidator {
   private readonly apiKeyEnvVar?: string;
   private readonly model?: string;
   private readonly specFilePattern: string;
+  /** Ignore patterns resolved to absolute paths for fast-glob. */
   private readonly absoluteIgnore: string[];
   private results: BatchValidationResult[] = [];
   private stoppedEarly = false;
+  /** Absolute paths of all .md source documents, collected per run for summary(). */
   private sourceDocs = new Set<string>();
   private validatedCount = 0;
   private totalToValidate = 0;

@@ -191,6 +191,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
   private readonly claudeCodePluginName: string;
   private readonly outputDir: string;
   private readonly agentsDir: string;
+  /** Guards the once-per-run write of plugin.json and command/skill files. */
   private manifestWritten = false;
 
   constructor({ root, pluginConfig }: PluginOptions) {

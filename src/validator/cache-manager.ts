@@ -90,6 +90,7 @@ export interface OrphanedCacheFile {
  * v1.0 cache files are transparently migrated to v2.0 on write.
  */
 export class CacheManager {
+  /** Directory all cache files live under (default: {root}/.praxis/cache/validation). */
   readonly cacheRoot: string;
   private readonly projectRoot: string | null;
 
