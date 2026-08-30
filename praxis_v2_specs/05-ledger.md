@@ -38,6 +38,8 @@ baseline: boolean                            # epoch-opening validate all (02)
 
 Epochs (02) are **derived, not stored**: an epoch is a maximal run-sequence with stable (spec content hashes, judge config), computable from the provenance fields above. Reports segment by epoch; the ledger just records facts.
 
+**Runs are per judge.** With multiple judges configured (06), one CLI invocation fans out into one run record per judge; every critique record already names its judge via `validator_model` plus the judge's configured name. Epoch derivation, baselines, and metrics then work per judge with no special cases — the multi-judge ledger is just more of the same records.
+
 **Critique record** — one per issue (axioms attach to critiques, not files):
 
 ```

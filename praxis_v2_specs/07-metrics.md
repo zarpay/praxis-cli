@@ -11,6 +11,7 @@
 4. **Calibration status appears on every report** (06). Stale calibration marks affected numbers uninterpretable.
 5. **No cross-species leaderboards** (02): where the optional human/agent contrast exists at all, it renders as per-axiom diagnostic evidence, never as an overall ranking — and only after the unknown-authorship rate is displayed.
 6. **Nothing is charted across an epoch boundary** (02). Epochs — maximal intervals of stable spec hashes + judge config — are derived from provenance; boundaries render as named, first-class events ("model → sonnet-4.6", "events spec v3"), and each epoch opens with its baseline. Axiom version changes and removals (04) break that axiom's line the same way.
+7. **One judge, one series** (06). With multiple judges configured, conformance renders per judge, never silently pooled — two instruments with different error rates do not average into one number. Cross-judge views render agreement/disagreement per axiom, which is a statement about the judges, not the code.
 
 ## Report surfaces
 

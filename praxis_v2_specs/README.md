@@ -54,7 +54,7 @@ Two loops share the machinery: the **fast loop** — violations feed straight ba
 | [03-judgment-boundary.md](./03-judgment-boundary.md) | Don't use Praxis for what static linting can do; the authoring gate | Draft — position hardened |
 | [04-axioms.md](./04-axioms.md) | Axiom identity and lifecycle; grounded triage of critiques into axioms | Early draft |
 | [05-ledger.md](./05-ledger.md) | Append-only critique store; provenance; why the cache can't be it | Early draft |
-| [06-calibration.md](./06-calibration.md) | Measuring the judge; drift protocol; interpretability gating | Early draft |
+| [06-calibration.md](./06-calibration.md) | Measuring the judge; drift protocol; interpretability gating; multiple judges | Early draft |
 | [07-metrics.md](./07-metrics.md) | Hard reporting rules; report surfaces | Early draft |
 | [08-harness-feedback.md](./08-harness-feedback.md) | Briefs, diagnosis, agent-drafted PRs, intervention tracking | Early draft |
 | [09-cli-surface.md](./09-cli-surface.md) | Fully CLI-driven; agents as first-class CLI users; display and interaction | Draft |

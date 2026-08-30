@@ -71,6 +71,8 @@ Praxis detects epoch boundaries itself; no manual declaration. At run start, com
 - Recommend a re-baseline; auto-set `baseline: true` when the epoch-opening run is a full `validate all`.
 - **Warn, never block.**
 
+Epochs are **per judge** (06): each configured judge has its own hash and its own series, so adding a second judge opens that judge's first epoch — with its own baseline — while the incumbent judge's series continues uninterrupted. Removing one ends only its own series.
+
 The cache enforces the boundary structurally — it is **namespaced by judge hash** (05): a judge change swaps the namespace, so pre-break verdicts cannot leak into the new epoch, and rolling the config back re-hits the old namespace at zero re-validation cost. Spec edits invalidate at entry level (spec content is already in the entry key), giving the per-axiom-grained break; judge changes invalidate at namespace level, giving the global one. The cache's invalidation behavior *is* the epoch structure.
 
 ## Paydown attribution (decided)

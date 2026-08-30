@@ -22,7 +22,7 @@ Definitions the other documents depend on. Where a term has an everyday sense, t
 
 ## The judgment side
 
-**Judge** — The LLM invocation that evaluates a file against a spec. Currently: one OpenRouter call, `tool_choice: required`, returning exactly one of pass/warn/fail with issues. The judge is an *instrument*, and instruments have error. Judge error is a first-class concept in this system, not an embarrassment to be hidden: it is measured (calibration), bounded (the judgment boundary — mechanical criteria never reach the judge), and structurally prevented where possible (structured exclusions).
+**Judge** — The LLM invocation that evaluates a file against a spec. Currently: one OpenRouter call, `tool_choice: required`, returning exactly one of pass/warn/fail with issues. Judges are **named and plural in config** (06): a team can run several models over the same work simultaneously, each contributing critiques into the shared axiom taxonomy, each with its own cache namespace, epochs, and calibration. The judge is an *instrument*, and instruments have error. Judge error is a first-class concept in this system, not an embarrassment to be hidden: it is measured (calibration), bounded (the judgment boundary — mechanical criteria never reach the judge), structurally prevented where possible (structured exclusions), and — with multiple judges — continuously watched via inter-judge agreement.
 
 **Verdict** — The judge's overall result for one (file, spec) pair: pass, warn, or fail. Verdicts are what the current cache stores.
 

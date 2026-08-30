@@ -37,6 +37,30 @@ Cases are frozen against a spec *content hash*. When the spec changes materially
 
 **Interpretability gating:** every eval report (07) displays calibration status. Conformance computed under a judge whose calibration is stale or absent is rendered with an explicit "uninterpretable — recalibrate" marker, not quietly printed. This is the enforcement point for the provenance principle.
 
+## Multiple judges
+
+Judges are **named and plural in config**. v1's singular `validation: { model, apiKeyEnvVar }` becomes the one-judge case of:
+
+```json
+"judges": [
+  { "name": "grok",  "model": "x-ai/grok-4.1-fast",    "apiKeyEnvVar": "OPENROUTER_API_KEY" },
+  { "name": "codex", "model": "openai/gpt-5.2-codex",  "apiKeyEnvVar": "OPENROUTER_API_KEY" }
+]
+```
+
+A team that wants two models evaluating the same work configures both; every configured judge evaluates every target, contributing critiques side by side.
+
+**Nothing about the single-judge design changes — n judges are n instruments running the same protocol.** Each judge has its own judge hash, and therefore its own cache namespace (05), its own epochs (02), and its own calibration records. This is why the earlier decisions were shaped the way they were: provenance-mandatory verdicts and hash-namespaced caches were designed for judges changing *over time*; simultaneous judges are the same machinery with several namespaces live at once. Adding or removing a judge opens or ends that judge's series and touches nobody else's.
+
+Critiques from all judges triage into the **same axiom set** — axioms are judge-independent (04), and a shared taxonomy is what makes judges comparable at all.
+
+Two judges on the same work buy a signal frozen cases cannot provide: **inter-judge agreement, measured continuously on live data at no extra cost** (both verdicts are already paid for). Its two faces:
+
+- **Corroboration** — both judges flag the same axiom on the same file. Evidence weight in triage (04): a corroborated critique is likelier traceable at ratification.
+- **Disagreement** — one flags, the other passes. A judge-error signal, not a code signal, and it *locates*: axioms with persistently high disagreement rates are vaguely written or genuinely hard — the same axioms the drift protocol's variance measurement would flag, found faster.
+
+The limit is stated plainly: **agreement is a tripwire, not ground truth.** Two judges sharing a blind spot agree wrongly; per-judge calibration against frozen, human-adjudicated cases remains the only ground truth, and interpretability gating applies per judge — one judge's stale calibration marks *its* numbers uninterpretable, not its neighbor's.
+
 ## Drift protocol
 
 On any judge-affecting change — model swap, spec edit, prompt/tooling change:
