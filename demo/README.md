@@ -12,15 +12,22 @@ A dependency-free JSON API over an in-memory store:
 ```bash
 npm install
 npm run dev
-# GET  http://localhost:3100/parlors   — parlors ranked by rating
-# POST http://localhost:3100/reviews   — { parlorId, author, rating, tastingNotes }
+# GET  http://localhost:3100/parlors       — parlors ranked by rating
+# GET  http://localhost:3100/tasting-menu  — a curated three-stop flavor tour
+# GET  http://localhost:3100/awards        — Golden Cone and People's Choice
+# POST http://localhost:3100/reviews       — { parlorId, author, rating, tastingNotes }
 ```
 
 Behavior lives in `src/services/` under documented conventions
 (`src/services/README.md`): one `run` per module, Results over
-exceptions, error messages written for the API consumer. Tests live in
-`tests/` under their own conventions (`tests/README.md`): subject-framed
-describes, one assertion per block, functionality over implementation.
+exceptions, error messages written for the API consumer. Capabilities
+compose in `src/features/` — one directory per feature (`tasting-menu`,
+`awards`), each with a single `index.ts` entry point, under relational
+conventions (`src/features/README.md`) judged **per directory** via
+`cohort: by_directory`: one entry point, no orphaned files, one
+capability. Tests live in `tests/` under their own conventions
+(`tests/README.md`): subject-framed describes, one assertion per block,
+functionality over implementation.
 
 ```bash
 npm test
@@ -31,9 +38,12 @@ npm test
 This project uses the development CLI (`file:../cli` — build it first
 with `cd ../cli && npm run build`). It exercises both layers:
 
-**Spec layer** — `knowledge/` holds two experts, each with a practice
-and a convention: `service-steward.md` (Scooper) over the services and
-`test-steward.md` (Taster) over the tests. Compile them:
+**Spec layer** — `knowledge/` holds three experts, each with a practice
+and a convention: `service-steward.md` (Scooper) over the services,
+`test-steward.md` (Taster) over the tests, and `feature-steward.md`
+(Sundae) over the feature directories — Sundae declares
+`cohort: by_directory`, so it judges each feature as one unit. Compile
+them:
 
 ```bash
 npx praxis compile
@@ -41,9 +51,12 @@ npx praxis compile
 # → plugins/praxis/agents/                  (Claude Code agents)
 ```
 
-**Eval layer** — `src/services/README.md` and `tests/README.md` are
-specs with `paths:` frontmatter targeting the service and test files.
-Judge them:
+**Eval layer** — `src/services/README.md`, `tests/README.md`, and
+`src/features/README.md` are specs with `paths:` frontmatter. The
+features spec adds `cohort: by_directory`: `praxis status` counts each
+feature directory as a single evaluation unit, and `praxis eval run`
+judges all of a feature's files together — the shape for standards like
+"no orphaned files" that no single file can answer. Judge them:
 
 ```bash
 npx praxis status              # offline: counts, coverage, cached verdicts
