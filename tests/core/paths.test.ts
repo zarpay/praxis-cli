@@ -59,6 +59,16 @@ describe("Paths", () => {
     expect(root1).toBe(root2);
   });
 
+  it("exposes the well-known project paths", () => {
+    const dir = makeTmpdir();
+    mkdirSync(join(dir, ".praxis"), { recursive: true });
+
+    const paths = new Paths(dir);
+    expect(paths.praxisDir).toBe(join(dir, ".praxis"));
+    expect(paths.configFile).toBe(join(dir, ".praxis", "config.json"));
+    expect(paths.validationCacheDir).toBe(join(dir, ".praxis", "cache", "validation"));
+  });
+
   it("resolves relative paths against root", () => {
     const dir = makeTmpdir();
     mkdirSync(join(dir, ".praxis"), { recursive: true });

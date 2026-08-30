@@ -1,10 +1,10 @@
 import { dirname, join } from "node:path";
-import { existsSync, readFileSync } from "node:fs";
 
 import chalk from "chalk";
 import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
+import { exists, readText } from "@/core/files.js";
 
 import type { CacheFileData } from "./cache-manager.js";
 import { contentHash } from "./cache-manager.js";
@@ -70,13 +70,13 @@ export function computeCurrentHash(
   specFilePattern?: string,
 ): string | null {
   try {
-    const docContent = readFileSync(documentPath, "utf-8");
+    const docContent = readText(documentPath);
     const resolvedSpec =
       specPath ?? findSpecForDocument(documentPath, specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN);
 
-    if (!resolvedSpec || !existsSync(resolvedSpec)) return null;
+    if (!resolvedSpec || !exists(resolvedSpec)) return null;
 
-    const specContent = readFileSync(resolvedSpec, "utf-8");
+    const specContent = readText(resolvedSpec);
     return contentHash(docContent, specContent);
   } catch {
     return null;
@@ -89,7 +89,7 @@ function findSpecForDocument(documentPath: string, specFilePattern: string): str
 
   if (!hasGlobChars(specFilePattern)) {
     const specPath = join(dir, specFilePattern);
-    return existsSync(specPath) ? specPath : null;
+    return exists(specPath) ? specPath : null;
   }
 
   const matches = fg.sync(specFilePattern, {

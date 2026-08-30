@@ -1,5 +1,4 @@
 import { basename, join, relative, resolve } from "node:path";
-import { existsSync } from "node:fs";
 
 import type { Command } from "commander";
 import chalk from "chalk";
@@ -8,6 +7,7 @@ import fg from "fast-glob";
 import { Frontmatter } from "@/compiler/frontmatter.js";
 import { GlobExpander } from "@/compiler/glob-expander.js";
 import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
+import { exists } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 import { BatchValidator } from "@/validator/batch-validator.js";
@@ -167,7 +167,7 @@ export class StatusCommand {
             }
           } else {
             const fullPath = join(this.root, pattern);
-            if (!existsSync(fullPath)) {
+            if (!exists(fullPath)) {
               danglingRefs.push({ role: roleName, ref: pattern });
             }
             if (key === "responsibilities") {
@@ -329,7 +329,7 @@ export class StatusCommand {
    * @param recursive - Whether to search subdirectories
    */
   private async listContentFiles(dir: string, recursive: boolean): Promise<string[]> {
-    if (!existsSync(dir)) return [];
+    if (!exists(dir)) return [];
 
     const pattern = recursive ? "**/*.md" : "*.md";
     const files = await fg(pattern, {

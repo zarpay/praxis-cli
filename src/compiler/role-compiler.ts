@@ -1,9 +1,9 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
 import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
+import { exists, writeText } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { isSpecFile } from "@/validator/spec-pattern.js";
 
@@ -136,15 +136,12 @@ export class RoleCompiler {
     // Write pure agent profile if configured
     const profilesDir = this.config.agentProfilesOutputDir;
     if (profilesDir) {
-      if (!existsSync(profilesDir)) {
-        mkdirSync(profilesDir, { recursive: true });
-      }
       const validates = metadata?.validates;
       const content =
         validates && validates.length > 0
           ? `---\npaths:\n${validates.map((p) => `  - "${p}"`).join("\n")}\n---\n\n${profile}`
           : profile;
-      writeFileSync(join(profilesDir, `${roleAlias.toLowerCase()}.md`), content);
+      writeText(join(profilesDir, `${roleAlias.toLowerCase()}.md`), content);
     }
 
     // Run each enabled plugin
@@ -231,7 +228,7 @@ export class RoleCompiler {
     return relPaths
       .map((relPath) => {
         const fullPath = join(this.root, relPath);
-        if (!existsSync(fullPath)) {
+        if (!exists(fullPath)) {
           this.logger.warn(`${missingLabel}: ${relPath}`);
           return null;
         }

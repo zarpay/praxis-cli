@@ -1,10 +1,8 @@
-import { existsSync, readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 
 import { errors } from "./errors.js";
-
-/** Config file location, relative to the project root. */
-const CONFIG_FILE = join(".praxis", "config.json");
+import { exists, readJson } from "./files.js";
+import { configFile } from "./paths.js";
 
 /** Normalized plugin configuration entry. */
 export interface PluginConfigEntry {
@@ -139,15 +137,15 @@ export class PraxisConfig {
    * @throws Error naming the config path when the file contains invalid JSON
    */
   private load(): NormalizedConfig {
-    const configPath = join(this.root, CONFIG_FILE);
+    const configPath = configFile(this.root);
 
-    if (!existsSync(configPath)) {
+    if (!exists(configPath)) {
       return { ...DEFAULT_CONFIG };
     }
 
     let raw: RawConfig;
     try {
-      raw = JSON.parse(readFileSync(configPath, "utf-8")) as RawConfig;
+      raw = readJson<RawConfig>(configPath);
     } catch (err) {
       throw errors.invalidConfigJson(configPath, (err as Error).message);
     }

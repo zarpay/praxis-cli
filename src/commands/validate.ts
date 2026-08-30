@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 import type { Command } from "commander";
@@ -7,6 +6,7 @@ import chalk from "chalk";
 
 import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig, type ValidationConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
+import { exists } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 import { BatchValidator, type ValidationSummary } from "@/validator/batch-validator.js";
@@ -252,7 +252,7 @@ export class ValidateCommand {
   report(path: string, options: { verbose: boolean }): void {
     const absolutePath = resolve(path);
 
-    if (!existsSync(absolutePath)) {
+    if (!exists(absolutePath)) {
       throw errors.documentNotFound(path);
     }
 

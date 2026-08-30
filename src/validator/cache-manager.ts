@@ -1,10 +1,12 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
+import { statSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 
 import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
+import { exists, readText, removeFile, writeText } from "@/core/files.js";
+import { validationCacheDir } from "@/core/paths.js";
 
 import { isSpecFile } from "./spec-pattern.js";
 
@@ -164,13 +166,12 @@ export class CacheManager {
     fileData.validations[specKey] = entry;
 
     try {
-      mkdirSync(dirname(cachePath), { recursive: true });
       const json = JSON.stringify(fileData, null, 2);
       JSON.parse(json); // verify integrity before writing
-      writeFileSync(cachePath, json);
+      writeText(cachePath, json);
     } catch (err) {
       try {
-        if (existsSync(cachePath)) unlinkSync(cachePath);
+        if (exists(cachePath)) removeFile(cachePath);
       } catch {
         /* ignore cleanup failures */
       }
@@ -197,12 +198,12 @@ export class CacheManager {
   }): CachedValidationResult | null {
     const cachePath = this.cachePathFor(documentPath);
 
-    if (!existsSync(cachePath)) {
+    if (!exists(cachePath)) {
       return null;
     }
 
     try {
-      const raw = readFileSync(cachePath, "utf-8");
+      const raw = readText(cachePath);
       const fileData = JSON.parse(raw) as { version: string };
 
       if (fileData.version === CACHE_VERSION) {
@@ -222,7 +223,7 @@ export class CacheManager {
       return null;
     } catch (err) {
       try {
-        unlinkSync(cachePath);
+        removeFile(cachePath);
       } catch {
         /* ignore */
       }
@@ -252,12 +253,12 @@ export class CacheManager {
   }): CacheFileData | null {
     const cachePath = this.cachePathFor(documentPath);
 
-    if (!existsSync(cachePath)) {
+    if (!exists(cachePath)) {
       return null;
     }
 
     try {
-      const raw = readFileSync(cachePath, "utf-8");
+      const raw = readText(cachePath);
       const fileData = JSON.parse(raw) as { version: string };
 
       if (fileData.version === CACHE_VERSION) {
@@ -292,12 +293,12 @@ export class CacheManager {
   readAllRaw({ documentPath }: { documentPath: string }): CacheFileData[] {
     const cachePath = this.cachePathFor(documentPath);
 
-    if (!existsSync(cachePath)) {
+    if (!exists(cachePath)) {
       return [];
     }
 
     try {
-      const raw = readFileSync(cachePath, "utf-8");
+      const raw = readText(cachePath);
       const fileData = JSON.parse(raw) as { version: string };
 
       if (fileData.version === CACHE_VERSION) {
@@ -382,8 +383,7 @@ export class CacheManager {
 
   /** Derives the default cache root from the project root or cwd. */
   private defaultCacheRoot(): string {
-    const root = this.projectRoot ?? process.cwd();
-    return join(root, ".praxis", "cache", "validation");
+    return validationCacheDir(this.projectRoot ?? process.cwd());
   }
 
   /**
@@ -396,10 +396,10 @@ export class CacheManager {
   private loadOrMigrate(cachePath: string): CacheFileDataV2 {
     const empty: CacheFileDataV2 = { version: "2.0", validations: {} };
 
-    if (!existsSync(cachePath)) return empty;
+    if (!exists(cachePath)) return empty;
 
     try {
-      const raw = readFileSync(cachePath, "utf-8");
+      const raw = readText(cachePath);
       const fileData = JSON.parse(raw) as { version: string };
 
       if (fileData.version === CACHE_VERSION) {
@@ -482,7 +482,7 @@ export class CacheManager {
 
     for (const source of sources) {
       const sourceDir = join(root, source);
-      if (!existsSync(sourceDir)) continue;
+      if (!exists(sourceDir)) continue;
 
       const docFiles = fg.sync("**/*.md", {
         cwd: sourceDir,

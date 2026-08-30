@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+
+import { exists, readJson, writeJson, writeText } from "@/core/files.js";
 
 import type { AgentMetadata } from "../output-builder.js";
 import type { CompilerPlugin, PluginOptions } from "./types.js";
@@ -208,10 +209,6 @@ export class ClaudeCodePlugin implements CompilerPlugin {
    * Also ensures the plugin.json manifest exists and is up to date.
    */
   compile(profileContent: string, metadata: AgentMetadata | null, roleAlias: string): void {
-    if (!existsSync(this.agentsDir)) {
-      mkdirSync(this.agentsDir, { recursive: true });
-    }
-
     if (!this.manifestWritten) {
       this.ensurePluginJson();
       this.ensureCommands();
@@ -221,7 +218,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
     const frontmatter = this.buildFrontmatter(metadata);
     const content = frontmatter ? frontmatter + "\n" + profileContent : profileContent;
 
-    writeFileSync(join(this.agentsDir, `${roleAlias.toLowerCase()}.md`), content);
+    writeText(join(this.agentsDir, `${roleAlias.toLowerCase()}.md`), content);
   }
 
   /**
@@ -232,20 +229,14 @@ export class ClaudeCodePlugin implements CompilerPlugin {
    * creates it from defaults.
    */
   private ensurePluginJson(): void {
-    const pluginJsonDir = join(this.outputDir, ".claude-plugin");
-    const pluginJsonPath = join(pluginJsonDir, "plugin.json");
+    const pluginJsonPath = join(this.outputDir, ".claude-plugin", "plugin.json");
 
-    if (!existsSync(pluginJsonDir)) {
-      mkdirSync(pluginJsonDir, { recursive: true });
-    }
-
-    if (existsSync(pluginJsonPath)) {
-      const existing = JSON.parse(readFileSync(pluginJsonPath, "utf-8")) as Record<string, unknown>;
+    if (exists(pluginJsonPath)) {
+      const existing = readJson<Record<string, unknown>>(pluginJsonPath);
       existing.name = this.claudeCodePluginName;
-      writeFileSync(pluginJsonPath, JSON.stringify(existing, null, 2) + "\n");
+      writeJson(pluginJsonPath, existing);
     } else {
-      const pluginJson = { ...DEFAULT_PLUGIN_JSON, name: this.claudeCodePluginName };
-      writeFileSync(pluginJsonPath, JSON.stringify(pluginJson, null, 2) + "\n");
+      writeJson(pluginJsonPath, { ...DEFAULT_PLUGIN_JSON, name: this.claudeCodePluginName });
     }
   }
 
@@ -256,17 +247,8 @@ export class ClaudeCodePlugin implements CompilerPlugin {
    * documents without needing an OpenRouter API key.
    */
   private ensureCommands(): void {
-    const commandsDir = join(this.outputDir, "commands");
-    if (!existsSync(commandsDir)) {
-      mkdirSync(commandsDir, { recursive: true });
-    }
-    writeFileSync(join(commandsDir, "praxis-resolve.md"), PRAXIS_RESOLVE_COMMAND);
-
-    const skillDir = join(this.outputDir, "skills", "praxis");
-    if (!existsSync(skillDir)) {
-      mkdirSync(skillDir, { recursive: true });
-    }
-    writeFileSync(join(skillDir, "SKILL.md"), PRAXIS_SKILL);
+    writeText(join(this.outputDir, "commands", "praxis-resolve.md"), PRAXIS_RESOLVE_COMMAND);
+    writeText(join(this.outputDir, "skills", "praxis", "SKILL.md"), PRAXIS_SKILL);
   }
 
   /**

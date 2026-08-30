@@ -1,17 +1,10 @@
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { readdirSync, statSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 
 import type { Command } from "commander";
 
 import { PraxisConfig } from "@/core/config.js";
+import { copyFile, ensureDir, exists, readText, writeText } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 
 /**
@@ -76,9 +69,7 @@ export class InitCommand {
 
   /** Runs the scaffold, logging each created file and a final summary. */
   init(): void {
-    if (!existsSync(this.targetDir)) {
-      mkdirSync(this.targetDir, { recursive: true });
-    }
+    ensureDir(this.targetDir);
 
     let created = 0;
     let skipped = 0;
@@ -94,7 +85,7 @@ export class InitCommand {
     // Step 3: Copy plugin scaffold files for each enabled plugin
     for (const pluginEntry of config.plugins) {
       const pluginScaffoldDir = join(this.scaffoldDir, "plugins", pluginEntry.name);
-      if (!existsSync(pluginScaffoldDir)) {
+      if (!exists(pluginScaffoldDir)) {
         continue;
       }
 
@@ -139,18 +130,13 @@ export class InitCommand {
     for (const relPath of this.walkDir(sourceDir)) {
       const srcPath = join(sourceDir, relPath);
       const destPath = join(this.targetDir, relPath);
-      const destDir = dirname(destPath);
 
-      if (!existsSync(destDir)) {
-        mkdirSync(destDir, { recursive: true });
-      }
-
-      if (existsSync(destPath)) {
+      if (exists(destPath)) {
         skipped++;
         continue;
       }
 
-      copyFileSync(srcPath, destPath);
+      copyFile(srcPath, destPath);
       this.logger.success(`Created ${relPath}`);
       created++;
     }
@@ -179,25 +165,20 @@ export class InitCommand {
     for (const relPath of this.walkDir(sourceDir)) {
       const srcPath = join(sourceDir, relPath);
       const destPath = join(targetPluginDir, relPath);
-      const destDir = dirname(destPath);
 
-      if (!existsSync(destDir)) {
-        mkdirSync(destDir, { recursive: true });
-      }
-
-      if (existsSync(destPath)) {
+      if (exists(destPath)) {
         skipped++;
         continue;
       }
 
       if (relPath.endsWith(".json")) {
-        let content = readFileSync(srcPath, "utf-8");
+        let content = readText(srcPath);
         for (const [key, value] of Object.entries(templateVars)) {
           content = content.replaceAll(`{${key}}`, value);
         }
-        writeFileSync(destPath, content);
+        writeText(destPath, content);
       } else {
-        copyFileSync(srcPath, destPath);
+        copyFile(srcPath, destPath);
       }
 
       const displayPath = relative(this.targetDir, destPath);

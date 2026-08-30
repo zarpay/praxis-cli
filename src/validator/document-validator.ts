@@ -1,11 +1,11 @@
 import { basename, dirname, join } from "node:path";
-import { existsSync, readFileSync } from "node:fs";
 
 import fg from "fast-glob";
 
 import { Frontmatter } from "@/compiler/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
+import { exists, readText } from "@/core/files.js";
 
 import { type CachedValidationResult, CacheManager, contentHash } from "./cache-manager.js";
 import { SYSTEM_PROMPT, VALIDATION_TOOLS } from "./prompts.js";
@@ -74,11 +74,11 @@ export class DocumentValidator {
     model?: string;
   }) {
     this.documentPath = documentPath;
-    this.documentContent = readFileSync(documentPath, "utf-8");
+    this.documentContent = readText(documentPath);
     this.documentType = this.detectDocumentType();
     this.specFilePattern = specFilePattern;
     this.specPath = specPath ?? this.findSpec();
-    this.specContent = readFileSync(this.specPath, "utf-8");
+    this.specContent = readText(this.specPath);
     this.useCache = useCache;
     this.cacheManager = cacheManager ?? (useCache ? new CacheManager() : null);
     this.apiKeyEnvVar = apiKeyEnvVar;
@@ -275,7 +275,7 @@ ${this.documentContent}
 
     if (!hasGlobChars(this.specFilePattern)) {
       const specPath = join(baseDir, this.specFilePattern);
-      if (existsSync(specPath)) return specPath;
+      if (exists(specPath)) return specPath;
       throw errors.specNotFound(this.specFilePattern, baseDir, this.documentPath);
     }
 

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readText } from "@/core/files.js";
 
 /** Delimiter used to fence YAML frontmatter in markdown files. */
 const DELIMITER = "---";
@@ -14,7 +14,7 @@ export class Markdown {
   private readonly content: string;
 
   constructor(filePath: string) {
-    this.content = readFileSync(filePath, "utf-8");
+    this.content = readText(filePath);
   }
 
   /**

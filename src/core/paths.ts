@@ -1,7 +1,25 @@
-import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
 import { errors } from "./errors.js";
+import { exists } from "./files.js";
+
+/** Name of the marker directory that defines a Praxis project root. */
+export const PRAXIS_DIR_NAME = ".praxis";
+
+/** The `.praxis/` directory for a given project root. */
+export function praxisDir(root: string): string {
+  return join(root, PRAXIS_DIR_NAME);
+}
+
+/** The config file path for a given project root. */
+export function configFile(root: string): string {
+  return join(praxisDir(root), "config.json");
+}
+
+/** The validation cache root for a given project root. */
+export function validationCacheDir(root: string): string {
+  return join(praxisDir(root), "cache", "validation");
+}
 
 /**
  * Resolves the project root within a Praxis project.
@@ -22,6 +40,21 @@ export class Paths {
   get root(): string {
     this.cachedRoot ??= this.findRoot();
     return this.cachedRoot;
+  }
+
+  /** The project's `.praxis/` directory. */
+  get praxisDir(): string {
+    return praxisDir(this.root);
+  }
+
+  /** The project's `.praxis/config.json` path. */
+  get configFile(): string {
+    return configFile(this.root);
+  }
+
+  /** The project's validation cache root. */
+  get validationCacheDir(): string {
+    return validationCacheDir(this.root);
   }
 
   /**
@@ -55,7 +88,7 @@ export class Paths {
     let current = resolve(this.startDir);
 
     for (;;) {
-      if (existsSync(join(current, ".praxis"))) {
+      if (exists(join(current, PRAXIS_DIR_NAME))) {
         return current;
       }
 

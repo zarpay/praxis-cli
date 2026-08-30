@@ -1,10 +1,10 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import type { Command } from "commander";
 
 import { PraxisConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
+import { exists, readText, writeText } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 
@@ -97,22 +97,16 @@ export class AddCommand {
     const targetFile = join(targetDir, `${name}.md`);
     const relTargetFile = relative(this.root, targetFile);
 
-    if (existsSync(targetFile)) {
+    if (exists(targetFile)) {
       throw errors.fileAlreadyExists(relTargetFile);
     }
 
-    if (!existsSync(templatePath)) {
+    if (!exists(templatePath)) {
       throw errors.templateNotFound(templatePath);
     }
 
-    const template = readFileSync(templatePath, "utf-8");
-    const filled = this.fillTemplate(type, name, template);
-
-    if (!existsSync(targetDir)) {
-      mkdirSync(targetDir, { recursive: true });
-    }
-
-    writeFileSync(targetFile, filled);
+    const template = readText(templatePath);
+    writeText(targetFile, this.fillTemplate(type, name, template));
     this.logger.success(`Created ${type}: ${relTargetFile}`);
   }
 

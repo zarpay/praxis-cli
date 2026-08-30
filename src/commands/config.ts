@@ -1,10 +1,9 @@
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 
 import type { Command } from "commander";
 import chalk from "chalk";
 
+import { readJson } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 
@@ -49,7 +48,7 @@ export function registerConfigCommand(program: Command): void {
 
 /** Builds a ConfigCommand for the current project's config file. */
 function makeCommand(): ConfigCommand {
-  return new ConfigCommand({ configPath: join(new Paths().root, ".praxis", "config.json") });
+  return new ConfigCommand({ configPath: new Paths().configFile });
 }
 
 /**
@@ -67,8 +66,7 @@ export class ConfigCommand {
 
   /** Prints the config file to stdout as formatted JSON with a header. */
   show(): void {
-    const raw = readFileSync(this.configPath, "utf-8");
-    const parsed = JSON.parse(raw) as unknown;
+    const parsed = readJson(this.configPath);
 
     console.log();
     console.log("  " + chalk.bold("Praxis Config"));
