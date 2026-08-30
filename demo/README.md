@@ -18,24 +18,32 @@ npm run dev
 
 Behavior lives in `src/services/` under documented conventions
 (`src/services/README.md`): one `run` per module, Results over
-exceptions, error messages written for the API consumer.
+exceptions, error messages written for the API consumer. Tests live in
+`tests/` under their own conventions (`tests/README.md`): subject-framed
+describes, one assertion per block, functionality over implementation.
+
+```bash
+npm test
+```
 
 ## How it dogfoods Praxis
 
 This project uses the development CLI (`file:../cli` — build it first
 with `cd ../cli && npm run build`). It exercises both layers:
 
-**Spec layer** — `knowledge/` holds an expert (`service-steward.md`)
-with a practice and a convention. Compile it:
+**Spec layer** — `knowledge/` holds two experts, each with a practice
+and a convention: `service-steward.md` (Scooper) over the services and
+`test-steward.md` (Taster) over the tests. Compile them:
 
 ```bash
 npx praxis compile
-# → agent-profiles/scooper.md          (pure SME profile, paths: frontmatter)
-# → plugins/praxis/agents/scooper.md   (Claude Code agent)
+# → agent-profiles/scooper.md, taster.md   (pure SME profiles, paths: frontmatter)
+# → plugins/praxis/agents/                  (Claude Code agents)
 ```
 
-**Eval layer** — `src/services/README.md` is a spec with `paths:`
-frontmatter targeting the service files. Judge them:
+**Eval layer** — `src/services/README.md` and `tests/README.md` are
+specs with `paths:` frontmatter targeting the service and test files.
+Judge them:
 
 ```bash
 npx praxis status              # offline: counts, coverage, cached verdicts

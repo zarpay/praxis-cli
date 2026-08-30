@@ -1,9 +1,15 @@
 {
-  "sources": ["knowledge", "src"],
+  "sources": [
+    "knowledge",
+    "src",
+    "tests"
+  ],
   "expertsDir": "knowledge/experts",
   "practicesDir": "knowledge/practices",
   "agentProfilesOutputDir": "./agent-profiles",
-  "plugins": ["claude-code"],
+  "plugins": [
+    "claude-code"
+  ],
   "validation": {
     "apiKeyEnvVar": "OPENROUTER_API_KEY",
     "model": "x-ai/grok-4.1-fast"
