@@ -1,8 +1,8 @@
 import type { Command } from "commander";
 
 import type { ValidationConfig } from "@/core/config.js";
-import type { EvalSummary } from "@/judge/batch-judge.js";
-import type { Verdict } from "@/judge/cache-manager.js";
+import type { EvalSummary } from "@/eval/batch-judge.js";
+import type { Verdict } from "@/eval/cache-manager.js";
 
 import chalk from "chalk";
 
@@ -11,14 +11,14 @@ import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, resolvePath } from "@/core/paths.js";
-import { BatchJudge } from "@/judge/batch-judge.js";
-import { CacheManager } from "@/judge/cache-manager.js";
-import { Judge } from "@/judge/judge.js";
+import { BatchJudge } from "@/eval/batch-judge.js";
+import { CacheManager } from "@/eval/cache-manager.js";
+import { Judge } from "@/eval/judge.js";
 import {
   buildReport,
   computeCurrentHash,
   displayReport as displayValidationReport,
-} from "@/judge/report-formatter.js";
+} from "@/eval/report-formatter.js";
 
 /** Options for `validate document`. */
 interface DocumentOptions {

@@ -4,7 +4,7 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { ExpertCompiler } from "@/compiler/expert-compiler.js";
+import { ExpertCompiler } from "@/spec/expert-compiler.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 

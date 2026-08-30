@@ -1,15 +1,15 @@
-import type { Verdict } from "@/judge/cache-manager.js";
+import type { Verdict } from "@/eval/cache-manager.js";
 
 import fg from "fast-glob";
 
-import { Frontmatter } from "@/compiler/frontmatter.js";
+import { Frontmatter } from "@/core/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { exists, readText } from "@/core/files.js";
 import { baseName, joinPath, parentDir } from "@/core/paths.js";
-import { CacheManager, contentHash } from "@/judge/cache-manager.js";
-import { SYSTEM_PROMPT, JUDGE_TOOLS } from "@/judge/prompts.js";
-import { hasGlobChars } from "@/judge/spec-pattern.js";
+import { CacheManager, contentHash } from "@/eval/cache-manager.js";
+import { SYSTEM_PROMPT, JUDGE_TOOLS } from "@/eval/prompts.js";
+import { hasGlobChars } from "@/core/spec-pattern.js";
 
 /** Known target types within the Praxis content structure. */
 export type TargetType =

@@ -1,18 +1,18 @@
-import type { AgentMetadata } from "@/compiler/output-builder.js";
-import type { CompilerPlugin } from "@/compiler/plugins/types.js";
+import type { AgentMetadata } from "@/spec/output-builder.js";
+import type { CompilerPlugin } from "@/spec/plugins/types.js";
 
 import fg from "fast-glob";
 
-import { Frontmatter } from "@/compiler/frontmatter.js";
-import { GlobExpander } from "@/compiler/glob-expander.js";
-import { Markdown } from "@/compiler/markdown.js";
-import { OutputBuilder } from "@/compiler/output-builder.js";
-import { resolvePlugins } from "@/compiler/plugin-registry.js";
+import { Frontmatter } from "@/core/frontmatter.js";
+import { GlobExpander } from "@/spec/glob-expander.js";
+import { Markdown } from "@/spec/markdown.js";
+import { OutputBuilder } from "@/spec/output-builder.js";
+import { resolvePlugins } from "@/spec/plugin-registry.js";
 import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
 import { exists, writeText } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { baseName, joinPath } from "@/core/paths.js";
-import { isSpecFile } from "@/judge/spec-pattern.js";
+import { isSpecFile } from "@/core/spec-pattern.js";
 
 /**
  * Compiles role definition files into agent profiles and plugin-specific output.

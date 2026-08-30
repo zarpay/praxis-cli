@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { Markdown } from "@/compiler/markdown.js";
+import { Markdown } from "@/spec/markdown.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "..", "fixtures");
 

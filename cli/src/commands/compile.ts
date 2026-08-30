@@ -4,8 +4,8 @@ import type { FSWatcher } from "@/core/files.js";
 
 import fg from "fast-glob";
 
-import { ExpertCompiler } from "@/compiler/expert-compiler.js";
-import { Frontmatter } from "@/compiler/frontmatter.js";
+import { ExpertCompiler } from "@/spec/expert-compiler.js";
+import { Frontmatter } from "@/core/frontmatter.js";
 import { PraxisConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { watchDir } from "@/core/files.js";

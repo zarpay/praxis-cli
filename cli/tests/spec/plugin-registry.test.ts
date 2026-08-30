@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { resolvePlugins } from "@/compiler/plugin-registry.js";
-import { ClaudeCodePlugin } from "@/compiler/plugins/claude-code.js";
+import { resolvePlugins } from "@/spec/plugin-registry.js";
+import { ClaudeCodePlugin } from "@/spec/plugins/claude-code.js";
 import { Logger } from "@/core/logger.js";
 
 describe("resolvePlugins", () => {

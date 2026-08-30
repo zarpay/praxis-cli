@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { OutputBuilder } from "@/compiler/output-builder.js";
+import { OutputBuilder } from "@/spec/output-builder.js";
 
 describe("OutputBuilder", () => {
   describe("addRole()", () => {

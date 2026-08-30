@@ -3,15 +3,15 @@ import type { Command } from "commander";
 import chalk from "chalk";
 import fg from "fast-glob";
 
-import { Frontmatter } from "@/compiler/frontmatter.js";
-import { GlobExpander } from "@/compiler/glob-expander.js";
+import { Frontmatter } from "@/core/frontmatter.js";
+import { GlobExpander } from "@/spec/glob-expander.js";
 import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
 import { exists } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, baseName, joinPath, relativePath, resolvePath } from "@/core/paths.js";
-import { BatchJudge } from "@/judge/batch-judge.js";
-import { CacheManager } from "@/judge/cache-manager.js";
-import { isSpecFile } from "@/judge/spec-pattern.js";
+import { BatchJudge } from "@/eval/batch-judge.js";
+import { CacheManager } from "@/eval/cache-manager.js";
+import { isSpecFile } from "@/core/spec-pattern.js";
 
 /** Structured report of project health. */
 export interface StatusReport {

@@ -2,7 +2,7 @@ import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { baseName } from "@/core/paths.js";
-import { hasGlobChars, isSpecFile } from "@/judge/spec-pattern.js";
+import { hasGlobChars, isSpecFile } from "@/core/spec-pattern.js";
 
 /**
  * Expands glob patterns to matching file paths within a project root.

@@ -1,15 +1,15 @@
-import type { Verdict } from "@/judge/cache-manager.js";
+import type { Verdict } from "@/eval/cache-manager.js";
 
 import chalk from "chalk";
 import fg from "fast-glob";
 
-import { Frontmatter } from "@/compiler/frontmatter.js";
+import { Frontmatter } from "@/core/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
-import { CacheManager } from "@/judge/cache-manager.js";
-import { Judge } from "@/judge/judge.js";
-import { isSpecFile } from "@/judge/spec-pattern.js";
+import { CacheManager } from "@/eval/cache-manager.js";
+import { Judge } from "@/eval/judge.js";
+import { isSpecFile } from "@/core/spec-pattern.js";
 
 /** Extended validation result that includes file path and type information. */
 export interface TargetVerdict extends Verdict {

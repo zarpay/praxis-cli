@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { hasGlobChars, isSpecFile } from "@/judge/spec-pattern.js";
+import { hasGlobChars, isSpecFile } from "@/core/spec-pattern.js";
 
 describe("hasGlobChars", () => {
   it("returns false for plain filenames", () => {

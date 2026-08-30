@@ -2,8 +2,8 @@ import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/core/config.js";
-import { BatchJudge } from "@/judge/batch-judge.js";
-import { CacheManager } from "@/judge/cache-manager.js";
+import { BatchJudge } from "@/eval/batch-judge.js";
+import { CacheManager } from "@/eval/cache-manager.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   createOpenRouterServer,

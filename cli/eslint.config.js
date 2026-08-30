@@ -151,6 +151,48 @@ export default tseslint.config(
     },
   },
   {
+    // The two layers (11-spec-layer.md) never import each other: the
+    // spec layer produces artifacts the eval layer consumes as plain
+    // files, and the eval layer never calls back. Shared primitives
+    // live in @/core; commands may wire both layers together. These
+    // blocks come last and restate the fs/path and relative-import
+    // bans, because rule configs replace rather than merge.
+    files: ["src/eval/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+          ],
+          patterns: [
+            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
+            { group: ["@/spec/*"], message: "The eval layer must not depend on the spec layer (11-spec-layer.md)." },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/spec/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+          ],
+          patterns: [
+            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
+            { group: ["@/eval/*"], message: "The spec layer must not depend on the eval layer (11-spec-layer.md)." },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // The config file itself is plain JS and outside the tsconfig project.
     files: ["eslint.config.js"],
     extends: [tseslint.configs.disableTypeChecked],

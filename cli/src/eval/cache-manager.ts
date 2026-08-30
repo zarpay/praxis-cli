@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, fileSize, readText, removeFile, writeText } from "@/core/files.js";
 import { baseName, joinPath, parentDir, validationCacheDir } from "@/core/paths.js";
-import { isSpecFile } from "@/judge/spec-pattern.js";
+import { isSpecFile } from "@/core/spec-pattern.js";
 
 /** Current cache format version. */
 const CACHE_VERSION = "2.0";

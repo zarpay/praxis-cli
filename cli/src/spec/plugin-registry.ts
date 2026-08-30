@@ -1,8 +1,8 @@
-import type { CompilerPlugin, PluginOptions } from "@/compiler/plugins/types.js";
+import type { CompilerPlugin, PluginOptions } from "@/spec/plugins/types.js";
 import type { PluginConfigEntry } from "@/core/config.js";
 import type { Logger } from "@/core/logger.js";
 
-import { ClaudeCodePlugin } from "@/compiler/plugins/claude-code.js";
+import { ClaudeCodePlugin } from "@/spec/plugins/claude-code.js";
 import { errors } from "@/core/errors.js";
 
 /** Constructor signature every compiler plugin class must satisfy. */

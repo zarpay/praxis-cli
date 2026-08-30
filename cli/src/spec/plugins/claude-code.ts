@@ -1,5 +1,5 @@
-import type { AgentMetadata } from "@/compiler/output-builder.js";
-import type { CompilerPlugin, PluginOptions } from "@/compiler/plugins/types.js";
+import type { AgentMetadata } from "@/spec/output-builder.js";
+import type { CompilerPlugin, PluginOptions } from "@/spec/plugins/types.js";
 
 import { exists, readJson, writeJson, writeText } from "@/core/files.js";
 import { joinPath, resolvePath } from "@/core/paths.js";

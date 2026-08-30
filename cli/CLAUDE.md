@@ -9,7 +9,7 @@ npm run build          # tsup → dist/index.js (ESM, Node 18+, shebang-enabled)
 npm run dev            # tsup in watch mode
 npm test               # vitest run (all tests)
 npm run test:watch     # vitest watch mode
-npm test -- tests/judge/cache-manager.test.ts  # run single test file
+npm test -- tests/eval/cache-manager.test.ts  # run single test file
 npm run lint           # eslint src/ tests/
 npm run typecheck      # tsc --noEmit
 npm run format         # prettier --write
@@ -18,24 +18,31 @@ npm publish --access public  # prepublishOnly runs: lint → typecheck → test 
 
 ## Architecture
 
-Praxis CLI compiles human-authored knowledge documents (experts, practices, context) into self-contained agent profiles. The system has two main pipelines:
+Praxis is two layers (see `praxis_v2_specs/11-spec-layer.md`), and `src/` mirrors them:
 
-### Compiler Pipeline
+- **`src/spec/`** — the spec layer: compiles experts, practices, and context into self-contained SME agent profiles. Owns the content taxonomy.
+- **`src/eval/`** — the eval layer: judges targets against specs, caches verdicts, and (as v2 lands) writes the ledger. Taxonomy-free.
+- **`src/core/`** — shared primitives both layers use: config, errors, files, paths, logger, frontmatter, spec-pattern.
+- **`src/commands/`** — CLI wiring; the only place the two layers meet.
+
+**The layers never import each other** (ESLint-enforced): the spec layer produces files the eval layer consumes as plain specs.
+
+### Spec Layer — Compiler Pipeline
 
 ```
 Expert .md file (with YAML frontmatter)
-  → Frontmatter parsed (src/compiler/frontmatter.ts)
-  → Referenced content resolved via globs (src/compiler/glob-expander.ts)
+  → Frontmatter parsed (src/core/frontmatter.ts)
+  → Referenced content resolved via globs (src/spec/glob-expander.ts)
   → Sections assembled: Expert → Responsibilities → Constitution → Context → Reference
-      (src/compiler/output-builder.ts)
+      (src/spec/output-builder.ts)
   → Pure profile written to agentProfilesOutputDir/{alias}.md
   → Each plugin receives profile + metadata and writes its own output
-      (src/compiler/plugin-registry.ts → plugins/*)
+      (src/spec/plugin-registry.ts → plugins/*)
 ```
 
-The **Claude Code plugin** (`src/compiler/plugins/claude-code.ts`) wraps the profile with YAML frontmatter (name, description, tools, model, permissionMode), writes to `{outputDir}/agents/{alias}.md` (default `plugins/praxis/agents/`), and creates/updates `.claude-plugin/plugin.json` in the output directory.
+The **Claude Code plugin** (`src/spec/plugins/claude-code.ts`) wraps the profile with YAML frontmatter (name, description, tools, model, permissionMode), writes to `{outputDir}/agents/{alias}.md` (default `plugins/praxis/agents/`), and creates/updates `.claude-plugin/plugin.json` in the output directory.
 
-### Judge Pipeline
+### Eval Layer — Judge Pipeline
 
 ```
 Document .md + directory README.md (spec)
@@ -46,7 +53,7 @@ Document .md + directory README.md (spec)
   → Result cached with content_hash for invalidation
 ```
 
-Key files: `src/judge/judge.ts`, `src/judge/cache-manager.ts`, `src/judge/batch-judge.ts`, `src/judge/report-formatter.ts`.
+Key files: `src/eval/judge.ts`, `src/eval/cache-manager.ts`, `src/eval/batch-judge.ts`, `src/eval/report-formatter.ts`.
 
 ### Project Root Detection
 
@@ -64,7 +71,7 @@ Config lives at `{root}/.praxis/config.json` with these fields:
 
 ### Plugin System
 
-Plugins implement `CompilerPlugin` interface (`src/compiler/plugins/types.ts`): `name` property and `compile(profileContent, metadata, roleAlias)` method. Registered in `src/compiler/plugin-registry.ts`. Enabled via `plugins` array in config. Each plugin receives a `PluginConfigEntry` with per-plugin options (e.g., `outputDir`, `claudeCodePluginName`). The Claude Code plugin writes agent files to `{outputDir}/agents/` and manages `.claude-plugin/plugin.json`.
+Plugins implement `CompilerPlugin` interface (`src/spec/plugins/types.ts`): `name` property and `compile(profileContent, metadata, roleAlias)` method. Registered in `src/spec/plugin-registry.ts`. Enabled via `plugins` array in config. Each plugin receives a `PluginConfigEntry` with per-plugin options (e.g., `outputDir`, `claudeCodePluginName`). The Claude Code plugin writes agent files to `{outputDir}/agents/` and manages `.claude-plugin/plugin.json`.
 
 ## Code Conventions
 
