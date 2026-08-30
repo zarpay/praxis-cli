@@ -60,6 +60,8 @@ Two loops share the machinery: the **fast loop** — violations feed straight ba
 | [09-cli-surface.md](./09-cli-surface.md) | Fully CLI-driven; agents as first-class CLI users; display and interaction | Draft |
 | [10-workspace.md](./10-workspace.md) | `.praxis/` layout: closed top level, ownership split, commit policy | Draft |
 | [11-spec-layer.md](./11-spec-layer.md) | Two layers: taxonomy-free eval core; compiler tools as optional spec authoring | Draft |
+| [12-git-integration.md](./12-git-integration.md) | How diffs become eval units: merge-base diffs, two triggers, SHAs as opaque provenance | Draft |
+| [13-roadmap.md](./13-roadmap.md) | Build order: spec layer → critique flow → axiom flow (MVP) → measurement → diffs | Draft |
 
 Docs 01–03 are the load-bearing patterns; 04–08 capture the design conversation and should be revisited after 01–03 settle.
 
@@ -84,6 +86,8 @@ Every document below is bound by these. If a design violates one, the design cha
 **The eval layer is taxonomy-free.** Praxis is two layers: the eval layer (spec, scope, judge, ledger, axioms, metrics) and the spec layer, where the compiler tools and the content taxonomy (experts, practices, constitution, conventions — v1: roles, responsibilities) live as an optional authoring discipline. The eval layer's input contract is a spec, a scope, and hashable content — nothing in it may depend on how the spec was authored. See [11](./11-spec-layer.md).
 
 **The CLI is the only interface, and agents are first-class users of it.** Agents check axioms, validate files, and read reports by running `praxis` — never through per-harness tools or skills, which would mean a second surface that drifts. Help text is the API documentation, `--json` output is a stable contract, exit codes carry meaning, stdout stays parseable. Harness packages, where they exist, are documentation of CLI usage, never an alternative interface. See [09](./09-cli-surface.md).
+
+**Praxis is single-repo tooling.** Every mechanism here — specs, ledger, axioms, epochs — is scoped to one repository. Multi-repo aggregation and org-level axiom sharing are future considerations, deliberately out of v2's scope.
 
 **Verdict provenance is mandatory.** A stored verdict that does not record the judge, the spec content hash, and the relevant config cannot be interpreted later. Provenance is not metadata; it is what makes the number mean anything.
 

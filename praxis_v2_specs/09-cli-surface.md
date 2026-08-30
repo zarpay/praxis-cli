@@ -59,7 +59,7 @@ One CLI, two reading styles. The split is by **command default plus `--json`**, 
 
 ### Interaction
 
-- **Ratification is the one deliberately interactive moment.** `praxis axioms ratify <id>` shows the proposed axiom, its supporting critiques, its gate verdict and spec traceability, then confirms. It is a human-only verb by design (LLM proposes, human ratifies) — so it may prompt, but every prompt has a flag equivalent (`--yes`, `--reject "reason"`) so it scripts.
+- **Triage and ratification are the deliberately interactive moments.** `praxis axioms triage` is a review session: the LLM groups critiques and suggests assignments; the human folds, dismisses, or accepts drafts (04) — the primary human touchpoint in the loop. `praxis axioms ratify <id>` shows the proposed axiom, its supporting critiques, its gate verdict and spec traceability, then confirms. Both are human verbs by design (LLM proposes, human decides) — they may prompt, but every prompt has a flag equivalent (`--yes`, `--reject "reason"`) so they script; scripting past them is a choice the reports will reflect.
 - **Agent-reachable commands never prompt** (rule above, restated because it is the boundary of interactivity).
 - **No TUI.** Richness comes from good text and drill-down, not modes. If a surface ever genuinely needs more than text (trend charts), that is an export (`--json` piped to the user's tooling), not an interactive screen.
 
