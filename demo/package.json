@@ -1,0 +1,20 @@
+{
+  "name": "scoop-society",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Ice cream parlor reviews — the Praxis end-to-end demo project",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "praxis": "praxis"
+  },
+  "dependencies": {
+    "@zarpay/praxis-cli": "file:../cli"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}

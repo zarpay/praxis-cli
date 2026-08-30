@@ -25,6 +25,7 @@ jobs:
           package-manager-cache: false
 
       - name: Verify tag matches package version
+        working-directory: cli
         run: |
           PKG_VERSION="v$(node -p "require('./package.json').version")"
           TAG="${{ github.event.release.tag_name }}"
@@ -34,7 +35,12 @@ jobs:
           fi
 
       - run: npm ci
+        working-directory: cli
       - run: npm run lint
+        working-directory: cli
       - run: npm run typecheck
+        working-directory: cli
       - run: npm test
+        working-directory: cli
       - run: npm publish --access public --provenance
+        working-directory: cli

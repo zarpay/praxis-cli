@@ -1,28 +1,26 @@
 # Praxis
 
-Every codebase has patterns that can't be caught by a syntax checker — service objects with architectural conventions, decision records with agreed-upon formats, agent definitions with structural requirements. Nobody enforces them. They drift. Praxis fixes that.
+Praxis is a **conceptual linter and knowledge compiler**: write specs that define what valid looks like for any set of files, judge them with an LLM, and compile your team's knowledge into subject-matter-expert agent profiles.
 
-Praxis is a **conceptual linter and knowledge compiler**. Write a README spec for any directory that defines what valid documents look like, then run `praxis eval run` to enforce it — for any type of file, in CI, with AI. When those documents are knowledge files, `praxis compile` assembles them into agent profiles: self-contained subject matter experts of their source material, deployable to any LLM platform.
+This repository is organized as three top-level projects:
 
-**→ Full documentation at [zarpay.github.io/praxis-cli](https://zarpay.github.io/praxis-cli/)**
-
-## Install
-
-```bash
-npm install -g @zarpay/praxis-cli
-```
-
-Requires Node.js 18+.
+| Directory | What it is |
+|---|---|
+| [`cli/`](./cli/) | The `@zarpay/praxis-cli` package — source, tests, scaffold, and the [v2 design specs](./cli/praxis_v2_specs/). |
+| [`site/`](./site/) | The documentation site (VitePress), published at [zarpay.github.io/praxis-cli](https://zarpay.github.io/praxis-cli/). |
+| [`demo/`](./demo/) | Scoop Society — a small ice cream parlor review API that dogfoods the development version of Praxis end to end. |
 
 ## Quick start
 
 ```bash
-praxis init my-org
-cd my-org
-praxis add expert code-reviewer
-# edit experts/code-reviewer.md
-praxis compile
-# → agent-profiles/code-reviewer.md
+# Work on the CLI
+cd cli && npm install && npm test
+
+# Run the docs site locally
+cd site && npm install && npm run dev
+
+# Exercise the dev CLI against a real project
+cd demo && npm install && npx praxis status
 ```
 
 ## License
