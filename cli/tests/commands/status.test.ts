@@ -1,13 +1,11 @@
 import { readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { StatusCommand } from "@/commands/status.js";
 import { PraxisConfig } from "@/core/config.js";
-
-import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
-import { createValidatorTmpdir } from "../helpers/validator-tmpdir.js";
+import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
+import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 describe("StatusCommand", () => {
   let tmpdir: string;

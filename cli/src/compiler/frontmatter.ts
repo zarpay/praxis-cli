@@ -67,12 +67,15 @@ export class Frontmatter {
    */
   array(key: string): unknown[] {
     const val = this.parse()[key];
+
     if (val === undefined || val === null) {
       return [];
     }
+
     if (Array.isArray(val)) {
       return val;
     }
+
     return [val];
   }
 
@@ -93,9 +96,11 @@ export class Frontmatter {
    */
   private extractAndParse(): Record<string, unknown> {
     const yamlStr = this.extractRawYaml();
+
     if (!yamlStr) {
       return {};
     }
+
     const parsed = yaml.load(yamlStr, { schema: yaml.DEFAULT_SCHEMA });
     return (parsed as Record<string, unknown>) ?? {};
   }
@@ -110,6 +115,7 @@ export class Frontmatter {
     }
 
     const endIndex = this.content.indexOf(`\n${DELIMITER}`, DELIMITER.length);
+
     if (endIndex === -1) {
       return "";
     }

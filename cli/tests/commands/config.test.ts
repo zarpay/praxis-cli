@@ -1,5 +1,4 @@
 import { join } from "node:path";
-
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 vi.mock("node:child_process", () => ({
@@ -9,8 +8,7 @@ vi.mock("node:child_process", () => ({
 import { spawnSync } from "node:child_process";
 
 import { ConfigCommand } from "@/commands/config.js";
-
-import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
+import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 
 describe("ConfigCommand", () => {
   let tmpdir: string;

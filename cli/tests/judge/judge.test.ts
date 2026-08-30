@@ -1,21 +1,19 @@
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir as osTmpdir } from "node:os";
-import { randomUUID } from "node:crypto";
-
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { HttpResponse, http } from "msw";
+import { randomUUID } from "node:crypto";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir as osTmpdir } from "node:os";
+import { join } from "node:path";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import { Judge } from "@/judge/judge.js";
 import { CacheManager } from "@/judge/cache-manager.js";
-
-import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
+import { Judge } from "@/judge/judge.js";
+import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,
   createOpenRouterServer,
   useOpenRouterResponse,
   validationToolCallResponse,
-} from "../helpers/openrouter-msw.js";
+} from "@tests/helpers/openrouter-msw.js";
 
 /** Canned tool-call responses used across the validate() tests. */
 const fixtures = {

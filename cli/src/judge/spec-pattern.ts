@@ -25,8 +25,10 @@ export function hasGlobChars(pattern: string): boolean {
  */
 export function isSpecFile(filePathOrName: string, pattern: string): boolean {
   const name = baseName(filePathOrName);
+
   if (!hasGlobChars(pattern)) {
     return name === pattern;
   }
+
   return picomatch.isMatch(name, pattern);
 }

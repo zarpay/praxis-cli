@@ -1,4 +1,5 @@
 import type { Command } from "commander";
+
 import chalk from "chalk";
 import fg from "fast-glob";
 
@@ -125,6 +126,7 @@ export class StatusCommand {
       const allFiles = await this.listContentFiles(sourceDir, true);
       for (const file of allFiles) {
         const type = Frontmatter.fromFile(file).value("type") as string | undefined;
+
         if (type === "reference") references++;
         else if (type === "convention" || type === "constitution") contextCount++;
       }
@@ -158,17 +160,21 @@ export class StatusCommand {
         for (const pattern of patterns) {
           if (this.globExpander.isGlob(pattern)) {
             const matches = await this.globExpander.expand(pattern);
+
             if (matches.length === 0) {
               zeroMatchGlobs.push({ expert: expertName, pattern });
             }
+
             if (key === "practices" || key === "responsibilities") {
               for (const m of matches) allReferencedPractices.add(m);
             }
           } else {
             const fullPath = joinPath(this.root, pattern);
+
             if (!exists(fullPath)) {
               danglingRefs.push({ expert: expertName, ref: pattern });
             }
+
             if (key === "practices" || key === "responsibilities") {
               allReferencedPractices.add(pattern);
             }
@@ -181,6 +187,7 @@ export class StatusCommand {
     const orphanedPractices: string[] = [];
     for (const practiceFile of practiceFiles) {
       const relPath = relativePath(this.root, practiceFile);
+
       if (!allReferencedPractices.has(relPath)) {
         orphanedPractices.push(baseName(practiceFile));
       }
@@ -190,6 +197,7 @@ export class StatusCommand {
     const unmatchedOwners: StatusReport["unmatchedOwners"] = [];
     for (const practiceFile of practiceFiles) {
       const owner = Frontmatter.fromFile(practiceFile).value("owner") as string | undefined;
+
       if (owner && !expertAliases.has(owner.toLowerCase())) {
         unmatchedOwners.push({ practice: baseName(practiceFile), owner });
       }
@@ -223,6 +231,7 @@ export class StatusCommand {
     // Validation summary
     const v = report.validation;
     const totalDocs = v.pass + v.warn + v.fail + v.notValidated;
+
     if (totalDocs > 0) {
       console.log();
       this.logger.info("Validation");
@@ -280,6 +289,7 @@ export class StatusCommand {
     }
 
     console.log();
+
     if (issueCount === 0) {
       this.logger.success("No issues found");
     } else {
@@ -307,6 +317,7 @@ export class StatusCommand {
 
     for (const filePath of batchJudge.listTargetFiles()) {
       const cached = cacheManager.readRaw({ targetPath: filePath });
+
       if (!cached) {
         validation.notValidated++;
       } else if (cached.result.compliant) {

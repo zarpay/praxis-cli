@@ -1,15 +1,14 @@
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { rmSync } from "node:fs";
-
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { InitCommand } from "@/commands/init.js";
 import { ExpertCompiler } from "@/compiler/expert-compiler.js";
 import { Logger } from "@/core/logger.js";
-import { readJsonFile } from "../helpers/read-json.js";
+import { readJsonFile } from "@tests/helpers/read-json.js";
 
 /** Resolved path to the scaffold directory at the project root. */
 const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
@@ -139,6 +138,7 @@ describe("init → compile integration", () => {
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].trim() === "---") {
         dashCount++;
+
         if (dashCount === 2) {
           frontmatterEnd = i;
           break;

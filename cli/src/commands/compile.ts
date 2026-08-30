@@ -1,8 +1,9 @@
 import type { Command } from "commander";
+
 import fg from "fast-glob";
 
-import { Frontmatter } from "@/compiler/frontmatter.js";
 import { ExpertCompiler } from "@/compiler/expert-compiler.js";
+import { Frontmatter } from "@/compiler/frontmatter.js";
 import { PraxisConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { type FSWatcher, watchDir } from "@/core/files.js";
@@ -29,9 +30,11 @@ export function registerCompileCommand(program: Command): void {
 
         if (options.alias) {
           await command.compileAlias(options.alias);
+
           if (options.watch) {
             logger.warn("--watch is not supported with --alias, ignoring");
           }
+
           return;
         }
 
@@ -150,6 +153,7 @@ export class CompileCommand {
     for (const expertFile of expertFiles) {
       const fm = Frontmatter.fromFile(expertFile);
       const alias = fm.value("alias") as string | undefined;
+
       if (alias?.toLowerCase() === targetAlias.toLowerCase()) {
         return expertFile;
       }

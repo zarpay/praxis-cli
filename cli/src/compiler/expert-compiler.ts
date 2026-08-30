@@ -1,17 +1,17 @@
+import type { CompilerPlugin } from "@/compiler/plugins/types.js";
+
 import fg from "fast-glob";
 
+import { Frontmatter } from "@/compiler/frontmatter.js";
+import { GlobExpander } from "@/compiler/glob-expander.js";
+import { Markdown } from "@/compiler/markdown.js";
+import { type AgentMetadata, OutputBuilder } from "@/compiler/output-builder.js";
+import { resolvePlugins } from "@/compiler/plugin-registry.js";
 import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
 import { exists, writeText } from "@/core/files.js";
-import { baseName, joinPath } from "@/core/paths.js";
 import { Logger } from "@/core/logger.js";
+import { baseName, joinPath } from "@/core/paths.js";
 import { isSpecFile } from "@/judge/spec-pattern.js";
-
-import { Frontmatter } from "./frontmatter.js";
-import { GlobExpander } from "./glob-expander.js";
-import { Markdown } from "./markdown.js";
-import { type AgentMetadata, OutputBuilder } from "./output-builder.js";
-import { resolvePlugins } from "./plugin-registry.js";
-import type { CompilerPlugin } from "./plugins/types.js";
 
 /**
  * Compiles role definition files into agent profiles and plugin-specific output.
@@ -92,11 +92,13 @@ export class ExpertCompiler {
 
     for (const expertFile of expertFiles) {
       const name = baseName(expertFile);
+
       if (name === "_template.md" || isSpecFile(name, this.specFilePattern)) {
         continue;
       }
 
       const alias = await this.compile(expertFile);
+
       if (alias) compiled++;
     }
 
@@ -136,6 +138,7 @@ export class ExpertCompiler {
   private writeOutputs(profile: string, metadata: AgentMetadata | null, alias: string): void {
     // Write pure agent profile if configured
     const profilesDir = this.config.agentProfilesOutputDir;
+
     if (profilesDir) {
       const validates = metadata?.validates;
       const content =
@@ -163,15 +166,18 @@ export class ExpertCompiler {
    */
   private async resolveConstitutionPatterns(fm: Frontmatter): Promise<string[]> {
     const raw = fm.parse()["constitution"];
+
     if (!raw) {
       return [];
     }
+
     if (raw === true) {
       this.logger.warn(
         'constitution: true is deprecated. Use an explicit path like: constitution: "context/constitution/*.md"',
       );
       return [];
     }
+
     const patterns = Array.isArray(raw) ? (raw as string[]) : [raw as string];
     return this.globExpander.expandAll(patterns);
   }
@@ -208,9 +214,11 @@ export class ExpertCompiler {
 
     for (const pattern of patterns) {
       const matches = await this.globExpander.expand(pattern);
+
       if (this.globExpander.isGlob(pattern) && matches.length === 0) {
         this.logger.warn(`Glob pattern matched zero files: ${pattern}`);
       }
+
       expanded.push(...matches);
     }
 
@@ -229,10 +237,12 @@ export class ExpertCompiler {
     return relPaths
       .map((relPath) => {
         const fullPath = joinPath(this.root, relPath);
+
         if (!exists(fullPath)) {
           this.logger.warn(`${missingLabel}: ${relPath}`);
           return null;
         }
+
         return new Markdown(fullPath).body();
       })
       .filter((body): body is string => body !== null);
@@ -252,6 +262,7 @@ export class ExpertCompiler {
       .replace(/^-|-$/g, "");
 
     const description = fm.value("description") as string | undefined;
+
     if (!description) {
       this.logger.warn("No description found in role, skipping agent metadata");
       return null;
@@ -260,15 +271,19 @@ export class ExpertCompiler {
     const metadata: AgentMetadata = { name, description };
 
     const tools = fm.value("agent_tools") as string | undefined;
+
     if (tools) metadata.tools = tools;
 
     const model = fm.value("agent_model") as string | undefined;
+
     if (model) metadata.model = model;
 
     const permissionMode = fm.value("agent_permission_mode") as string | undefined;
+
     if (permissionMode) metadata.permissionMode = permissionMode;
 
     const validates = fm.array("validates") as string[];
+
     if (validates.length > 0) metadata.validates = validates;
 
     return metadata;

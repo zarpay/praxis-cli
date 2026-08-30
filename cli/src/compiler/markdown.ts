@@ -38,6 +38,7 @@ export class Markdown {
     }
 
     const endIndex = this.content.indexOf(`\n${DELIMITER}`, DELIMITER.length);
+
     if (endIndex === -1) {
       return this.content;
     }

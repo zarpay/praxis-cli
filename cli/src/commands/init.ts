@@ -82,6 +82,7 @@ export class InitCommand {
     // Step 3: Copy plugin scaffold files for each enabled plugin
     for (const pluginEntry of config.plugins) {
       const pluginScaffoldDir = joinPath(this.scaffoldDir, "plugins", pluginEntry.name);
+
       if (!exists(pluginScaffoldDir)) {
         continue;
       }

@@ -1,13 +1,12 @@
+import type { Logger } from "@/core/logger.js";
+
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import type { Logger } from "@/core/logger.js";
 import { ExpertCompiler } from "@/compiler/expert-compiler.js";
-
-import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
-import { createCaptureLogger } from "../helpers/capture-logger.js";
+import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
+import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 
 describe("ExpertCompiler", () => {
   let tmpdir: string;

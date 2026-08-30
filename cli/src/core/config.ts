@@ -1,6 +1,6 @@
-import { errors } from "./errors.js";
-import { exists, readJson } from "./files.js";
-import { configFile, resolvePath } from "./paths.js";
+import { errors } from "@/core/errors.js";
+import { exists, readJson } from "@/core/files.js";
+import { configFile, resolvePath } from "@/core/paths.js";
 
 /** Normalized plugin configuration entry. */
 export interface PluginConfigEntry {
@@ -90,9 +90,11 @@ export class PraxisConfig {
    */
   get agentProfilesOutputDir(): string | null {
     const val = this.data.agentProfilesOutputDir;
+
     if (val === false) {
       return null;
     }
+
     return resolvePath(this.root, val);
   }
 
@@ -172,6 +174,7 @@ export class PraxisConfig {
       if (typeof entry === "string") {
         return { name: entry };
       }
+
       return entry;
     });
   }

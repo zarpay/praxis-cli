@@ -15,7 +15,8 @@
     "declarationMap": false,
     "sourceMap": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@tests/*": ["./tests/*"]
     },
     "baseUrl": "."
   },

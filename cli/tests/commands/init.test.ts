@@ -1,14 +1,13 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
-import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { rmSync } from "node:fs";
-
+import { tmpdir } from "node:os";
+import { join, relative } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { InitCommand } from "@/commands/init.js";
 import { Logger } from "@/core/logger.js";
-import { readJsonFile } from "../helpers/read-json.js";
+import { readJsonFile } from "@tests/helpers/read-json.js";
 
 /** Resolved path to the scaffold directory at the project root. */
 const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
@@ -23,9 +22,12 @@ function makeTmpdir(): string {
  */
 function walkDir(dir: string, base = dir): string[] {
   const results: string[] = [];
+
   if (!existsSync(dir)) return results;
+
   for (const entry of readdirSync(dir)) {
     const fullPath = join(dir, entry);
+
     if (statSync(fullPath).isDirectory()) {
       results.push(...walkDir(fullPath, base));
     } else {

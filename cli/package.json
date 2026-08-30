@@ -49,11 +49,13 @@
     "picomatch": "^4.0.4"
   },
   "devDependencies": {
+    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.13.4",
     "@types/picomatch": "^4.0.3",
     "eslint": "^9.20.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-perfectionist": "^5.10.1",
     "msw": "^2.7.3",
     "prettier": "^3.5.2",
     "tsup": "^8.4.0",

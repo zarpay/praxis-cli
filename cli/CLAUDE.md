@@ -68,8 +68,10 @@ Plugins implement `CompilerPlugin` interface (`src/compiler/plugins/types.ts`): 
 
 ## Code Conventions
 
-- **Path alias:** `@/*` → `./src/*` (configured in tsconfig.json and vitest.config.ts)
+- **Path aliases:** `@/*` → `./src/*`, `@tests/*` → `./tests/*` (tsconfig.json and vitest.config.ts). Imports always use aliases, never relative paths (ESLint-enforced; sole exception: `../package.json`).
+- **Import order:** third-party types, internal types, third-party values, internal values — blank line between groups, alphabetical within (perfectionist, autofixable)
 - **Import extensions:** `.js` required for local imports (ESM)
+- **Conditionals breathe:** blank line before and after `if`/`switch`, except at block edges (@stylistic, autofixable)
 - **Unused args:** Prefix with `_` (eslint rule)
 - **Formatting:** Double quotes, semicolons, trailing commas, 100-char line width
 - **Test location:** `tests/` mirrors `src/` structure, uses `.test.ts` suffix

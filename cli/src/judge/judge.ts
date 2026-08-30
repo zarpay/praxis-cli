@@ -5,10 +5,9 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { exists, readText } from "@/core/files.js";
 import { baseName, joinPath, parentDir } from "@/core/paths.js";
-
-import { type Verdict, CacheManager, contentHash } from "./cache-manager.js";
-import { SYSTEM_PROMPT, JUDGE_TOOLS } from "./prompts.js";
-import { hasGlobChars } from "./spec-pattern.js";
+import { type Verdict, CacheManager, contentHash } from "@/judge/cache-manager.js";
+import { SYSTEM_PROMPT, JUDGE_TOOLS } from "@/judge/prompts.js";
+import { hasGlobChars } from "@/judge/spec-pattern.js";
 
 /** Known target types within the Praxis content structure. */
 export type TargetType =
@@ -153,16 +152,19 @@ export class Judge {
    */
   private async callOpenRouter(): Promise<Verdict> {
     const envVarName = this.apiKeyEnvVar;
+
     if (!envVarName) {
       throw errors.validationNotConfigured("apiKeyEnvVar");
     }
 
     const apiKey = process.env[envVarName];
+
     if (!apiKey) {
       throw errors.apiKeyNotSet(envVarName);
     }
 
     const modelName = this.model;
+
     if (!modelName) {
       throw errors.validationNotConfigured("model");
     }
@@ -257,10 +259,12 @@ ${this.targetContent}
     }
 
     const type = Frontmatter.fromContent(this.targetContent).value("type");
+
     if (typeof type === "string") {
       if ((FRONTMATTER_TYPES as string[]).includes(type)) {
         return type as TargetType;
       }
+
       if (type in LEGACY_TYPES) {
         return LEGACY_TYPES[type];
       }
@@ -274,12 +278,17 @@ ${this.targetContent}
     if (this.targetPath.includes("/experts/") || this.targetPath.includes("/roles/")) {
       return "expert";
     }
+
     if (this.targetPath.includes("/practices/") || this.targetPath.includes("/responsibilities/")) {
       return "practice";
     }
+
     if (this.targetPath.includes("/reference/")) return "reference";
+
     if (this.targetPath.includes("/conventions/")) return "convention";
+
     if (this.targetPath.includes("/constitution/")) return "constitution";
+
     return "unknown";
   }
 
@@ -289,7 +298,9 @@ ${this.targetContent}
 
     if (!hasGlobChars(this.specFilePattern)) {
       const specPath = joinPath(baseDir, this.specFilePattern);
+
       if (exists(specPath)) return specPath;
+
       throw errors.specNotFound(this.specFilePattern, baseDir, this.targetPath);
     }
 
@@ -300,6 +311,7 @@ ${this.targetContent}
     });
 
     if (matches.length > 0) return matches[0];
+
     throw errors.specPatternNotFound(this.specFilePattern, baseDir, this.targetPath);
   }
 }

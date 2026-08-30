@@ -1,7 +1,7 @@
 import { basename, dirname, join, relative, resolve } from "node:path";
 
-import { errors } from "./errors.js";
-import { exists } from "./files.js";
+import { errors } from "@/core/errors.js";
+import { exists } from "@/core/files.js";
 
 /**
  * Standard path operations for the project.
@@ -116,9 +116,11 @@ export class Paths {
    */
   relative(absolutePath: string): string {
     const prefix = this.root + "/";
+
     if (absolutePath.startsWith(prefix)) {
       return absolutePath.slice(prefix.length);
     }
+
     return absolutePath;
   }
 
@@ -136,6 +138,7 @@ export class Paths {
       }
 
       const parent = dirname(current);
+
       if (parent === current) {
         throw errors.rootNotFound();
       }

@@ -1,5 +1,7 @@
 import eslint from "@eslint/js";
+import stylistic from "@stylistic/eslint-plugin";
 import prettier from "eslint-config-prettier";
+import perfectionist from "eslint-plugin-perfectionist";
 import tseslint from "typescript-eslint";
 
 /**
@@ -22,6 +24,10 @@ export default tseslint.config(
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   {
+    plugins: {
+      "@stylistic": stylistic,
+      perfectionist,
+    },
     languageOptions: {
       parserOptions: {
         // Type-aware linting: derive type information from the nearest tsconfig.
@@ -35,11 +41,11 @@ export default tseslint.config(
       // Braces required whenever a statement spans multiple lines;
       // single-line guards like `if (x) return;` stay legal.
       curly: ["error", "multi-line"],
-      // Type-only imports must use `import type`, keeping runtime
-      // imports distinct from erased ones.
+      // Type-only imports must use top-level `import type` statements,
+      // so the import groups below can separate types from values.
       "@typescript-eslint/consistent-type-imports": [
         "error",
-        { prefer: "type-imports", fixStyle: "inline-type-imports" },
+        { prefer: "type-imports", fixStyle: "separate-type-imports" },
       ],
       // Unused variables are errors, but underscore-prefixed parameters
       // are allowed (the conventional "intentionally unused" marker).
@@ -59,6 +65,33 @@ export default tseslint.config(
       // (e.g. mockImplementation(() => {})); named empty functions
       // remain flagged.
       "@typescript-eslint/no-empty-function": ["error", { allow: ["arrowFunctions"] }],
+      // Imports are grouped: third-party types, internal types,
+      // third-party values, internal values — blank line between
+      // groups, alphabetical within them. Autofixable.
+      "perfectionist/sort-imports": [
+        "error",
+        {
+          type: "natural",
+          newlinesBetween: 1,
+          internalPattern: ["^@/", "^@tests/"],
+          groups: [
+            ["type-builtin", "type-external"],
+            ["type-internal", "type-tsconfig-path"],
+            ["builtin", "external"],
+            ["internal", "tsconfig-path"],
+            ["type-parent", "type-sibling", "type-index", "parent", "sibling", "index"],
+            "unknown",
+          ],
+        },
+      ],
+      // Conditionals breathe: a blank line before and after every if
+      // and switch — except at the start or end of a block, where
+      // there is no neighboring statement to pad against.
+      "@stylistic/padding-line-between-statements": [
+        "error",
+        { blankLine: "always", prev: "*", next: ["if", "switch"] },
+        { blankLine: "always", prev: ["if", "switch"], next: "*" },
+      ],
       // Commander's .action() accepts async callbacks by design; without
       // this exception every async CLI action would be flagged.
       "@typescript-eslint/no-misused-promises": [
@@ -68,9 +101,30 @@ export default tseslint.config(
     },
   },
   {
+    // Imports always use path aliases (@/, @tests/), never relative
+    // paths. The one exception is the package manifest, which lives
+    // above src/ and has no alias.
+    files: ["src/**/*.ts", "tests/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ (src) or @tests/ path aliases instead of relative imports.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // File and path operations go through the standard core modules;
     // node:fs and node:path are importable only inside them. Tests may
-    // use the node primitives directly to set up fixtures.
+    // use the node primitives directly to set up fixtures. (Rule
+    // configs replace rather than merge, so the relative-import ban is
+    // restated here.)
     files: ["src/**/*.ts"],
     ignores: ["src/core/files.ts", "src/core/paths.ts"],
     rules: {
@@ -80,6 +134,12 @@ export default tseslint.config(
           paths: [
             { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
             { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+          ],
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
           ],
         },
       ],

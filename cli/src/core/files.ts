@@ -90,6 +90,7 @@ export function listFilesRecursive(dir: string): string[] {
 
   for (const entry of readdirSync(dir)) {
     const fullPath = join(dir, entry);
+
     if (statSync(fullPath).isDirectory()) {
       results.push(...listFilesRecursive(fullPath).map((child) => join(entry, child)));
     } else {

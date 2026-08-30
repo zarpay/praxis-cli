@@ -1,7 +1,7 @@
-import { spawnSync } from "node:child_process";
-
 import type { Command } from "commander";
+
 import chalk from "chalk";
+import { spawnSync } from "node:child_process";
 
 import { readJson } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
@@ -87,6 +87,7 @@ export class ConfigCommand {
   edit(): void {
     const editor = process.env["VISUAL"] ?? process.env["EDITOR"] ?? "vi";
     const result = spawnSync(editor, [this.configPath], { stdio: "inherit" });
+
     if (result.error) {
       throw result.error;
     }

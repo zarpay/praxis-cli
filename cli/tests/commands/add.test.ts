@@ -1,13 +1,11 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { AddCommand } from "@/commands/add.js";
-
-import { createCaptureLogger } from "../helpers/capture-logger.js";
+import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 
 /** Resolved path to the scaffold directory at the project root. */
 const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");

@@ -226,7 +226,9 @@ export class EvalCommand {
         verbose: options.verbose,
         cache: options.cache,
       });
+
       if (!result.compliant && result.severity === "error") errors++;
+
       if (!result.compliant && result.severity === "warning") warnings++;
     }
     return { errors, warnings };
@@ -367,11 +369,13 @@ export class EvalCommand {
    */
   private requireValidationConfig(): ValidationConfig {
     const validation = this.config.validation;
+
     if (!validation?.apiKeyEnvVar || !validation.model) {
       throw errors.missingValidationConfig();
     }
 
     const key = process.env[validation.apiKeyEnvVar];
+
     if (!key || key.length === 0) {
       throw errors.missingApiKey(validation.apiKeyEnvVar);
     }
@@ -416,6 +420,7 @@ export class EvalCommand {
     console.log(`${chalk.green("[Compliant]")} ${summary.compliant}`);
     console.log(`${chalk.yellow("[Warnings]")} ${summary.warnings}`);
     console.log(`${chalk.red("[Errors]")} ${summary.errors}`);
+
     if (summary.notValidated > 0) {
       console.log(`${chalk.gray("[Not Validated]")} ${summary.notValidated} (no spec found)`);
     }

@@ -64,9 +64,11 @@ export class Logger {
     if (process.env["NO_COLOR"] !== undefined) {
       return false;
     }
+
     if ("isTTY" in this.output) {
       return !!(this.output as NodeJS.WriteStream).isTTY;
     }
+
     return false;
   }
 }

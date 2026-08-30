@@ -1,9 +1,9 @@
-import type { Logger } from "@/core/logger.js";
+import type { CompilerPlugin, PluginOptions } from "@/compiler/plugins/types.js";
 import type { PluginConfigEntry } from "@/core/config.js";
-import { errors } from "@/core/errors.js";
+import type { Logger } from "@/core/logger.js";
 
-import { ClaudeCodePlugin } from "./plugins/claude-code.js";
-import type { CompilerPlugin, PluginOptions } from "./plugins/types.js";
+import { ClaudeCodePlugin } from "@/compiler/plugins/claude-code.js";
+import { errors } from "@/core/errors.js";
 
 /** Constructor signature every compiler plugin class must satisfy. */
 type PluginConstructor = new (options: PluginOptions) => CompilerPlugin;
@@ -29,9 +29,11 @@ export function resolvePlugins(
 ): CompilerPlugin[] {
   return entries.map((entry) => {
     const Constructor = PLUGINS[entry.name];
+
     if (!Constructor) {
       throw errors.unknownPlugin(entry.name, Object.keys(PLUGINS));
     }
+
     return new Constructor({ root, logger, pluginConfig: entry });
   });
 }

@@ -1,8 +1,8 @@
+import type { AgentMetadata } from "@/compiler/output-builder.js";
+import type { CompilerPlugin, PluginOptions } from "@/compiler/plugins/types.js";
+
 import { exists, readJson, writeJson, writeText } from "@/core/files.js";
 import { joinPath, resolvePath } from "@/core/paths.js";
-
-import type { AgentMetadata } from "../output-builder.js";
-import type { CompilerPlugin, PluginOptions } from "./types.js";
 
 /** Default plugin.json content used when no scaffold file exists. */
 const DEFAULT_PLUGIN_JSON = {
@@ -261,6 +261,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
     }
 
     const { name, description } = metadata;
+
     if (!name || !description) {
       return null;
     }
@@ -272,12 +273,15 @@ export class ClaudeCodePlugin implements CompilerPlugin {
     if (metadata.tools) {
       lines.push(`tools: ${metadata.tools}`);
     }
+
     if (metadata.model) {
       lines.push(`model: ${metadata.model}`);
     }
+
     if (metadata.permissionMode) {
       lines.push(`permissionMode: ${metadata.permissionMode}`);
     }
+
     if (metadata.validates && metadata.validates.length > 0) {
       lines.push("paths:");
       for (const p of metadata.validates) {
@@ -298,5 +302,6 @@ function quoteIfNeeded(str: string): string {
     const escaped = str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
     return `"${escaped}"`;
   }
+
   return str;
 }

@@ -1,18 +1,16 @@
 import { join } from "node:path";
-
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
+import { PraxisConfig } from "@/core/config.js";
 import { BatchJudge } from "@/judge/batch-judge.js";
 import { CacheManager } from "@/judge/cache-manager.js";
-import { PraxisConfig } from "@/core/config.js";
-
-import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
-import { createValidatorTmpdir } from "../helpers/validator-tmpdir.js";
+import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   createOpenRouterServer,
   useOpenRouterResponse,
   validationToolCallResponse,
-} from "../helpers/openrouter-msw.js";
+} from "@tests/helpers/openrouter-msw.js";
+import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 const server = createOpenRouterServer();
 

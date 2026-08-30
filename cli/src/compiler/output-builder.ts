@@ -83,15 +83,19 @@ export class OutputBuilder {
     if (this.role) {
       sections.push(this.buildSection("Role", [this.role], BLANK_SEPARATOR));
     }
+
     if (this.responsibilities.length > 0) {
       sections.push(this.buildSection("Responsibilities", this.responsibilities, SEPARATOR));
     }
+
     if (this.constitution.length > 0) {
       sections.push(this.buildSection("Constitution", this.constitution, BLANK_SEPARATOR));
     }
+
     if (this.context.length > 0) {
       sections.push(this.buildSection("Context", this.context, SEPARATOR));
     }
+
     if (this.reference.length > 0) {
       sections.push(this.buildSection("Reference", this.reference, SEPARATOR));
     }

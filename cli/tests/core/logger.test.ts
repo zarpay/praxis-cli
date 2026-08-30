@@ -1,11 +1,9 @@
-import { Writable } from "node:stream";
-
 import chalk from "chalk";
+import { Writable } from "node:stream";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { Logger } from "@/core/logger.js";
-
-import { createCaptureLogger } from "../helpers/capture-logger.js";
+import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 
 describe("Logger", () => {
   describe("log levels", () => {

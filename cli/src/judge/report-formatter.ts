@@ -1,13 +1,13 @@
+import type { CacheFileData } from "@/judge/cache-manager.js";
+
 import chalk from "chalk";
 import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, readText } from "@/core/files.js";
 import { joinPath, parentDir } from "@/core/paths.js";
-
-import type { CacheFileData } from "./cache-manager.js";
-import { contentHash } from "./cache-manager.js";
-import { hasGlobChars } from "./spec-pattern.js";
+import { contentHash } from "@/judge/cache-manager.js";
+import { hasGlobChars } from "@/judge/spec-pattern.js";
 
 /** All possible report states. */
 export type ReportStatus = "not_validated" | "pass" | "warn" | "fail" | "stale";

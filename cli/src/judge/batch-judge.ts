@@ -5,10 +5,9 @@ import { Frontmatter } from "@/compiler/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
-
-import { CacheManager, type Verdict } from "./cache-manager.js";
-import { Judge } from "./judge.js";
-import { isSpecFile } from "./spec-pattern.js";
+import { CacheManager, type Verdict } from "@/judge/cache-manager.js";
+import { Judge } from "@/judge/judge.js";
+import { isSpecFile } from "@/judge/spec-pattern.js";
 
 /** Extended validation result that includes file path and type information. */
 export interface TargetVerdict extends Verdict {
@@ -176,6 +175,7 @@ export class BatchJudge {
 
     for (const { docPath, domain } of queue) {
       if (this.stoppedEarly) break;
+
       await this.validateDocument(docPath, domain.specPath, domain.type);
       this.checkFailFast();
     }
@@ -210,7 +210,9 @@ export class BatchJudge {
       if (!byType[result.type]) {
         byType[result.type] = { total: 0, compliant: 0, issues: 0 };
       }
+
       byType[result.type].total++;
+
       if (result.compliant) {
         byType[result.type].compliant++;
       } else {
@@ -253,7 +255,9 @@ export class BatchJudge {
 
       for (const file of allMdFiles) {
         const name = baseName(file);
+
         if (isSpecFile(name, this.specFilePattern) || name.startsWith("_")) continue;
+
         docs.add(file);
       }
     }
@@ -271,6 +275,7 @@ export class BatchJudge {
     if (domain.targetFiles) {
       return domain.targetFiles;
     }
+
     return fg
       .sync("*.md", {
         cwd: domain.dir,
@@ -341,6 +346,7 @@ export class BatchJudge {
     if (!this.failFast) return;
 
     const lastResult = this.results[this.results.length - 1];
+
     if (lastResult && !lastResult.compliant && lastResult.severity === "error") {
       this.stoppedEarly = true;
     }

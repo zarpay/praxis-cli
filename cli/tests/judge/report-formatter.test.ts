@@ -1,11 +1,11 @@
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { tmpdir } from "node:os";
-import { randomUUID } from "node:crypto";
+import type { CacheFileData } from "@/judge/cache-manager.js";
 
+import { randomUUID } from "node:crypto";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { CacheFileData } from "@/judge/cache-manager.js";
 import { contentHash } from "@/judge/cache-manager.js";
 import { buildReport, computeCurrentHash, displayReport } from "@/judge/report-formatter.js";
 

@@ -1,12 +1,10 @@
-import { createHash } from "node:crypto";
-
 import fg from "fast-glob";
+import { createHash } from "node:crypto";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, fileSize, readText, removeFile, writeText } from "@/core/files.js";
 import { baseName, joinPath, parentDir, validationCacheDir } from "@/core/paths.js";
-
-import { isSpecFile } from "./spec-pattern.js";
+import { isSpecFile } from "@/judge/spec-pattern.js";
 
 /** Current cache format version. */
 const CACHE_VERSION = "2.0";
@@ -171,6 +169,7 @@ export class CacheManager {
       } catch {
         /* ignore cleanup failures */
       }
+
       if (process.env["DEBUG"]) {
         console.warn(`Warning: Failed to write cache file (${(err as Error).message})`);
       }
@@ -205,14 +204,19 @@ export class CacheManager {
       if (fileData.version === CACHE_VERSION) {
         const v2 = fileData as CacheFileDataV2;
         const entry = v2.validations[this.specHash(specPath)];
+
         if (entry?.content_hash !== contentHash) return null;
+
         return entry.result;
       }
 
       if (fileData.version === CACHE_VERSION_V1) {
         const v1 = fileData as CacheFileDataV1;
+
         if (this.specHash(v1.document.spec_path) !== this.specHash(specPath)) return null;
+
         if (v1.content_hash !== contentHash) return null;
+
         return v1.result;
       }
 
@@ -223,11 +227,13 @@ export class CacheManager {
       } catch {
         /* ignore */
       }
+
       if (process.env["DEBUG"]) {
         console.warn(
           `Warning: Removed corrupt cache file ${cachePath} (${(err as Error).message})`,
         );
       }
+
       return null;
     }
   }
@@ -262,15 +268,19 @@ export class CacheManager {
         const entry = specPath
           ? v2.validations[this.specHash(specPath)]
           : Object.values(v2.validations)[0];
+
         if (!entry) return null;
+
         return this.entryToCacheFileData(targetPath, entry);
       }
 
       if (fileData.version === CACHE_VERSION_V1) {
         const v1 = fileData as CacheFileDataV1;
+
         if (specPath && this.specHash(v1.document.spec_path) !== this.specHash(specPath)) {
           return null;
         }
+
         return v1;
       }
 
@@ -454,10 +464,12 @@ export class CacheManager {
   private relSpecPath(specPath: string): string {
     if (this.projectRoot) {
       const root = this.projectRoot.endsWith("/") ? this.projectRoot : `${this.projectRoot}/`;
+
       if (specPath.startsWith(root)) {
         return specPath.slice(root.length);
       }
     }
+
     return specPath;
   }
 
@@ -478,6 +490,7 @@ export class CacheManager {
 
     for (const source of sources) {
       const sourceDir = joinPath(root, source);
+
       if (!exists(sourceDir)) continue;
 
       const docFiles = fg.sync("**/*.md", {
@@ -488,6 +501,7 @@ export class CacheManager {
 
       for (const relFile of docFiles) {
         const name = baseName(relFile);
+
         if (isSpecFile(name, specFilePattern) || baseName(relFile, ".md").startsWith("_")) continue;
 
         const key = joinPath(source, relFile).replace(/\.md$/, "");

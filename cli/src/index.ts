@@ -1,13 +1,13 @@
 import { Command } from "commander";
 
-import pkg from "../package.json";
-
 import { registerAddCommand } from "@/commands/add.js";
 import { registerCompileCommand } from "@/commands/compile.js";
 import { registerConfigCommand } from "@/commands/config.js";
+import { registerEvalCommand, registerValidateCommand } from "@/commands/eval.js";
 import { registerInitCommand } from "@/commands/init.js";
 import { registerStatusCommand } from "@/commands/status.js";
-import { registerEvalCommand, registerValidateCommand } from "@/commands/eval.js";
+
+import pkg from "../package.json";
 
 /** CLI version, sourced from package.json and inlined at build time. */
 const VERSION = pkg.version;

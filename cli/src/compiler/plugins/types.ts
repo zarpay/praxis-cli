@@ -1,4 +1,4 @@
-import type { AgentMetadata } from "../output-builder.js";
+import type { AgentMetadata } from "@/compiler/output-builder.js";
 import type { PluginConfigEntry } from "@/core/config.js";
 import type { Logger } from "@/core/logger.js";
 
