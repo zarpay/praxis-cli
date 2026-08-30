@@ -8,6 +8,9 @@ import { errors } from "@/core/errors.js";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 
+/** Content types `praxis add` can create. */
+export type AddableType = "role" | "responsibility";
+
 /**
  * Resolved path to the scaffold directory shipped with the package.
  *
@@ -29,100 +32,115 @@ export function registerAddCommand(program: Command): void {
     .command("role <name>")
     .description("Create a new role from template")
     .action((name: string) => {
-      const logger = new Logger();
-      try {
-        addFromTemplate("role", name, logger);
-      } catch (err) {
-        logger.error(err instanceof Error ? err.message : String(err));
-        process.exit(1);
-      }
+      runAdd("role", name);
     });
 
   add
     .command("responsibility <name>")
     .description("Create a new responsibility from template")
     .action((name: string) => {
-      const logger = new Logger();
-      try {
-        addFromTemplate("responsibility", name, logger);
-      } catch (err) {
-        logger.error(err instanceof Error ? err.message : String(err));
-        process.exit(1);
-      }
+      runAdd("responsibility", name);
     });
 }
 
-/**
- * Creates a new content file from a template with placeholders filled.
- *
- * Reads the appropriate `_template.md` from the scaffold directory,
- * replaces placeholder tokens with the provided name, and writes
- * the result to the correct content directory.
- *
- * @param type - The content type to create
- * @param name - Kebab-case name for the new file (e.g. "code-reviewer")
- * @param logger - Logger instance for output
- * @param options - Override root and scaffold paths (for testing)
- */
-export function addFromTemplate(
-  type: "role" | "responsibility",
-  name: string,
-  logger: Logger,
-  options?: { root?: string; scaffoldDir?: string },
-): void {
-  const root = options?.root ?? new Paths().root;
-  const config = new PraxisConfig(root);
-  const scaffoldDir = options?.scaffoldDir ?? SCAFFOLD_DIR;
-
-  const subdir = type === "role" ? "roles" : "responsibilities";
-  const targetDir = type === "role" ? config.rolesDir : config.responsibilitiesDir;
-  const templatePath = join(scaffoldDir, "core", subdir, "_template.md");
-  const targetFile = join(targetDir, `${name}.md`);
-  const relTargetFile = relative(root, targetFile);
-
-  if (existsSync(targetFile)) {
-    throw errors.fileAlreadyExists(relTargetFile);
+/** Shared action body: build an AddCommand for the current project and run it. */
+function runAdd(type: AddableType, name: string): void {
+  const logger = new Logger();
+  try {
+    new AddCommand({ root: new Paths().root, logger }).add(type, name);
+  } catch (err) {
+    logger.error(err instanceof Error ? err.message : String(err));
+    process.exit(1);
   }
-
-  if (!existsSync(templatePath)) {
-    throw errors.templateNotFound(templatePath);
-  }
-
-  const template = readFileSync(templatePath, "utf-8");
-  const filled = fillTemplate(type, name, template);
-
-  if (!existsSync(targetDir)) {
-    mkdirSync(targetDir, { recursive: true });
-  }
-
-  writeFileSync(targetFile, filled);
-  logger.success(`Created ${type}: ${relTargetFile}`);
 }
 
 /**
- * Converts a kebab-case name to Title Case.
+ * Creates new content files from the scaffold templates.
  *
- * @example toTitleCase("code-reviewer") // "Code Reviewer"
+ * Dependencies (project root, scaffold location, logger) are injected
+ * at construction; each add() call reads the matching `_template.md`,
+ * fills its placeholders, and writes the result into the content
+ * directory the project config designates for that type.
  */
-function toTitleCase(name: string): string {
-  return name
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
+export class AddCommand {
+  private readonly root: string;
+  private readonly config: PraxisConfig;
+  private readonly scaffoldDir: string;
+  private readonly logger: Logger;
 
-/**
- * Fills template placeholders with the provided name.
- *
- * For roles: replaces `{role_name}` (Title Case) and `{required_alias}` (kebab-case)
- * For responsibilities: replaces `{verb_what_title}` (Title Case)
- */
-function fillTemplate(type: "role" | "responsibility", name: string, template: string): string {
-  const titleCase = toTitleCase(name);
-
-  if (type === "role") {
-    return template.replace(/\{role_name\}/g, titleCase).replace(/\{required_alias\}/g, name);
+  constructor({
+    root,
+    scaffoldDir = SCAFFOLD_DIR,
+    logger = new Logger(),
+  }: {
+    root: string;
+    scaffoldDir?: string;
+    logger?: Logger;
+  }) {
+    this.root = root;
+    this.config = new PraxisConfig(root);
+    this.scaffoldDir = scaffoldDir;
+    this.logger = logger;
   }
 
-  return template.replace(/\{verb_what_title\}/g, titleCase);
+  /**
+   * Creates a new content file of the given type from its template.
+   *
+   * @param type - The content type to create
+   * @param name - Kebab-case name for the new file (e.g. "code-reviewer")
+   * @throws PraxisError if the target file already exists or the template is missing
+   */
+  add(type: AddableType, name: string): void {
+    const subdir = type === "role" ? "roles" : "responsibilities";
+    const targetDir = type === "role" ? this.config.rolesDir : this.config.responsibilitiesDir;
+    const templatePath = join(this.scaffoldDir, "core", subdir, "_template.md");
+    const targetFile = join(targetDir, `${name}.md`);
+    const relTargetFile = relative(this.root, targetFile);
+
+    if (existsSync(targetFile)) {
+      throw errors.fileAlreadyExists(relTargetFile);
+    }
+
+    if (!existsSync(templatePath)) {
+      throw errors.templateNotFound(templatePath);
+    }
+
+    const template = readFileSync(templatePath, "utf-8");
+    const filled = this.fillTemplate(type, name, template);
+
+    if (!existsSync(targetDir)) {
+      mkdirSync(targetDir, { recursive: true });
+    }
+
+    writeFileSync(targetFile, filled);
+    this.logger.success(`Created ${type}: ${relTargetFile}`);
+  }
+
+  /**
+   * Fills template placeholders with the provided name.
+   *
+   * For roles: replaces `{role_name}` (Title Case) and `{required_alias}` (kebab-case).
+   * For responsibilities: replaces `{verb_what_title}` (Title Case).
+   */
+  private fillTemplate(type: AddableType, name: string, template: string): string {
+    const titleCase = this.toTitleCase(name);
+
+    if (type === "role") {
+      return template.replace(/\{role_name\}/g, titleCase).replace(/\{required_alias\}/g, name);
+    }
+
+    return template.replace(/\{verb_what_title\}/g, titleCase);
+  }
+
+  /**
+   * Converts a kebab-case name to Title Case.
+   *
+   * @example toTitleCase("code-reviewer") // "Code Reviewer"
+   */
+  private toTitleCase(name: string): string {
+    return name
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
 }

@@ -1,20 +1,18 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { rmSync } from "node:fs";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { addFromTemplate } from "@/commands/add.js";
-import type { Logger } from "@/core/logger.js";
+import { AddCommand } from "@/commands/add.js";
 
 import { createCaptureLogger } from "../helpers/capture-logger.js";
 
 /** Resolved path to the scaffold directory at the project root. */
 const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
 
-/** Creates a fresh temporary directory with .praxis/ and content dirs. */
+/** Creates a fresh temporary project root with .praxis/ and content dirs. */
 function makeTmpdir(): string {
   const dir = join(tmpdir(), `praxis-add-test-${randomUUID()}`);
   mkdirSync(join(dir, ".praxis"), { recursive: true });
@@ -31,47 +29,32 @@ function makeTmpdir(): string {
   return dir;
 }
 
-describe("addFromTemplate", () => {
-  const dirs: string[] = [];
+describe("AddCommand", () => {
+  let root: string;
+  let command: AddCommand;
   let logOutput: () => string;
-  let logger: Logger;
 
-  afterEach(() => {
-    for (const dir of dirs) {
-      rmSync(dir, { recursive: true, force: true });
-    }
-    dirs.length = 0;
+  beforeEach(() => {
+    root = makeTmpdir();
+    const capture = createCaptureLogger();
+    logOutput = capture.output;
+    command = new AddCommand({ root, scaffoldDir: SCAFFOLD_DIR, logger: capture.logger });
   });
 
-  function makeLogger(): Logger {
-    const capture = createCaptureLogger();
-    logger = capture.logger;
-    logOutput = capture.output;
-    return logger;
-  }
+  afterEach(() => {
+    rmSync(root, { recursive: true, force: true });
+  });
 
   it("creates a role file from template", () => {
-    const dir = makeTmpdir();
-    dirs.push(dir);
+    command.add("role", "code-reviewer");
 
-    addFromTemplate("role", "code-reviewer", makeLogger(), {
-      root: dir,
-      scaffoldDir: SCAFFOLD_DIR,
-    });
-
-    expect(existsSync(join(dir, "content", "roles", "code-reviewer.md"))).toBe(true);
+    expect(existsSync(join(root, "content", "roles", "code-reviewer.md"))).toBe(true);
   });
 
   it("fills role template placeholders", () => {
-    const dir = makeTmpdir();
-    dirs.push(dir);
+    command.add("role", "code-reviewer");
 
-    addFromTemplate("role", "code-reviewer", makeLogger(), {
-      root: dir,
-      scaffoldDir: SCAFFOLD_DIR,
-    });
-
-    const content = readFileSync(join(dir, "content", "roles", "code-reviewer.md"), "utf-8");
+    const content = readFileSync(join(root, "content", "roles", "code-reviewer.md"), "utf-8");
 
     expect(content).toContain('title: "Code Reviewer"');
     expect(content).toContain('alias: "code-reviewer"');
@@ -79,30 +62,18 @@ describe("addFromTemplate", () => {
   });
 
   it("creates a responsibility file from template", () => {
-    const dir = makeTmpdir();
-    dirs.push(dir);
+    command.add("responsibility", "review-pull-requests");
 
-    addFromTemplate("responsibility", "review-pull-requests", makeLogger(), {
-      root: dir,
-      scaffoldDir: SCAFFOLD_DIR,
-    });
-
-    expect(existsSync(join(dir, "content", "responsibilities", "review-pull-requests.md"))).toBe(
+    expect(existsSync(join(root, "content", "responsibilities", "review-pull-requests.md"))).toBe(
       true,
     );
   });
 
   it("fills responsibility template placeholders", () => {
-    const dir = makeTmpdir();
-    dirs.push(dir);
-
-    addFromTemplate("responsibility", "review-pull-requests", makeLogger(), {
-      root: dir,
-      scaffoldDir: SCAFFOLD_DIR,
-    });
+    command.add("responsibility", "review-pull-requests");
 
     const content = readFileSync(
-      join(dir, "content", "responsibilities", "review-pull-requests.md"),
+      join(root, "content", "responsibilities", "review-pull-requests.md"),
       "utf-8",
     );
 
@@ -111,34 +82,28 @@ describe("addFromTemplate", () => {
   });
 
   it("refuses to overwrite existing file", () => {
-    const dir = makeTmpdir();
-    dirs.push(dir);
-
-    const existing = join(dir, "content", "roles", "existing.md");
+    const existing = join(root, "content", "roles", "existing.md");
     writeFileSync(existing, "# My custom content\n");
 
-    expect(() =>
-      addFromTemplate("role", "existing", makeLogger(), {
-        root: dir,
-        scaffoldDir: SCAFFOLD_DIR,
-      }),
-    ).toThrow("File already exists");
+    expect(() => command.add("role", "existing")).toThrow("File already exists");
 
     // Original content preserved
     expect(readFileSync(existing, "utf-8")).toBe("# My custom content\n");
   });
 
-  it("handles multi-word hyphenated names", () => {
-    const dir = makeTmpdir();
-    dirs.push(dir);
+  it("throws when the scaffold template is missing", () => {
+    const emptyScaffold = join(root, "empty-scaffold");
+    mkdirSync(emptyScaffold, { recursive: true });
+    const broken = new AddCommand({ root, scaffoldDir: emptyScaffold });
 
-    addFromTemplate("responsibility", "enforce-code-style-guide", makeLogger(), {
-      root: dir,
-      scaffoldDir: SCAFFOLD_DIR,
-    });
+    expect(() => broken.add("role", "anything")).toThrow("Template not found");
+  });
+
+  it("handles multi-word hyphenated names", () => {
+    command.add("responsibility", "enforce-code-style-guide");
 
     const content = readFileSync(
-      join(dir, "content", "responsibilities", "enforce-code-style-guide.md"),
+      join(root, "content", "responsibilities", "enforce-code-style-guide.md"),
       "utf-8",
     );
 
@@ -147,13 +112,7 @@ describe("addFromTemplate", () => {
   });
 
   it("logs success message", () => {
-    const dir = makeTmpdir();
-    dirs.push(dir);
-
-    addFromTemplate("role", "test-role", makeLogger(), {
-      root: dir,
-      scaffoldDir: SCAFFOLD_DIR,
-    });
+    command.add("role", "test-role");
 
     expect(logOutput()).toContain("Created role: content/roles/test-role.md");
   });
