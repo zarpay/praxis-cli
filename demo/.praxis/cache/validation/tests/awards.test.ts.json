@@ -4,12 +4,12 @@
     "dacac2eb": {
       "spec_path": "tests/README.md",
       "document_type": "unknown",
-      "cached_at": "2026-08-30T23:06:10.388Z",
-      "content_hash": "32e25fb2",
+      "cached_at": "2026-08-30T23:16:25.310Z",
+      "content_hash": "e242314a",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file conforms to all three test conventions. Subject framing: the top-level describe names the unit under test ('awards', the module under test), nested describes use 'when' clauses, and each it reads as a sentence with describe + it. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toMatchObject. Functionality, not implementation: tests exercise only public APIs (pickWinners, createReview's run, and the honest in-memory memory store), assert on returned values only, use no spies or mocks, and build data fresh in beforeEach setup with no cross-suite dependencies."
+        "reason": "The file conforms to all three conventions. Subject framing: top-level describe names the module ('awards'), nested describes use 'when...' clauses, and each it states one observable outcome in plain language. One assertion per block: every it contains exactly one expect, using compound matchers (toMatchObject) for shapes. Functionality, not implementation: tests exercise the public pickWinners/createReview APIs, assert on returned values only, use the honest in-memory store, contain no spies, no mocking, no module-scope reach; test data is built fresh in beforeEach setup and suites do not depend on ordering or each other's state. The file is valid per the specification's path scope (tests/*.test.ts)."
       }
     }
   }

@@ -4,15 +4,12 @@
     "0311531a": {
       "spec_path": "src/services/README.md",
       "document_type": "unknown",
-      "cached_at": "2026-08-30T23:05:51.600Z",
-      "content_hash": "71607baa",
+      "cached_at": "2026-08-30T23:15:40.973Z",
+      "content_hash": "8614df7f",
       "result": {
-        "compliant": false,
-        "severity": "warning",
-        "issues": [
-          "Behavior criterion 'Time and randomness enter as inputs or are isolated in a single obvious place' is not fully met: the service calls `Date.now()` and `new Date()` inline to generate the review id and `createdAt`, making the service depend on ambient time and non-deterministic. To satisfy the convention, time should be injected (e.g., a clock/`now` function passed via the input or Store) or isolated in a single obvious place such as a dedicated clock module, rather than embedded in the service body."
-        ],
-        "reason": "The file conforms to the core Service Conventions: it exports a single `run` entry point taking the `Store` first and a single input object, returns `Result<Review>` from the domain types, has a verb-first kebab-case module name, returns domain failures as values with consumer-oriented error messages, validates all input top-to-bottom before the happy path, does one thing, and has a doc comment stating purpose and enumerating failure modes. The one deviation is in the time-handling convention."
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies every criterion in the specification: it exports exactly one `run` function with the Store first and a single input object returning Result<Review>; the module name is verb-first kebab-case (`create-review.ts`); domain failures are returned as values with consumer-oriented error messages naming what was wrong and what is accepted; input validation happens before any work and reads top-to-bottom; the service does one thing; no I/O occurs except through the injected Store; and the doc comment states the purpose in one sentence and enumerates all domain failure modes (unknown parlor id, rating outside 1-5 or non-integer, empty author, short tasting notes)."
       }
     }
   }

@@ -24,13 +24,17 @@ same three rules.
 - Every `it` block contains exactly one `expect`. A second outcome
   worth asserting is a second `it` block under the same `describe`.
 - Compound shapes are asserted once with `toMatchObject`/`toEqual`
-  rather than field-by-field across multiple expects.
+  rather than field-by-field across multiple expects. This rule applies
+  within a block: separate blocks may naturally assert similar shapes,
+  since each states its own outcome.
 
 ## Functionality, not implementation
 
 - Tests exercise the unit's public API only — for services, the
   exported `run` function — and assert on returned values and
-  observable state, never on internals.
+  observable state, never on internals. State observed through the
+  unit's injected collaborators (e.g. reading the Store after a run)
+  is functionality, not implementation: a caller could observe it too.
 - No spies on call counts, no mocking of collaborators that have
   honest in-memory implementations, no reaching into module scope.
   If a test breaks when a body is refactored without a behavior
