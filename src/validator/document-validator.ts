@@ -5,6 +5,7 @@ import fg from "fast-glob";
 
 import { Frontmatter } from "@/compiler/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
+import { errors } from "@/core/errors.js";
 
 import { type CachedValidationResult, CacheManager, contentHash } from "./cache-manager.js";
 import { SYSTEM_PROMPT, VALIDATION_TOOLS } from "./prompts.js";
@@ -148,23 +149,17 @@ export class DocumentValidator {
   private async callOpenRouter(): Promise<CachedValidationResult> {
     const envVarName = this.apiKeyEnvVar;
     if (!envVarName) {
-      throw new Error(
-        "Validation requires 'apiKeyEnvVar' to be configured. " +
-          "Add a 'validation' section to .praxis/config.json with 'apiKeyEnvVar' and 'model'.",
-      );
+      throw errors.validationNotConfigured("apiKeyEnvVar");
     }
 
     const apiKey = process.env[envVarName];
     if (!apiKey) {
-      throw new Error(`${envVarName} environment variable not set`);
+      throw errors.apiKeyNotSet(envVarName);
     }
 
     const modelName = this.model;
     if (!modelName) {
-      throw new Error(
-        "Validation requires 'model' to be configured. " +
-          "Add a 'validation' section to .praxis/config.json with 'apiKeyEnvVar' and 'model'.",
-      );
+      throw errors.validationNotConfigured("model");
     }
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -187,7 +182,7 @@ export class DocumentValidator {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`OpenRouter API error (${response.status}): ${body}`);
+      throw errors.openRouterApiError(response.status, body);
     }
 
     interface ToolCall {
@@ -205,9 +200,7 @@ export class DocumentValidator {
     const toolCall = data.choices[0]?.message?.tool_calls?.[0];
 
     if (!toolCall) {
-      throw new Error(
-        "Model did not return a tool call. Ensure the configured model supports tool calling.",
-      );
+      throw errors.noToolCall();
     }
 
     const args = JSON.parse(toolCall.function.arguments) as {
@@ -224,7 +217,7 @@ export class DocumentValidator {
       case "validation_fail":
         return { compliant: false, severity: "error", issues, reason };
       default:
-        throw new Error(`Unexpected validation tool call: ${toolCall.function.name}`);
+        throw errors.unexpectedToolCall(toolCall.function.name);
     }
   }
 
@@ -283,7 +276,7 @@ ${this.documentContent}
     if (!hasGlobChars(this.specFilePattern)) {
       const specPath = join(baseDir, this.specFilePattern);
       if (existsSync(specPath)) return specPath;
-      throw new Error(`No ${this.specFilePattern} found in ${baseDir} for ${this.documentPath}`);
+      throw errors.specNotFound(this.specFilePattern, baseDir, this.documentPath);
     }
 
     const matches = fg.sync(this.specFilePattern, {
@@ -293,8 +286,6 @@ ${this.documentContent}
     });
 
     if (matches.length > 0) return matches[0];
-    throw new Error(
-      `No file matching '${this.specFilePattern}' found in ${baseDir} for ${this.documentPath}`,
-    );
+    throw errors.specPatternNotFound(this.specFilePattern, baseDir, this.documentPath);
   }
 }

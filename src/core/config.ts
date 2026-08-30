@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
+import { errors } from "./errors.js";
+
 /** Config file location, relative to the project root. */
 const CONFIG_FILE = join(".praxis", "config.json");
 
@@ -147,7 +149,7 @@ export class PraxisConfig {
     try {
       raw = JSON.parse(readFileSync(configPath, "utf-8")) as RawConfig;
     } catch (err) {
-      throw new Error(`Invalid JSON in ${configPath}: ${(err as Error).message}`);
+      throw errors.invalidConfigJson(configPath, (err as Error).message);
     }
 
     return {

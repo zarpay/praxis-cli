@@ -5,6 +5,7 @@ import fg from "fast-glob";
 
 import { Frontmatter } from "@/compiler/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
+import { errors } from "@/core/errors.js";
 
 import { CacheManager, type CachedValidationResult } from "./cache-manager.js";
 import { DocumentValidator } from "./document-validator.js";
@@ -151,7 +152,7 @@ export class BatchValidator {
     const matching = domains.filter((d) => d.type === type || basename(d.dir) === type);
 
     if (matching.length === 0) {
-      throw new Error(`Unknown document type: ${type}`);
+      throw errors.unknownDocumentType(type);
     }
 
     return this.runValidation(matching);
