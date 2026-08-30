@@ -1,5 +1,5 @@
 import chalk, { type ChalkInstance } from "chalk";
-import { Writable } from "node:stream";
+import { type Writable } from "node:stream";
 
 /**
  * Colored logger for CLI output.

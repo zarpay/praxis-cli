@@ -3,12 +3,13 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { rmSync } from "node:fs";
-import { Writable } from "node:stream";
 
 import { afterEach, describe, expect, it } from "vitest";
 
 import { addFromTemplate } from "@/commands/add.js";
-import { Logger } from "@/core/logger.js";
+import type { Logger } from "@/core/logger.js";
+
+import { createCaptureLogger } from "../helpers/capture-logger.js";
 
 /** Resolved path to the scaffold directory at the project root. */
 const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
@@ -32,7 +33,7 @@ function makeTmpdir(): string {
 
 describe("addFromTemplate", () => {
   const dirs: string[] = [];
-  let logOutput: string;
+  let logOutput: () => string;
   let logger: Logger;
 
   afterEach(() => {
@@ -43,14 +44,9 @@ describe("addFromTemplate", () => {
   });
 
   function makeLogger(): Logger {
-    logOutput = "";
-    const stream = new Writable({
-      write(chunk, _encoding, callback) {
-        logOutput += chunk.toString();
-        callback();
-      },
-    });
-    logger = new Logger({ output: stream, color: false });
+    const capture = createCaptureLogger();
+    logger = capture.logger;
+    logOutput = capture.output;
     return logger;
   }
 
@@ -159,6 +155,6 @@ describe("addFromTemplate", () => {
       scaffoldDir: SCAFFOLD_DIR,
     });
 
-    expect(logOutput).toContain("Created role: content/roles/test-role.md");
+    expect(logOutput()).toContain("Created role: content/roles/test-role.md");
   });
 });

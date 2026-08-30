@@ -338,6 +338,60 @@ describe("CacheManager", () => {
     });
   });
 
+  describe("corrupt and unknown cache files", () => {
+    it("read() deletes a corrupt cache file and returns null", () => {
+      const documentPath = join(projectRoot, "roles", "corrupt.md");
+      const cachePath = manager.cachePathFor(documentPath);
+      mkdirSync(dirname(cachePath), { recursive: true });
+      writeFileSync(cachePath, "not valid json{{{");
+
+      const cached = manager.read({
+        documentPath,
+        contentHash: "anyhash1",
+        specPath: "roles/README.md",
+      });
+
+      expect(cached).toBeNull();
+      expect(existsSync(cachePath)).toBe(false);
+    });
+
+    it("read() returns null for an unrecognized cache version", () => {
+      const documentPath = join(projectRoot, "roles", "future.md");
+      const cachePath = manager.cachePathFor(documentPath);
+      mkdirSync(dirname(cachePath), { recursive: true });
+      writeFileSync(cachePath, JSON.stringify({ version: "99.0", something: "else" }));
+
+      const cached = manager.read({
+        documentPath,
+        contentHash: "anyhash1",
+        specPath: "roles/README.md",
+      });
+
+      expect(cached).toBeNull();
+    });
+
+    it("write() replaces a corrupt cache file with a fresh v2.0 file", () => {
+      const documentPath = join(projectRoot, "roles", "corrupt.md");
+      const cachePath = manager.cachePathFor(documentPath);
+      mkdirSync(dirname(cachePath), { recursive: true });
+      writeFileSync(cachePath, "not valid json{{{");
+
+      manager.write({
+        documentPath,
+        contentHash: "newhash1",
+        result: { compliant: true, issues: [], reason: "recovered" },
+        metadata: { documentType: "role", specPath: "roles/README.md" },
+      });
+
+      const cached = manager.read({
+        documentPath,
+        contentHash: "newhash1",
+        specPath: "roles/README.md",
+      });
+      expect(cached?.reason).toBe("recovered");
+    });
+  });
+
   describe("readRaw()", () => {
     const hash = "abcd1234";
     const result = {

@@ -29,23 +29,21 @@ export interface AgentMetadata {
  * Assembles compiled agent output from individual content sections.
  *
  * Sections are added incrementally and then assembled in a fixed order:
- * Frontmatter -> Role -> Responsibilities -> Constitution -> Context -> Reference.
+ * Role -> Responsibilities -> Constitution -> Context -> Reference.
  *
  * Different separators are used between items in each section:
  * - Responsibilities, Context, Reference: `---` horizontal rules
  * - Constitution: blank lines (no rules)
+ *
+ * The output is a pure profile: platform-specific wrapping (e.g. Claude
+ * Code frontmatter) is the responsibility of compiler plugins.
  */
 export class OutputBuilder {
-  private readonly agentMetadata: AgentMetadata | null;
   private role: string | null = null;
   private responsibilities: string[] = [];
   private constitution: string[] = [];
   private context: string[] = [];
   private reference: string[] = [];
-
-  constructor({ agentMetadata = null }: { agentMetadata?: AgentMetadata | null } = {}) {
-    this.agentMetadata = agentMetadata;
-  }
 
   /** Sets the role body content. */
   addRole(content: string): void {
@@ -99,69 +97,6 @@ export class OutputBuilder {
     }
 
     return sections.join("\n");
-  }
-
-  /**
-   * Assembles all sections with Claude Code frontmatter prepended.
-   *
-   * @deprecated Use `buildProfile()` and a plugin compiler instead.
-   * Kept for backward compatibility.
-   */
-  build(): string {
-    const frontmatter = this.buildClaudeCodeFrontmatter();
-    const profile = this.buildProfile();
-
-    if (frontmatter) {
-      return frontmatter + "\n" + profile;
-    }
-    return profile;
-  }
-
-  /**
-   * Generates Claude Code agent frontmatter YAML block.
-   *
-   * Returns null if no agent metadata was provided or if required
-   * fields (name, description) are missing.
-   */
-  private buildClaudeCodeFrontmatter(): string | null {
-    if (!this.agentMetadata) {
-      return null;
-    }
-
-    const { name, description } = this.agentMetadata;
-    if (!name || !description) {
-      return null;
-    }
-
-    const lines = ["---"];
-    lines.push(`name: ${name}`);
-    lines.push(`description: ${this.quoteIfNeeded(description)}`);
-
-    if (this.agentMetadata.tools) {
-      lines.push(`tools: ${this.agentMetadata.tools}`);
-    }
-    if (this.agentMetadata.model) {
-      lines.push(`model: ${this.agentMetadata.model}`);
-    }
-    if (this.agentMetadata.permissionMode) {
-      lines.push(`permissionMode: ${this.agentMetadata.permissionMode}`);
-    }
-
-    lines.push("---");
-    return lines.join("\n");
-  }
-
-  /**
-   * Wraps a YAML string value in quotes if it contains special characters.
-   *
-   * Prevents YAML parsing issues in the generated frontmatter.
-   */
-  private quoteIfNeeded(str: string): string {
-    if (/[:\[\]{}#&*!|>'"%@`\\]/.test(str) || str.includes("\n")) {
-      const escaped = str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-      return `"${escaped}"`;
-    }
-    return str;
   }
 
   /**

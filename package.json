@@ -22,7 +22,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write src tests",
     "format:check": "prettier --check src tests",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "keywords": [
     "praxis",
@@ -53,6 +53,7 @@
     "@types/node": "^22.13.4",
     "@types/picomatch": "^4.0.3",
     "eslint": "^9.20.0",
+    "eslint-config-prettier": "^10.1.8",
     "msw": "^2.7.3",
     "prettier": "^3.5.2",
     "tsup": "^8.4.0",

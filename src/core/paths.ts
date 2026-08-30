@@ -1,6 +1,8 @@
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
+import { errors } from "./errors.js";
+
 /**
  * Resolves the project root within a Praxis project.
  *
@@ -18,9 +20,7 @@ export class Paths {
 
   /** The project root directory (parent of `.praxis/`). */
   get root(): string {
-    if (!this.cachedRoot) {
-      this.cachedRoot = this.findRoot();
-    }
+    this.cachedRoot ??= this.findRoot();
     return this.cachedRoot;
   }
 
@@ -61,7 +61,7 @@ export class Paths {
 
       const parent = dirname(current);
       if (parent === current) {
-        throw new Error("Could not find Praxis root (no .praxis/ directory found)");
+        throw errors.rootNotFound();
       }
 
       current = parent;

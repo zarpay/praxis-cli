@@ -61,7 +61,9 @@ export function registerValidateCommand(program: Command): void {
         const result = await validator.validate();
         displayResult(path, result, options.verbose);
 
-        process.exit(result.compliant ? 0 : 1);
+        // Warnings exit 0, matching `validate all`: only errors are fatal.
+        const failed = !result.compliant && result.severity === "error";
+        process.exit(failed ? 1 : 0);
       } catch (err) {
         logger.error(err instanceof Error ? err.message : String(err));
         process.exit(1);
@@ -162,7 +164,7 @@ export function registerValidateCommand(program: Command): void {
         displaySummary(summary);
 
         if (options.strict) {
-          process.exit(summary.compliant === summary.total ? 0 : 1);
+          process.exit(summary.errors === 0 && summary.warnings === 0 ? 0 : 1);
         } else {
           process.exit(summary.errors === 0 ? 0 : 1);
         }
@@ -176,7 +178,7 @@ export function registerValidateCommand(program: Command): void {
     .command("report <path>")
     .description("Show cached validation status for a document")
     .option("--verbose", "show full AI reasoning", false)
-    .action(async (path: string, options: { verbose: boolean }) => {
+    .action((path: string, options: { verbose: boolean }) => {
       const logger = new Logger();
 
       try {
@@ -215,7 +217,7 @@ export function registerValidateCommand(program: Command): void {
  */
 function requireValidationConfig(config: PraxisConfig, logger: Logger): ValidationConfig {
   const validation = config.validation;
-  if (!validation || !validation.apiKeyEnvVar || !validation.model) {
+  if (!validation?.apiKeyEnvVar || !validation.model) {
     logger.error("Missing validation configuration in .praxis/config.json");
     logger.error("");
     logger.error("Add a 'validation' section to your config:");

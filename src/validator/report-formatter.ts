@@ -15,10 +15,15 @@ export type ReportStatus = "not_validated" | "pass" | "warn" | "fail" | "stale";
 
 /** Structured report data for a single document. */
 export interface ValidationReport {
+  /** Path of the reported document. */
   documentPath: string;
+  /** Overall status, with staleness taking priority over the cached verdict. */
   status: ReportStatus;
+  /** The cached validation entry, or null if never validated. */
   cacheData: CacheFileData | null;
+  /** Content hash of the document as it exists now, or null if uncomputable. */
   currentHash: string | null;
+  /** Whether the document changed since the cached validation. */
   isStale: boolean;
 }
 
@@ -61,13 +66,13 @@ export function buildReport(
  */
 export function computeCurrentHash(
   documentPath: string,
-  readmePath?: string,
+  specPath?: string,
   specFilePattern?: string,
 ): string | null {
   try {
     const docContent = readFileSync(documentPath, "utf-8");
     const resolvedSpec =
-      readmePath ?? findSpecForDocument(documentPath, specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN);
+      specPath ?? findSpecForDocument(documentPath, specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN);
 
     if (!resolvedSpec || !existsSync(resolvedSpec)) return null;
 

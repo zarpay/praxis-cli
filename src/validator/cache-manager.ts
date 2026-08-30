@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 
 import fg from "fast-glob";
@@ -19,9 +19,13 @@ export type Severity = "warning" | "error";
 
 /** Result of a single document validation, as stored in cache. */
 export interface CachedValidationResult {
+  /** Whether the document satisfies its spec. */
   compliant: boolean;
+  /** Specific deviations reported by the model (empty when compliant). */
   issues: string[];
+  /** The model's overall explanation of the verdict. */
   reason: string;
+  /** Present only when non-compliant: warning or error. */
   severity?: Severity;
 }
 
@@ -86,6 +90,7 @@ export interface OrphanedCacheFile {
  * v1.0 cache files are transparently migrated to v2.0 on write.
  */
 export class CacheManager {
+  /** Directory all cache files live under (default: {root}/.praxis/cache/validation). */
   readonly cacheRoot: string;
   private readonly projectRoot: string | null;
 
@@ -203,7 +208,7 @@ export class CacheManager {
       if (fileData.version === CACHE_VERSION) {
         const v2 = fileData as CacheFileDataV2;
         const entry = v2.validations[this.specHash(specPath)];
-        if (!entry || entry.content_hash !== contentHash) return null;
+        if (entry?.content_hash !== contentHash) return null;
         return entry.result;
       }
 
@@ -261,7 +266,7 @@ export class CacheManager {
           ? v2.validations[this.specHash(specPath)]
           : Object.values(v2.validations)[0];
         if (!entry) return null;
-        return this.entrytoCacheFileData(documentPath, entry);
+        return this.entryToCacheFileData(documentPath, entry);
       }
 
       if (fileData.version === CACHE_VERSION_V1) {
@@ -269,7 +274,7 @@ export class CacheManager {
         if (specPath && this.specHash(v1.document.spec_path) !== this.specHash(specPath)) {
           return null;
         }
-        return v1 as CacheFileData;
+        return v1;
       }
 
       return null;
@@ -298,7 +303,7 @@ export class CacheManager {
       if (fileData.version === CACHE_VERSION) {
         const v2 = fileData as CacheFileDataV2;
         return Object.values(v2.validations).map((entry) =>
-          this.entrytoCacheFileData(documentPath, entry),
+          this.entryToCacheFileData(documentPath, entry),
         );
       }
 
@@ -314,6 +319,8 @@ export class CacheManager {
 
   /**
    * Returns statistics about the current cache.
+   *
+   * Not yet surfaced by any CLI command; kept for cache tooling.
    */
   stats(): { totalFiles: number; totalSize: number; byType: Record<string, number> } {
     const cacheFiles = fg.sync("**/*.json", { cwd: this.cacheRoot, absolute: true });
@@ -323,8 +330,7 @@ export class CacheManager {
 
     for (const file of cacheFiles) {
       try {
-        const stat = readFileSync(file);
-        totalSize += stat.length;
+        totalSize += statSync(file).size;
       } catch {
         /* skip unreadable files */
       }
@@ -342,6 +348,10 @@ export class CacheManager {
    *
    * A cache file is orphaned if the source document was deleted.
    * Stale hashes are no longer orphans — they get overwritten in-place.
+   *
+   * Known limitation: only deleted documents are detected. Entries whose
+   * spec was deleted (while the document still exists) are not reported.
+   * Not yet surfaced by any CLI command; kept for cache tooling.
    *
    * @param root - Project root directory
    * @param sources - Array of source directory paths relative to root
@@ -420,7 +430,7 @@ export class CacheManager {
   }
 
   /** Constructs a CacheFileData view from a SpecCacheEntry (for backwards-compat callers). */
-  private entrytoCacheFileData(documentPath: string, entry: SpecCacheEntry): CacheFileData {
+  private entryToCacheFileData(documentPath: string, entry: SpecCacheEntry): CacheFileData {
     return {
       version: CACHE_VERSION,
       cached_at: entry.cached_at,
@@ -494,14 +504,15 @@ export class CacheManager {
 }
 
 /**
- * Computes a cache-key hash from document and readme content.
+ * Computes a cache-key hash from document and spec content.
  *
- * Returns the first 8 characters of the SHA256 hex digest, matching
- * the Ruby implementation's behavior for cache compatibility.
+ * Returns the first 8 characters of the SHA256 hex digest. Both inputs
+ * participate so that editing either the document or its spec
+ * invalidates the cached verdict.
  */
-export function contentHash(documentContent: string, readmeContent: string): string {
+export function contentHash(documentContent: string, specContent: string): string {
   return createHash("sha256")
-    .update(documentContent + readmeContent)
+    .update(documentContent + specContent)
     .digest("hex")
     .slice(0, 8);
 }
@@ -511,5 +522,6 @@ export function contentHash(documentContent: string, readmeContent: string): str
  * malformed JSON in cache files. Preserves newlines, carriage returns, and tabs.
  */
 function sanitizeText(text: string): string {
+  // eslint-disable-next-line no-control-regex -- stripping control characters is the point
   return text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").replace(/"/g, "'");
 }

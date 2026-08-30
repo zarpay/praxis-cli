@@ -3,7 +3,7 @@ import { basename } from "node:path";
 import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
-import { isSpecFile } from "@/validator/spec-pattern.js";
+import { hasGlobChars, isSpecFile } from "@/validator/spec-pattern.js";
 
 /**
  * Expands glob patterns to matching file paths within a project root.
@@ -53,9 +53,9 @@ export class GlobExpander {
     return results.flat();
   }
 
-  /** Checks whether a pattern contains glob wildcard characters. */
+  /** Checks whether a pattern contains glob metacharacters (see hasGlobChars). */
   isGlob(pattern: string): boolean {
-    return pattern.includes("*") || pattern.includes("?") || pattern.includes("[");
+    return hasGlobChars(pattern);
   }
 
   /** Checks whether a file path ends with an excluded filename. */

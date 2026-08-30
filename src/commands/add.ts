@@ -4,6 +4,7 @@ import { join, relative } from "node:path";
 import type { Command } from "commander";
 
 import { PraxisConfig } from "@/core/config.js";
+import { errors } from "@/core/errors.js";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 
@@ -80,11 +81,11 @@ export function addFromTemplate(
   const relTargetFile = relative(root, targetFile);
 
   if (existsSync(targetFile)) {
-    throw new Error(`File already exists: ${relTargetFile}`);
+    throw errors.fileAlreadyExists(relTargetFile);
   }
 
   if (!existsSync(templatePath)) {
-    throw new Error(`Template not found: ${templatePath}`);
+    throw errors.templateNotFound(templatePath);
   }
 
   const template = readFileSync(templatePath, "utf-8");

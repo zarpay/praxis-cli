@@ -16,22 +16,29 @@ import { isSpecFile } from "@/validator/spec-pattern.js";
 
 /** Structured report of project health. */
 export interface StatusReport {
+  /** Document counts by content type. */
   counts: {
     roles: number;
     responsibilities: number;
     references: number;
     context: number;
   };
+  /** Cached validation verdict counts across all spec targets. */
   validation: {
     pass: number;
     warn: number;
     fail: number;
     notValidated: number;
   };
+  /** Responsibility files no role references. */
   orphanedResponsibilities: string[];
+  /** Role references pointing at files that do not exist. */
   danglingRefs: { role: string; ref: string }[];
+  /** Role files missing the `description` frontmatter field. */
   rolesMissingDescription: string[];
+  /** Role glob references that match no files. */
   zeroMatchGlobs: { role: string; pattern: string }[];
+  /** Responsibilities whose `owner` matches no role alias. */
   unmatchedOwners: { responsibility: string; owner: string }[];
 }
 
@@ -101,7 +108,7 @@ export async function analyzeProject(root: string, config: PraxisConfig): Promis
     const sourceDir = resolve(root, source);
     const allFiles = await listContentFiles(sourceDir, true, specFilePattern, absoluteIgnore);
     for (const file of allFiles) {
-      const fm = new Frontmatter(file);
+      const fm = Frontmatter.fromFile(file);
       const type = fm.value("type") as string | undefined;
       if (type === "reference") references++;
       else if (type === "convention" || type === "constitution") contextCount++;
@@ -116,7 +123,7 @@ export async function analyzeProject(root: string, config: PraxisConfig): Promis
   const rolesMissingDescription: string[] = [];
 
   for (const roleFile of roleFiles) {
-    const fm = new Frontmatter(roleFile);
+    const fm = Frontmatter.fromFile(roleFile);
     const alias = fm.value("alias") as string | undefined;
     const roleName = basename(roleFile);
 
@@ -166,7 +173,7 @@ export async function analyzeProject(root: string, config: PraxisConfig): Promis
   // Find unmatched owners
   const unmatchedOwners: StatusReport["unmatchedOwners"] = [];
   for (const respFile of respFiles) {
-    const fm = new Frontmatter(respFile);
+    const fm = Frontmatter.fromFile(respFile);
     const owner = fm.value("owner") as string | undefined;
     if (owner && !roleAliases.has(owner.toLowerCase())) {
       unmatchedOwners.push({ responsibility: basename(respFile), owner });
@@ -181,7 +188,7 @@ export async function analyzeProject(root: string, config: PraxisConfig): Promis
     ignore: config.ignore,
     specFilePattern,
   });
-  const allSourceFiles = await batchValidator.listTargetFiles();
+  const allSourceFiles = batchValidator.listTargetFiles();
   const validation = { pass: 0, warn: 0, fail: 0, notValidated: 0 };
 
   for (const filePath of allSourceFiles) {
@@ -214,10 +221,12 @@ export async function analyzeProject(root: string, config: PraxisConfig): Promis
 }
 
 /**
- * Lists content files in a directory, excluding templates and READMEs.
+ * Lists content files in a directory, excluding templates and spec files.
  *
  * @param dir - Absolute path to the content directory
  * @param recursive - Whether to search subdirectories
+ * @param specFilePattern - Pattern identifying spec files to exclude
+ * @param ignore - Absolute glob patterns to exclude from the scan
  */
 async function listContentFiles(
   dir: string,
@@ -232,7 +241,6 @@ async function listContentFiles(
 
   return files.filter((f) => !isSpecFile(f, specFilePattern) && !basename(f).startsWith("_"));
 }
-
 
 /**
  * Displays the status report to the console.

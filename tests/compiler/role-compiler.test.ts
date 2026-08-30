@@ -1,13 +1,13 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { Writable } from "node:stream";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { Logger } from "@/core/logger.js";
+import type { Logger } from "@/core/logger.js";
 import { RoleCompiler } from "@/compiler/role-compiler.js";
 
 import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
+import { createCaptureLogger } from "../helpers/capture-logger.js";
 
 describe("RoleCompiler", () => {
   let tmpdir: string;
@@ -15,7 +15,7 @@ describe("RoleCompiler", () => {
   let agentsOutputDir: string;
   let agentProfilesDir: string;
   let cleanup: () => void;
-  let logOutput: string;
+  let logOutput: () => string;
   let logger: Logger;
   let compiler: RoleCompiler;
 
@@ -27,14 +27,9 @@ describe("RoleCompiler", () => {
     agentProfilesDir = ctx.agentProfilesDir;
     cleanup = ctx.cleanup;
 
-    logOutput = "";
-    const stream = new Writable({
-      write(chunk, _encoding, callback) {
-        logOutput += chunk.toString();
-        callback();
-      },
-    });
-    logger = new Logger({ output: stream, color: false });
+    const capture = createCaptureLogger();
+    logger = capture.logger;
+    logOutput = capture.output;
     compiler = new RoleCompiler({ root: tmpdir, logger });
   });
 
@@ -107,7 +102,7 @@ describe("RoleCompiler", () => {
 
       await compiler.compile(noDesc);
 
-      expect(logOutput).toContain("No description found");
+      expect(logOutput()).toContain("No description found");
     });
 
     it("does not fallback to blockquote for missing description", async () => {
@@ -264,7 +259,7 @@ describe("RoleCompiler", () => {
 
       await compiler.compile(roleFile);
 
-      expect(logOutput).toContain("Referenced file not found: content/reference/nonexistent.md");
+      expect(logOutput()).toContain("Referenced file not found: content/reference/nonexistent.md");
     });
 
     it("warns when a glob pattern matches zero files", async () => {
@@ -276,7 +271,7 @@ describe("RoleCompiler", () => {
 
       await compiler.compile(roleFile);
 
-      expect(logOutput).toContain("Glob pattern matched zero files: content/reference/nope-*.md");
+      expect(logOutput()).toContain("Glob pattern matched zero files: content/reference/nope-*.md");
     });
 
     it("warns when constitution: true is deprecated", async () => {
@@ -288,7 +283,7 @@ describe("RoleCompiler", () => {
 
       await compiler.compile(roleFile);
 
-      expect(logOutput).toContain("constitution: true is deprecated");
+      expect(logOutput()).toContain("constitution: true is deprecated");
     });
 
     it("warns when constitution patterns match zero files", async () => {
@@ -303,7 +298,7 @@ describe("RoleCompiler", () => {
 
       await compiler.compile(roleFile);
 
-      expect(logOutput).toContain("Constitution patterns matched zero files");
+      expect(logOutput()).toContain("Constitution patterns matched zero files");
     });
   });
 });

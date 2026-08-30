@@ -16,8 +16,23 @@ export class Frontmatter {
   private readonly content: string;
   private cached: Record<string, unknown> | null = null;
 
-  constructor(filePath: string) {
-    this.content = readFileSync(filePath, "utf-8");
+  private constructor(content: string) {
+    this.content = content;
+  }
+
+  /** Creates a Frontmatter parser by reading the given file. */
+  static fromFile(filePath: string): Frontmatter {
+    return new Frontmatter(readFileSync(filePath, "utf-8"));
+  }
+
+  /**
+   * Creates a Frontmatter parser from already-loaded file content.
+   *
+   * Useful when the caller has read the file for other purposes and
+   * should not pay for (or depend on) a second filesystem read.
+   */
+  static fromContent(content: string): Frontmatter {
+    return new Frontmatter(content);
   }
 
   /**
@@ -27,9 +42,7 @@ export class Frontmatter {
    * Results are cached after the first call.
    */
   parse(): Record<string, unknown> {
-    if (!this.cached) {
-      this.cached = this.extractAndParse();
-    }
+    this.cached ??= this.extractAndParse();
     return this.cached;
   }
 

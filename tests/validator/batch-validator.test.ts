@@ -1,8 +1,6 @@
 import { join } from "node:path";
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
 
 import { BatchValidator } from "@/validator/batch-validator.js";
 import { CacheManager } from "@/validator/cache-manager.js";
@@ -10,9 +8,13 @@ import { PraxisConfig } from "@/core/config.js";
 
 import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
 import { createValidatorTmpdir } from "../helpers/validator-tmpdir.js";
+import {
+  createOpenRouterServer,
+  useOpenRouterResponse,
+  validationToolCallResponse,
+} from "../helpers/openrouter-msw.js";
 
-/** MSW server for intercepting OpenRouter API calls. */
-const server = setupServer();
+const server = createOpenRouterServer();
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
@@ -20,59 +22,19 @@ afterAll(() => server.close());
 
 /** Configures MSW to return a compliant response for all validation requests. */
 function useCompliantFixture(): void {
-  server.use(
-    http.post("https://openrouter.ai/api/v1/chat/completions", () => {
-      return HttpResponse.json({
-        choices: [
-          {
-            message: {
-              role: "assistant",
-              content: null,
-              tool_calls: [
-                {
-                  id: "call_pass",
-                  type: "function",
-                  function: {
-                    name: "validation_pass",
-                    arguments: JSON.stringify({ reason: "Fully compliant." }),
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      });
-    }),
+  useOpenRouterResponse(
+    server,
+    validationToolCallResponse("validation_pass", { reason: "Fully compliant." }),
   );
 }
 
-/** Configures MSW to return an error response for all validation requests. */
+/** Configures MSW to return a failing response for all validation requests. */
 function useErrorFixture(): void {
-  server.use(
-    http.post("https://openrouter.ai/api/v1/chat/completions", () => {
-      return HttpResponse.json({
-        choices: [
-          {
-            message: {
-              role: "assistant",
-              content: null,
-              tool_calls: [
-                {
-                  id: "call_fail",
-                  type: "function",
-                  function: {
-                    name: "validation_fail",
-                    arguments: JSON.stringify({
-                      reason: "Required criteria are not met.",
-                      issues: ["Missing required field", "Wrong structure"],
-                    }),
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      });
+  useOpenRouterResponse(
+    server,
+    validationToolCallResponse("validation_fail", {
+      reason: "Required criteria are not met.",
+      issues: ["Missing required field", "Wrong structure"],
     }),
   );
 }
@@ -351,7 +313,7 @@ describe("BatchValidator", () => {
 
   describe("ignore patterns", () => {
     it("excludes files matching ignore from document count", () => {
-      const { root, abs, cleanup } = createValidatorTmpdir({
+      const { root, cleanup } = createValidatorTmpdir({
         sources: ["docs"],
         files: {
           "docs/roles.praxis.md": "# Spec\nAll docs need a title.",
@@ -370,13 +332,10 @@ describe("BatchValidator", () => {
         specFilePattern: "*.praxis.md",
       });
 
-      // countAllSourceDocuments is private; trigger it via summary() after validateAll
-      // The total count should exclude the ignored file
-      const count = batch["countAllSourceDocuments"]();
-      expect(count).toBe(1); // only counted.md; generated/output.md is ignored
+      const docs = batch["collectSourceDocuments"]();
+      expect(docs.size).toBe(1); // only counted.md; generated/output.md is ignored
 
       cleanup();
-      void abs; // suppress unused warning
     });
 
     it("excludes ignored directories from spec discovery", async () => {
@@ -413,6 +372,42 @@ describe("BatchValidator", () => {
   });
 
   describe("summary()", () => {
+    it("counts non-.md targets without going negative", async () => {
+      useCompliantFixture();
+
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          // One spec targeting three .rb files; no other .md source docs.
+          "docs/events.sme.md": '---\npaths:\n  - "src/**/*.rb"\n---\n# Spec',
+          "src/a.rb": "# A",
+          "src/b.rb": "# B",
+          "src/c.rb": "# C",
+        },
+        validation: { specFilePattern: "*.sme.md" },
+      });
+
+      const batch = new BatchValidator({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.sme.md",
+      });
+
+      await batch.validateAll();
+      const summary = batch.summary();
+
+      // Three validated targets outnumber the zero .md source docs;
+      // the totals must reflect the targets, never a negative remainder.
+      expect(summary.total).toBe(3);
+      expect(summary.compliant).toBe(3);
+      expect(summary.notValidated).toBe(0);
+
+      cleanup();
+    });
+
     it("aggregates results correctly", async () => {
       useCompliantFixture();
 

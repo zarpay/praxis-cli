@@ -191,6 +191,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
   private readonly claudeCodePluginName: string;
   private readonly outputDir: string;
   private readonly agentsDir: string;
+  /** Guards the once-per-run write of plugin.json and command/skill files. */
   private manifestWritten = false;
 
   constructor({ root, pluginConfig }: PluginOptions) {
@@ -239,7 +240,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
     }
 
     if (existsSync(pluginJsonPath)) {
-      const existing = JSON.parse(readFileSync(pluginJsonPath, "utf-8"));
+      const existing = JSON.parse(readFileSync(pluginJsonPath, "utf-8")) as Record<string, unknown>;
       existing.name = this.claudeCodePluginName;
       writeFileSync(pluginJsonPath, JSON.stringify(existing, null, 2) + "\n");
     } else {
@@ -312,7 +313,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
  * Wraps a YAML string value in quotes if it contains special characters.
  */
 function quoteIfNeeded(str: string): string {
-  if (/[:\[\]{}#&*!|>'"%@`\\]/.test(str) || str.includes("\n")) {
+  if (/[:[\]{}#&*!|>'"%@`\\]/.test(str) || str.includes("\n")) {
     const escaped = str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
     return `"${escaped}"`;
   }

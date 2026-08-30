@@ -1,6 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
+import { errors } from "./errors.js";
+
+/** Config file location, relative to the project root. */
 const CONFIG_FILE = join(".praxis", "config.json");
 
 /** Normalized plugin configuration entry. */
@@ -29,6 +32,7 @@ export interface ValidationConfig {
   specFilePattern?: string;
 }
 
+/** Config shape as it may appear on disk (all fields optional). */
 interface RawConfig {
   agentProfilesOutputDir?: string | false;
   plugins?: RawPluginEntry[];
@@ -39,6 +43,7 @@ interface RawConfig {
   validation?: ValidationConfig;
 }
 
+/** Config shape after defaults are applied. */
 interface NormalizedConfig {
   agentProfilesOutputDir: string | false;
   plugins: PluginConfigEntry[];
@@ -49,6 +54,7 @@ interface NormalizedConfig {
   validation?: ValidationConfig;
 }
 
+/** Defaults used when the config file is absent or fields are omitted. */
 const DEFAULT_CONFIG: NormalizedConfig = {
   agentProfilesOutputDir: "./agent-profiles",
   plugins: [],
@@ -127,6 +133,11 @@ export class PraxisConfig {
     return this.data.validation;
   }
 
+  /**
+   * Reads the config file and applies defaults for any missing fields.
+   *
+   * @throws Error naming the config path when the file contains invalid JSON
+   */
   private load(): NormalizedConfig {
     const configPath = join(this.root, CONFIG_FILE);
 
@@ -134,7 +145,12 @@ export class PraxisConfig {
       return { ...DEFAULT_CONFIG };
     }
 
-    const raw = JSON.parse(readFileSync(configPath, "utf-8")) as RawConfig;
+    let raw: RawConfig;
+    try {
+      raw = JSON.parse(readFileSync(configPath, "utf-8")) as RawConfig;
+    } catch (err) {
+      throw errors.invalidConfigJson(configPath, (err as Error).message);
+    }
 
     return {
       agentProfilesOutputDir: raw.agentProfilesOutputDir ?? DEFAULT_CONFIG.agentProfilesOutputDir,

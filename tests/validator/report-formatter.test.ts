@@ -1,7 +1,13 @@
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { randomUUID } from "node:crypto";
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CacheFileData } from "@/validator/cache-manager.js";
-import { buildReport, displayReport } from "@/validator/report-formatter.js";
+import { contentHash } from "@/validator/cache-manager.js";
+import { buildReport, computeCurrentHash, displayReport } from "@/validator/report-formatter.js";
 
 const baseCacheData: CacheFileData = {
   version: "1.0",
@@ -169,5 +175,56 @@ describe("displayReport()", () => {
 
     const output = getOutput();
     expect(output).not.toContain("AI Reasoning:");
+  });
+});
+
+describe("computeCurrentHash()", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = join(tmpdir(), `praxis-report-test-${randomUUID()}`);
+    mkdirSync(dir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("hashes document plus explicitly provided spec", () => {
+    const docPath = join(dir, "doc.md");
+    const specPath = join(dir, "SPEC.md");
+    writeFileSync(docPath, "# Doc");
+    writeFileSync(specPath, "# Spec");
+
+    expect(computeCurrentHash(docPath, specPath)).toBe(contentHash("# Doc", "# Spec"));
+  });
+
+  it("auto-detects a sibling README.md when no spec is provided", () => {
+    const docPath = join(dir, "doc.md");
+    writeFileSync(docPath, "# Doc");
+    writeFileSync(join(dir, "README.md"), "# Readme spec");
+
+    expect(computeCurrentHash(docPath)).toBe(contentHash("# Doc", "# Readme spec"));
+  });
+
+  it("finds the spec via a glob specFilePattern", () => {
+    const docPath = join(dir, "doc.md");
+    writeFileSync(docPath, "# Doc");
+    writeFileSync(join(dir, "rules.sme.md"), "# SME spec");
+
+    expect(computeCurrentHash(docPath, undefined, "*.sme.md")).toBe(
+      contentHash("# Doc", "# SME spec"),
+    );
+  });
+
+  it("returns null when the document does not exist", () => {
+    expect(computeCurrentHash(join(dir, "missing.md"))).toBeNull();
+  });
+
+  it("returns null when no spec can be found", () => {
+    const docPath = join(dir, "doc.md");
+    writeFileSync(docPath, "# Doc");
+
+    expect(computeCurrentHash(docPath)).toBeNull();
   });
 });

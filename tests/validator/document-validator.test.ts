@@ -4,110 +4,43 @@ import { tmpdir as osTmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
+import { HttpResponse, http } from "msw";
 
 import { DocumentValidator } from "@/validator/document-validator.js";
 import { CacheManager } from "@/validator/cache-manager.js";
 
 import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
+import {
+  OPENROUTER_URL,
+  createOpenRouterServer,
+  useOpenRouterResponse,
+  validationToolCallResponse,
+} from "../helpers/openrouter-msw.js";
 
-/** MSW fixture responses for OpenRouter API calls (tool-call format). */
+/** Canned tool-call responses used across the validate() tests. */
 const fixtures = {
-  compliant: {
-    choices: [
-      {
-        message: {
-          role: "assistant",
-          content: null,
-          tool_calls: [
-            {
-              id: "call_compliant",
-              type: "function",
-              function: {
-                name: "validation_pass",
-                arguments: JSON.stringify({
-                  reason: "The file satisfies all criteria defined in the specification.",
-                }),
-              },
-            },
-          ],
-        },
-      },
+  pass: validationToolCallResponse("validation_pass", {
+    reason: "The file satisfies all criteria defined in the specification.",
+  }),
+  warn: validationToolCallResponse("validation_warn", {
+    reason: "Minor deviations from the specification.",
+    issues: ["Missing optional `schedule` field", "Description could be more detailed"],
+  }),
+  fail: validationToolCallResponse("validation_fail", {
+    reason: "Required criteria are not met.",
+    issues: [
+      "Missing required `owner` field in frontmatter",
+      "Missing Objective section",
+      "Missing Criteria section",
     ],
-  },
-  warning: {
-    choices: [
-      {
-        message: {
-          role: "assistant",
-          content: null,
-          tool_calls: [
-            {
-              id: "call_warning",
-              type: "function",
-              function: {
-                name: "validation_warn",
-                arguments: JSON.stringify({
-                  reason: "Minor deviations from the specification.",
-                  issues: [
-                    "Missing optional `schedule` field",
-                    "Description could be more detailed",
-                  ],
-                }),
-              },
-            },
-          ],
-        },
-      },
-    ],
-  },
-  error: {
-    choices: [
-      {
-        message: {
-          role: "assistant",
-          content: null,
-          tool_calls: [
-            {
-              id: "call_error",
-              type: "function",
-              function: {
-                name: "validation_fail",
-                arguments: JSON.stringify({
-                  reason: "Required criteria are not met.",
-                  issues: [
-                    "Missing required `owner` field in frontmatter",
-                    "Missing Objective section",
-                    "Missing Criteria section",
-                  ],
-                }),
-              },
-            },
-          ],
-        },
-      },
-    ],
-  },
+  }),
 };
 
-/** MSW server for intercepting OpenRouter API calls. */
-const server = setupServer();
+const server = createOpenRouterServer();
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
-
-/**
- * Registers an MSW handler that returns the given fixture for OpenRouter requests.
- */
-function useFixture(fixtureName: keyof typeof fixtures): void {
-  server.use(
-    http.post("https://openrouter.ai/api/v1/chat/completions", () => {
-      return HttpResponse.json(fixtures[fixtureName]);
-    }),
-  );
-}
 
 describe("DocumentValidator", () => {
   let tmpdir: string;
@@ -117,11 +50,23 @@ describe("DocumentValidator", () => {
     const ctx = createCompilerTmpdir();
     tmpdir = ctx.tmpdir;
     cleanup = ctx.cleanup;
+    process.env["OPENROUTER_API_KEY"] = "test-key";
   });
 
   afterAll(() => {
     cleanup();
+    delete process.env["OPENROUTER_API_KEY"];
   });
+
+  /** Builds a validator for the standard fixture role with API config supplied. */
+  function makeValidator(): DocumentValidator {
+    return new DocumentValidator({
+      documentPath: join(tmpdir, "content", "roles", "test-role.md"),
+      useCache: false,
+      apiKeyEnvVar: "OPENROUTER_API_KEY",
+      model: "x-ai/grok-4.1-fast",
+    });
+  }
 
   describe("document type detection", () => {
     it("detects role type from frontmatter", () => {
@@ -163,71 +108,39 @@ describe("DocumentValidator", () => {
   });
 
   describe("validate()", () => {
-    it("returns compliant result for Yes response", async () => {
-      useFixture("compliant");
-      process.env["OPENROUTER_API_KEY"] = "test-key";
+    it("returns compliant result for a validation_pass tool call", async () => {
+      useOpenRouterResponse(server, fixtures.pass);
 
-      const validator = new DocumentValidator({
-        documentPath: join(tmpdir, "content", "roles", "test-role.md"),
-        useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
-      });
-
-      const result = await validator.validate();
+      const result = await makeValidator().validate();
 
       expect(result.compliant).toBe(true);
       expect(result.issues).toEqual([]);
     });
 
-    it("returns warning result for Maybe response", async () => {
-      useFixture("warning");
-      process.env["OPENROUTER_API_KEY"] = "test-key";
+    it("returns warning result for a validation_warn tool call", async () => {
+      useOpenRouterResponse(server, fixtures.warn);
 
-      const validator = new DocumentValidator({
-        documentPath: join(tmpdir, "content", "roles", "test-role.md"),
-        useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
-      });
-
-      const result = await validator.validate();
+      const result = await makeValidator().validate();
 
       expect(result.compliant).toBe(false);
       expect(result.severity).toBe("warning");
       expect(result.issues.length).toBeGreaterThan(0);
     });
 
-    it("returns error result for No response", async () => {
-      useFixture("error");
-      process.env["OPENROUTER_API_KEY"] = "test-key";
+    it("returns error result for a validation_fail tool call", async () => {
+      useOpenRouterResponse(server, fixtures.fail);
 
-      const validator = new DocumentValidator({
-        documentPath: join(tmpdir, "content", "roles", "test-role.md"),
-        useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
-      });
-
-      const result = await validator.validate();
+      const result = await makeValidator().validate();
 
       expect(result.compliant).toBe(false);
       expect(result.severity).toBe("error");
       expect(result.issues.length).toBeGreaterThan(0);
     });
 
-    it("returns structured issues from tool call response", async () => {
-      useFixture("error");
-      process.env["OPENROUTER_API_KEY"] = "test-key";
+    it("returns structured issues from the tool call response", async () => {
+      useOpenRouterResponse(server, fixtures.fail);
 
-      const validator = new DocumentValidator({
-        documentPath: join(tmpdir, "content", "roles", "test-role.md"),
-        useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
-      });
-
-      const result = await validator.validate();
+      const result = await makeValidator().validate();
 
       expect(result.issues).toContain("Missing required `owner` field in frontmatter");
       expect(result.issues).toContain("Missing Objective section");
@@ -241,6 +154,19 @@ describe("DocumentValidator", () => {
       });
 
       await expect(validator.validate()).rejects.toThrow("apiKeyEnvVar");
+    });
+
+    it("throws when the API key environment variable is not set", async () => {
+      const validator = new DocumentValidator({
+        documentPath: join(tmpdir, "content", "roles", "test-role.md"),
+        useCache: false,
+        apiKeyEnvVar: "UNSET_KEY_VAR",
+        model: "x-ai/grok-4.1-fast",
+      });
+
+      await expect(validator.validate()).rejects.toThrow(
+        "UNSET_KEY_VAR environment variable not set",
+      );
     });
 
     it("throws when model is not provided", async () => {
@@ -258,7 +184,7 @@ describe("DocumentValidator", () => {
     });
 
     it("uses custom apiKeyEnvVar", async () => {
-      useFixture("compliant");
+      useOpenRouterResponse(server, fixtures.pass);
       process.env["CUSTOM_API_KEY"] = "test-key";
 
       const validator = new DocumentValidator({
@@ -272,6 +198,51 @@ describe("DocumentValidator", () => {
       expect(result.compliant).toBe(true);
 
       delete process.env["CUSTOM_API_KEY"];
+    });
+
+    it("throws with status and body when the API responds with an error", async () => {
+      server.use(
+        http.post(OPENROUTER_URL, () => HttpResponse.text("upstream unavailable", { status: 502 })),
+      );
+
+      await expect(makeValidator().validate()).rejects.toThrow(
+        "OpenRouter API error (502): upstream unavailable",
+      );
+    });
+
+    it("throws when the model returns no tool call", async () => {
+      useOpenRouterResponse(server, {
+        choices: [{ message: { role: "assistant", content: "Looks fine to me." } }],
+      });
+
+      await expect(makeValidator().validate()).rejects.toThrow("did not return a tool call");
+    });
+
+    it("throws when the model calls an unknown tool", async () => {
+      useOpenRouterResponse(server, {
+        choices: [
+          {
+            message: {
+              role: "assistant",
+              content: null,
+              tool_calls: [
+                {
+                  id: "call_bogus",
+                  type: "function",
+                  function: {
+                    name: "validation_bogus",
+                    arguments: JSON.stringify({ reason: "?" }),
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      });
+
+      await expect(makeValidator().validate()).rejects.toThrow(
+        "Unexpected validation tool call: validation_bogus",
+      );
     });
   });
 
@@ -288,7 +259,7 @@ describe("DocumentValidator", () => {
         useCache: false,
       });
 
-      expect(validator.readmePath).toBe(join(dir, "SPEC.md"));
+      expect(validator.specPath).toBe(join(dir, "SPEC.md"));
 
       rmSync(dir, { recursive: true, force: true });
     });
@@ -305,7 +276,7 @@ describe("DocumentValidator", () => {
         useCache: false,
       });
 
-      expect(validator.readmePath).toBe(join(dir, "README.roles.md"));
+      expect(validator.specPath).toBe(join(dir, "README.roles.md"));
 
       rmSync(dir, { recursive: true, force: true });
     });
@@ -344,8 +315,7 @@ describe("DocumentValidator", () => {
 
   describe("caching", () => {
     it("uses cached result on second call with same content", async () => {
-      useFixture("compliant");
-      process.env["OPENROUTER_API_KEY"] = "test-key";
+      useOpenRouterResponse(server, fixtures.pass);
 
       const cacheManager = new CacheManager(join(tmpdir, ".praxis", "cache", "validation"));
 

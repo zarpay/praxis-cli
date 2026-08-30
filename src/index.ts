@@ -1,5 +1,7 @@
 import { Command } from "commander";
 
+import pkg from "../package.json";
+
 import { registerAddCommand } from "@/commands/add.js";
 import { registerCompileCommand } from "@/commands/compile.js";
 import { registerConfigCommand } from "@/commands/config.js";
@@ -7,8 +9,8 @@ import { registerInitCommand } from "@/commands/init.js";
 import { registerStatusCommand } from "@/commands/status.js";
 import { registerValidateCommand } from "@/commands/validate.js";
 
-/** CLI version, kept in sync with package.json. */
-const VERSION = "1.3.7";
+/** CLI version, sourced from package.json and inlined at build time. */
+const VERSION = pkg.version;
 
 /**
  * Creates and configures the root CLI program.

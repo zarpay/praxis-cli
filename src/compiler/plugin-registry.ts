@@ -1,11 +1,14 @@
 import type { Logger } from "@/core/logger.js";
 import type { PluginConfigEntry } from "@/core/config.js";
+import { errors } from "@/core/errors.js";
 
 import { ClaudeCodePlugin } from "./plugins/claude-code.js";
 import type { CompilerPlugin, PluginOptions } from "./plugins/types.js";
 
+/** Constructor signature every compiler plugin class must satisfy. */
 type PluginConstructor = new (options: PluginOptions) => CompilerPlugin;
 
+/** Registry of available plugins, keyed by the name used in config.json. */
 const PLUGINS: Record<string, PluginConstructor> = {
   "claude-code": ClaudeCodePlugin,
 };
@@ -27,8 +30,7 @@ export function resolvePlugins(
   return entries.map((entry) => {
     const Constructor = PLUGINS[entry.name];
     if (!Constructor) {
-      const available = Object.keys(PLUGINS).join(", ");
-      throw new Error(`Unknown plugin: "${entry.name}". Available plugins: ${available}`);
+      throw errors.unknownPlugin(entry.name, Object.keys(PLUGINS));
     }
     return new Constructor({ root, logger, pluginConfig: entry });
   });
