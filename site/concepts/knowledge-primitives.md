@@ -48,7 +48,7 @@ The separation is not cosmetic. It reflects how knowledge actually works:
 
 ## What a document looks like
 
-Every Praxis document is a markdown file with YAML frontmatter. The frontmatter declares the document's type and metadata. The body is free-form markdown.
+Every Praxis document is a markdown file with YAML frontmatter. The frontmatter declares the document's type and metadata. The body is free-form markdown. (The pre-1.4 type values `role` and `responsibility` are still accepted and treated as `expert` and `practice`.)
 
 ```yaml
 ---

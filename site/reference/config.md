@@ -196,3 +196,23 @@ Glob patterns are supported:
 - [praxis init](/commands/init)
 - [Validation Domains](/concepts/validation-domains)
 - [Claude Code Plugin](/plugins/claude-code)
+
+## Compatibility with pre-1.4 projects
+
+Everything a 1.3.x project wrote keeps working — the old spellings are
+accepted and normalized, no migration required:
+
+| Legacy (still accepted) | Current |
+| --- | --- |
+| `rolesDir` config key | `expertsDir` |
+| `responsibilitiesDir` config key | `practicesDir` |
+| `type: role` frontmatter | `type: expert` |
+| `type: responsibility` frontmatter | `type: practice` |
+| `responsibilities:` list in an expert file | `practices:` |
+| `praxis validate document\|all\|ci\|report` | `praxis eval run\|ci\|verdict` |
+| `praxis add role\|responsibility` | `praxis add expert\|practice` |
+
+When both spellings are present (e.g. `expertsDir` and `rolesDir`), the
+current one wins. Default `sources` also include the legacy `roles` and
+`responsibilities` directory names, so unconfigured pre-1.4 projects
+keep being scanned.
