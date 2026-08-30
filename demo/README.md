@@ -74,3 +74,21 @@ are mechanical (one exported `run` — a linter could check it) but most
 turn on meaning — "error messages are written for the API consumer,"
 "services do one thing." Those are the standards only a judge can
 evaluate, which is exactly Praxis's territory.
+
+## What this demo has proven
+
+First judged run 2026-08-31 (`deepseek/deepseek-v4-flash-0731`); the
+committed cache under `.praxis/cache/` is that run's shared evidence:
+
+- **The full loop, live**: real findings → fixes → automatic cache
+  invalidation → re-judged to green (8/8 compliant at steady state).
+- **Cohort judgment**: the tasting-menu directory's first verdict
+  caught a genuine relational violation (types-file naming) across a
+  three-file set — a finding no per-file judgment could produce.
+- **All three invalidation classes**: editing a target, editing a
+  cohort member, and editing a spec each invalidated exactly what they
+  should — one file, one directory, every target of that spec.
+- **Judge noise resolves at the spec**: one warning flagged behavior
+  the spec permitted (its own reasoning said so); the fix was
+  sharpening `tests/README.md`, after which all four suites re-judged
+  clean. The spec is part of the instrument.

@@ -98,3 +98,11 @@ One working instance was examined: `zarpay/core`, a single SME (`docs/roles/even
 It is one datapoint. It is used throughout as a source of hypotheses and concrete illustration, never as a design target. Two rounds of over-reading it during planning — asserting the code was spec-compliant without evidence, then restructuring the whole design around its particulars — are the reason that caveat is stated this loudly.
 
 The single most useful thing it produced was a disconfirmation: the event files predate the spec by roughly a month (code bulk-committed 2026-05-07, SME role introduced 2026-06-05). Its 41 failures are largely inherited debt, not a signal about agents or about the judge. That observation is what [01-populations-and-eval-unit.md](./01-populations-and-eval-unit.md) is built on.
+
+A second instance now exists: the in-repo demo (`demo/`, Scoop Society — TypeScript, judged by `deepseek/deepseek-v4-flash-0731`), first run 2026-08-31. Small and self-authored, so still hypothesis-grade — but it independently confirmed several load-bearing claims on first contact with reality:
+
+- **Cohort judgment works**: the first `cohort: by_directory` verdict correctly applied a relational spec (`<feature>-types.ts` naming, entry-point rules) across a three-file set, catching a real violation the author missed.
+- **The loop points at the spec** (08's stated expectation): of three findings across the session, two were legitimate code violations (fixed; re-judged to pass) and one was judge noise on vague spec text — the judge's own reasoning conceded the permission it was flagging. Resolved by sharpening the spec, not by arguing with the judge; the spec edit invalidated and re-judged all its targets to green.
+- **All three cache invalidation classes behaved**: target edit (one file re-judged), cohort member edit (one directory re-judged), spec edit (every target of the spec re-judged).
+- **A cheap judge sufficed**: ~$0.07/M-prompt flash-class model produced accurate, spec-grounded critiques on these judgment axioms — a first cost datapoint for calibration planning (06).
+- **The `document_type` retirement (11) got its confirming evidence**: every target in a real code-judging project reports `unknown` — the taxonomy field is dead weight exactly as predicted.
