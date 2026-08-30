@@ -11,7 +11,7 @@ Everything measured depends on critiques being durable; everything aggregated de
 ## Milestones
 
 **M1 — Spec layer settled** *(largely shipped in v1's terminology migration)*
-Expert/practice compiler, spec targeting via `paths:`, the `eval` CLI family, judge naming. Remaining from [11](./11-spec-layer.md)'s retirement list: `praxis init` scaffolds the eval-layer `.praxis/` tree with the spec-layer scaffold as explicit opt-in; `praxis status` splits eval state from framework health; `TargetType` retires from eval-layer data.
+Expert/practice compiler, spec targeting via `paths:`, the `eval` CLI family, judge naming. Remaining from [11](./11-spec-layer.md)'s retirement list: `praxis init` scaffolds the eval-layer `.praxis/` tree with the spec-layer scaffold as explicit opt-in; `praxis status` splits eval state from framework health; `TargetType` retires from eval-layer data. Plus the spec scoping frontmatter (03) — `excludes`, `exemplars`, and the pre-axiom scope defaults `cohort`/`context` — authored on specs and experts and compiled through to SME profiles; the eval layer honors them as M2 lands the cache changes they key into (context-in-key, cohort hash — both already required by 05).
 
 **M2 — Critique flow** *(first eval-layer milestone; with M3, the MVP)*
 Critiques become durable records. The ledger (05): run + critique records, full provenance, OpenRouter `usage` captured (cost data exists for the first time). Cache format changes: judge-hash namespacing, context-in-key. Judge output becomes structured critiques ready for the two channels. Corpus-level only — no git, no axioms yet. *Standalone value: durable evidence and cost visibility on any v1 project, immediately.*

@@ -33,7 +33,7 @@ A violating example. A compliant example.
 
 ## Lifecycle rules
 
-- **LLM proposes, human ratifies.** Nothing enters `active` automatically. Proposed axioms live in `.praxis/axioms/proposed/` and have no effect on metrics.
+- **LLM proposes, human ratifies — and humans may propose directly.** Nothing enters `active` automatically. Proposed axioms live in `.praxis/axioms/proposed/` and have no effect on metrics. A human may author a proposal without critique parentage (the honest path for standards known to be relational before any run — e.g. a `scope: cohort` completeness axiom); it passes the same gate and ratification as any triage-born proposal.
 - **Active axioms are immutable in meaning.** Clarifying wording without changing extension: version bump. Changing what counts as a violation: new ID with `supersedes`, old one deprecated. When in doubt, supersede — a version bump that quietly moves the boundary corrupts every historical rate.
 - **Every candidate passes the authoring gate** (03): `appropriate | not_appropriate | split`. An axiom that no longer earns its place is simply removed — deprecated, history frozen; where the standard went is not Praxis's concern.
 - **Deprecated axioms keep their ledger history.** Deprecation stops future evaluation; it never deletes evidence.
@@ -61,7 +61,7 @@ The judgment prompt carries two channels:
 - the **axiom checklist** — established axioms; critiques come back pre-categorized, no triage needed;
 - the **open channel** — "other violations of the spec not covered above" — the ongoing supply of open codes for triage.
 
-Bootstrap is the degenerate case: no axioms yet, everything arrives through the open channel.
+Bootstrap is the degenerate case: no axioms yet, everything arrives through the open channel — and the open channel's judgment shape follows the spec's pre-axiom scope defaults (`cohort:` / `context:` frontmatter, 03), which is what makes relational violations observable before any axiom exists to declare a scope.
 
 **Axioms are judge-independent.** Their authority comes from ratification against the spec, not from the judge that surfaced them — so a judge change (02) leaves the taxonomy intact. An epoch break resets the *metrics*, never the *axiom set*: established axioms remain the checklist under the new judge, and whatever the new judge notices that the old one didn't arrives through the open channel as proposals, like any other run. Discovery is continuous.
 
