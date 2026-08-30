@@ -1,15 +1,20 @@
+import type { JudgeConfig } from "@/core/config.js";
 import type { Verdict } from "@/eval/cache-manager.js";
 
 import fg from "fast-glob";
 
-import { Frontmatter } from "@/core/frontmatter.js";
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
+import {
+  DEFAULT_JUDGE_BASE_URL,
+  DEFAULT_JUDGE_TEMPERATURE,
+  DEFAULT_SPEC_FILE_PATTERN,
+} from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { exists, readText } from "@/core/files.js";
+import { Frontmatter } from "@/core/frontmatter.js";
 import { baseName, joinPath, parentDir } from "@/core/paths.js";
+import { hasGlobChars } from "@/core/spec-pattern.js";
 import { CacheManager, contentHash } from "@/eval/cache-manager.js";
 import { SYSTEM_PROMPT, JUDGE_TOOLS } from "@/eval/prompts.js";
-import { hasGlobChars } from "@/core/spec-pattern.js";
 
 /** Known target types within the Praxis content structure. */
 export type TargetType =
@@ -57,8 +62,7 @@ export class Judge {
   private readonly useCache: boolean;
   private readonly cacheManager: CacheManager | null;
   private wasCacheHit = false;
-  private readonly apiKeyEnvVar?: string;
-  private readonly model?: string;
+  private readonly judge?: JudgeConfig;
 
   private readonly specFilePattern: string;
 
@@ -73,8 +77,7 @@ export class Judge {
     specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
     useCache = true,
     cacheManager,
-    apiKeyEnvVar,
-    model,
+    judge,
   }: {
     targetPath: string;
     /** Pre-assembled judgment input (cohorts); read from targetPath when omitted. */
@@ -84,8 +87,8 @@ export class Judge {
     specFilePattern?: string;
     useCache?: boolean;
     cacheManager?: CacheManager;
-    apiKeyEnvVar?: string;
-    model?: string;
+    /** The judge to invoke; required for validate() to reach the API. */
+    judge?: JudgeConfig;
   }) {
     this.targetPath = targetPath;
     this.targetContent = targetContent ?? readText(targetPath);
@@ -95,9 +98,8 @@ export class Judge {
     this.specPath = specPath ?? this.findSpec();
     this.specContent = readText(this.specPath);
     this.useCache = useCache;
-    this.cacheManager = cacheManager ?? (useCache ? new CacheManager() : null);
-    this.apiKeyEnvVar = apiKeyEnvVar;
-    this.model = model;
+    this.cacheManager = cacheManager ?? (useCache ? new CacheManager({}) : null);
+    this.judge = judge;
   }
 
   /** Whether the last validate() call returned a cached result. */
@@ -162,39 +164,35 @@ export class Judge {
    *   does not return a tool call (e.g., the model does not support tool calling).
    */
   private async callOpenRouter(): Promise<Verdict> {
-    const envVarName = this.apiKeyEnvVar;
+    const judge = this.judge;
 
-    if (!envVarName) {
-      throw errors.validationNotConfigured("apiKeyEnvVar");
+    if (!judge) {
+      throw errors.missingJudges();
     }
 
-    const apiKey = process.env[envVarName];
+    const apiKey = process.env[judge.apiKeyEnvVar];
 
     if (!apiKey) {
-      throw errors.apiKeyNotSet(envVarName);
+      throw errors.apiKeyNotSet(judge.apiKeyEnvVar);
     }
 
-    const modelName = this.model;
+    const baseUrl = judge.baseUrl ?? DEFAULT_JUDGE_BASE_URL;
 
-    if (!modelName) {
-      throw errors.validationNotConfigured("model");
-    }
-
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: modelName,
+        model: judge.model,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: this.buildValidationQuestion() },
         ],
         tools: JUDGE_TOOLS,
         tool_choice: "required",
-        temperature: 0.1,
+        temperature: judge.temperature ?? DEFAULT_JUDGE_TEMPERATURE,
       }),
     });
 

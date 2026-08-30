@@ -1,0 +1,16 @@
+{
+  "version": "2.0",
+  "validations": {
+    "e280f5fa": {
+      "spec_path": "src/features/README.md",
+      "document_type": "unknown",
+      "cached_at": "2026-08-30T23:53:11.753Z",
+      "content_hash": "c604375b",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The tasting-menu feature module satisfies all criteria defined in the specification: it has exactly one entry point (index.ts), types in a dedicated tasting-menu-types.ts file, logic files in verb-first kebab-case following service conventions, no orphaned files, one cohesive capability, and the feature name describes the capability."
+      }
+    }
+  }
+}

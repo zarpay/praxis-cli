@@ -6,8 +6,8 @@ import fg from "fast-glob";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, readText } from "@/core/files.js";
 import { joinPath, parentDir } from "@/core/paths.js";
-import { contentHash } from "@/eval/cache-manager.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
+import { contentHash } from "@/eval/cache-manager.js";
 
 /** All possible report states. */
 export type ReportStatus = "not_validated" | "pass" | "warn" | "fail" | "stale";

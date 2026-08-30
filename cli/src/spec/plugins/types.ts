@@ -1,6 +1,6 @@
-import type { AgentMetadata } from "@/spec/output-builder.js";
 import type { PluginConfigEntry } from "@/core/config.js";
 import type { Logger } from "@/core/logger.js";
+import type { AgentMetadata } from "@/spec/output-builder.js";
 
 /**
  * Interface for output plugins that transform compiled agent profiles

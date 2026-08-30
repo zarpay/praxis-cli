@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased — v2]
+
+v2 is a **breaking release**: v1 compatibility spellings are being removed rather than aliased.
+
+### Added
+
+- **Multiple judges** — `judges: [{ name, model, apiKeyEnvVar, baseUrl?, temperature? }]` in config. Every judge evaluates every target; results, summaries (`By judge:`), `praxis status`, and `eval verdict` report per judge, never pooled. `eval run --judge <name>` runs one judge.
+- **Judge-hash cache namespacing** — each judge's verdicts live under `.praxis/cache/validation/<hash>/`, where the hash covers the judge's behavioral settings (whole config canonically hashed minus `name` and `apiKeyEnvVar`, plus the system prompt text). Renames and key rotation keep cache hits; model/endpoint/temperature/prompt changes invalidate — the hash is the epoch boundary.
+- **`cohort:` spec frontmatter** — `by_file` (default) or `by_directory`: each directory matched by `paths:` is judged as one unit. Compiles through from expert `cohort:` frontmatter.
+
+### Removed (breaking)
+
+- The `validation:` config section — configure `judges:` instead; `specFilePattern` moves top-level.
+- Pre-namespacing caches are not migrated; first v2 run re-judges (one-time cost).
+
 ## [1.4.0] - 2026-08-30
 
 ### Added

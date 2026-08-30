@@ -1,0 +1,16 @@
+{
+  "version": "2.0",
+  "validations": {
+    "dacac2eb": {
+      "spec_path": "tests/README.md",
+      "document_type": "unknown",
+      "cached_at": "2026-08-30T23:54:08.173Z",
+      "content_hash": "94c25420",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully satisfies all criteria in the specification: proper subject framing with module name and 'when' clauses, exactly one assertion per test block using appropriate assertion methods, and testing functionality through the public API without implementation details."
+      }
+    }
+  }
+}

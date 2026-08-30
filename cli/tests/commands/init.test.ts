@@ -99,16 +99,15 @@ describe("InitCommand", () => {
       sources: string[];
       expertsDir: string;
       practicesDir: string;
-      validation: { apiKeyEnvVar: string; model: string };
+      judges: { name: string; model: string; apiKeyEnvVar: string }[];
     }>(configPath);
     expect(config.agentProfilesOutputDir).toBe("./agent-profiles");
     expect(config.plugins).toEqual([]);
     expect(config.sources).toEqual(["experts", "practices", "reference", "context"]);
     expect(config.expertsDir).toBe("experts");
-    expect(config.validation).toEqual({
-      apiKeyEnvVar: "OPENROUTER_API_KEY",
-      model: "x-ai/grok-4.1-fast",
-    });
+    expect(config.judges).toEqual([
+      { name: "default", model: "x-ai/grok-4.1-fast", apiKeyEnvVar: "OPENROUTER_API_KEY" },
+    ]);
   });
 
   it("does not scaffold Claude Code files by default", () => {

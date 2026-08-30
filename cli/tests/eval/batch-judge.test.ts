@@ -1,14 +1,13 @@
-import { writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { HttpResponse, http } from "msw";
+import { writeFileSync } from "node:fs";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/core/config.js";
 import { BatchJudge } from "@/eval/batch-judge.js";
-import { CacheManager } from "@/eval/cache-manager.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,
+  TEST_JUDGE,
   createOpenRouterServer,
   useOpenRouterResponse,
   validationToolCallResponse,
@@ -61,15 +60,12 @@ describe("BatchJudge", () => {
   describe("validateAll()", () => {
     it("validates documents across all types", async () => {
       useCompliantFixture();
-      const cacheManager = new CacheManager(join(tmpdir, ".praxis", "cache", "validation"));
 
       const batch = new BatchJudge({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
-        cacheManager,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
+        judges: [TEST_JUDGE],
       });
 
       const results = await batch.validateAll();
@@ -87,8 +83,7 @@ describe("BatchJudge", () => {
         root: tmpdir,
         sources: config.sources,
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
+        judges: [TEST_JUDGE],
       });
       const results = await batch.validateType("experts");
 
@@ -101,8 +96,7 @@ describe("BatchJudge", () => {
         root: tmpdir,
         sources: config.sources,
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
+        judges: [TEST_JUDGE],
       });
 
       await expect(batch.validateType("bogus")).rejects.toThrow("Unknown document type: bogus");
@@ -118,8 +112,7 @@ describe("BatchJudge", () => {
         sources: config.sources,
         failFast: true,
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
+        judges: [TEST_JUDGE],
       });
 
       await batch.validateAll();
@@ -138,15 +131,14 @@ describe("BatchJudge", () => {
           "roles/SPEC.md": "# Roles Spec\nRequired: name, type",
           "roles/engineer.md": "---\ntype: role\n---\n# Engineer",
         },
-        validation: { specFilePattern: "SPEC.md" },
+        specFilePattern: "SPEC.md",
       });
 
       const batch = new BatchJudge({
         root,
         sources: ["roles"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
         specFilePattern: "SPEC.md",
       });
 
@@ -176,8 +168,7 @@ describe("BatchJudge", () => {
         root,
         sources: ["specs", "docs"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
       });
 
       const results = await batch.validateAll();
@@ -204,8 +195,7 @@ describe("BatchJudge", () => {
         root,
         sources: ["specs", "docs"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
       });
 
       const results = await batch.validateAll();
@@ -233,8 +223,7 @@ describe("BatchJudge", () => {
         root,
         sources: ["roles"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
       });
 
       const results = await batch.validateAll();
@@ -266,8 +255,7 @@ describe("BatchJudge", () => {
         sources: ["docs"],
         ignore: ["docs/smes/**"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
 
@@ -297,8 +285,7 @@ describe("BatchJudge", () => {
         sources: ["docs"],
         ignore: ["docs/smes/**"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
 
@@ -328,8 +315,7 @@ describe("BatchJudge", () => {
         sources: ["docs"],
         ignore: ["docs/generated/**"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
         specFilePattern: "*.praxis.md",
       });
 
@@ -357,8 +343,7 @@ describe("BatchJudge", () => {
         sources: ["docs"],
         ignore: ["docs/ignored/**"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
         specFilePattern: "*.praxis.md",
       });
 
@@ -384,7 +369,7 @@ describe("BatchJudge", () => {
           "src/services/alpha/b.ts": "ALPHA_B_CONTENT",
           "src/services/beta/c.ts": "BETA_C_CONTENT",
         },
-        validation: { specFilePattern: "*.sme.md" },
+        specFilePattern: "*.sme.md",
       });
     }
 
@@ -396,8 +381,7 @@ describe("BatchJudge", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
 
@@ -424,8 +408,7 @@ describe("BatchJudge", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
 
@@ -453,8 +436,7 @@ describe("BatchJudge", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
 
@@ -474,8 +456,7 @@ describe("BatchJudge", () => {
         return new BatchJudge({
           root,
           sources: ["docs"],
-          apiKeyEnvVar: "OPENROUTER_API_KEY",
-          model: "test",
+          judges: [TEST_JUDGE],
           specFilePattern: "*.sme.md",
         });
       }
@@ -507,15 +488,14 @@ describe("BatchJudge", () => {
           "src/services/alpha/a.ts": "A",
           "src/services/beta/c.ts": "C",
         },
-        validation: { specFilePattern: "*.sme.md" },
+        specFilePattern: "*.sme.md",
       });
 
       const batch = new BatchJudge({
         root,
         sources: ["docs"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
 
@@ -533,19 +513,134 @@ describe("BatchJudge", () => {
           "docs/services.sme.md": '---\npaths:\n  - "src/*"\ncohort: by_magic\n---\n# Spec',
           "src/a.ts": "A",
         },
-        validation: { specFilePattern: "*.sme.md" },
+        specFilePattern: "*.sme.md",
       });
 
       const batch = new BatchJudge({
         root,
         sources: ["docs"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
 
       await expect(batch.validateAll()).rejects.toThrow('Invalid cohort value "by_magic"');
+
+      cleanup();
+    });
+  });
+
+  describe("multiple judges", () => {
+    const flash = { name: "flash", model: "flash-model", apiKeyEnvVar: "OPENROUTER_API_KEY" };
+    const strict = { name: "strict", model: "strict-model", apiKeyEnvVar: "OPENROUTER_API_KEY" };
+
+    /** One target, one spec — the simplest fan-out fixture. */
+    function twoJudgeProject() {
+      return createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/README.md": "# Spec\nDocs need a title.",
+          "docs/guide.md": "# Guide",
+        },
+      });
+    }
+
+    /** Responds per model: flash-model passes, strict-model fails. */
+    function useSplitVerdicts(): void {
+      server.use(
+        http.post(OPENROUTER_URL, async ({ request }) => {
+          const body = (await request.json()) as { model: string };
+          const response =
+            body.model === "strict-model"
+              ? validationToolCallResponse("validation_fail", {
+                  reason: "Not good enough.",
+                  issues: ["Too informal"],
+                })
+              : validationToolCallResponse("validation_pass", { reason: "Fine." });
+          return HttpResponse.json(response);
+        }),
+      );
+    }
+
+    it("every judge evaluates every unit", async () => {
+      useCompliantFixture();
+      const { root, cleanup } = twoJudgeProject();
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        judges: [flash, strict],
+      });
+
+      const results = await batch.validateAll();
+
+      expect(results.map((r) => r.judge).sort()).toEqual(["flash", "strict"]);
+
+      cleanup();
+    });
+
+    it("keeps each judge's verdicts in its own cache namespace", async () => {
+      useCompliantFixture();
+      const { root, cleanup } = twoJudgeProject();
+
+      const first = new BatchJudge({ root, sources: ["docs"], judges: [flash, strict] });
+      await first.validateAll();
+      expect(first.cacheStats).toEqual({ hits: 0, misses: 2 });
+
+      const second = new BatchJudge({ root, sources: ["docs"], judges: [flash, strict] });
+      await second.validateAll();
+      expect(second.cacheStats).toEqual({ hits: 2, misses: 0 });
+
+      // A judge with different behavioral settings gets no hits from the others.
+      const third = new BatchJudge({
+        root,
+        sources: ["docs"],
+        judges: [{ ...flash, name: "hot", temperature: 0.9 }],
+      });
+      await third.validateAll();
+      expect(third.cacheStats).toEqual({ hits: 0, misses: 1 });
+
+      cleanup();
+    });
+
+    it("a renamed judge keeps its cache hits — the name is not identity", async () => {
+      useCompliantFixture();
+      const { root, cleanup } = twoJudgeProject();
+
+      const first = new BatchJudge({ root, sources: ["docs"], judges: [flash] });
+      await first.validateAll();
+
+      const renamed = new BatchJudge({
+        root,
+        sources: ["docs"],
+        judges: [{ ...flash, name: "renamed" }],
+      });
+      await renamed.validateAll();
+
+      expect(renamed.cacheStats).toEqual({ hits: 1, misses: 0 });
+
+      cleanup();
+    });
+
+    it("summarizes per judge, never pooling silently", async () => {
+      useSplitVerdicts();
+      const { root, cleanup } = twoJudgeProject();
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        judges: [flash, strict],
+      });
+
+      await batch.validateAll();
+      const summary = batch.summary();
+
+      expect(summary.byJudge).toEqual({
+        flash: { compliant: 1, warnings: 0, errors: 0 },
+        strict: { compliant: 0, warnings: 0, errors: 1 },
+      });
 
       cleanup();
     });
@@ -564,15 +659,14 @@ describe("BatchJudge", () => {
           "src/b.rb": "# B",
           "src/c.rb": "# C",
         },
-        validation: { specFilePattern: "*.sme.md" },
+        specFilePattern: "*.sme.md",
       });
 
       const batch = new BatchJudge({
         root,
         sources: ["docs"],
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
+        judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
 
@@ -595,8 +689,7 @@ describe("BatchJudge", () => {
         root: tmpdir,
         sources: config.sources,
         useCache: false,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
+        judges: [TEST_JUDGE],
       });
       await batch.validateAll();
       const summary = batch.summary();

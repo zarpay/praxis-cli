@@ -6,7 +6,7 @@ Definitions the other documents depend on. Where a term has an everyday sense, t
 
 ## Terminology decisions
 
-Settled in review (Aug 2026); these bind every document and the v2 implementation. Where v1 code uses an old term, the new term wins at implementation time; v1 CLI verbs remain as deprecated aliases during migration.
+Settled in review (Aug 2026); these bind every document and the v2 implementation. Where v1 code uses an old term, the new term wins at implementation time. **v2 is a breaking release**: v1 spellings (CLI verbs, config keys, frontmatter values) are removed, not aliased — the 1.4.x line keeps its aliases; v2 does not carry them.
 
 - **Judge is canonical** for the evaluating instrument. *Validator* (v1 code naming), *evaluator*, and *reviewer* are banned as synonyms. And the sharpest sentence in this document: **the SME is not the judge — the judge reads the SME as its spec.**
 - **Target** replaces *document* wherever the word means "a file a spec covers." Targets are files of any type; "document" survives only where something really is a markdown document.

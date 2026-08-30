@@ -207,33 +207,90 @@ describe("PraxisConfig", () => {
     expect(() => new PraxisConfig(dir)).toThrow(/Invalid JSON in .*config\.json/);
   });
 
-  it("loads validation config from config file", () => {
-    const dir = makeTmpdir();
-    writeConfig(dir, {
-      validation: { apiKeyEnvVar: "MY_KEY", model: "some-model" },
+  describe("judges", () => {
+    it("loads the judges array with per-judge settings", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, {
+        judges: [
+          { name: "flash", model: "deepseek/deepseek-v4-flash-0731", apiKeyEnvVar: "OR_KEY" },
+          {
+            name: "local",
+            model: "org-model",
+            apiKeyEnvVar: "INTERNAL_KEY",
+            baseUrl: "https://inference.internal/v1",
+            temperature: 0,
+          },
+        ],
+      });
+
+      const config = new PraxisConfig(dir);
+
+      expect(config.judges).toEqual([
+        { name: "flash", model: "deepseek/deepseek-v4-flash-0731", apiKeyEnvVar: "OR_KEY" },
+        {
+          name: "local",
+          model: "org-model",
+          apiKeyEnvVar: "INTERNAL_KEY",
+          baseUrl: "https://inference.internal/v1",
+          temperature: 0,
+        },
+      ]);
     });
 
-    const config = new PraxisConfig(dir);
+    it("ignores the removed v1 validation section — v2 is a breaking release", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, {
+        validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "x-ai/grok-4.1-fast" },
+      });
 
-    expect(config.validation).toEqual({ apiKeyEnvVar: "MY_KEY", model: "some-model" });
-  });
+      const config = new PraxisConfig(dir);
 
-  it("returns undefined validation when not in config", () => {
-    const dir = makeTmpdir();
-    const config = new PraxisConfig(dir);
-
-    expect(config.validation).toBeUndefined();
-  });
-
-  it("loads specFilePattern from validation config", () => {
-    const dir = makeTmpdir();
-    writeConfig(dir, {
-      validation: { apiKeyEnvVar: "MY_KEY", model: "some-model", specFilePattern: "*.validate.md" },
+      expect(config.judges).toEqual([]);
     });
 
-    const config = new PraxisConfig(dir);
+    it("returns an empty judges array when nothing is configured", () => {
+      const dir = makeTmpdir();
+      const config = new PraxisConfig(dir);
 
-    expect(config.validation?.specFilePattern).toBe("*.validate.md");
+      expect(config.judges).toEqual([]);
+    });
+
+    it("rejects duplicate judge names", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, {
+        judges: [
+          { name: "flash", model: "model-a", apiKeyEnvVar: "OR_KEY" },
+          { name: "flash", model: "model-b", apiKeyEnvVar: "OR_KEY" },
+        ],
+      });
+
+      expect(() => new PraxisConfig(dir)).toThrow('Duplicate judge name "flash"');
+    });
+
+    it("rejects a judge missing a required field", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, { judges: [{ name: "flash", model: "model-a" }] });
+
+      expect(() => new PraxisConfig(dir)).toThrow('Judge "flash" is missing "apiKeyEnvVar"');
+    });
+  });
+
+  describe("specFilePattern", () => {
+    it("loads a top-level specFilePattern", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, { specFilePattern: "*.sme.md" });
+
+      const config = new PraxisConfig(dir);
+
+      expect(config.specFilePattern).toBe("*.sme.md");
+    });
+
+    it("defaults to README.md when unconfigured", () => {
+      const dir = makeTmpdir();
+      const config = new PraxisConfig(dir);
+
+      expect(config.specFilePattern).toBe("README.md");
+    });
   });
 
   it("loads ignore patterns from config", () => {
@@ -250,16 +307,5 @@ describe("PraxisConfig", () => {
     const config = new PraxisConfig(dir);
 
     expect(config.ignore).toEqual([]);
-  });
-
-  it("returns undefined specFilePattern when not specified", () => {
-    const dir = makeTmpdir();
-    writeConfig(dir, {
-      validation: { apiKeyEnvVar: "MY_KEY", model: "some-model" },
-    });
-
-    const config = new PraxisConfig(dir);
-
-    expect(config.validation?.specFilePattern).toBeUndefined();
   });
 });

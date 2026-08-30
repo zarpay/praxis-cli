@@ -88,13 +88,31 @@ export interface OrphanedCacheFile {
  * v1.0 cache files are transparently migrated to v2.0 on write.
  */
 export class CacheManager {
-  /** Directory all cache files live under (default: {root}/.praxis/cache/validation). */
+  /**
+   * Directory all cache files live under. Defaults to
+   * {root}/.praxis/cache/validation, extended by the judge's namespace
+   * when a judgeHash is given — per-judge namespacing is what keeps two
+   * judges' verdicts from ever colliding, and it makes the cache's
+   * invalidation behavior the epoch structure (05).
+   */
   readonly cacheRoot: string;
   private readonly projectRoot: string | null;
 
-  constructor(cacheRoot?: string, projectRoot?: string) {
+  constructor({
+    cacheRoot,
+    projectRoot,
+    judgeHash,
+  }: {
+    /** Base cache directory; defaults to {projectRoot}/.praxis/cache/validation. */
+    cacheRoot?: string;
+    /** Project root for relative cache paths and default locations. */
+    projectRoot?: string;
+    /** Judge identity hash; when given, the cache roots under its namespace. */
+    judgeHash?: string;
+  } = {}) {
     this.projectRoot = projectRoot ?? null;
-    this.cacheRoot = cacheRoot ?? this.defaultCacheRoot();
+    const base = cacheRoot ?? this.defaultCacheRoot();
+    this.cacheRoot = judgeHash ? joinPath(base, judgeHash) : base;
   }
 
   /**

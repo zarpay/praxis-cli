@@ -10,6 +10,7 @@ import { Judge } from "@/eval/judge.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,
+  TEST_JUDGE,
   createOpenRouterServer,
   useOpenRouterResponse,
   validationToolCallResponse,
@@ -56,13 +57,12 @@ describe("Judge", () => {
     delete process.env["OPENROUTER_API_KEY"];
   });
 
-  /** Builds a validator for the standard fixture role with API config supplied. */
+  /** Builds a judge invocation for the standard fixture expert. */
   function makeValidator(): Judge {
     return new Judge({
       targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
       useCache: false,
-      apiKeyEnvVar: "OPENROUTER_API_KEY",
-      model: "x-ai/grok-4.1-fast",
+      judge: TEST_JUDGE,
     });
   }
 
@@ -174,40 +174,25 @@ describe("Judge", () => {
       expect(result.issues).toContain("Missing Criteria section");
     });
 
-    it("throws when apiKeyEnvVar is not provided", async () => {
+    it("throws when no judge is configured", async () => {
       const validator = new Judge({
         targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
         useCache: false,
       });
 
-      await expect(validator.validate()).rejects.toThrow("apiKeyEnvVar");
+      await expect(validator.validate()).rejects.toThrow("No judges configured");
     });
 
     it("throws when the API key environment variable is not set", async () => {
       const validator = new Judge({
         targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
         useCache: false,
-        apiKeyEnvVar: "UNSET_KEY_VAR",
-        model: "x-ai/grok-4.1-fast",
+        judge: { name: "unset", model: "m", apiKeyEnvVar: "UNSET_KEY_VAR" },
       });
 
       await expect(validator.validate()).rejects.toThrow(
         "UNSET_KEY_VAR environment variable not set",
       );
-    });
-
-    it("throws when model is not provided", async () => {
-      process.env["MY_KEY"] = "test-key";
-
-      const validator = new Judge({
-        targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
-        useCache: false,
-        apiKeyEnvVar: "MY_KEY",
-      });
-
-      await expect(validator.validate()).rejects.toThrow("model");
-
-      delete process.env["MY_KEY"];
     });
 
     it("uses custom apiKeyEnvVar", async () => {
@@ -217,8 +202,7 @@ describe("Judge", () => {
       const validator = new Judge({
         targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
         useCache: false,
-        apiKeyEnvVar: "CUSTOM_API_KEY",
-        model: "x-ai/grok-4.1-fast",
+        judge: { name: "custom", model: "m", apiKeyEnvVar: "CUSTOM_API_KEY" },
       });
 
       const result = await validator.validate();
@@ -270,6 +254,57 @@ describe("Judge", () => {
       await expect(makeValidator().validate()).rejects.toThrow(
         "Unexpected validation tool call: validation_bogus",
       );
+    });
+  });
+
+  describe("judge settings", () => {
+    it("sends the request to the judge's baseUrl", async () => {
+      let hit = false;
+      server.use(
+        http.post("https://inference.internal/v1/chat/completions", () => {
+          hit = true;
+          return HttpResponse.json(fixtures.pass);
+        }),
+      );
+
+      const judge = new Judge({
+        targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
+        useCache: false,
+        judge: {
+          name: "local",
+          model: "org-model",
+          apiKeyEnvVar: "OPENROUTER_API_KEY",
+          baseUrl: "https://inference.internal/v1",
+        },
+      });
+      await judge.validate();
+
+      expect(hit).toBe(true);
+    });
+
+    it("sends the judge's temperature, defaulting to 0.1", async () => {
+      const temperatures: number[] = [];
+      server.use(
+        http.post(OPENROUTER_URL, async ({ request }) => {
+          const body = (await request.json()) as { temperature: number };
+          temperatures.push(body.temperature);
+          return HttpResponse.json(fixtures.pass);
+        }),
+      );
+      const targetPath = join(tmpdir, "content", "experts", "test-expert.md");
+
+      await new Judge({
+        targetPath,
+        useCache: false,
+        judge: { name: "hot", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY", temperature: 0.9 },
+      }).validate();
+      await new Judge({
+        targetPath,
+        useCache: false,
+        judge: { name: "cool", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" },
+      }).validate();
+
+      expect(temperatures).toEqual([0.9, 0.1]);
     });
   });
 
@@ -344,13 +379,14 @@ describe("Judge", () => {
     it("uses cached result on second call with same content", async () => {
       useOpenRouterResponse(server, fixtures.pass);
 
-      const cacheManager = new CacheManager(join(tmpdir, ".praxis", "cache", "validation"));
+      const cacheManager = new CacheManager({
+        cacheRoot: join(tmpdir, ".praxis", "cache", "validation"),
+      });
 
       const validator1 = new Judge({
         targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
         cacheManager,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
+        judge: TEST_JUDGE,
       });
       await validator1.validate();
       expect(validator1.cacheHit).toBe(false);
@@ -358,8 +394,7 @@ describe("Judge", () => {
       const validator2 = new Judge({
         targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
         cacheManager,
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
+        judge: TEST_JUDGE,
       });
       await validator2.validate();
       expect(validator2.cacheHit).toBe(true);

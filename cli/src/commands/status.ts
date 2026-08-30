@@ -3,15 +3,16 @@ import type { Command } from "commander";
 import chalk from "chalk";
 import fg from "fast-glob";
 
-import { Frontmatter } from "@/core/frontmatter.js";
-import { GlobExpander } from "@/spec/glob-expander.js";
-import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
+import { PraxisConfig } from "@/core/config.js";
 import { exists } from "@/core/files.js";
+import { Frontmatter } from "@/core/frontmatter.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, baseName, joinPath, relativePath, resolvePath } from "@/core/paths.js";
+import { isSpecFile } from "@/core/spec-pattern.js";
 import { BatchJudge } from "@/eval/batch-judge.js";
 import { CacheManager } from "@/eval/cache-manager.js";
-import { isSpecFile } from "@/core/spec-pattern.js";
+import { judgeHash } from "@/eval/judge-hash.js";
+import { GlobExpander } from "@/spec/glob-expander.js";
 
 /** Structured report of project health. */
 export interface StatusReport {
@@ -22,13 +23,18 @@ export interface StatusReport {
     references: number;
     context: number;
   };
-  /** Cached validation verdict counts across all spec targets. */
+  /**
+   * Cached verdict counts across all spec targets, one row per judge —
+   * judges are separate instruments and are never silently pooled.
+   * Empty when no judges are configured.
+   */
   validation: {
+    judge: string;
     pass: number;
     warn: number;
     fail: number;
     notValidated: number;
-  };
+  }[];
   /** Practice files no expert references. */
   orphanedPractices: string[];
   /** Expert references pointing at files that do not exist. */
@@ -96,7 +102,7 @@ export class StatusCommand {
     this.root = root;
     this.config = config ?? new PraxisConfig(root);
     this.logger = logger;
-    this.specFilePattern = this.config.validation?.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
+    this.specFilePattern = this.config.specFilePattern;
     this.globExpander = new GlobExpander(root, this.specFilePattern);
     this.absoluteIgnore = this.config.ignore.map((p) => resolvePath(root, p));
   }
@@ -228,13 +234,14 @@ export class StatusCommand {
     console.log(`  References:         ${report.counts.references}`);
     console.log(`  Context files:      ${report.counts.context}`);
 
-    // Validation summary
-    const v = report.validation;
-    const totalDocs = v.pass + v.warn + v.fail + v.notValidated;
+    // Validation summary — one block per judge, never pooled
+    for (const v of report.validation) {
+      const totalDocs = v.pass + v.warn + v.fail + v.notValidated;
 
-    if (totalDocs > 0) {
+      if (totalDocs === 0) continue;
+
       console.log();
-      this.logger.info("Validation");
+      this.logger.info(`Validation (judge: ${v.judge})`);
       console.log(`  ${chalk.green("[PASS]")} ${v.pass}`);
       console.log(`  ${chalk.yellow("[WARN]")} ${v.warn}`);
       console.log(`  ${chalk.red("[FAIL]")} ${v.fail}`);
@@ -305,31 +312,50 @@ export class StatusCommand {
    * file's cached verdict without making API calls.
    */
   private tallyValidation(): StatusReport["validation"] {
-    const cacheManager = new CacheManager(undefined, this.root);
     const batchJudge = new BatchJudge({
       root: this.root,
       sources: this.config.sources,
       ignore: this.config.ignore,
+      judges: this.config.judges,
       specFilePattern: this.specFilePattern,
     });
+    const targets = batchJudge.listTargetFiles();
 
-    const validation = { pass: 0, warn: 0, fail: 0, notValidated: 0 };
+    // One cache namespace per judge; the legacy un-namespaced cache
+    // when no judges are configured. Reading needs no API keys.
+    const readers =
+      this.config.judges.length > 0
+        ? this.config.judges.map((judge) => ({
+            judge: judge.name,
+            manager: new CacheManager({ projectRoot: this.root, judgeHash: judgeHash(judge) }),
+          }))
+        : [{ judge: null, manager: new CacheManager({ projectRoot: this.root }) }];
 
-    for (const filePath of batchJudge.listTargetFiles()) {
-      const cached = cacheManager.readRaw({ targetPath: filePath });
+    return readers.map(({ judge, manager }) => {
+      const row = {
+        judge,
+        pass: 0,
+        warn: 0,
+        fail: 0,
+        notValidated: 0,
+      } as StatusReport["validation"][number];
 
-      if (!cached) {
-        validation.notValidated++;
-      } else if (cached.result.compliant) {
-        validation.pass++;
-      } else if (cached.result.severity === "warning") {
-        validation.warn++;
-      } else {
-        validation.fail++;
+      for (const filePath of targets) {
+        const cached = manager.readRaw({ targetPath: filePath });
+
+        if (!cached) {
+          row.notValidated++;
+        } else if (cached.result.compliant) {
+          row.pass++;
+        } else if (cached.result.severity === "warning") {
+          row.warn++;
+        } else {
+          row.fail++;
+        }
       }
-    }
 
-    return validation;
+      return row;
+    });
   }
 
   /**

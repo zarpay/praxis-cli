@@ -16,7 +16,7 @@ describe("CacheManager", () => {
     projectRoot = join(tmpdir(), `praxis-cache-test-${randomUUID()}`);
     mkdirSync(projectRoot, { recursive: true });
     cacheRoot = join(projectRoot, ".praxis", "cache", "validation");
-    manager = new CacheManager(cacheRoot, projectRoot);
+    manager = new CacheManager({ cacheRoot, projectRoot });
 
     cleanup = () => {
       rmSync(projectRoot, { recursive: true, force: true });
@@ -334,6 +334,43 @@ describe("CacheManager", () => {
       expect(orphans.length).toBe(1);
       expect(orphans[0].reason).toBe("document_missing");
       expect(orphans[0].docName).toBe("deleted-role");
+    });
+  });
+
+  describe("judge-hash namespacing", () => {
+    it("roots the cache under the judge's namespace", () => {
+      const namespaced = new CacheManager({ cacheRoot, projectRoot, judgeHash: "abc12345" });
+
+      expect(namespaced.cachePathFor(join(projectRoot, "roles", "a.md"))).toBe(
+        join(cacheRoot, "abc12345", "roles", "a.json"),
+      );
+    });
+
+    it("isolates verdicts between judges", () => {
+      const judgeA = new CacheManager({ cacheRoot, projectRoot, judgeHash: "aaaa1111" });
+      const judgeB = new CacheManager({ cacheRoot, projectRoot, judgeHash: "bbbb2222" });
+      const targetPath = join(projectRoot, "roles", "shared.md");
+
+      judgeA.write({
+        targetPath,
+        contentHash: "hash1234",
+        result: { compliant: true, issues: [], reason: "judge A verdict" },
+        metadata: { targetType: "expert", specPath: "roles/README.md" },
+      });
+
+      const fromB = judgeB.read({
+        targetPath,
+        contentHash: "hash1234",
+        specPath: "roles/README.md",
+      });
+      const fromA = judgeA.read({
+        targetPath,
+        contentHash: "hash1234",
+        specPath: "roles/README.md",
+      });
+
+      expect(fromB).toBeNull();
+      expect(fromA?.reason).toBe("judge A verdict");
     });
   });
 

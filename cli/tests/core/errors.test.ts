@@ -40,6 +40,34 @@ describe("errors", () => {
     expect(err.message).toBe("Template not found: /scaffold/core/roles/_template.md");
   });
 
+  it("duplicateJudgeName", () => {
+    const err = errors.duplicateJudgeName("flash");
+    expect(err.code).toBe("INVALID_JUDGE_CONFIG");
+    expect(err.message).toBe(
+      'Duplicate judge name "flash" in .praxis/config.json — judge names must be unique',
+    );
+  });
+
+  it("judgeMissingField", () => {
+    const err = errors.judgeMissingField("flash", "apiKeyEnvVar");
+    expect(err.code).toBe("INVALID_JUDGE_CONFIG");
+    expect(err.message).toBe(
+      'Judge "flash" is missing "apiKeyEnvVar" — every judge needs "name", "model", and "apiKeyEnvVar"',
+    );
+  });
+
+  it("unknownJudge", () => {
+    const err = errors.unknownJudge("bogus", ["flash", "local"]);
+    expect(err.code).toBe("UNKNOWN_JUDGE");
+    expect(err.message).toBe('No judge named "bogus" — configured judges: flash, local');
+  });
+
+  it("missingJudges", () => {
+    const err = errors.missingJudges();
+    expect(err.code).toBe("JUDGES_NOT_CONFIGURED");
+    expect(err.message).toContain('"judges": [');
+  });
+
   it("invalidCohortValue", () => {
     const err = errors.invalidCohortValue("by_magic", "docs/services.sme.md");
     expect(err.code).toBe("INVALID_COHORT");
@@ -64,15 +92,6 @@ describe("errors", () => {
     const err = errors.specPatternNotFound("*.sme.md", "/p/roles", "/p/roles/doc.md");
     expect(err.code).toBe("SPEC_NOT_FOUND");
     expect(err.message).toBe("No file matching '*.sme.md' found in /p/roles for /p/roles/doc.md");
-  });
-
-  it("validationNotConfigured", () => {
-    const err = errors.validationNotConfigured("model");
-    expect(err.code).toBe("VALIDATION_NOT_CONFIGURED");
-    expect(err.message).toBe(
-      "Validation requires 'model' to be configured. " +
-        "Add a 'validation' section to .praxis/config.json with 'apiKeyEnvVar' and 'model'.",
-    );
   });
 
   it("apiKeyNotSet", () => {

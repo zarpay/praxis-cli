@@ -1,16 +1,18 @@
+import type { JudgeConfig } from "@/core/config.js";
 import type { Verdict } from "@/eval/cache-manager.js";
 
 import chalk from "chalk";
 import fg from "fast-glob";
 
-import { Frontmatter } from "@/core/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
+import { Frontmatter } from "@/core/frontmatter.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
-import { CacheManager } from "@/eval/cache-manager.js";
-import { Judge } from "@/eval/judge.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
+import { CacheManager } from "@/eval/cache-manager.js";
+import { judgeHash } from "@/eval/judge-hash.js";
+import { Judge } from "@/eval/judge.js";
 
 /** Extended validation result that includes file path and type information. */
 export interface TargetVerdict extends Verdict {
@@ -20,6 +22,8 @@ export interface TargetVerdict extends Verdict {
   type: string;
   /** Basename of the validated document. */
   filename: string;
+  /** Name of the judge that produced this verdict. */
+  judge: string;
 }
 
 /** Aggregated validation summary across all documents. */
@@ -41,6 +45,18 @@ export interface EvalSummary {
       total: number;
       compliant: number;
       issues: number;
+    }
+  >;
+  /**
+   * Per-judge breakdown. Judges are instruments with different error
+   * rates; their series render separately, never silently pooled (07).
+   */
+  byJudge: Record<
+    string,
+    {
+      compliant: number;
+      warnings: number;
+      errors: number;
     }
   >;
 }
@@ -99,9 +115,9 @@ export class BatchJudge {
   readonly cacheStats: { hits: number; misses: number };
 
   private readonly useCache: boolean;
-  private readonly cacheManager: CacheManager | null;
-  private readonly apiKeyEnvVar?: string;
-  private readonly model?: string;
+  private readonly judges: JudgeConfig[];
+  /** One namespaced cache per judge, aligned by index with `judges`. */
+  private readonly cacheManagers: (CacheManager | null)[];
   private readonly specFilePattern: string;
   /** Ignore patterns resolved to absolute paths for fast-glob. */
   private readonly absoluteIgnore: string[];
@@ -118,9 +134,7 @@ export class BatchJudge {
     ignore = [],
     failFast = false,
     useCache = true,
-    cacheManager,
-    apiKeyEnvVar,
-    model,
+    judges,
     specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
   }: {
     root: string;
@@ -128,19 +142,20 @@ export class BatchJudge {
     ignore?: string[];
     failFast?: boolean;
     useCache?: boolean;
-    cacheManager?: CacheManager;
-    apiKeyEnvVar?: string;
-    model?: string;
+    /** The judges to run; every judge evaluates every unit. */
+    judges: JudgeConfig[];
     specFilePattern?: string;
   }) {
     this.root = root;
     this.sources = sources;
     this.failFast = failFast;
     this.useCache = useCache;
-    this.cacheManager = cacheManager ?? (useCache ? new CacheManager(undefined, root) : null);
+    this.judges = judges;
+    // Each judge gets its own cache namespace so verdicts never collide.
+    this.cacheManagers = judges.map((judge) =>
+      useCache ? new CacheManager({ projectRoot: root, judgeHash: judgeHash(judge) }) : null,
+    );
     this.cacheStats = { hits: 0, misses: 0 };
-    this.apiKeyEnvVar = apiKeyEnvVar;
-    this.model = model;
     this.specFilePattern = specFilePattern;
     this.absoluteIgnore = ignore.map((p) => joinPath(root, p));
   }
@@ -192,18 +207,22 @@ export class BatchJudge {
     this.stoppedEarly = false;
     this.sourceDocs = this.collectSourceDocuments();
 
-    const queue = domains.flatMap((domain) =>
+    const unitQueue = domains.flatMap((domain) =>
       this.resolveUnits(domain).map((unit) => ({ unit, domain })),
     );
 
     this.validatedCount = 0;
-    this.totalToValidate = queue.length;
+    this.totalToValidate = unitQueue.length * this.judges.length;
 
-    for (const { unit, domain } of queue) {
-      if (this.stoppedEarly) break;
+    // Judge-major order: each judge works through the full unit list,
+    // keeping one instrument's output contiguous in the terminal.
+    for (const [index, judge] of this.judges.entries()) {
+      for (const { unit, domain } of unitQueue) {
+        if (this.stoppedEarly) break;
 
-      await this.validateUnit(unit, domain.specPath, domain.type);
-      this.checkFailFast();
+        await this.validateUnit(unit, domain.specPath, domain.type, judge, index);
+        this.checkFailFast();
+      }
     }
 
     return this.results;
@@ -247,6 +266,20 @@ export class BatchJudge {
       }
     }
 
+    const byJudge: EvalSummary["byJudge"] = {};
+
+    for (const result of this.results) {
+      byJudge[result.judge] ??= { compliant: 0, warnings: 0, errors: 0 };
+
+      if (result.compliant) {
+        byJudge[result.judge].compliant++;
+      } else if (result.severity === "warning") {
+        byJudge[result.judge].warnings++;
+      } else {
+        byJudge[result.judge].errors++;
+      }
+    }
+
     const validatedPaths = new Set(this.results.map((r) => r.path));
     const allDocs = new Set([...this.sourceDocs, ...validatedPaths]);
 
@@ -257,6 +290,7 @@ export class BatchJudge {
       errors: this.results.filter((r) => !r.compliant && r.severity === "error").length,
       notValidated: allDocs.size - validatedPaths.size,
       byType,
+      byJudge,
     };
   }
 
@@ -424,7 +458,8 @@ export class BatchJudge {
       return raw as CohortMode;
     }
 
-    throw errors.invalidCohortValue(String(raw), relativePath(this.root, specPath));
+    const shown = typeof raw === "string" ? raw : JSON.stringify(raw);
+    throw errors.invalidCohortValue(shown, relativePath(this.root, specPath));
   }
 
   /** Checks if the last result triggers fail-fast (stops on errors, not warnings). */
@@ -446,15 +481,23 @@ export class BatchJudge {
    * single verdict whose cache entry is keyed on the member contents.
    * Tracks cache hit/miss statistics for reporting.
    */
-  private async validateUnit(unit: EvalUnit, specPath: string, type: string): Promise<void> {
+  private async validateUnit(
+    unit: EvalUnit,
+    specPath: string,
+    type: string,
+    judgeConfig: JudgeConfig,
+    judgeIndex: number,
+  ): Promise<void> {
     this.validatedCount++;
     const index = this.validatedCount;
     const total = this.totalToValidate;
     const counter = chalk.dim(`[${index}/${total}]`);
     const isCohort = unit.files.length > 1 || unit.files[0] !== unit.path;
-    const label = isCohort ? ` ${chalk.dim(`(cohort · ${unit.files.length} files)`)}` : "";
+    const cohortLabel = isCohort ? ` ${chalk.dim(`(cohort · ${unit.files.length} files)`)}` : "";
+    const judgeLabel =
+      this.judges.length > 1 ? ` ${chalk.cyan(`[judge: ${judgeConfig.name}]`)}` : "";
 
-    console.log(`\n${counter} ${chalk.bold(baseName(unit.path))}${label}`);
+    console.log(`\n${counter} ${chalk.bold(baseName(unit.path))}${cohortLabel}${judgeLabel}`);
 
     try {
       const judge = new Judge({
@@ -464,9 +507,8 @@ export class BatchJudge {
         specPath,
         specFilePattern: this.specFilePattern,
         useCache: this.useCache,
-        cacheManager: this.cacheManager ?? undefined,
-        apiKeyEnvVar: this.apiKeyEnvVar,
-        model: this.model,
+        cacheManager: this.cacheManagers[judgeIndex] ?? undefined,
+        judge: judgeConfig,
       });
 
       const result = await judge.validate();
@@ -482,6 +524,7 @@ export class BatchJudge {
         path: unit.path,
         type,
         filename: baseName(unit.path),
+        judge: judgeConfig.name,
       };
 
       if (result.compliant) {
@@ -502,6 +545,7 @@ export class BatchJudge {
         path: unit.path,
         type,
         filename: baseName(unit.path),
+        judge: judgeConfig.name,
         compliant: false,
         severity: "error",
         issues: [`Validation failed: ${(err as Error).message}`],

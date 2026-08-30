@@ -1,18 +1,19 @@
 import type { Command } from "commander";
 
-import type { ValidationConfig } from "@/core/config.js";
+import type { JudgeConfig } from "@/core/config.js";
 import type { EvalSummary } from "@/eval/batch-judge.js";
 import type { Verdict } from "@/eval/cache-manager.js";
 
 import chalk from "chalk";
 
-import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
+import { PraxisConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, resolvePath } from "@/core/paths.js";
 import { BatchJudge } from "@/eval/batch-judge.js";
 import { CacheManager } from "@/eval/cache-manager.js";
+import { judgeHash } from "@/eval/judge-hash.js";
 import { Judge } from "@/eval/judge.js";
 import {
   buildReport,
@@ -23,6 +24,7 @@ import {
 /** Options for `validate document`. */
 interface DocumentOptions {
   spec?: string;
+  judge?: string;
   verbose: boolean;
   cache: boolean;
 }
@@ -30,6 +32,7 @@ interface DocumentOptions {
 /** Options for `validate all`. */
 interface AllOptions {
   type?: string;
+  judge?: string;
   verbose: boolean;
   failFast: boolean;
   cache: boolean;
@@ -51,6 +54,7 @@ export function registerEvalCommand(program: Command): void {
     .command("run [targets...]")
     .description("Judge targets against their specs (no targets = full run)")
     .option("--type <type>", "only judge targets of this type (full run only)")
+    .option("--judge <name>", "run only the named judge (default: all configured judges)")
     .option("--spec <path>", "path to spec file (single target only)")
     .option("--verbose", "show full AI reasoning", false)
     .option("--fail-fast", "stop on first error (full run only)", false)
@@ -185,6 +189,13 @@ export function registerValidateCommand(program: Command): void {
     });
 }
 
+/** Orders verdicts for worst-of aggregation: pass < warning < error. */
+function severityRank(verdict: Verdict): number {
+  if (verdict.compliant) return 0;
+
+  return verdict.severity === "warning" ? 1 : 2;
+}
+
 /** Builds an EvalCommand for the current project. */
 function makeCommand(): EvalCommand {
   return new EvalCommand({ root: new Paths().root });
@@ -227,6 +238,7 @@ export class EvalCommand {
     for (const target of targets) {
       const result = await this.document(target, {
         spec: targets.length === 1 ? options.spec : undefined,
+        judge: options.judge,
         verbose: options.verbose,
         cache: options.cache,
       });
@@ -239,30 +251,41 @@ export class EvalCommand {
   }
 
   /**
-   * Judges a single target against its spec.
+   * Judges a single target against its spec — once per configured judge.
    *
-   * @returns The verdict (the caller maps it to an exit code)
-   * @throws PraxisError when validation config or the API key is missing
+   * @returns The worst verdict across judges (the caller maps it to an
+   *   exit code): any error wins over any warning wins over pass
+   * @throws PraxisError when no judges are configured or a key is missing
    */
   async document(path: string, options: DocumentOptions): Promise<Verdict> {
-    const validation = this.requireValidationConfig();
+    const judges = this.requireJudges(options.judge);
 
     console.log(`Validating ${path}...`);
 
-    const judge = new Judge({
-      targetPath: path,
-      specPath: options.spec,
-      specFilePattern: this.specFilePattern(validation),
-      useCache: options.cache,
-      cacheManager: this.cacheManager(options.cache),
-      apiKeyEnvVar: validation.apiKeyEnvVar,
-      model: validation.model,
-    });
+    let worst: Verdict | null = null;
 
-    const result = await judge.validate();
-    this.displayResult(path, result, options.verbose);
+    for (const judgeConfig of judges) {
+      const judge = new Judge({
+        targetPath: path,
+        specPath: options.spec,
+        specFilePattern: this.config.specFilePattern,
+        useCache: options.cache,
+        cacheManager: this.cacheManagerFor(judgeConfig, options.cache),
+        judge: judgeConfig,
+      });
 
-    return result;
+      const result = await judge.validate();
+      const label =
+        judges.length > 1 ? `${path} ${chalk.cyan(`[judge: ${judgeConfig.name}]`)}` : path;
+      this.displayResult(label, result, options.verbose);
+
+      if (!worst || severityRank(result) > severityRank(worst)) {
+        worst = result;
+      }
+    }
+
+    // requireJudges guarantees at least one judge, hence one verdict.
+    return worst!;
   }
 
   /**
@@ -273,7 +296,7 @@ export class EvalCommand {
    * @throws PraxisError when validation config or the API key is missing
    */
   async all(options: AllOptions): Promise<EvalSummary> {
-    const validation = this.requireValidationConfig();
+    const judges = this.requireJudges(options.judge);
 
     const batch = new BatchJudge({
       root: this.root,
@@ -281,10 +304,8 @@ export class EvalCommand {
       ignore: this.config.ignore,
       failFast: options.failFast,
       useCache: options.cache,
-      cacheManager: this.cacheManager(options.cache),
-      apiKeyEnvVar: validation.apiKeyEnvVar,
-      model: validation.model,
-      specFilePattern: this.specFilePattern(validation),
+      judges,
+      specFilePattern: this.config.specFilePattern,
     });
 
     if (options.type) {
@@ -321,15 +342,14 @@ export class EvalCommand {
    * @throws PraxisError when validation config or the API key is missing
    */
   async ci(): Promise<EvalSummary> {
-    const validation = this.requireValidationConfig();
+    const judges = this.requireJudges();
 
     const batch = new BatchJudge({
       root: this.root,
       sources: this.config.sources,
       ignore: this.config.ignore,
-      apiKeyEnvVar: validation.apiKeyEnvVar,
-      model: validation.model,
-      specFilePattern: this.specFilePattern(validation),
+      judges,
+      specFilePattern: this.config.specFilePattern,
     });
 
     console.log("Running CI validation...");
@@ -353,48 +373,71 @@ export class EvalCommand {
       throw errors.documentNotFound(path);
     }
 
-    const cacheManager = new CacheManager(undefined, this.root);
-    const specFilePattern = this.config.validation?.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
-    const cacheData = cacheManager.readRaw({ targetPath: absolutePath });
+    // Reading needs no API keys, but it does need the configured judges
+    // to know which cache namespaces to read.
+    const judges = this.config.judges;
 
-    // Use spec_path from cache if available, otherwise auto-detect
-    const specPath = cacheData?.document.spec_path ?? undefined;
-    const currentHash = computeCurrentHash(absolutePath, specPath, specFilePattern);
+    if (judges.length === 0) {
+      throw errors.missingJudges();
+    }
 
-    const report = buildReport(absolutePath, cacheData, currentHash);
-    displayValidationReport(report, options.verbose);
+    for (const judge of judges) {
+      const manager = new CacheManager({ projectRoot: this.root, judgeHash: judgeHash(judge) });
+
+      if (judges.length > 1) {
+        console.log(`\n${chalk.cyan(`Judge: ${judge.name}`)}`);
+      }
+
+      const cacheData = manager.readRaw({ targetPath: absolutePath });
+
+      // Use spec_path from cache if available, otherwise auto-detect
+      const specPath = cacheData?.document.spec_path ?? undefined;
+      const currentHash = computeCurrentHash(absolutePath, specPath, this.config.specFilePattern);
+
+      const report = buildReport(absolutePath, cacheData, currentHash);
+      displayValidationReport(report, options.verbose);
+    }
   }
 
   /**
-   * Returns the validation config after checking it is complete and
-   * the API key environment variable is set.
+   * Returns the configured judges after checking every judge's API key
+   * environment variable is set.
    *
-   * @throws PraxisError with setup guidance when either is missing
+   * @throws PraxisError with setup guidance when no judges are
+   *   configured or any judge's key is missing
    */
-  private requireValidationConfig(): ValidationConfig {
-    const validation = this.config.validation;
+  private requireJudges(only?: string): JudgeConfig[] {
+    const configured = this.config.judges;
 
-    if (!validation?.apiKeyEnvVar || !validation.model) {
-      throw errors.missingValidationConfig();
+    if (configured.length === 0) {
+      throw errors.missingJudges();
     }
 
-    const key = process.env[validation.apiKeyEnvVar];
+    const judges = only ? configured.filter((judge) => judge.name === only) : configured;
 
-    if (!key || key.length === 0) {
-      throw errors.missingApiKey(validation.apiKeyEnvVar);
+    if (judges.length === 0) {
+      throw errors.unknownJudge(
+        only!,
+        configured.map((judge) => judge.name),
+      );
     }
 
-    return validation;
+    for (const judge of judges) {
+      const key = process.env[judge.apiKeyEnvVar];
+
+      if (!key || key.length === 0) {
+        throw errors.missingApiKey(judge.apiKeyEnvVar);
+      }
+    }
+
+    return judges;
   }
 
-  /** The spec file pattern from validation config, or the default. */
-  private specFilePattern(validation: ValidationConfig): string {
-    return validation.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
-  }
+  /** A judge-namespaced CacheManager, or undefined when caching is disabled. */
+  private cacheManagerFor(judge: JudgeConfig, useCache: boolean): CacheManager | undefined {
+    if (!useCache) return undefined;
 
-  /** A project-rooted CacheManager, or undefined when caching is disabled. */
-  private cacheManager(useCache: boolean): CacheManager | undefined {
-    return useCache ? new CacheManager(undefined, this.root) : undefined;
+    return new CacheManager({ projectRoot: this.root, judgeHash: judgeHash(judge) });
   }
 
   /** Prints a single validation result with colored status. */
@@ -433,6 +476,22 @@ export class EvalCommand {
     console.log("By type:");
     for (const [type, stats] of Object.entries(summary.byType)) {
       console.log(`  ${type}: ${stats.compliant}/${stats.total} compliant`);
+    }
+
+    // Judges are separate instruments — with more than one, their
+    // series render separately and are never pooled into one number.
+    const judgeNames = Object.keys(summary.byJudge);
+
+    if (judgeNames.length > 1) {
+      console.log();
+      console.log("By judge:");
+
+      for (const name of judgeNames) {
+        const stats = summary.byJudge[name];
+        console.log(
+          `  ${name}: ${chalk.green(String(stats.compliant))} pass, ${chalk.yellow(String(stats.warnings))} warn, ${chalk.red(String(stats.errors))} fail`,
+        );
+      }
     }
   }
 }

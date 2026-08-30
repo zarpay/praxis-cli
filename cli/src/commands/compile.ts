@@ -4,13 +4,13 @@ import type { FSWatcher } from "@/core/files.js";
 
 import fg from "fast-glob";
 
-import { ExpertCompiler } from "@/spec/expert-compiler.js";
-import { Frontmatter } from "@/core/frontmatter.js";
 import { PraxisConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { watchDir } from "@/core/files.js";
+import { Frontmatter } from "@/core/frontmatter.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, resolvePath } from "@/core/paths.js";
+import { ExpertCompiler } from "@/spec/expert-compiler.js";
 
 /**
  * Registers the `praxis compile` command.

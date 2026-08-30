@@ -18,11 +18,10 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
       "claudeCodePluginName": "praxis"
     }
   ],
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast",
-    "specFilePattern": "README.md"
-  }
+  "judges": [
+    { "name": "default", "model": "x-ai/grok-4.1-fast", "apiKeyEnvVar": "OPENROUTER_API_KEY" }
+  ],
+  "specFilePattern": "README.md"
 }
 ```
 
@@ -144,11 +143,10 @@ Configuration for AI-powered document validation via [OpenRouter](https://openro
 
 ```json
 {
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast",
-    "specFilePattern": "README.md"
-  }
+  "judges": [
+    { "name": "default", "model": "x-ai/grok-4.1-fast", "apiKeyEnvVar": "OPENROUTER_API_KEY" }
+  ],
+  "specFilePattern": "README.md"
 }
 ```
 

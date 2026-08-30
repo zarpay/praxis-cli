@@ -1,0 +1,75 @@
+import type { JudgeConfig } from "@/core/config.js";
+
+import { createHash } from "node:crypto";
+
+import { DEFAULT_JUDGE_BASE_URL, DEFAULT_JUDGE_TEMPERATURE } from "@/core/config.js";
+import { SYSTEM_PROMPT } from "@/eval/prompts.js";
+
+/**
+ * Judge identity hashing.
+ *
+ * The judge hash answers one question: would this judge produce the
+ * same verdicts? It keys the cache namespace, so it is also the epoch
+ * boundary (02, 05) — every input added here is a category of config
+ * edit that becomes a hard break in longitudinal data.
+ *
+ * The contract is exclusion-based so it survives config-shape changes:
+ * the entire judge object is hashed canonically, minus the declared
+ * non-behavioral fields. A future setting added to JudgeConfig joins
+ * the hash automatically — the fail-safe direction, since the worst
+ * case is a spurious re-judgment, never a stale verdict served across
+ * a real behavior change.
+ */
+
+/**
+ * Fields that never affect judgments and are excluded from the hash:
+ * `name` is a human label (renames must not invalidate verdicts) and
+ * `apiKeyEnvVar` is a credential pointer (key rotation must not break
+ * epochs). Everything else is behavioral by default.
+ */
+const NON_BEHAVIORAL_FIELDS = ["name", "apiKeyEnvVar"] as const;
+
+/**
+ * Computes the 8-character identity hash for a judge.
+ *
+ * Defaults are materialized before hashing, so an omitted setting and
+ * its explicit default produce the same identity. The system prompt
+ * text joins the hash directly — a Praxis release that rewords it
+ * changes the judge as much as a model swap, with no version constant
+ * to forget bumping.
+ *
+ * @param judge - The configured judge
+ * @param systemPrompt - Overridable for tests; defaults to the real prompt
+ */
+export function judgeHash(judge: JudgeConfig, systemPrompt: string = SYSTEM_PROMPT): string {
+  const behavioral: Record<string, unknown> = { ...judge };
+
+  for (const field of NON_BEHAVIORAL_FIELDS) {
+    delete behavioral[field];
+  }
+
+  behavioral["baseUrl"] ??= DEFAULT_JUDGE_BASE_URL;
+  behavioral["temperature"] ??= DEFAULT_JUDGE_TEMPERATURE;
+  behavioral["systemPrompt"] = systemPrompt;
+
+  return createHash("sha256").update(canonicalize(behavioral)).digest("hex").slice(0, 8);
+}
+
+/**
+ * Serializes a value deterministically: JSON with object keys sorted
+ * recursively, so key insertion order never affects the hash.
+ */
+function canonicalize(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(canonicalize).join(",")}]`;
+  }
+
+  if (value !== null && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, val]) => `${JSON.stringify(key)}:${canonicalize(val)}`);
+    return `{${entries.join(",")}}`;
+  }
+
+  return JSON.stringify(value);
+}

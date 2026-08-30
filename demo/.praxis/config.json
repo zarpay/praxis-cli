@@ -10,8 +10,16 @@
   "plugins": [
     "claude-code"
   ],
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "deepseek/deepseek-v4-flash-0731"
-  }
+  "judges": [
+    {
+      "name": "flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    },
+    {
+      "name": "v32",
+      "model": "deepseek/deepseek-v3.2",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    }
+  ]
 }

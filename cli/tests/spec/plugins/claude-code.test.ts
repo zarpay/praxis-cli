@@ -4,8 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { ClaudeCodePlugin } from "@/spec/plugins/claude-code.js";
 import { Logger } from "@/core/logger.js";
+import { ClaudeCodePlugin } from "@/spec/plugins/claude-code.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 
 describe("ClaudeCodePlugin", () => {

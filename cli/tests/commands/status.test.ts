@@ -136,19 +136,18 @@ describe("StatusCommand", () => {
         "src/account_event.rb": "# AccountEvent",
         "src/user_event.rb": "# UserEvent",
       },
-      validation: {
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "test",
-        specFilePattern: "*.sme.md",
-      },
+      specFilePattern: "*.sme.md",
     });
 
     const nonMdConfig = new PraxisConfig(root);
     const report = await new StatusCommand({ root, config: nonMdConfig }).analyze();
 
-    // Both .rb files should appear as not-validated (in cache coverage)
-    expect(report.validation.notValidated).toBe(2);
-    expect(report.validation.pass + report.validation.warn + report.validation.fail).toBe(0);
+    // One validation row per configured judge (the legacy validation
+    // section normalizes to one judge named "default"); both .rb files
+    // appear as not-validated in its cache coverage.
+    expect(report.validation).toEqual([
+      { judge: "test", pass: 0, warn: 0, fail: 0, notValidated: 2 },
+    ]);
 
     cleanup();
   });

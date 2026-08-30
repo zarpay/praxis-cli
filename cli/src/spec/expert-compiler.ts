@@ -3,16 +3,16 @@ import type { CompilerPlugin } from "@/spec/plugins/types.js";
 
 import fg from "fast-glob";
 
+import { PraxisConfig } from "@/core/config.js";
+import { exists, writeText } from "@/core/files.js";
 import { Frontmatter } from "@/core/frontmatter.js";
+import { Logger } from "@/core/logger.js";
+import { baseName, joinPath } from "@/core/paths.js";
+import { isSpecFile } from "@/core/spec-pattern.js";
 import { GlobExpander } from "@/spec/glob-expander.js";
 import { Markdown } from "@/spec/markdown.js";
 import { OutputBuilder } from "@/spec/output-builder.js";
 import { resolvePlugins } from "@/spec/plugin-registry.js";
-import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
-import { exists, writeText } from "@/core/files.js";
-import { Logger } from "@/core/logger.js";
-import { baseName, joinPath } from "@/core/paths.js";
-import { isSpecFile } from "@/core/spec-pattern.js";
 
 /**
  * Compiles role definition files into agent profiles and plugin-specific output.
@@ -44,7 +44,7 @@ export class ExpertCompiler {
     this.root = root;
     this.logger = logger;
     this.config = config ?? new PraxisConfig(root);
-    this.specFilePattern = this.config.validation?.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
+    this.specFilePattern = this.config.specFilePattern;
     this.globExpander = new GlobExpander(root, this.specFilePattern);
     // Plugins are stateful (e.g. the Claude Code plugin writes its
     // manifest once per run), so they are instantiated once here rather

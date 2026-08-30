@@ -19,7 +19,9 @@ export type PraxisErrorCode =
   | "INVALID_COHORT"
   | "EXPERT_NOT_FOUND"
   | "DOCUMENT_NOT_FOUND"
-  | "VALIDATION_NOT_CONFIGURED"
+  | "INVALID_JUDGE_CONFIG"
+  | "UNKNOWN_JUDGE"
+  | "JUDGES_NOT_CONFIGURED"
   | "API_KEY_NOT_SET"
   | "OPENROUTER_API_ERROR"
   | "NO_TOOL_CALL"
@@ -97,22 +99,6 @@ export const errors = {
     return new PraxisError("DOCUMENT_NOT_FOUND", `Document not found: ${path}`);
   },
 
-  /** The `validation` config section is absent or incomplete (command-level, with guidance). */
-  missingValidationConfig(): PraxisError {
-    return new PraxisError(
-      "VALIDATION_NOT_CONFIGURED",
-      [
-        "Missing validation configuration in .praxis/config.json",
-        "",
-        "Add a 'validation' section to your config:",
-        '  "validation": {',
-        '    "apiKeyEnvVar": "OPENROUTER_API_KEY",',
-        '    "model": "x-ai/grok-4.1-fast"',
-        "  }",
-      ].join("\n"),
-    );
-  },
-
   /** The API key environment variable is unset (command-level, with setup guidance). */
   missingApiKey(envVarName: string): PraxisError {
     return new PraxisError(
@@ -123,6 +109,45 @@ export const errors = {
         "To use document validation, you need an OpenRouter API key:",
         "  1. Get a key at https://openrouter.ai/keys",
         `  2. Set it: export ${envVarName}=your-key-here`,
+      ].join("\n"),
+    );
+  },
+
+  /** Two judges in config share a name. */
+  duplicateJudgeName(name: string): PraxisError {
+    return new PraxisError(
+      "INVALID_JUDGE_CONFIG",
+      `Duplicate judge name "${name}" in .praxis/config.json — judge names must be unique`,
+    );
+  },
+
+  /** A configured judge omits one of its required fields. */
+  judgeMissingField(name: string, field: string): PraxisError {
+    return new PraxisError(
+      "INVALID_JUDGE_CONFIG",
+      `Judge "${name}" is missing "${field}" — every judge needs "name", "model", and "apiKeyEnvVar"`,
+    );
+  },
+
+  /** A --judge filter named a judge that is not configured. */
+  unknownJudge(name: string, configured: string[]): PraxisError {
+    return new PraxisError(
+      "UNKNOWN_JUDGE",
+      `No judge named "${name}" — configured judges: ${configured.join(", ")}`,
+    );
+  },
+
+  /** No judges are configured (and no legacy validation section exists). */
+  missingJudges(): PraxisError {
+    return new PraxisError(
+      "JUDGES_NOT_CONFIGURED",
+      [
+        "No judges configured in .praxis/config.json",
+        "",
+        'Add a "judges" array to your config:',
+        '  "judges": [',
+        '    { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "apiKeyEnvVar": "OPENROUTER_API_KEY" }',
+        "  ]",
       ].join("\n"),
     );
   },
@@ -150,15 +175,6 @@ export const errors = {
     return new PraxisError(
       "SPEC_NOT_FOUND",
       `No file matching '${pattern}' found in ${dir} for ${targetPath}`,
-    );
-  },
-
-  /** A required `validation` config field (apiKeyEnvVar or model) is absent. */
-  validationNotConfigured(setting: "apiKeyEnvVar" | "model"): PraxisError {
-    return new PraxisError(
-      "VALIDATION_NOT_CONFIGURED",
-      `Validation requires '${setting}' to be configured. ` +
-        "Add a 'validation' section to .praxis/config.json with 'apiKeyEnvVar' and 'model'.",
     );
   },
 

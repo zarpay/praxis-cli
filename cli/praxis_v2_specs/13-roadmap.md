@@ -28,7 +28,7 @@ Populations from spec/axiom birthdates, epochs derived from provenance, the debt
 Merge-base diffs, verdict diffing, violation flow, introduction rate — the agentic development eval proper. This is where "the eval" in the thesis becomes a number.
 
 **M6 — Judge instrumentation**
-Calibration cases, `calibrate run|status`, interpretability gating on reports, drift protocol, multi-judge config with inter-judge agreement (06). Ordered after M5 deliberately: calibration gates the *interpretation* of numbers M4–M5 produce, and needs adjudicated cases that accumulate from M2–M3's resolution workflows.
+Calibration cases, `calibrate run|status`, interpretability gating on reports, drift protocol, inter-judge agreement (06). (Multi-judge config itself landed early, with the judge-hash cache namespacing it requires.) Ordered after M5 deliberately: calibration gates the *interpretation* of numbers M4–M5 produce, and needs adjudicated cases that accumulate from M2–M3's resolution workflows.
 
 **M7 — Feedback surfaces**
 Briefs with triangulated diagnosis, `harness suggest` + the generated drafting command, intervention tracking (08).
@@ -37,8 +37,11 @@ Briefs with triangulated diagnosis, `harness suggest` + the generated drafting c
 
 `mode: agentic` (03), `cohort` and `changeset` scopes (start with `file` and `file+context`), the `watch` trigger (12), attribution conventions / the human-agent contrast (02's optional sharpening), A/B interventions (08), multi-repo anything (README non-goal). Each is already shaped in its document; deferral means no code, not no design.
 
-## Migration (v1 → M2)
+## Migration (v1 → v2)
 
-- Existing cache files move under their computed judge-hash namespace on first v2 run (mechanical: current config *is* the judge).
+**v2 is a breaking release — no compatibility shims.** Decided during M2 implementation, superseding the earlier aliasing plan:
+
+- The `validation:` config section is removed; projects configure `judges: []` and top-level `specFilePattern`.
+- Pre-namespacing caches are not migrated; the first v2 run re-judges (a one-time cost the cache immediately amortizes).
 - Ledger backfill from cache hits on the first ledger-enabled run, marked `backfilled: true` (05's open question — resolved: yes).
-- No spec, config, or workflow changes required of users beyond what the terminology migration already aliased.
+- **Pre-release task: strip the 1.4 compatibility aliases** still in the code (validate CLI verbs, `rolesDir`/`responsibilitiesDir`, `type: role|responsibility`, `responsibilities:` list key, `add role|responsibility`). They ship in the 1.4.x line; v2 drops them in one deliberate sweep before release.

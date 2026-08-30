@@ -1,0 +1,16 @@
+{
+  "version": "2.0",
+  "validations": {
+    "dacac2eb": {
+      "spec_path": "tests/README.md",
+      "document_type": "unknown",
+      "cached_at": "2026-08-30T23:53:41.839Z",
+      "content_hash": "e242314a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification. It follows proper subject framing with module name and 'when' clauses, maintains one assertion per test block using toMatchObject, and tests functionality through the public API without implementation details or mocking."
+      }
+    }
+  }
+}

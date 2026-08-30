@@ -1,5 +1,14 @@
+import type { JudgeConfig } from "@/core/config.js";
+
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+
+/** A baseline judge for tests that need one and don't care which. */
+export const TEST_JUDGE: JudgeConfig = {
+  name: "test",
+  model: "test-model",
+  apiKeyEnvVar: "OPENROUTER_API_KEY",
+};
 
 /** The concrete server type setupServer() returns (msw's exported alias has drifted across versions). */
 type OpenRouterServer = ReturnType<typeof setupServer>;

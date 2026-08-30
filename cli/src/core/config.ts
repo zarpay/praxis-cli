@@ -18,14 +18,28 @@ export type RawPluginEntry = string | PluginConfigEntry;
 /** Default spec file pattern when none is configured. */
 export const DEFAULT_SPEC_FILE_PATTERN = "README.md";
 
-/** Validation configuration for the OpenRouter-based judge. */
-export interface ValidationConfig {
-  /** Name of the environment variable containing the API key. */
-  apiKeyEnvVar: string;
-  /** OpenRouter model identifier to use for validation. */
+/** Default inference endpoint when a judge declares no baseUrl. */
+export const DEFAULT_JUDGE_BASE_URL = "https://openrouter.ai/api/v1";
+
+/** Default sampling temperature when a judge declares none. */
+export const DEFAULT_JUDGE_TEMPERATURE = 0.1;
+
+/**
+ * One configured judge: a named inference backend that evaluates
+ * targets against specs. Every configured judge evaluates every
+ * target — n judges are n instruments running the same protocol.
+ */
+export interface JudgeConfig {
+  /** Unique judge name; identifies its verdicts in results and reports. */
+  name: string;
+  /** Model identifier the backend understands (e.g. an OpenRouter slug). */
   model: string;
-  /** Filename or glob pattern for spec files (default: "README.md"). */
-  specFilePattern?: string;
+  /** Name of the environment variable holding the backend's API key. */
+  apiKeyEnvVar: string;
+  /** OpenAI-compatible endpoint base; defaults to OpenRouter. */
+  baseUrl?: string;
+  /** Sampling temperature for judgments; defaults to 0.1. */
+  temperature?: number;
 }
 
 /** Config shape as it may appear on disk (all fields optional). */
@@ -40,7 +54,9 @@ interface RawConfig {
   rolesDir?: string;
   /** Deprecated v1 name for practicesDir; accepted and normalized. */
   responsibilitiesDir?: string;
-  validation?: ValidationConfig;
+  judges?: Partial<JudgeConfig>[];
+  /** Filename or glob pattern for spec files (default: "README.md"). */
+  specFilePattern?: string;
 }
 
 /** Config shape after defaults are applied. */
@@ -51,7 +67,8 @@ interface NormalizedConfig {
   ignore: string[];
   expertsDir: string;
   practicesDir: string;
-  validation?: ValidationConfig;
+  judges: JudgeConfig[];
+  specFilePattern: string;
 }
 
 /** Defaults used when the config file is absent or fields are omitted. */
@@ -65,6 +82,8 @@ const DEFAULT_CONFIG: NormalizedConfig = {
   ignore: [],
   expertsDir: "experts",
   practicesDir: "practices",
+  judges: [],
+  specFilePattern: DEFAULT_SPEC_FILE_PATTERN,
 };
 
 /**
@@ -133,9 +152,14 @@ export class PraxisConfig {
     return resolvePath(this.root, this.data.practicesDir);
   }
 
-  /** Validation configuration, or undefined if not configured. */
-  get validation(): ValidationConfig | undefined {
-    return this.data.validation;
+  /** The configured judges; empty when none are configured. */
+  get judges(): JudgeConfig[] {
+    return this.data.judges;
+  }
+
+  /** The spec file pattern (default: "README.md"). */
+  get specFilePattern(): string {
+    return this.data.specFilePattern;
   }
 
   /**
@@ -164,8 +188,46 @@ export class PraxisConfig {
       ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
       expertsDir: raw.expertsDir ?? raw.rolesDir ?? DEFAULT_CONFIG.expertsDir,
       practicesDir: raw.practicesDir ?? raw.responsibilitiesDir ?? DEFAULT_CONFIG.practicesDir,
-      validation: raw.validation,
+      judges: this.normalizeJudges(raw),
+      specFilePattern: raw.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN,
     };
+  }
+
+  /**
+   * Validates and normalizes the judges array.
+   *
+   * @throws PraxisError on duplicate names or missing required fields
+   */
+  private normalizeJudges(raw: RawConfig): JudgeConfig[] {
+    if (!raw.judges) {
+      return [];
+    }
+
+    const seen = new Set<string>();
+
+    return raw.judges.map((entry) => {
+      const name = entry.name ?? "(unnamed)";
+
+      for (const field of ["name", "model", "apiKeyEnvVar"] as const) {
+        if (!entry[field]) {
+          throw errors.judgeMissingField(name, field);
+        }
+      }
+
+      if (seen.has(name)) {
+        throw errors.duplicateJudgeName(name);
+      }
+
+      seen.add(name);
+
+      return {
+        name,
+        model: entry.model!,
+        apiKeyEnvVar: entry.apiKeyEnvVar!,
+        ...(entry.baseUrl !== undefined && { baseUrl: entry.baseUrl }),
+        ...(entry.temperature !== undefined && { temperature: entry.temperature }),
+      };
+    });
   }
 
   /** Normalizes raw plugin entries: strings become `{ name: theString }`. */

@@ -67,7 +67,8 @@ Config lives at `{root}/.praxis/config.json` with these fields:
 - `practicesDir: string` — where practice `.md` files live (default: `"practices"`; deprecated `responsibilitiesDir` accepted)
 - `agentProfilesOutputDir: string | false` — where pure profiles are written (default: `"./agent-profiles"`)
 - `plugins: (string | PluginConfigEntry)[]` — enabled plugins with optional per-plugin config (default: `[]`). String entries are normalized to `{ name: theString }`. Object entries support `name`, `outputDir`, `claudeCodePluginName`.
-- `validation?: { apiKeyEnvVar: string, model: string }` — OpenRouter API key env var name and judge model for `praxis eval run`. No code defaults; scaffold provides initial values.
+- `judges: { name, model, apiKeyEnvVar, baseUrl?, temperature? }[]` — the configured judges; every judge evaluates every target, each with its own cache namespace keyed by its behavioral hash (`src/eval/judge-hash.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
+- `specFilePattern?: string` — top-level; filename or glob for spec files (default `README.md`).
 
 ### Plugin System
 
