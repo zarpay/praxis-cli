@@ -15,3 +15,7 @@ This is a three-project repository:
 - Run all CLI commands (`npm test`, `npm run lint`, etc.) from `cli/`, not the repo root.
 - The demo depends on `cli/dist/` — run `npm run build` in `cli/` before exercising the demo against fresh changes.
 - `praxis eval run` in the demo needs `OPENROUTER_API_KEY`; `praxis compile` and `praxis status` work offline.
+
+## Branching
+
+v2 development lives on the long-lived **`v2`** branch; milestone branches (e.g. `m2-critique-flow`) branch off `v2` and merge back into it. **`main` stays at the 1.4.x line** — it receives only docs fixes and v1 hotfixes — and `v2` merges into `main` only at v2 release time. The v2 design specs (`cli/praxis_v2_specs/`) continue to evolve on `v2` alongside the implementation.
