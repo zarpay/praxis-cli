@@ -22,6 +22,8 @@ Distinct from the brief (the slow loop, below): when validation runs during live
 
 No new matching machinery is required: the channel a critique arrived through *is* the match decision. The fast loop also writes to the ledger like any run — live corrections are still evidence.
 
+**Multiple judges (06) do not multiply the feedback list.** Matched critiques collapse to their axiom regardless of how many judges flagged it — one finding, corroboration noted — because the axiom ID is the dedup key and it already exists. Unmatched raw critiques have no shared identity to dedupe on yet, so each judge's flows through the open channel as-is; overlap among them is discovered at triage, where they land under one proposed axiom. The agent works a finding list, not a reviewer-by-reviewer transcript.
+
 Delivery is the CLI (09): the agent or a harness hook runs `praxis validate document <path> --json` and the output is the feedback. No tool wrapper, no skill packaging — which is what keeps the fast loop harness-agnostic.
 
 ## The brief
