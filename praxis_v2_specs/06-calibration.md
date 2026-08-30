@@ -33,7 +33,7 @@ Cases are frozen against a spec *content hash*. When the spec changes materially
 ## Commands and outputs
 
 - `praxis calibrate run` — evaluates every case with the current judge config; reports **agreement** (verdict level), **per-axiom precision/recall**, and **false-positive rate**; writes a calibration record (with full provenance) to the ledger.
-- `praxis calibrate status` — last run, scores, and whether the validator model or any covered spec content hash has changed since. Stale = the judge changed under you.
+- `praxis calibrate status` — last run, scores, and whether the judge model or any covered spec content hash has changed since. Stale = the judge changed under you.
 
 **Interpretability gating:** every eval report (07) displays calibration status. Conformance computed under a judge whose calibration is stale or absent is rendered with an explicit "uninterpretable — recalibrate" marker, not quietly printed. This is the enforcement point for the provenance principle.
 
@@ -52,7 +52,7 @@ A team that wants two models evaluating the same work configures both; every con
 
 **Nothing about the single-judge design changes — n judges are n instruments running the same protocol.** Each judge has its own judge hash, and therefore its own cache namespace (05), its own epochs (02), and its own calibration records. This is why the earlier decisions were shaped the way they were: provenance-mandatory verdicts and hash-namespaced caches were designed for judges changing *over time*; simultaneous judges are the same machinery with several namespaces live at once. Adding or removing a judge opens or ends that judge's series and touches nobody else's.
 
-Critiques from all judges triage into the **same axiom set** — axioms are judge-independent (04), and a shared taxonomy is what makes judges comparable at all. The reduction is the point: **adding judges multiplies evidence, never feedback.** A violation is an axiom-anchored finding on a file. When two judges flag the same axiom on the same file, that is one finding with two witnesses — corroboration recorded — not two findings. Every surface a developer or agent consumes (reports, briefs, the fast loop) shows the deduplicated finding set; the per-judge critique records live on in the ledger, where agreement is measured. What scales with the judge count is the number of independent reviewers standing behind each finding, and the cost — not the length of the list anyone has to work through.
+Critiques from all judges triage into the **same axiom set** — axioms are judge-independent (04), and a shared taxonomy is what makes judges comparable at all. The reduction is the point: **adding judges multiplies evidence, never feedback.** A violation is an axiom-anchored finding on a file. When two judges flag the same axiom on the same file, that is one finding with two witnesses — corroboration recorded — not two findings. Every surface a developer or agent consumes (reports, briefs, the fast loop) shows the deduplicated finding set; the per-judge critique records live on in the ledger, where agreement is measured. What scales with the judge count is the number of independent witnesses standing behind each finding, and the cost — not the length of the list anyone has to work through.
 
 Two judges on the same work buy a signal frozen cases cannot provide: **inter-judge agreement, measured continuously on live data at no extra cost** (both verdicts are already paid for). Its two faces:
 

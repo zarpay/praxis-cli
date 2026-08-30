@@ -14,13 +14,13 @@ Praxis v2 is two layers. This document names them, states the contract between t
 
 Nothing in the eval layer knows or asks how a spec came to exist.
 
-**The spec layer** — everything about producing and maintaining specs. This is where the compiler tools live: roles, responsibilities, constitution, conventions, reference, `praxis compile`, SME profiles, `praxis add`. The v1 content taxonomy is a spec-layer authoring convention — one disciplined way to produce a good spec — not an eval-layer concept.
+**The spec layer** — everything about producing and maintaining specs. This is where the compiler tools live: experts, practices (v1: roles, responsibilities), constitution, conventions, reference, `praxis compile`, SME profiles, `praxis add`. The content taxonomy is a spec-layer authoring convention — one disciplined way to produce a good spec — not an eval-layer concept.
 
-The simplest path through the spec layer is no tooling at all: the thesis (README) is that specs are the developer's *existing* context files. A team that points `paths:` at its CLAUDE.md is fully participating in the eval. The compiler earns its keep for teams that want more discipline, because bundling role + responsibilities + context into an SME profile at compile time is precisely what creates the property the eval rests on — **the judge measures adherence to the exact direction the agent was given.** The SME's double duty (`validates:` makes the compiled profile *be* the spec) is the bridge between the layers, and the only place they touch.
+The simplest path through the spec layer is no tooling at all: the thesis (README) is that specs are the developer's *existing* context files. A team that points `paths:` at its CLAUDE.md is fully participating in the eval. The compiler earns its keep for teams that want more discipline, because bundling an expert's definition + practices + context into an SME profile at compile time is precisely what creates the property the eval rests on — **the judge measures adherence to the exact direction the agent was given.** The SME's double duty (`validates:` makes the compiled profile *be* the spec) is the bridge between the layers, and the only place they touch.
 
 ## The rule
 
-**Nothing in the eval layer may depend on the content taxonomy.** No eval data structure, metric, report, or cache key may require that a spec was born from a role file, or that documents are roles, responsibilities, conventions, or constitutions. The working instance already demonstrates the taxonomy-free path: one `*.sme.md` spec over `backend/app/events/**/*.rb` — no roles directory in sight from the eval's perspective.
+**Nothing in the eval layer may depend on the content taxonomy.** No eval data structure, metric, report, or cache key may require that a spec was born from an expert definition, or that documents are experts, practices, conventions, or constitutions. The working instance already demonstrates the taxonomy-free path: one `*.sme.md` spec over `backend/app/events/**/*.rb` — no roles directory in sight from the eval's perspective.
 
 The dependency runs one way: the spec layer produces artifacts the eval layer consumes as plain specs. The eval layer never calls back into the spec layer.
 

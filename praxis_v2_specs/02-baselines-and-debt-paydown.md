@@ -15,7 +15,7 @@ Design rule that follows: **the system must be fully functional with 100% of aut
 
 Four things, all reliable, none requiring authorship:
 
-1. **A debt baseline.** The first `validate all` under a spec quantifies nonconformance against your own standard at a point in time.
+1. **A debt baseline.** The first full `eval run` under a spec quantifies nonconformance against your own standard at a point in time.
 2. **Forward flow.** Every subsequent diff introduces violations, resolves them, or inherits them — computed by verdict diffing (01), authorship-free.
 3. **Observable judge events.** Model and validation-config changes are global Praxis settings updates: visible, datable, recorded in provenance.
 4. **Observable spec events.** Spec content is hashed on every verdict; edits are datable to the commit.
@@ -24,7 +24,7 @@ Four things, all reliable, none requiring authorship:
 
 > **Quantify debt against your own standards. Pay it down measurably. Watch whether new work keeps re-introducing violations — that recurring struggle is the harness signal. When you change the standard, accept a hard break in the data.**
 
-- **Baseline** — the epoch-opening `validate all`. Debt stock per axiom, with coverage alongside (README, principle 1).
+- **Baseline** — the epoch-opening full `eval run`. Debt stock per axiom, with coverage alongside (README, principle 1).
 - **Paydown** — resolved-violation flow against the baseline. Measurable, chartable, honestly named: this is cleanup, not agent performance.
 - **Struggle** — the *introduction rate* per axiom in new work within an epoch. "The harness consistently struggles with payload richness" is a precise sentence: AX-0011's introduction rate stays flat across N diffs while other axioms' rates decline. Consistency of struggle across many diffs is what licenses the word "harness" — a single bad diff licenses nothing.
 - **Hard break** — a spec change or judge change ends the epoch. Numbers do not cross the boundary.
@@ -36,7 +36,7 @@ An **epoch** is a maximal interval over which the measurement system was stable:
 - Epochs are **derivable from provenance** already mandated on every verdict and run record — this is what the provenance rule was for. An explicit epoch table is a reporting convenience, not a new source of truth.
 - Within an epoch: baselines, paydown, and introduction rates are comparable. Across epochs: **no line is drawn through the boundary** (07, rule 6). Cross-epoch comparison is qualitative — "debt was 340 under spec v2; re-baselined at 410 under spec v3" — never a trend.
 - Epoch boundaries are first-class, *named* events in every report: "model → sonnet-4.6", "events spec v3".
-- The correct move after a break is a **prompt re-baseline** (`validate all`), not interpolation. An epoch without an opening baseline has no denominator.
+- The correct move after a break is a **prompt re-baseline** (a full `eval run`), not interpolation. An epoch without an opening baseline has no denominator.
 
 **The cost of changing a standard, stated plainly for spec authors:** editing a spec spends the trend line of every axiom it touches. This is not a reason to freeze specs — standards should improve — it is a reason to (a) batch spec edits rather than dribbling them, (b) version axioms individually (04) so *untouched* axioms keep their history across a spec edit, and (c) re-baseline immediately. Axiom-level versioning is what makes spec evolution affordable: the hard break is per-axiom, not per-spec.
 
@@ -65,10 +65,10 @@ Classification is three-way — `agent | human | unknown` — with evidence reco
 
 ## Epoch detection (decided)
 
-Praxis detects epoch boundaries itself; no manual declaration. At run start, compute the current **judge hash** (model + validation settings + validator system-prompt version) and the covered spec content hashes; compare against the last run record in the ledger. On mismatch:
+Praxis detects epoch boundaries itself; no manual declaration. At run start, compute the current **judge hash** (model + validation settings + judge system-prompt version) and the covered spec content hashes; compare against the last run record in the ledger. On mismatch:
 
 - Announce the boundary loudly and *name* it ("model → sonnet-4.6", "events spec v3") — this is the label reports use.
-- Recommend a re-baseline; auto-set `baseline: true` when the epoch-opening run is a full `validate all`.
+- Recommend a re-baseline; auto-set `baseline: true` when the epoch-opening run is a full `eval run`.
 - **Warn, never block.**
 
 Epochs are **per judge** (06): each configured judge has its own hash and its own series, so adding a second judge opens that judge's first epoch — with its own baseline — while the incumbent judge's series continues uninterrupted. Removing one ends only its own series.

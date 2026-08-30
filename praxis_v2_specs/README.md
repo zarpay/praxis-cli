@@ -24,7 +24,7 @@ flowchart TD
     DEV -->|"in context while coding"| AGENT["Agent codes"]
     DEV -->|"praxis compile (optional bundling)"| SME["SME profile = spec"]
     AGENT --> DIFF["Diff"]
-    DIFF --> VAL["praxis validate — the judge"]
+    DIFF --> VAL["praxis eval run — the judges"]
     SME --> VAL
     VAL --> CACHE[("Cache<br/>current verdicts")]
     VAL --> LEDGER[("Ledger<br/>critiques, append-only")]
@@ -81,11 +81,11 @@ Every document below is bound by these. If a design violates one, the design cha
 
 **The judge's context contains exactly what the axiom is about.** Less is myopia (axioms that need cross-file context don't get it); more is contamination (batch-mates normalize each other's violations) and cache destruction. Aggregation is never a cost optimization — it is reserved for genuinely cohort-shaped standards; prompt caching of the spec prefix is the legitimate route to the savings.
 
-**The eval layer is taxonomy-free.** Praxis is two layers: the eval layer (spec, scope, judge, ledger, axioms, metrics) and the spec layer, where the compiler tools and the v1 content taxonomy (roles, responsibilities, constitution, conventions) live as an optional authoring discipline. The eval layer's input contract is a spec, a scope, and hashable content — nothing in it may depend on how the spec was authored. See [11](./11-spec-layer.md).
+**The eval layer is taxonomy-free.** Praxis is two layers: the eval layer (spec, scope, judge, ledger, axioms, metrics) and the spec layer, where the compiler tools and the content taxonomy (experts, practices, constitution, conventions — v1: roles, responsibilities) live as an optional authoring discipline. The eval layer's input contract is a spec, a scope, and hashable content — nothing in it may depend on how the spec was authored. See [11](./11-spec-layer.md).
 
 **The CLI is the only interface, and agents are first-class users of it.** Agents check axioms, validate files, and read reports by running `praxis` — never through per-harness tools or skills, which would mean a second surface that drifts. Help text is the API documentation, `--json` output is a stable contract, exit codes carry meaning, stdout stays parseable. Harness packages, where they exist, are documentation of CLI usage, never an alternative interface. See [09](./09-cli-surface.md).
 
-**Verdict provenance is mandatory.** A stored verdict that does not record the validator model, the spec content hash, and the relevant config cannot be interpreted later. Provenance is not metadata; it is what makes the number mean anything.
+**Verdict provenance is mandatory.** A stored verdict that does not record the judge, the spec content hash, and the relevant config cannot be interpreted later. Provenance is not metadata; it is what makes the number mean anything.
 
 ## What grounds this
 

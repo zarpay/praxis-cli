@@ -4,15 +4,34 @@ Definitions the other documents depend on. Where a term has an everyday sense, t
 
 ---
 
+## Terminology decisions
+
+Settled in review (Aug 2026); these bind every document and the v2 implementation. Where v1 code uses an old term, the new term wins at implementation time; v1 CLI verbs remain as deprecated aliases during migration.
+
+- **Judge is canonical** for the evaluating instrument. *Validator* (v1 code naming), *evaluator*, and *reviewer* are banned as synonyms. And the sharpest sentence in this document: **the SME is not the judge — the judge reads the SME as its spec.**
+- **Target** replaces *document* wherever the word means "a file a spec covers." Targets are files of any type; "document" survives only where something really is a markdown document.
+- **Expert / Practice** replace v1's *Role / Responsibility* in the spec layer, named for what the files actually contain: identity + scope + authorities (an expert's definition), and objective + process + criteria (a practice — a recurring piece of work and the standard for doing it well).
+- **One CLI family: `eval`.** v1's `praxis validate ...` unifies under `praxis eval run ...`; report surfaces are `praxis eval report ...`. The rule: `eval run` writes (invokes judges); everything else under `eval` reads what the ledger already knows.
+- **Finding is the deduplicated unit.** The chain: `issues[]` (wire format) → critique (evidence, per judge) → finding (one per target + axiom, any number of witnesses) → violation (a finding, when counted).
+- **Agent is always qualified** — the *coding agent* (whose work is evaluated) or an *SME agent* (a compiled expert invoked for review); bare "agent" does not appear.
+
+---
+
 ## The knowledge side
 
 **Eval layer** — The core of Praxis v2: spec, scope, judge, cache, ledger, triage, axioms, calibration, metrics, briefs. Its input contract is a spec, a scope, and hashable content; it never knows how a spec was authored (11).
 
-**Spec layer** — Everything about producing and maintaining specs, including the compiler tools carried from v1 (roles, responsibilities, constitution, conventions, `praxis compile`, SME profiles). An optional authoring discipline: existing context files are already valid specs without it. The SME's `validates:` double duty is the one bridge between the layers (11).
+**Spec layer** — Everything about producing and maintaining specs, including the compiler tools carried from v1 (experts, practices, constitution, conventions, `praxis compile`, SME profiles). An optional authoring discipline: existing context files are already valid specs without it. The SME's `validates:` double duty is the one bridge between the layers (11).
 
 **Spec** — A document defining what valid looks like for a set of files. Not a new artifact: specs are the developer's *existing* context files — READMEs, CLAUDE.md, AGENTS.md, whatever carries context and direction — which the coding agent has in context while developing AND which optionally bundle into the SME at `praxis compile`. That double duty is the eval's foundation: the judge measures adherence to the exact direction the agent was given, so violations are harness signals, not knowledge gaps. Mechanically: a file matching `specFilePattern` (default `README.md`), optionally targeting files anywhere via `paths:` frontmatter. A spec is *self-authored* — the organization writes its own standard. This is the source of both the system's value (company-specific signal) and its central integrity risk (the metric's author controls the metric).
 
-**SME (subject matter expert)** — A compiled agent profile that is *also* a spec, via the `validates:` role frontmatter key. One artifact, two uses: an agent you can invoke for review or advice, and the specification files are validated against. The identity of these two is a Praxis design commitment, not an accident.
+**Target** — A file a spec covers, of any type (`.rb`, `.ts`, `.md`, ...), reached via `paths:` frontmatter or directory siblinghood. The unit `eval run` judges. v1 called this a *document*, which stopped being true the moment specs targeted code.
+
+**SME (subject matter expert)** — A compiled agent profile that is *also* a spec, via the `validates:` frontmatter key on an expert definition. One artifact, two uses: an SME agent you can invoke for review or advice, and the specification targets are validated against. The identity of these two is a Praxis design commitment, not an accident. **The SME is not the judge** — the judge reads the SME as its spec.
+
+**Expert** — Spec-layer: the source definition — identity, scope, authorities, and a manifest of knowledge to bundle — that `praxis compile` turns into an SME profile. v1: *role*.
+
+**Practice** — Spec-layer: a recurring piece of work with an objective, a process, and success criteria, owned by an expert and inlined into its compiled profile. Practices are the enumerable "what good work looks like" content that judges ultimately check targets against. v1: *responsibility*.
 
 **Axiom** — A single, discrete, named standard, distilled from critiques through triage and traceable to a spec at ratification. "Payloads capture a complete snapshot at emission time." "Documentation comments say when the event fires, not just what it is." A spec is prose for humans and the judge; axioms are the enumerable units that critiques attach to and metrics aggregate over — describing *observed* violation categories, never theoretical document structure. Axioms have durable identity (a stable ID), a version, and a lifecycle (proposed → active → deprecated). Renaming or silently editing an axiom destroys longitudinal comparability; superseding it preserves it.
 
@@ -22,11 +41,13 @@ Definitions the other documents depend on. Where a term has an everyday sense, t
 
 ## The judgment side
 
-**Judge** — The LLM invocation that evaluates a file against a spec. Currently: one OpenRouter call, `tool_choice: required`, returning exactly one of pass/warn/fail with issues. Judges are **named and plural in config** (06): a team can run several models over the same work simultaneously, each contributing critiques into the shared axiom taxonomy, each with its own cache namespace, epochs, and calibration. The judge is an *instrument*, and instruments have error. Judge error is a first-class concept in this system, not an embarrassment to be hidden: it is measured (calibration), bounded (the judgment boundary — mechanical criteria never reach the judge), structurally prevented where possible (structured exclusions), and — with multiple judges — continuously watched via inter-judge agreement.
+**Judge** — The canonical term (see Terminology decisions) for the LLM invocation that evaluates a target against a spec. Currently: one OpenRouter call, `tool_choice: required`, returning exactly one of pass/warn/fail with issues. Judges are **named and plural in config** (06): a team can run several models over the same work simultaneously, each contributing critiques into the shared axiom taxonomy, each with its own cache namespace, epochs, and calibration. The judge is an *instrument*, and instruments have error. Judge error is a first-class concept in this system, not an embarrassment to be hidden: it is measured (calibration), bounded (the judgment boundary — mechanical criteria never reach the judge), structurally prevented where possible (structured exclusions), and — with multiple judges — continuously watched via inter-judge agreement.
 
 **Verdict** — The judge's overall result for one (file, spec) pair: pass, warn, or fail. Verdicts are what the current cache stores.
 
 **Critique** — A single item in a verdict's `issues[]` array. The atomic unit of evidence in this system. A verdict aggregates; a critique locates. Today critiques are prose strings with no identity, no provenance, and no durability — they are overwritten when the file changes. Most of what v2 builds requires critiques to become durable records.
+
+**Finding** — The deduplicated, axiom-anchored unit every consumed surface shows: one per (target, axiom), regardless of how many judges witnessed it (each witness is corroboration, recorded). Critiques are evidence; findings are what developers and coding agents work through; violations are findings, when counted (07).
 
 **Open code** — A critique treated as raw qualitative data, before categorization. The term is from grounded theory, and the borrowing is deliberate: triage (04) is open coding → axial coding — critiques either fall under established axioms or propose new ones — and that methodology's warnings (don't let categories drift mid-study, don't code with a taxonomy you haven't ratified) apply directly.
 
@@ -38,7 +59,7 @@ Definitions the other documents depend on. Where a term has an everyday sense, t
 
 ## The measurement side
 
-**Provenance** — The recorded facts that make a verdict interpretable later: validator model, spec content hash, document content hash, timestamp, config. A verdict without provenance is a number without units. Mandatory on every stored verdict and critique.
+**Provenance** — The recorded facts that make a verdict interpretable later: judge model, spec content hash, target content hash, timestamp, config. A verdict without provenance is a number without units. Mandatory on every stored verdict and critique.
 
 **Coverage** — The fraction of the codebase (or of a diff) that falls under any spec's scope. Coverage is the denominator-of-denominators: every conformance number is conditioned on it, and every conformance report must display it. A conformance improvement alongside a coverage decline is a red flag, not a win.
 
