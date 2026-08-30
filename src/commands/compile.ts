@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import fg from "fast-glob";
 
 import { Frontmatter } from "@/compiler/frontmatter.js";
-import { RoleCompiler } from "@/compiler/role-compiler.js";
+import { ExpertCompiler } from "@/compiler/expert-compiler.js";
 import { PraxisConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { type FSWatcher, watchDir } from "@/core/files.js";
@@ -50,14 +50,14 @@ export function registerCompileCommand(program: Command): void {
 /**
  * Compiles role definitions, by alias or in bulk, with optional watching.
  *
- * A thin command layer over RoleCompiler: adds alias lookup and the
- * watch loop, while RoleCompiler owns the actual compilation.
+ * A thin command layer over ExpertCompiler: adds alias lookup and the
+ * watch loop, while ExpertCompiler owns the actual compilation.
  */
 export class CompileCommand {
   private readonly root: string;
   private readonly config: PraxisConfig;
   private readonly logger: Logger;
-  private readonly compiler: RoleCompiler;
+  private readonly compiler: ExpertCompiler;
 
   constructor({
     root,
@@ -71,7 +71,7 @@ export class CompileCommand {
     this.root = root;
     this.config = config ?? new PraxisConfig(root);
     this.logger = logger;
-    this.compiler = new RoleCompiler({ root, logger, config: this.config });
+    this.compiler = new ExpertCompiler({ root, logger, config: this.config });
   }
 
   /** Compiles all role files in the project's roles directory. */
@@ -86,13 +86,13 @@ export class CompileCommand {
    * @throws PraxisError if no role file declares the alias
    */
   async compileAlias(alias: string): Promise<void> {
-    const roleFile = await this.findRoleByAlias(alias);
+    const expertFile = await this.findExpertByAlias(alias);
 
-    if (!roleFile) {
-      throw errors.roleNotFound(alias);
+    if (!expertFile) {
+      throw errors.expertNotFound(alias);
     }
 
-    await this.compiler.compile(roleFile);
+    await this.compiler.compile(expertFile);
   }
 
   /**
@@ -140,18 +140,18 @@ export class CompileCommand {
    * @param targetAlias - The alias to search for (case-insensitive)
    * @returns The absolute path to the matching role file, or null
    */
-  private async findRoleByAlias(targetAlias: string): Promise<string | null> {
-    const roleFiles = await fg("*.md", {
-      cwd: this.config.rolesDir,
+  private async findExpertByAlias(targetAlias: string): Promise<string | null> {
+    const expertFiles = await fg("*.md", {
+      cwd: this.config.expertsDir,
       onlyFiles: true,
       absolute: true,
     });
 
-    for (const roleFile of roleFiles) {
-      const fm = Frontmatter.fromFile(roleFile);
+    for (const expertFile of expertFiles) {
+      const fm = Frontmatter.fromFile(expertFile);
       const alias = fm.value("alias") as string | undefined;
       if (alias?.toLowerCase() === targetAlias.toLowerCase()) {
-        return roleFile;
+        return expertFile;
       }
     }
 

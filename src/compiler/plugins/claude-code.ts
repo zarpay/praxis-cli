@@ -40,13 +40,13 @@ Run validation across the full scope **without** \`--fail-fast\` to see everythi
 
 \`\`\`bash
 # All specs:
-praxis validate all
+praxis eval run
 
 # Scoped to a type:
-praxis validate all --type <type>
+praxis eval run --type <type>
 
 # Specific files (force fresh evaluation):
-praxis validate document <path> --no-cache --verbose
+praxis eval run <path> --no-cache --verbose
 \`\`\`
 
 Build a numbered checklist of every item to resolve. Do not begin fixing until the full list is in front of you.
@@ -59,13 +59,13 @@ Work through the checklist one item at a time.
 
 **For each item:**
 
-1. **Read the file** and understand the violation. Use \`praxis validate report <path> --verbose\` to see cached reasoning, or \`praxis validate document <path> --verbose\` if no cached entry yet.
+1. **Read the file** and understand the violation. Use \`praxis eval verdict <path> --verbose\` to see cached reasoning, or \`praxis eval run <path> --verbose\` if no cached entry yet.
 
 2. **Fix** — apply the minimum change that satisfies the reported issue. Do not refactor unrelated code.
 
 3. **Verify** — the edit auto-invalidates the cache entry. Run:
    \`\`\`bash
-   praxis validate document <path>
+   praxis eval run <path>
    \`\`\`
    - \`✓ PASS\` or \`⚠ WARN\` (when only fixing FAILs) → check off, move to next
    - Still failing → re-read the issue, fix again, verify again
@@ -80,7 +80,7 @@ Work through the checklist one item at a time.
 After all items are addressed, run the full scope once more to confirm no regressions:
 
 \`\`\`bash
-praxis validate all
+praxis eval run
 \`\`\`
 
 ---
@@ -102,9 +102,9 @@ description: Reference for the Praxis CLI — what it does, how to use it, and h
 
 Praxis is a CLI tool with two complementary functions:
 
-**Conceptual linting** — spec files define what valid documents look like for a given set of files. \`praxis validate\` runs each file through its spec via an LLM and caches the result. The cache is content-hash keyed: editing a file auto-invalidates its entry. Never delete the cache manually.
+**Conceptual linting** — spec files define what valid documents look like for a given set of files. \`praxis eval run\` runs each file through its spec via an LLM and caches the result. The cache is content-hash keyed: editing a file auto-invalidates its entry. Never delete the cache manually.
 
-**Knowledge compilation** — role files in the configured \`rolesDir\` are compiled into self-contained SME agent profiles and written to the Claude Code agents directory.
+**Knowledge compilation** — expert files in the configured \`expertsDir\` are compiled into self-contained SME agent profiles and written to the Claude Code agents directory.
 
 ---
 
@@ -113,7 +113,7 @@ Praxis is a CLI tool with two complementary functions:
 \`\`\`
 .praxis/config.json        — sources, ignore patterns, model config, specFilePattern
 .praxis/cache/             — committed LLM validation results (keyed by content hash)
-docs/roles/                — role definitions compiled into SME agent profiles
+docs/experts/              — expert definitions compiled into SME agent profiles
 .claude/agents/*.sme.md   — compiled agent profiles; also the spec files for validation
 \`\`\`
 
@@ -128,27 +128,27 @@ Config is loaded from the nearest \`.praxis/\` directory walking up from cwd.
 praxis status
 
 # Validate all targeted files (all specs)
-praxis validate all
+praxis eval run
 
 # Validate scoped to one spec's files (use the "By type:" label from validate all output)
-praxis validate all --type <type>
+praxis eval run --type <type>
 
 # Stop on first error — useful for sequential fixing
-praxis validate all --fail-fast
+praxis eval run --fail-fast
 
 # Validate a single file against its spec
-praxis validate document <path>
+praxis eval run <path>
 
 # Force re-evaluation without editing the file
-praxis validate document <path> --no-cache
+praxis eval run <path> --no-cache
 
 # Show full AI reasoning for a result
-praxis validate document <path> --verbose
+praxis eval run <path> --verbose
 
 # Read cached result without an API call
-praxis validate report <path> --verbose
+praxis eval verdict <path> --verbose
 
-# Recompile role files into SME agent profiles
+# Recompile expert files into SME agent profiles
 praxis compile
 
 # Inspect or edit .praxis/config.json
@@ -207,7 +207,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
    *
    * Also ensures the plugin.json manifest exists and is up to date.
    */
-  compile(profileContent: string, metadata: AgentMetadata | null, roleAlias: string): void {
+  compile(profileContent: string, metadata: AgentMetadata | null, alias: string): void {
     if (!this.manifestWritten) {
       this.ensurePluginJson();
       this.ensureCommands();
@@ -217,7 +217,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
     const frontmatter = this.buildFrontmatter(metadata);
     const content = frontmatter ? frontmatter + "\n" + profileContent : profileContent;
 
-    writeText(joinPath(this.agentsDir, `${roleAlias.toLowerCase()}.md`), content);
+    writeText(joinPath(this.agentsDir, `${alias.toLowerCase()}.md`), content);
   }
 
   /**

@@ -276,7 +276,7 @@ describe("ClaudeCodePlugin", () => {
     const content = readFileSync(commandPath, "utf-8");
     expect(content).toContain("Iteratively resolve Praxis spec violations");
     expect(content).toContain("$ARGUMENTS");
-    expect(content).toContain("praxis validate all");
+    expect(content).toContain("praxis eval run");
   });
 
   it("writes praxis-resolve command to custom outputDir", () => {
@@ -303,7 +303,7 @@ describe("ClaudeCodePlugin", () => {
     expect(existsSync(skillPath)).toBe(true);
 
     const content = readFileSync(skillPath, "utf-8");
-    expect(content).toContain("praxis validate");
+    expect(content).toContain("praxis eval");
     expect(content).toContain("praxis compile");
     expect(content).toContain("praxis status");
   });

@@ -1,14 +1,14 @@
 # Agent Profiles
 
-An agent profile is the compiled output of a role — a self-contained subject matter expert of its source material.
+An agent profile is the compiled output of an expert — a self-contained subject matter expert of its source material.
 
-The code reviewer agent compiled from your coding conventions, team principles, and responsibility definitions is not just a bundled file. It is the SME on code review for your team: it knows your standards, owns the right responsibilities, and understands the context that shaped those decisions. That knowledge lives in one auditable markdown file that any LLM platform can consume.
+The code reviewer agent compiled from your coding conventions, team principles, and practice definitions is not just a bundled file. It is the SME on code review for your team: it knows your standards, owns the right practices, and understands the context that shaped those decisions. That knowledge lives in one auditable markdown file that any LLM platform can consume.
 
 The SME framing is what makes compilation worthwhile. Update your coding conventions, recompile, and every agent that references those conventions becomes a more accurate SME automatically.
 
 ## What a profile contains
 
-Given a role with this frontmatter:
+Given an expert with this frontmatter:
 
 ```yaml
 ---
@@ -21,9 +21,9 @@ constitution:
   - context/constitution/principles.md
 context:
   - context/conventions/code-style.md
-responsibilities:
-  - responsibilities/review-pull-requests.md
-  - responsibilities/enforce-standards.md
+practices:
+  - practices/review-pull-requests.md
+  - practices/enforce-standards.md
 refs:
   - reference/architecture-decisions.md
 ---
@@ -38,11 +38,11 @@ Reviews pull requests against team conventions.
 
 ## Scope
 
-...role body content here...
+...expert body content here...
 
 ---
 
-## Responsibilities
+## Practices
 
 ### Review Pull Requests
 
@@ -77,7 +77,7 @@ Each section comes from the corresponding frontmatter array. The referenced file
 
 ## Why a single file
 
-One file per role is a deliberate choice.
+One file per expert is a deliberate choice.
 
 - **Portability** — paste it into any LLM interface, any system prompt, any agent framework.
 - **Auditability** — you can read it and verify that it contains what you expect.
@@ -86,7 +86,7 @@ One file per role is a deliberate choice.
 
 ## The alias
 
-The `alias` field in a role's frontmatter determines the output filename:
+The `alias` field in an expert's frontmatter determines the output filename:
 
 ```yaml
 alias: reviewer
@@ -98,7 +98,7 @@ Compiles to:
 agent-profiles/reviewer.md
 ```
 
-If no `alias` is set, the role's filename (without `.md`) is used as a fallback.
+If no `alias` is set, the expert's filename (without `.md`) is used as a fallback.
 
 ## Pure profiles vs plugin output
 
@@ -114,9 +114,9 @@ You can disable pure profile output entirely if you only want plugin output:
 
 ## Profiles as spec files
 
-A compiled profile is the SME on its source material. The natural extension is to let that same file serve as the spec that validates the code it knows about — collapsing two artifacts into one. The agent you chat with *is* the spec that runs `praxis validate`.
+A compiled profile is the SME on its source material. The natural extension is to let that same file serve as the spec that validates the code it knows about — collapsing two artifacts into one. The agent you chat with *is* the spec that runs `praxis eval run`.
 
-Add a `validates:` key to the role's frontmatter with an array of glob patterns:
+Add a `validates:` key to the expert's frontmatter with an array of glob patterns:
 
 ```yaml
 ---
@@ -144,12 +144,12 @@ paths:
 
 The Claude Code agent file gets the same `paths:` block in its YAML frontmatter. Both outputs are valid spec files — the validator reads `paths:` to know which files to check, and uses the profile body as the specification.
 
-To make `praxis validate` discover the profile as a spec, ensure:
+To make `praxis eval run` discover the profile as a spec, ensure:
 
 1. `agentProfilesOutputDir` points to a directory within `sources` (so the validator scans it)
 2. `specFilePattern` matches the output filename (e.g. `"*.md"` if the profiles directory only contains compiled profiles)
 
-The payoff: your team runs `praxis validate all` and the Servus Expert SME — assembled from all the source documents that define how Servus should be used — checks every service and event file for compliance.
+The payoff: your team runs `praxis eval run` and the Servus Expert SME — assembled from all the source documents that define how Servus should be used — checks every service and event file for compliance.
 
 ## Keeping profiles in git
 

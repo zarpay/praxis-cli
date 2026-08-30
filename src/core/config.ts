@@ -18,7 +18,7 @@ export type RawPluginEntry = string | PluginConfigEntry;
 /** Default spec file pattern when none is configured. */
 export const DEFAULT_SPEC_FILE_PATTERN = "README.md";
 
-/** Validation configuration for the OpenRouter-based document validator. */
+/** Validation configuration for the OpenRouter-based judge. */
 export interface ValidationConfig {
   /** Name of the environment variable containing the API key. */
   apiKeyEnvVar: string;
@@ -34,7 +34,11 @@ interface RawConfig {
   plugins?: RawPluginEntry[];
   sources?: string[];
   ignore?: string[];
+  expertsDir?: string;
+  practicesDir?: string;
+  /** Deprecated v1 name for expertsDir; accepted and normalized. */
   rolesDir?: string;
+  /** Deprecated v1 name for practicesDir; accepted and normalized. */
   responsibilitiesDir?: string;
   validation?: ValidationConfig;
 }
@@ -45,8 +49,8 @@ interface NormalizedConfig {
   plugins: PluginConfigEntry[];
   sources: string[];
   ignore: string[];
-  rolesDir: string;
-  responsibilitiesDir: string;
+  expertsDir: string;
+  practicesDir: string;
   validation?: ValidationConfig;
 }
 
@@ -54,10 +58,13 @@ interface NormalizedConfig {
 const DEFAULT_CONFIG: NormalizedConfig = {
   agentProfilesOutputDir: "./agent-profiles",
   plugins: [],
-  sources: ["roles", "responsibilities", "reference", "context"],
+  // Legacy v1 directory names stay in the default scan list so projects
+  // that predate the expert/practice rename keep working; missing
+  // directories are skipped harmlessly everywhere.
+  sources: ["experts", "practices", "roles", "responsibilities", "reference", "context"],
   ignore: [],
-  rolesDir: "roles",
-  responsibilitiesDir: "responsibilities",
+  expertsDir: "experts",
+  practicesDir: "practices",
 };
 
 /**
@@ -114,14 +121,14 @@ export class PraxisConfig {
     return this.data.ignore;
   }
 
-  /** Absolute path to the roles directory for compilation. */
-  get rolesDir(): string {
-    return resolvePath(this.root, this.data.rolesDir);
+  /** Absolute path to the experts directory for compilation. */
+  get expertsDir(): string {
+    return resolvePath(this.root, this.data.expertsDir);
   }
 
-  /** Absolute path to the responsibilities directory. */
-  get responsibilitiesDir(): string {
-    return resolvePath(this.root, this.data.responsibilitiesDir);
+  /** Absolute path to the practices directory. */
+  get practicesDir(): string {
+    return resolvePath(this.root, this.data.practicesDir);
   }
 
   /** Validation configuration, or undefined if not configured. */
@@ -153,8 +160,8 @@ export class PraxisConfig {
       plugins: this.normalizePlugins(raw.plugins ?? []),
       sources: raw.sources ?? DEFAULT_CONFIG.sources,
       ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
-      rolesDir: raw.rolesDir ?? DEFAULT_CONFIG.rolesDir,
-      responsibilitiesDir: raw.responsibilitiesDir ?? DEFAULT_CONFIG.responsibilitiesDir,
+      expertsDir: raw.expertsDir ?? raw.rolesDir ?? DEFAULT_CONFIG.expertsDir,
+      practicesDir: raw.practicesDir ?? raw.responsibilitiesDir ?? DEFAULT_CONFIG.practicesDir,
       validation: raw.validation,
     };
   }

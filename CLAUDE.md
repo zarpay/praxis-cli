@@ -9,7 +9,7 @@ npm run build          # tsup → dist/index.js (ESM, Node 18+, shebang-enabled)
 npm run dev            # tsup in watch mode
 npm test               # vitest run (all tests)
 npm run test:watch     # vitest watch mode
-npm test -- tests/validator/cache-manager.test.ts  # run single test file
+npm test -- tests/judge/cache-manager.test.ts  # run single test file
 npm run lint           # eslint src/ tests/
 npm run typecheck      # tsc --noEmit
 npm run format         # prettier --write
@@ -18,15 +18,15 @@ npm publish --access public  # prepublishOnly runs: lint → typecheck → test 
 
 ## Architecture
 
-Praxis CLI compiles human-authored knowledge documents (roles, responsibilities, context) into self-contained agent profiles. The system has two main pipelines:
+Praxis CLI compiles human-authored knowledge documents (experts, practices, context) into self-contained agent profiles. The system has two main pipelines:
 
 ### Compiler Pipeline
 
 ```
-Role .md file (with YAML frontmatter)
+Expert .md file (with YAML frontmatter)
   → Frontmatter parsed (src/compiler/frontmatter.ts)
   → Referenced content resolved via globs (src/compiler/glob-expander.ts)
-  → Sections assembled: Role → Responsibilities → Constitution → Context → Reference
+  → Sections assembled: Expert → Responsibilities → Constitution → Context → Reference
       (src/compiler/output-builder.ts)
   → Pure profile written to agentProfilesOutputDir/{alias}.md
   → Each plugin receives profile + metadata and writes its own output
@@ -35,7 +35,7 @@ Role .md file (with YAML frontmatter)
 
 The **Claude Code plugin** (`src/compiler/plugins/claude-code.ts`) wraps the profile with YAML frontmatter (name, description, tools, model, permissionMode), writes to `{outputDir}/agents/{alias}.md` (default `plugins/praxis/agents/`), and creates/updates `.claude-plugin/plugin.json` in the output directory.
 
-### Validator Pipeline
+### Judge Pipeline
 
 ```
 Document .md + directory README.md (spec)
@@ -46,7 +46,7 @@ Document .md + directory README.md (spec)
   → Result cached with content_hash for invalidation
 ```
 
-Key files: `src/validator/document-validator.ts`, `src/validator/cache-manager.ts`, `src/validator/batch-validator.ts`, `src/validator/report-formatter.ts`.
+Key files: `src/judge/judge.ts`, `src/judge/cache-manager.ts`, `src/judge/batch-judge.ts`, `src/judge/report-formatter.ts`.
 
 ### Project Root Detection
 
@@ -55,12 +55,12 @@ Key files: `src/validator/document-validator.ts`, `src/validator/cache-manager.t
 ### Configuration
 
 Config lives at `{root}/.praxis/config.json` with these fields:
-- `sources: string[]` — directories scanned for documents (default: `["roles", "responsibilities", "reference", "context"]`)
-- `rolesDir: string` — where role `.md` files live (default: `"roles"`)
-- `responsibilitiesDir: string` — where responsibility `.md` files live (default: `"responsibilities"`)
+- `sources: string[]` — directories scanned for documents (default includes `experts`, `practices`, and the legacy `experts`/`practices` names)
+- `expertsDir: string` — where expert `.md` files live (default: `"experts"`; deprecated `rolesDir` accepted)
+- `practicesDir: string` — where practice `.md` files live (default: `"practices"`; deprecated `responsibilitiesDir` accepted)
 - `agentProfilesOutputDir: string | false` — where pure profiles are written (default: `"./agent-profiles"`)
 - `plugins: (string | PluginConfigEntry)[]` — enabled plugins with optional per-plugin config (default: `[]`). String entries are normalized to `{ name: theString }`. Object entries support `name`, `outputDir`, `claudeCodePluginName`.
-- `validation?: { apiKeyEnvVar: string, model: string }` — OpenRouter API key env var name and model for `praxis validate`. No code defaults; scaffold provides initial values.
+- `validation?: { apiKeyEnvVar: string, model: string }` — OpenRouter API key env var name and judge model for `praxis eval run`. No code defaults; scaffold provides initial values.
 
 ### Plugin System
 

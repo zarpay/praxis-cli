@@ -63,7 +63,7 @@ describe("CompileCommand.watch()", () => {
 
     // Modify a file in a source directory
     writeFileSync(
-      join(tmpdir, "content", "roles", "test-role.md"),
+      join(tmpdir, "content", "experts", "test-expert.md"),
       "---\nalias: Tester\ndescription: updated\n---\n# Updated",
     );
 
@@ -80,7 +80,7 @@ describe("CompileCommand.watch()", () => {
     // Trigger 5 rapid writes
     for (let i = 0; i < 5; i++) {
       writeFileSync(
-        join(tmpdir, "content", "roles", "test-role.md"),
+        join(tmpdir, "content", "experts", "test-expert.md"),
         `---\nalias: Tester\ndescription: change ${i}\n---\n# Change ${i}`,
       );
     }

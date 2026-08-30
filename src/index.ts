@@ -7,7 +7,7 @@ import { registerCompileCommand } from "@/commands/compile.js";
 import { registerConfigCommand } from "@/commands/config.js";
 import { registerInitCommand } from "@/commands/init.js";
 import { registerStatusCommand } from "@/commands/status.js";
-import { registerValidateCommand } from "@/commands/validate.js";
+import { registerEvalCommand, registerValidateCommand } from "@/commands/eval.js";
 
 /** CLI version, sourced from package.json and inlined at build time. */
 const VERSION = pkg.version;
@@ -25,6 +25,7 @@ function createProgram(): Command {
 
   registerInitCommand(program);
   registerCompileCommand(program);
+  registerEvalCommand(program);
   registerValidateCommand(program);
   registerAddCommand(program);
   registerStatusCommand(program);

@@ -27,9 +27,9 @@ Example output:
   /path/to/my-org/.praxis/config.json
 
 {
-  "sources": ["roles", "responsibilities", "reference", "context"],
-  "rolesDir": "roles",
-  "responsibilitiesDir": "responsibilities",
+  "sources": ["experts", "practices", "reference", "context"],
+  "expertsDir": "experts",
+  "practicesDir": "practices",
   "agentProfilesOutputDir": "./agent-profiles",
   "plugins": [],
   "validation": {

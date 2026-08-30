@@ -7,7 +7,7 @@ import { rmSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { InitCommand } from "@/commands/init.js";
-import { RoleCompiler } from "@/compiler/role-compiler.js";
+import { ExpertCompiler } from "@/compiler/expert-compiler.js";
 import { Logger } from "@/core/logger.js";
 import { readJsonFile } from "../helpers/read-json.js";
 
@@ -35,16 +35,16 @@ describe("init → compile integration", () => {
     writeFileSync(
       join(dir, ".praxis", "config.json"),
       JSON.stringify({
-        sources: ["roles", "responsibilities", "reference", "context"],
-        rolesDir: "roles",
-        responsibilitiesDir: "responsibilities",
+        sources: ["experts", "practices", "reference", "context"],
+        expertsDir: "experts",
+        practicesDir: "practices",
         agentProfilesOutputDir: "./agent-profiles",
         plugins: ["claude-code"],
       }),
     );
 
     // Compile all roles
-    const compiler = new RoleCompiler({ root: dir, logger });
+    const compiler = new ExpertCompiler({ root: dir, logger });
     await compiler.compileAll();
   });
 

@@ -6,10 +6,10 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
 
 ```json
 {
-  "sources": ["roles", "responsibilities", "reference", "context"],
+  "sources": ["experts", "practices", "reference", "context"],
   "ignore": ["docs/generated/**", "**/.*.md"],
-  "rolesDir": "roles",
-  "responsibilitiesDir": "responsibilities",
+  "expertsDir": "experts",
+  "practicesDir": "practices",
   "agentProfilesOutputDir": "./agent-profiles",
   "plugins": [
     {
@@ -31,7 +31,7 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
 ## `sources`
 
 **Type:** `string[]`
-**Default:** `["roles", "responsibilities", "reference", "context"]`
+**Default:** `["experts", "practices", "reference", "context"]`
 
 Directories that Praxis treats as knowledge sources. All paths are relative to the project root.
 
@@ -43,7 +43,7 @@ Sources are used for:
 Any directory within sources that contains a spec file (default: `README.md`) becomes a [validation domain](/concepts/validation-domains).
 
 ```json
-{ "sources": ["agents/roles", "agents/responsibilities", "knowledge/reference"] }
+{ "sources": ["agents/experts", "agents/practices", "knowledge/reference"] }
 ```
 
 ---
@@ -59,25 +59,25 @@ Glob patterns for files and directories to exclude from all source scans. Patter
 { "ignore": ["docs/generated/**", "**/.*.md", "backend/vendor/**"] }
 ```
 
-Ignored paths are excluded everywhere sources are scanned: document counts in `praxis status`, spec discovery in `praxis validate`, and the status dashboard. Literal subdirectory paths and filename patterns are both supported.
+Ignored paths are excluded everywhere sources are scanned: document counts in `praxis status`, spec discovery in `praxis eval run`, and the status dashboard. Literal subdirectory paths and filename patterns are both supported.
 
 ---
 
-## `rolesDir`
+## `expertsDir`
 
 **Type:** `string`
-**Default:** `"roles"`
+**Default:** `"experts"`
 
-The directory where role `.md` files live. Used by `praxis compile` to discover roles and by `praxis add role` to place new files.
+The directory where expert `.md` files live. Used by `praxis compile` to discover experts and by `praxis add expert` to place new files.
 
 ---
 
-## `responsibilitiesDir`
+## `practicesDir`
 
 **Type:** `string`
-**Default:** `"responsibilities"`
+**Default:** `"practices"`
 
-The directory where responsibility `.md` files live. Used by `praxis add responsibility` to place new files.
+The directory where practice `.md` files live. Used by `praxis add practice` to place new files.
 
 ---
 
@@ -86,7 +86,7 @@ The directory where responsibility `.md` files live. Used by `praxis add respons
 **Type:** `string | false`
 **Default:** `"./agent-profiles"`
 
-Where compiled pure agent profiles are written. Each role compiles to `{agentProfilesOutputDir}/{alias}.md`.
+Where compiled pure agent profiles are written. Each expert compiles to `{agentProfilesOutputDir}/{alias}.md`.
 
 Set to `false` to disable pure profile output entirely:
 

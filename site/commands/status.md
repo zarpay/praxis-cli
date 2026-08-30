@@ -15,10 +15,10 @@ praxis status
 - **Document counts** — how many documents exist per type
 - **Validation coverage** — pass / warn / fail / not-validated counts per type, read from the local cache
 - **Issues** — structural problems detected without any LLM calls:
-  - Dangling references (role frontmatter points to a file that doesn't exist)
-  - Orphaned responsibilities (responsibility not claimed by any role)
-  - Missing `description` fields on roles
-  - Missing `alias` fields on roles
+  - Dangling references (expert frontmatter points to a file that doesn't exist)
+  - Orphaned practices (practice not claimed by any expert)
+  - Missing `description` fields on experts
+  - Missing `alias` fields on experts
 
 ## Example output
 
@@ -31,13 +31,13 @@ Context
   conventions:    4 documents
   lenses:         2 documents
 
-Roles             5 documents
+Experts             5 documents
   [PASS]          3
   [WARN]          1
   [FAIL]          0
   [NOT VALIDATED] 1
 
-Responsibilities  8 documents
+Practices  8 documents
   [PASS]          6
   [WARN]          0
   [FAIL]          1
@@ -48,9 +48,9 @@ Reference         3 documents
 
 Issues
 ------
-  ⚠  roles/code-reviewer.md — missing description field
-  ⚠  responsibilities/handle-escalations.md — not claimed by any role
-  ✗  roles/support-agent.md — refs reference/pricing.md not found
+  ⚠  experts/code-reviewer.md — missing description field
+  ⚠  practices/handle-escalations.md — not claimed by any expert
+  ✗  experts/support-agent.md — refs reference/pricing.md not found
 ```
 
 ## Exit code
@@ -65,10 +65,10 @@ praxis status || exit 1
 
 Validation counts are read from the local cache (`.praxis/cache/validation/`) and do not require an API key or network access. A document shows as NOT VALIDATED if it has never been validated or if the cache entry for it is stale.
 
-Run `praxis validate all` to populate or refresh the cache before running `praxis status` in CI if you want accurate validation counts.
+Run `praxis eval run` to populate or refresh the cache before running `praxis status` in CI if you want accurate validation counts.
 
 ## See also
 
-- [praxis validate](/commands/validate)
+- [praxis eval run](/commands/eval)
 - [Caching](/validation/caching)
 - [Configuration](/reference/config)

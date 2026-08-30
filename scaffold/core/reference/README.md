@@ -15,7 +15,7 @@ Reference contains static, factual information that contributors look up as need
 |----------|-------------|----------|
 | **Definitions** | What terms mean | Key vocabulary |
 | **Catalogs** | Lists of things | Repositories, tools, APIs |
-| **Mappings** | Relationship tables | Responsibility ownership |
+| **Mappings** | Relationship tables | Practice ownership |
 | **Templates** | Standard formats | Spec template, report template |
 
 ## Reference Document Structure

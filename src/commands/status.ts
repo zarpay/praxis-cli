@@ -8,16 +8,16 @@ import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
 import { exists } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, baseName, joinPath, relativePath, resolvePath } from "@/core/paths.js";
-import { BatchValidator } from "@/validator/batch-validator.js";
-import { CacheManager } from "@/validator/cache-manager.js";
-import { isSpecFile } from "@/validator/spec-pattern.js";
+import { BatchJudge } from "@/judge/batch-judge.js";
+import { CacheManager } from "@/judge/cache-manager.js";
+import { isSpecFile } from "@/judge/spec-pattern.js";
 
 /** Structured report of project health. */
 export interface StatusReport {
   /** Document counts by content type. */
   counts: {
-    roles: number;
-    responsibilities: number;
+    experts: number;
+    practices: number;
     references: number;
     context: number;
   };
@@ -28,16 +28,16 @@ export interface StatusReport {
     fail: number;
     notValidated: number;
   };
-  /** Responsibility files no role references. */
-  orphanedResponsibilities: string[];
-  /** Role references pointing at files that do not exist. */
-  danglingRefs: { role: string; ref: string }[];
-  /** Role files missing the `description` frontmatter field. */
-  rolesMissingDescription: string[];
-  /** Role glob references that match no files. */
-  zeroMatchGlobs: { role: string; pattern: string }[];
-  /** Responsibilities whose `owner` matches no role alias. */
-  unmatchedOwners: { responsibility: string; owner: string }[];
+  /** Practice files no expert references. */
+  orphanedPractices: string[];
+  /** Expert references pointing at files that do not exist. */
+  danglingRefs: { expert: string; ref: string }[];
+  /** Expert files missing the `description` frontmatter field. */
+  expertsMissingDescription: string[];
+  /** Expert glob references that match no files. */
+  zeroMatchGlobs: { expert: string; pattern: string }[];
+  /** Practices whose `owner` matches no expert alias. */
+  unmatchedOwners: { practice: string; owner: string }[];
 }
 
 /**
@@ -104,8 +104,8 @@ export class StatusCommand {
   static hasIssues(report: StatusReport): boolean {
     return (
       report.danglingRefs.length > 0 ||
-      report.orphanedResponsibilities.length > 0 ||
-      report.rolesMissingDescription.length > 0 ||
+      report.orphanedPractices.length > 0 ||
+      report.expertsMissingDescription.length > 0 ||
       report.zeroMatchGlobs.length > 0 ||
       report.unmatchedOwners.length > 0
     );
@@ -114,8 +114,8 @@ export class StatusCommand {
   /** Analyzes the project and returns a structured health report. */
   async analyze(): Promise<StatusReport> {
     // Count content files by type using config-driven paths
-    const roleFiles = await this.listContentFiles(this.config.rolesDir, false);
-    const respFiles = await this.listContentFiles(this.config.responsibilitiesDir, false);
+    const expertFiles = await this.listContentFiles(this.config.expertsDir, false);
+    const practiceFiles = await this.listContentFiles(this.config.practicesDir, false);
 
     // Scan all sources for reference and context files by frontmatter type
     let references = 0;
@@ -131,45 +131,46 @@ export class StatusCommand {
     }
 
     // Build role alias map and check roles
-    const roleAliases = new Map<string, string>();
-    const allReferencedResps = new Set<string>();
+    const expertAliases = new Map<string, string>();
+    const allReferencedPractices = new Set<string>();
     const danglingRefs: StatusReport["danglingRefs"] = [];
     const zeroMatchGlobs: StatusReport["zeroMatchGlobs"] = [];
-    const rolesMissingDescription: string[] = [];
+    const expertsMissingDescription: string[] = [];
 
-    for (const roleFile of roleFiles) {
-      const fm = Frontmatter.fromFile(roleFile);
+    for (const expertFile of expertFiles) {
+      const fm = Frontmatter.fromFile(expertFile);
       const alias = fm.value("alias") as string | undefined;
-      const roleName = baseName(roleFile);
+      const expertName = baseName(expertFile);
 
       if (alias) {
-        roleAliases.set(alias.toLowerCase(), roleName);
+        expertAliases.set(alias.toLowerCase(), expertName);
       }
 
       if (!fm.value("description")) {
-        rolesMissingDescription.push(roleName);
+        expertsMissingDescription.push(expertName);
       }
 
       // Check all ref-type keys
-      for (const key of ["responsibilities", "context", "refs"]) {
+      // "practices" is the v2 key; "responsibilities" is its accepted v1 alias.
+      for (const key of ["practices", "responsibilities", "context", "refs"]) {
         const patterns = fm.array(key) as string[];
 
         for (const pattern of patterns) {
           if (this.globExpander.isGlob(pattern)) {
             const matches = await this.globExpander.expand(pattern);
             if (matches.length === 0) {
-              zeroMatchGlobs.push({ role: roleName, pattern });
+              zeroMatchGlobs.push({ expert: expertName, pattern });
             }
-            if (key === "responsibilities") {
-              for (const m of matches) allReferencedResps.add(m);
+            if (key === "practices" || key === "responsibilities") {
+              for (const m of matches) allReferencedPractices.add(m);
             }
           } else {
             const fullPath = joinPath(this.root, pattern);
             if (!exists(fullPath)) {
-              danglingRefs.push({ role: roleName, ref: pattern });
+              danglingRefs.push({ expert: expertName, ref: pattern });
             }
-            if (key === "responsibilities") {
-              allReferencedResps.add(pattern);
+            if (key === "practices" || key === "responsibilities") {
+              allReferencedPractices.add(pattern);
             }
           }
         }
@@ -177,34 +178,34 @@ export class StatusCommand {
     }
 
     // Find orphaned responsibilities
-    const orphanedResponsibilities: string[] = [];
-    for (const respFile of respFiles) {
-      const relPath = relativePath(this.root, respFile);
-      if (!allReferencedResps.has(relPath)) {
-        orphanedResponsibilities.push(baseName(respFile));
+    const orphanedPractices: string[] = [];
+    for (const practiceFile of practiceFiles) {
+      const relPath = relativePath(this.root, practiceFile);
+      if (!allReferencedPractices.has(relPath)) {
+        orphanedPractices.push(baseName(practiceFile));
       }
     }
 
     // Find unmatched owners
     const unmatchedOwners: StatusReport["unmatchedOwners"] = [];
-    for (const respFile of respFiles) {
-      const owner = Frontmatter.fromFile(respFile).value("owner") as string | undefined;
-      if (owner && !roleAliases.has(owner.toLowerCase())) {
-        unmatchedOwners.push({ responsibility: baseName(respFile), owner });
+    for (const practiceFile of practiceFiles) {
+      const owner = Frontmatter.fromFile(practiceFile).value("owner") as string | undefined;
+      if (owner && !expertAliases.has(owner.toLowerCase())) {
+        unmatchedOwners.push({ practice: baseName(practiceFile), owner });
       }
     }
 
     return {
       counts: {
-        roles: roleFiles.length,
-        responsibilities: respFiles.length,
+        experts: expertFiles.length,
+        practices: practiceFiles.length,
         references,
         context: contextCount,
       },
       validation: this.tallyValidation(),
-      orphanedResponsibilities,
+      orphanedPractices,
       danglingRefs,
-      rolesMissingDescription,
+      expertsMissingDescription,
       zeroMatchGlobs,
       unmatchedOwners,
     };
@@ -214,8 +215,8 @@ export class StatusCommand {
   display(report: StatusReport): void {
     this.logger.info("Praxis Project Status");
     console.log();
-    console.log(`  Roles:              ${report.counts.roles}`);
-    console.log(`  Responsibilities:   ${report.counts.responsibilities}`);
+    console.log(`  Experts:            ${report.counts.experts}`);
+    console.log(`  Practices:          ${report.counts.practices}`);
     console.log(`  References:         ${report.counts.references}`);
     console.log(`  Context files:      ${report.counts.context}`);
 
@@ -236,25 +237,25 @@ export class StatusCommand {
     if (report.danglingRefs.length > 0) {
       console.log();
       this.logger.warn("Dangling references (file not found):");
-      for (const { role, ref } of report.danglingRefs) {
-        console.log(`  ${role} → ${ref}`);
+      for (const { expert, ref } of report.danglingRefs) {
+        console.log(`  ${expert} → ${ref}`);
         issueCount++;
       }
     }
 
-    if (report.orphanedResponsibilities.length > 0) {
+    if (report.orphanedPractices.length > 0) {
       console.log();
-      this.logger.warn("Orphaned responsibilities (not referenced by any role):");
-      for (const resp of report.orphanedResponsibilities) {
+      this.logger.warn("Orphaned practices (not referenced by any expert):");
+      for (const resp of report.orphanedPractices) {
         console.log(`  ${resp}`);
         issueCount++;
       }
     }
 
-    if (report.rolesMissingDescription.length > 0) {
+    if (report.expertsMissingDescription.length > 0) {
       console.log();
-      this.logger.warn("Roles missing description:");
-      for (const role of report.rolesMissingDescription) {
+      this.logger.warn("Experts missing description:");
+      for (const role of report.expertsMissingDescription) {
         console.log(`  ${role}`);
         issueCount++;
       }
@@ -263,17 +264,17 @@ export class StatusCommand {
     if (report.zeroMatchGlobs.length > 0) {
       console.log();
       this.logger.warn("Glob patterns matching zero files:");
-      for (const { role, pattern } of report.zeroMatchGlobs) {
-        console.log(`  ${role}: ${pattern}`);
+      for (const { expert, pattern } of report.zeroMatchGlobs) {
+        console.log(`  ${expert}: ${pattern}`);
         issueCount++;
       }
     }
 
     if (report.unmatchedOwners.length > 0) {
       console.log();
-      this.logger.warn("Responsibilities with unknown owners:");
-      for (const { responsibility, owner } of report.unmatchedOwners) {
-        console.log(`  ${responsibility} (owner: ${owner})`);
+      this.logger.warn("Practices with unknown owners:");
+      for (const { practice, owner } of report.unmatchedOwners) {
+        console.log(`  ${practice} (owner: ${owner})`);
         issueCount++;
       }
     }
@@ -289,13 +290,13 @@ export class StatusCommand {
   /**
    * Tallies cached validation verdicts across all spec-targeted files.
    *
-   * Discovers targets via BatchValidator (any file extension, including
+   * Discovers targets via BatchJudge (any file extension, including
    * files reached through spec `paths:` frontmatter) and reads each
    * file's cached verdict without making API calls.
    */
   private tallyValidation(): StatusReport["validation"] {
     const cacheManager = new CacheManager(undefined, this.root);
-    const batchValidator = new BatchValidator({
+    const batchJudge = new BatchJudge({
       root: this.root,
       sources: this.config.sources,
       ignore: this.config.ignore,
@@ -304,8 +305,8 @@ export class StatusCommand {
 
     const validation = { pass: 0, warn: 0, fail: 0, notValidated: 0 };
 
-    for (const filePath of batchValidator.listTargetFiles()) {
-      const cached = cacheManager.readRaw({ documentPath: filePath });
+    for (const filePath of batchJudge.listTargetFiles()) {
+      const cached = cacheManager.readRaw({ targetPath: filePath });
       if (!cached) {
         validation.notValidated++;
       } else if (cached.result.compliant) {

@@ -4,30 +4,30 @@
 
 Every directory with organized files has implicit standards. The question is whether anything enforces them.
 
-A Praxis spec makes those standards explicit. The README in any directory is your `.eslintrc` for that directory — it defines what valid documents look like, and `praxis validate` is the linter that checks every document against it.
+A Praxis spec makes those standards explicit. The README in any directory is your `.eslintrc` for that directory — it defines what valid documents look like, and `praxis eval run` is the linter that checks every document against it.
 
-This isn't specific to knowledge documents. A `app/services/` directory can have a README that says every service must have a single public `#call` method and return a `Result` type. A `decisions/` directory can have a README that says every ADR must have Context, Decision, and Consequences sections. A `roles/` directory can have a README that says every role must declare its boundaries and authorities.
+This isn't specific to knowledge documents. A `app/services/` directory can have a README that says every service must have a single public `#call` method and return a `Result` type. A `decisions/` directory can have a README that says every ADR must have Context, Decision, and Consequences sections. A `experts/` directory can have a README that says every expert must declare its boundaries and authorities.
 
 Write the spec in clear human language — the LLM reads it as instructions.
 
 ## A minimal spec
 
 ```markdown
-# Roles
+# Experts
 
-Documents in this directory define agent roles.
+Documents in this directory define agent experts.
 
 ## Required frontmatter
 
-- `title` (string) — display name of the role
-- `type` (string) — must be `"role"`
+- `title` (string) — display name of the expert
+- `type` (string) — must be `"expert"`
 - `alias` (string) — short identifier used for the compiled filename
 - `description` (string) — one-sentence summary of what the agent does
 
 ## Required sections
 
-Every role document must have a `## Scope` section that contains both:
-- `### Responsible For` — bullet list of what the role owns
+Every expert document must have a `## Scope` section that contains both:
+- `### Responsible For` — bullet list of what the expert owns
 - `### Not Responsible For` — bullet list of explicit exclusions
 ```
 
@@ -55,7 +55,7 @@ Every file in `app/services/` must follow our service object pattern.
 - Direct database writes — call a repository instead
 ```
 
-`praxis validate all` checks every `.rb` file in `app/services/` against this spec. PRs that add a service with extra public methods, no Result type, or no header comment get flagged before they merge.
+`praxis eval run` checks every `.rb` file in `app/services/` against this spec. PRs that add a service with extra public methods, no Result type, or no header comment get flagged before they merge.
 
 ## Required vs recommended
 
@@ -95,7 +95,7 @@ For cross-directory domains where one spec governs files across multiple directo
 
 A spec doesn't have to be a hand-authored file. A compiled agent profile — assembled from your source knowledge documents — can itself be the spec file.
 
-Add `validates:` to a role's frontmatter with the glob patterns for the files it should validate. The compiled output gets a `paths:` YAML block that makes it a valid spec. The agent you chat with and the spec that lints your code are the same file.
+Add `validates:` to an expert's frontmatter with the glob patterns for the files it should validate. The compiled output gets a `paths:` YAML block that makes it a valid spec. The agent you chat with and the spec that lints your code are the same file.
 
 See [Agent Profiles — Profiles as spec files](/concepts/agent-profiles#profiles-as-spec-files) for the full setup.
 
@@ -104,4 +104,4 @@ See [Agent Profiles — Profiles as spec files](/concepts/agent-profiles#profile
 - [Validation Domains](/concepts/validation-domains)
 - [Cross-Directory Validation](/validation/cross-directory)
 - [Agent Profiles](/concepts/agent-profiles)
-- [praxis validate](/commands/validate)
+- [praxis eval run](/commands/eval)

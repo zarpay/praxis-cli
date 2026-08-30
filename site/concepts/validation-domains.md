@@ -7,7 +7,7 @@ A validation domain is a directory (or set of files) governed by a single spec. 
 Any directory within your configured `sources` that contains a spec file (default: `README.md`) becomes a validation domain. Every `.md` file in that directory — excluding the spec itself and `_`-prefixed templates — is linted against that spec.
 
 ```
-roles/
+experts/
 ├── README.md          ← the lint rule for this domain
 ├── code-reviewer.md   ← linted against README.md
 ├── support-agent.md   ← linted against README.md
@@ -21,25 +21,25 @@ The same pattern works for any directory with organized documents — `app/servi
 The spec file defines what the LLM should check. Write it in clear human language — the LLM reads it as instructions for a code reviewer who knows nothing else about the project:
 
 ```markdown
-# Roles
+# Experts
 
-Documents in this directory define agent roles.
+Documents in this directory define agent experts.
 
 ## Required frontmatter
 
-- `title` (string) — display name of the role
-- `type` (string) — must be `"role"`
+- `title` (string) — display name of the expert
+- `type` (string) — must be `"expert"`
 - `alias` (string) — short identifier used for compiled output
 - `description` (string) — one-sentence summary of what the agent does
 
 ## Required sections
 
-Every role must have a `## Scope` section that contains both:
+Every expert must have a `## Scope` section that contains both:
 - A `### Responsible For` subsection
 - A `### Not Responsible For` subsection
 ```
 
-When `praxis validate` runs, it sends this spec and the document content to an LLM and asks whether the document conforms. The LLM returns Yes / Maybe / No with specific issues.
+When `praxis eval run` runs, it sends this spec and the document content to an LLM and asks whether the document conforms. The LLM returns Yes / Maybe / No with specific issues.
 
 ## Configurable spec file name
 
@@ -87,11 +87,11 @@ Use `paths` when the same quality standard applies across multiple directories �
 
 A document can be linted by more than one spec — either because it lives in a directory with a local spec and is also matched by another spec's `paths` glob, or because multiple specs have overlapping `paths` patterns.
 
-Each (document, spec) pair is validated and cached independently. The results are displayed separately in `praxis validate all`.
+Each (document, spec) pair is validated and cached independently. The results are displayed separately in `praxis eval run`.
 
 ## See also
 
 - [Writing Specs](/validation/writing-specs)
 - [Cross-Directory Validation](/validation/cross-directory)
 - [Caching](/validation/caching)
-- [praxis validate](/commands/validate)
+- [praxis eval run](/commands/eval)

@@ -28,8 +28,8 @@ describe("StatusCommand", () => {
   it("counts roles, responsibilities, references, and context", async () => {
     const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
-    expect(report.counts.roles).toBeGreaterThanOrEqual(1);
-    expect(report.counts.responsibilities).toBeGreaterThanOrEqual(1);
+    expect(report.counts.experts).toBeGreaterThanOrEqual(1);
+    expect(report.counts.practices).toBeGreaterThanOrEqual(1);
     expect(report.counts.references).toBeGreaterThanOrEqual(1);
     expect(report.counts.context).toBeGreaterThanOrEqual(2); // identity.md, principles.md, documentation.md
   });
@@ -38,72 +38,72 @@ describe("StatusCommand", () => {
     const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     // Roles dir has README.md + content files; reported count must be less than total .md files
-    const allRoleFiles = readdirSync(join(tmpdir, "content", "roles")).filter((f) =>
+    const allRoleFiles = readdirSync(join(tmpdir, "content", "experts")).filter((f) =>
       f.endsWith(".md"),
     );
-    expect(report.counts.roles).toBeLessThan(allRoleFiles.length);
+    expect(report.counts.experts).toBeLessThan(allRoleFiles.length);
   });
 
   it("detects dangling refs", async () => {
     writeFileSync(
-      join(tmpdir, "content", "roles", "bad-refs.md"),
+      join(tmpdir, "content", "experts", "bad-refs.md"),
       "---\nalias: BadRefs\ndescription: test\nrefs:\n  - content/reference/nonexistent.md\n---\n# Bad",
     );
 
     const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     expect(report.danglingRefs).toContainEqual({
-      role: "bad-refs.md",
+      expert: "bad-refs.md",
       ref: "content/reference/nonexistent.md",
     });
   });
 
   it("detects orphaned responsibilities", async () => {
     writeFileSync(
-      join(tmpdir, "content", "responsibilities", "orphan.md"),
-      "---\ntitle: Orphan\ntype: responsibility\nowner: nobody\n---\n# Orphan",
+      join(tmpdir, "content", "practices", "orphan.md"),
+      "---\ntitle: Orphan\ntype: practice\nowner: nobody\n---\n# Orphan",
     );
 
     const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
-    expect(report.orphanedResponsibilities).toContain("orphan.md");
+    expect(report.orphanedPractices).toContain("orphan.md");
   });
 
   it("detects roles missing description", async () => {
     writeFileSync(
-      join(tmpdir, "content", "roles", "no-desc.md"),
+      join(tmpdir, "content", "experts", "no-desc.md"),
       "---\nalias: NoDesc\n---\n# No Description",
     );
 
     const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
-    expect(report.rolesMissingDescription).toContain("no-desc.md");
+    expect(report.expertsMissingDescription).toContain("no-desc.md");
   });
 
   it("detects zero-match glob patterns", async () => {
     writeFileSync(
-      join(tmpdir, "content", "roles", "bad-glob.md"),
+      join(tmpdir, "content", "experts", "bad-glob.md"),
       "---\nalias: BadGlob\ndescription: test\nrefs:\n  - content/reference/nope-*.md\n---\n# Bad",
     );
 
     const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     expect(report.zeroMatchGlobs).toContainEqual({
-      role: "bad-glob.md",
+      expert: "bad-glob.md",
       pattern: "content/reference/nope-*.md",
     });
   });
 
   it("detects unmatched owners", async () => {
     writeFileSync(
-      join(tmpdir, "content", "responsibilities", "unmatched.md"),
-      "---\ntitle: Unmatched\ntype: responsibility\nowner: phantom-role\n---\n# Unmatched",
+      join(tmpdir, "content", "practices", "unmatched.md"),
+      "---\ntitle: Unmatched\ntype: practice\nowner: phantom-role\n---\n# Unmatched",
     );
 
     const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     expect(report.unmatchedOwners).toContainEqual({
-      responsibility: "unmatched.md",
+      practice: "unmatched.md",
       owner: "phantom-role",
     });
   });
@@ -112,17 +112,12 @@ describe("StatusCommand", () => {
     writeFileSync(
       join(tmpdir, ".praxis", "config.json"),
       JSON.stringify({
-        sources: [
-          "content/roles",
-          "content/responsibilities",
-          "content/reference",
-          "content/context",
-        ],
-        rolesDir: "content/roles",
-        responsibilitiesDir: "content/responsibilities",
+        sources: ["content/experts", "content/practices", "content/reference", "content/context"],
+        expertsDir: "content/experts",
+        practicesDir: "content/practices",
         agentProfilesOutputDir: "./agent-profiles",
         plugins: ["claude-code"],
-        ignore: ["content/roles/validates-role.md"],
+        ignore: ["content/experts/validates-expert.md"],
       }),
     );
     const ignoringConfig = new PraxisConfig(tmpdir);
@@ -130,7 +125,7 @@ describe("StatusCommand", () => {
 
     // validates-role.md is in the roles dir but should be excluded
     const baseReport = await new StatusCommand({ root: tmpdir, config }).analyze();
-    expect(report.counts.roles).toBe(baseReport.counts.roles - 1);
+    expect(report.counts.experts).toBe(baseReport.counts.experts - 1);
   });
 
   it("counts non-.md validation targets from spec paths: frontmatter", async () => {
@@ -165,7 +160,7 @@ describe("StatusCommand", () => {
 
     // The default fixtures form a healthy project
     expect(report.danglingRefs).toEqual([]);
-    expect(report.rolesMissingDescription).toEqual([]);
+    expect(report.expertsMissingDescription).toEqual([]);
     expect(report.zeroMatchGlobs).toEqual([]);
   });
 });

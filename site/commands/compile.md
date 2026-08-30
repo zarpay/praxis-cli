@@ -1,6 +1,6 @@
 # praxis compile
 
-Compiles roles into self-contained agent profiles by resolving and inlining all referenced content.
+Compiles experts into self-contained agent profiles by resolving and inlining all referenced content.
 
 ## Usage
 
@@ -10,10 +10,10 @@ praxis compile [--alias <name>] [--watch]
 
 ## What it does
 
-For each role in `rolesDir`:
+For each expert in `expertsDir`:
 
 1. Parses the frontmatter manifest
-2. Expands glob patterns in `constitution`, `context`, `responsibilities`, and `refs`
+2. Expands glob patterns in `constitution`, `context`, `practices`, and `refs`
 3. Reads and strips frontmatter from every referenced file
 4. Assembles a single markdown profile in section order
 5. Writes the profile to `{agentProfilesOutputDir}/{alias}.md`
@@ -25,7 +25,7 @@ See [The Compiler Pipeline](/concepts/compiler-pipeline) for a full walkthrough.
 
 ### `--alias <name>`
 
-Compiles only the role with the matching `alias` field. Useful during authoring to avoid recompiling everything on every save.
+Compiles only the expert with the matching `alias` field. Useful during authoring to avoid recompiling everything on every save.
 
 ```bash
 praxis compile --alias reviewer
@@ -33,7 +33,7 @@ praxis compile --alias reviewer
 
 ### `--watch`
 
-Starts a file watcher on every directory in `sources`. Any `.md` change triggers a debounced recompile of all roles.
+Starts a file watcher on every directory in `sources`. Any `.md` change triggers a debounced recompile of all experts.
 
 ```bash
 praxis compile --watch
@@ -57,7 +57,7 @@ Each enabled plugin receives the compiled profile content and writes its own out
 
 The compiler exits with a non-zero code and a helpful message if:
 - A referenced file or glob matches nothing
-- A role is missing required frontmatter fields
+- An expert is missing required frontmatter fields
 - A file cannot be read
 
 ## Example output
@@ -75,7 +75,7 @@ Compiling support-agent...
   ✓ agent-profiles/support-agent.md
   ✓ plugins/praxis/agents/support-agent.md
 
-Done. 2 roles compiled.
+Done. 2 experts compiled.
 ```
 
 ## See also

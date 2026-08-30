@@ -5,8 +5,8 @@ Creates a new document from a template with placeholders pre-filled.
 ## Usage
 
 ```bash
-praxis add role <name>
-praxis add responsibility <name>
+praxis add expert <name>
+praxis add practice <name>
 ```
 
 The `<name>` argument should be kebab-case. It is used as the filename and pre-filled into the template.
@@ -14,25 +14,25 @@ The `<name>` argument should be kebab-case. It is used as the filename and pre-f
 ## Examples
 
 ```bash
-praxis add role code-reviewer
-# Creates: roles/code-reviewer.md
+praxis add expert code-reviewer
+# Creates: experts/code-reviewer.md
 
-praxis add responsibility review-pull-requests
-# Creates: responsibilities/review-pull-requests.md
+praxis add practice review-pull-requests
+# Creates: practices/review-pull-requests.md
 ```
 
 ## Output paths
 
-Output paths are determined by the `rolesDir` and `responsibilitiesDir` fields in `.praxis/config.json`:
+Output paths are determined by the `expertsDir` and `practicesDir` fields in `.praxis/config.json`:
 
 ```json
 {
-  "rolesDir": "roles",
-  "responsibilitiesDir": "responsibilities"
+  "expertsDir": "experts",
+  "practicesDir": "practices"
 }
 ```
 
-If you've configured a custom directory (e.g., `"rolesDir": "agents/roles"`), `praxis add role` writes there instead.
+If you've configured a custom directory (e.g., `"expertsDir": "agents/experts"`), `praxis add expert` writes there instead.
 
 ## Template files
 
@@ -40,25 +40,25 @@ The template for each type lives at `_template.md` inside the relevant directory
 
 If you customize a `_template.md`, all future `praxis add` calls for that type use your custom template.
 
-A typical role template after `praxis init`:
+A typical expert template after `praxis init`:
 
 ```markdown
 ---
-title: {Role Name}
-type: role
+title: {Expert Name}
+type: expert
 alias: {required_alias}
 description: ""
 
 constitution:
   - context/constitution/*.md
 context: []
-responsibilities: []
+practices: []
 refs: []
 ---
 
-# {Role Name}
+# {Expert Name}
 
-Brief description of this role.
+Brief description of this expert.
 
 ## Scope
 

@@ -17,8 +17,8 @@ const FIXTURES_ROOT = join(import.meta.dirname, "..", "fixtures");
  */
 export function createCompilerTmpdir(): {
   tmpdir: string;
-  rolesDir: string;
-  responsibilitiesDir: string;
+  expertsDir: string;
+  practicesDir: string;
   contextDir: string;
   agentsOutputDir: string;
   agentProfilesDir: string;
@@ -26,15 +26,15 @@ export function createCompilerTmpdir(): {
 } {
   const dir = join(tmpdir(), `praxis-test-${randomUUID()}`);
 
-  const rolesDir = join(dir, "content", "roles");
-  const responsibilitiesDir = join(dir, "content", "responsibilities");
+  const expertsDir = join(dir, "content", "experts");
+  const practicesDir = join(dir, "content", "practices");
   const contextDir = join(dir, "content", "context");
   const agentsOutputDir = join(dir, "plugins", "praxis", "agents");
   const agentProfilesDir = join(dir, "agent-profiles");
 
   // Create structure
-  mkdirSync(rolesDir, { recursive: true });
-  mkdirSync(responsibilitiesDir, { recursive: true });
+  mkdirSync(expertsDir, { recursive: true });
+  mkdirSync(practicesDir, { recursive: true });
   mkdirSync(contextDir, { recursive: true });
   mkdirSync(join(dir, ".praxis"), { recursive: true });
 
@@ -48,14 +48,9 @@ export function createCompilerTmpdir(): {
   writeFileSync(
     join(dir, ".praxis", "config.json"),
     JSON.stringify({
-      sources: [
-        "content/roles",
-        "content/responsibilities",
-        "content/reference",
-        "content/context",
-      ],
-      rolesDir: "content/roles",
-      responsibilitiesDir: "content/responsibilities",
+      sources: ["content/experts", "content/practices", "content/reference", "content/context"],
+      expertsDir: "content/experts",
+      practicesDir: "content/practices",
       agentProfilesOutputDir: "./agent-profiles",
       plugins: ["claude-code"],
       validation: {
@@ -67,8 +62,8 @@ export function createCompilerTmpdir(): {
 
   return {
     tmpdir: dir,
-    rolesDir,
-    responsibilitiesDir,
+    expertsDir,
+    practicesDir,
     contextDir,
     agentsOutputDir,
     agentProfilesDir,

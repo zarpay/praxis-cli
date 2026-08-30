@@ -9,7 +9,7 @@ const FIXTURES_DIR = join(import.meta.dirname, "..", "fixtures");
 describe("Markdown", () => {
   describe("body()", () => {
     it("extracts content after frontmatter", () => {
-      const md = new Markdown(join(FIXTURES_DIR, "sample-role.md"));
+      const md = new Markdown(join(FIXTURES_DIR, "sample-expert.md"));
       const body = md.body();
 
       expect(body).toContain("# Sample Role");
@@ -17,10 +17,10 @@ describe("Markdown", () => {
     });
 
     it("does not include frontmatter content", () => {
-      const md = new Markdown(join(FIXTURES_DIR, "sample-role.md"));
+      const md = new Markdown(join(FIXTURES_DIR, "sample-expert.md"));
       const body = md.body();
 
-      expect(body).not.toContain("title: Sample Role");
+      expect(body).not.toContain("title: Sample Expert");
       expect(body).not.toContain("alias: Sample");
     });
 
@@ -33,7 +33,7 @@ describe("Markdown", () => {
     });
 
     it("trims leading/trailing whitespace", () => {
-      const md = new Markdown(join(FIXTURES_DIR, "sample-role.md"));
+      const md = new Markdown(join(FIXTURES_DIR, "sample-expert.md"));
       const body = md.body();
 
       expect(body.startsWith("\n")).toBe(false);
@@ -43,7 +43,7 @@ describe("Markdown", () => {
 
   describe("bodyRaw()", () => {
     it("preserves original whitespace", () => {
-      const md = new Markdown(join(FIXTURES_DIR, "sample-role.md"));
+      const md = new Markdown(join(FIXTURES_DIR, "sample-expert.md"));
       const raw = md.bodyRaw();
 
       expect(raw.startsWith("\n")).toBe(true);

@@ -49,7 +49,7 @@ paths:
 All documents in docs/ and runbooks/ must meet these criteria...
 ```
 
-When `praxis validate all` runs, every file matched by those globs is validated against this spec — even though none of them live in `specs/`.
+When `praxis eval run` runs, every file matched by those globs is validated against this spec — even though none of them live in `specs/`.
 
 ## Including `specs/` in sources
 
@@ -57,7 +57,7 @@ For Praxis to discover the spec, `specs/` must appear in your `sources` config:
 
 ```json
 {
-  "sources": ["roles", "responsibilities", "reference", "context", "specs"]
+  "sources": ["experts", "practices", "reference", "context", "specs"]
 }
 ```
 
@@ -67,7 +67,7 @@ The spec file itself is excluded from validation (spec files are never validated
 
 A document can be validated by more than one spec simultaneously — for example, if it lives in a directory with its own local spec and is also matched by a cross-directory spec's `paths` glob.
 
-Each (document, spec) pair is validated and cached independently. Both results appear in `praxis validate all` output.
+Each (document, spec) pair is validated and cached independently. Both results appear in `praxis eval run` output.
 
 ::: tip Use sparingly
 Cross-directory specs are powerful but can make validation coverage harder to reason about. Prefer local specs when documents are cohesive within a directory. Reach for `paths` when you have a genuine shared standard that spans multiple directories.

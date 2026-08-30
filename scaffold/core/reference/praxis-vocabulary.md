@@ -13,7 +13,7 @@ type: reference
 Greek (πρᾶξις): "The process of putting theory into practice." An organizational specification framework for humans and agents.
 
 ### Primitive
-One of the four fundamental categories: Context, Roles, Responsibilities, Reference.
+One of the four fundamental categories: Context, Experts, Practices, Reference.
 
 ### Contributor
 Any entity (human or agent) that operates within the organization.
@@ -26,13 +26,13 @@ Any entity (human or agent) that operates within the organization.
 > "This is who we are and how we think."
 Foundational understanding. Subdivided into Constitution (immutable) and Conventions (standards).
 
-### Roles
+### Experts
 > "This is who you are."
 Defines identity, scope, and boundaries of a contributor.
 
-### Responsibilities
+### Practices
 > "This is what you own."
-Discrete pieces of work delegated to a Role. Owned, not just executed.
+Discrete pieces of work delegated to an Expert. Owned, not just executed.
 
 ### Reference
 > "This is what things mean."
@@ -44,8 +44,8 @@ Static, factual information consulted as needed.
 
 ### Loading Model
 Layered approach to providing context:
-1. **Always loaded**: Constitution, Conventions, assigned Role
-2. **Per assignment**: The specific Responsibility
+1. **Always loaded**: Constitution, Conventions, assigned Expert
+2. **Per assignment**: The specific Practice
 3. **As needed**: Reference materials
 
 ### Delegation vs Prompting

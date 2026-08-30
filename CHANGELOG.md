@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Terminology settlement (v2 vocabulary applied to v1)** — the codebase, CLI, scaffold, and docs now use the Praxis v2 terms. All old spellings keep working:
+  - **Judge** replaces "validator" as the evaluating instrument: `src/validator/` → `src/judge/`, `DocumentValidator` → `Judge`, `BatchValidator` → `BatchJudge`, result types → `Verdict` / `TargetVerdict` / `EvalSummary`. On-disk cache format and paths are unchanged.
+  - **`praxis eval`** replaces `praxis validate`: `eval run [targets...]` (no targets = full run), `eval ci`, `eval verdict <target>`. The `validate document|all|ci|report` subcommands remain as deprecated aliases.
+  - **Expert / Practice** replace Role / Responsibility: scaffold directories are `experts/` and `practices/`, config keys are `expertsDir`/`practicesDir` (deprecated `rolesDir`/`responsibilitiesDir` accepted), frontmatter `type: expert|practice` (legacy `role|responsibility` accepted and mapped), expert files list `practices:` (legacy `responsibilities:` accepted), `praxis add expert|practice` (legacy `add role|responsibility` aliased). Compiled profile section headings (`# Role`, `# Responsibilities`) are unchanged — they are prompt idiom in the output format, and changing them would invalidate existing SME content hashes.
+  - `praxis status` reports Experts/Practices; report fields renamed accordingly.
+  - The judge system prompt now says "compliance judge"; docs site and generated plugin command/skill texts teach the new CLI.
+
 ## [1.3.7] - 2026-06-05
 
 ### Changed

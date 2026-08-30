@@ -29,12 +29,12 @@ my-org/
 │   └── lenses/
 │       ├── README.md
 │       └── _template.md
-├── roles/
+├── experts/
 │   ├── README.md
 │   ├── praxis-steward.md        ← built-in: knowledge framework steward
 │   ├── praxis-recruiter.md      ← built-in: talent and team sourcing
 │   └── _template.md
-├── responsibilities/
+├── practices/
 │   ├── README.md
 │   └── _template.md
 ├── reference/
@@ -70,9 +70,9 @@ The generated `.praxis/config.json`:
 
 ```json
 {
-  "sources": ["roles", "responsibilities", "reference", "context"],
-  "rolesDir": "roles",
-  "responsibilitiesDir": "responsibilities",
+  "sources": ["experts", "practices", "reference", "context"],
+  "expertsDir": "experts",
+  "practicesDir": "practices",
   "agentProfilesOutputDir": "./agent-profiles",
   "plugins": [],
   "validation": {

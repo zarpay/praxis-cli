@@ -12,7 +12,7 @@ export type ValidationToolName = "validation_pass" | "validation_warn" | "valida
 
 /**
  * Builds an OpenRouter chat-completion response body containing a single
- * validation tool call, matching the shape DocumentValidator parses.
+ * validation tool call, matching the shape Judge parses.
  *
  * @param toolName - Which validation tool the "model" called
  * @param args - The tool arguments (reason, and issues for warn/fail)

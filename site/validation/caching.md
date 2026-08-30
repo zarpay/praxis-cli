@@ -4,7 +4,7 @@ Every validation result is cached locally. Unchanged documents are never re-vali
 
 ## How the cache works
 
-When `praxis validate` validates a document, it:
+When `praxis eval run` validates a document, it:
 
 1. Computes a content hash: `SHA256(documentContent + specContent)`, first 8 characters
 2. Looks up `.praxis/cache/validation/{doc-relative-path}.json`
@@ -24,7 +24,7 @@ The file contains a `validations` map keyed by an 8-char hash of the spec's rela
   "version": "2.0",
   "validations": {
     "a1b2c3d4": {
-      "spec_path": "roles/README.md",
+      "spec_path": "experts/README.md",
       "cached_at": "2025-05-27T14:30:45.123Z",
       "content_hash": "abcd1234",
       "result": {
@@ -51,15 +51,15 @@ There is no manual cache management needed in normal use.
 Pass `--no-cache` to any `validate` subcommand to skip cache reads and writes:
 
 ```bash
-praxis validate all --no-cache
-praxis validate document roles/my-role.md --no-cache
+praxis eval run --no-cache
+praxis eval run experts/my-expert.md --no-cache
 ```
 
 This is useful when you want to force re-validation for debugging or after a significant spec rewrite.
 
 ## Cache hit reporting
 
-When running with a cache enabled, `praxis validate all` reports cache statistics at the end:
+When running with a cache enabled, `praxis eval run` reports cache statistics at the end:
 
 ```
 [CACHE] Hits: 9, Misses: 3
@@ -69,7 +69,7 @@ This tells you how many documents were served from cache vs. how many required a
 
 ## Reading stale cache
 
-`praxis validate report` reads the cache without requiring a content hash match. This lets you inspect a document's last known validation status even if the document has changed since then. A changed document is reported as **STALE** rather than **NOT VALIDATED**.
+`praxis eval verdict` reads the cache without requiring a content hash match. This lets you inspect a document's last known validation status even if the document has changed since then. A changed document is reported as **STALE** rather than **NOT VALIDATED**.
 
 ## Committing the cache
 
@@ -82,6 +82,6 @@ If you commit the cache, add it to a gitignore pattern if you want build artifac
 
 ## See also
 
-- [praxis validate](/commands/validate)
+- [praxis eval run](/commands/eval)
 - [Validation Domains](/concepts/validation-domains)
 - [CI Integration](/validation/ci)

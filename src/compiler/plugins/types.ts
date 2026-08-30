@@ -18,9 +18,9 @@ export interface CompilerPlugin {
    *
    * @param profileContent - Pure markdown profile (no plugin-specific frontmatter)
    * @param metadata - Agent metadata from role frontmatter, or null if missing
-   * @param roleAlias - The role's alias (used for output file naming)
+   * @param alias - The role's alias (used for output file naming)
    */
-  compile(profileContent: string, metadata: AgentMetadata | null, roleAlias: string): void;
+  compile(profileContent: string, metadata: AgentMetadata | null, alias: string): void;
 }
 
 /** Options passed to plugin constructors. */

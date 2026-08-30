@@ -1,15 +1,15 @@
 # The Compiler Pipeline
 
-`praxis compile` reads role files, resolves every reference declared in their frontmatter, and assembles standalone agent profiles. This page explains exactly what happens.
+`praxis compile` reads expert files, resolves every reference declared in their frontmatter, and assembles standalone agent profiles. This page explains exactly what happens.
 
-## Input: a role file
+## Input: an expert file
 
-The compiler starts with any `.md` file in the configured `rolesDir` that has a `type: role` frontmatter field (or that lives in the roles directory by convention).
+The compiler starts with any `.md` file in the configured `expertsDir` that has a `type: expert` frontmatter field (or that lives in the experts directory by convention).
 
 ```yaml
 ---
 title: Code Reviewer
-type: role
+type: expert
 alias: reviewer
 description: "Reviews pull requests against team conventions and coding standards."
 
@@ -17,9 +17,9 @@ constitution:
   - context/constitution/*.md
 context:
   - context/conventions/code-style.md
-responsibilities:
-  - responsibilities/review-pull-requests.md
-  - responsibilities/enforce-standards.md
+practices:
+  - practices/review-pull-requests.md
+  - practices/enforce-standards.md
 refs:
   - reference/architecture-decisions.md
 ---
@@ -45,8 +45,8 @@ The compiler resolves each list against the filesystem:
 Resolved files are assembled in a fixed section order:
 
 ```
-1. Role body          (the role file's own markdown body)
-2. Responsibilities   (inlined from the responsibilities array)
+1. Expert body          (the expert file's own markdown body)
+2. Practices   (inlined from the practices array)
 3. Constitution       (inlined from the constitution array)
 4. Context            (inlined from the context array)
 5. Reference          (inlined from the refs array)
@@ -81,15 +81,15 @@ See [Plugins](/plugins/overview) for details.
 praxis compile --watch
 ```
 
-In watch mode, the compiler sets up a file watcher on every directory listed in `sources`. Any change to a `.md` file triggers a debounced recompile of all affected roles. Changes to shared context files (like constitution docs) recompile every role that includes them.
+In watch mode, the compiler sets up a file watcher on every directory listed in `sources`. Any change to a `.md` file triggers a debounced recompile of all affected experts. Changes to shared context files (like constitution docs) recompile every expert that includes them.
 
-## Single role compilation
+## Single expert compilation
 
 ```bash
 praxis compile --alias reviewer
 ```
 
-Compiles only the role with `alias: reviewer`. Useful during authoring when you don't need to recompile every role on every save.
+Compiles only the expert with `alias: reviewer`. Useful during authoring when you don't need to recompile every expert on every save.
 
 ## See also
 

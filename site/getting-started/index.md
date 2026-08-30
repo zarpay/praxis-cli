@@ -25,7 +25,7 @@ praxis init my-org
 cd my-org
 ```
 
-This creates a full directory structure with two built-in roles and starter content. The `.praxis/` directory is the project root marker.
+This creates a full directory structure with two built-in experts and starter content. The `.praxis/` directory is the project root marker.
 
 ```
 my-org/
@@ -35,25 +35,25 @@ my-org/
 │   ├── constitution/
 │   ├── conventions/
 │   └── lenses/
-├── roles/
-├── responsibilities/
+├── experts/
+├── practices/
 ├── reference/
 ├── agent-profiles/     ← compiled output goes here
 └── plugins/            ← plugin output goes here
 ```
 
-## Add a role
+## Add an expert
 
 ```bash
-praxis add role code-reviewer
+praxis add expert code-reviewer
 ```
 
-This creates `roles/code-reviewer.md` from a template. Open it and fill in the frontmatter — the manifest that tells the compiler what to include:
+This creates `experts/code-reviewer.md` from a template. Open it and fill in the frontmatter — the manifest that tells the compiler what to include:
 
 ```yaml
 ---
 title: Code Reviewer
-type: role
+type: expert
 alias: reviewer
 description: "Reviews pull requests against team conventions and coding standards."
 
@@ -61,8 +61,8 @@ constitution:
   - context/constitution/*.md
 context:
   - context/conventions/code-style.md
-responsibilities:
-  - responsibilities/review-pull-requests.md
+practices:
+  - practices/review-pull-requests.md
 refs:
   - reference/architecture-decisions.md
 ---
@@ -87,25 +87,25 @@ Reviews pull requests with an eye for correctness and alignment with team conven
 praxis compile
 ```
 
-The compiled file at `agent-profiles/reviewer.md` contains the role body, every referenced file inlined, and the full constitution — one self-contained document. That's the SME. Change the conventions file, recompile, and this agent picks up the update automatically.
+The compiled file at `agent-profiles/reviewer.md` contains the expert body, every referenced file inlined, and the full constitution — one self-contained document. That's the SME. Change the conventions file, recompile, and this agent picks up the update automatically.
 
 ## Add a README spec and lint it
 
-Open `roles/README.md`. It already exists from `praxis init`. Tighten the spec to be explicit about what every role document must contain:
+Open `experts/README.md`. It already exists from `praxis init`. Tighten the spec to be explicit about what every expert document must contain:
 
 ```markdown
-# Roles
+# Experts
 
 ## Required frontmatter
 
-- `title` — display name of the role
-- `type` — must be "role"
+- `title` — display name of the expert
+- `type` — must be "expert"
 - `alias` — short identifier used for the compiled filename
 - `description` — one-sentence summary
 
 ## Required sections
 
-Every role must have `## Scope` with both:
+Every expert must have `## Scope` with both:
 - `### Responsible For`
 - `### Not Responsible For`
 ```
@@ -114,17 +114,17 @@ Now validate:
 
 ```bash
 export OPENROUTER_API_KEY=your-key-here
-praxis validate all
+praxis eval run
 ```
 
 ```
-[PASS] roles/code-reviewer.md
-[PASS] roles/praxis-steward.md
+[PASS] experts/code-reviewer.md
+[PASS] experts/praxis-steward.md
 
 Summary: 2 compliant, 0 warnings, 0 errors
 ```
 
-That README spec is your lint rule. Any future role that skips the required structure will get a WARN or FAIL — in local runs and in CI. The same mechanism works for any directory: `app/services/`, `decisions/`, `api/specs/` — anything with a README that says what valid looks like.
+That README spec is your lint rule. Any future expert that skips the required structure will get a WARN or FAIL — in local runs and in CI. The same mechanism works for any directory: `app/services/`, `decisions/`, `api/specs/` — anything with a README that says what valid looks like.
 
 ## Check project health
 

@@ -26,7 +26,7 @@ Run `praxis init` after adding the plugin to scaffold the plugin directory struc
 
 ## What it generates
 
-For each compiled role, the plugin writes an agent file at `{outputDir}/agents/{alias}.md`:
+For each compiled expert, the plugin writes an agent file at `{outputDir}/agents/{alias}.md`:
 
 ```yaml
 ---
@@ -48,16 +48,16 @@ The YAML frontmatter is what Claude Code reads to register the agent. The markdo
 
 ## Agent frontmatter fields
 
-The plugin reads optional fields from your role frontmatter to populate the Claude Code agent frontmatter:
+The plugin reads optional fields from your expert frontmatter to populate the Claude Code agent frontmatter:
 
-| Role frontmatter | Claude Code output | Example |
+| Expert frontmatter | Claude Code output | Example |
 | --- | --- | --- |
 | `description` | `description` | `"Reviews pull requests..."` |
 | `agent_tools` | `tools` | `Read, Glob, Grep` |
 | `agent_model` | `model` | `opus`, `sonnet` |
 | `agent_permission_mode` | `permissionMode` | `plan`, `bypassPermissions` |
 
-Example role frontmatter:
+Example expert frontmatter:
 
 ```yaml
 ---
@@ -70,8 +70,8 @@ agent_permission_mode: plan
 
 constitution:
   - context/constitution/*.md
-responsibilities:
-  - responsibilities/manage-linear-resources.md
+practices:
+  - practices/manage-linear-resources.md
 ---
 ```
 
@@ -91,10 +91,10 @@ If `plugin.json` already exists, the plugin only updates the `name` field — ot
 
 ## The `/validate` slash command
 
-The plugin generates a `/validate` slash command at `{outputDir}/commands/validate.md`. This lets Claude Code users validate documents one at a time without an OpenRouter API key — Claude Code uses its own LLM to check the document against the README spec in the same directory.
+The plugin generates a `/validate` slash command at `{outputDir}/commands/eval.md`. This lets Claude Code users eval runs one at a time without an OpenRouter API key — Claude Code uses its own LLM to check the document against the README spec in the same directory.
 
 ```
-/praxis:validate roles/my-role.md
+/praxis:validate experts/my-expert.md
 ```
 
 The slash command name is derived from `claudeCodePluginName`:
@@ -103,7 +103,7 @@ The slash command name is derived from `claudeCodePluginName`:
 /{claudeCodePluginName}:validate
 ```
 
-This is useful for teams with Claude Code licenses who don't want to distribute OpenRouter keys. Developers can validate before pushing; CI can run the full `praxis validate` suite independently.
+This is useful for teams with Claude Code licenses who don't want to distribute OpenRouter keys. Developers can validate before pushing; CI can run the full `praxis eval run` suite independently.
 
 ## Plugin configuration options
 

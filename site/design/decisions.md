@@ -4,11 +4,11 @@
 
 Code teams lint syntax. They lint types. They run formatters. The idea that automated tooling should enforce code conventions is completely uncontroversial.
 
-The same idea has not reached the documents that live alongside that code. Architecture decision records drift from their agreed format. Service object conventions get ignored because nothing catches violations. Agent role definitions grow stale because the conventions they reference were updated in March and nobody remembered to update the role.
+The same idea has not reached the documents that live alongside that code. Architecture decision records drift from their agreed format. Service object conventions get ignored because nothing catches violations. Agent expert definitions grow stale because the conventions they reference were updated in March and nobody remembered to update the expert.
 
 These aren't syntax violations — no static analyzer can catch them. They're **conceptual violations**: documents that fail to meet the structural, architectural, or content standards the team actually agreed on.
 
-Praxis is the tool for conceptual linting. Write the standard in a README. Run `praxis validate`. Block the merge. The same rigor you apply to code, applied to any organized body of documents.
+Praxis is the tool for conceptual linting. Write the standard in a README. Run `praxis eval run`. Block the merge. The same rigor you apply to code, applied to any organized body of documents.
 
 The compilation capability — turning knowledge documents into agent profiles — is built on top of this foundation. Linting is what keeps the source knowledge honest. Compilation is what turns trusted knowledge into deployable SME agents.
 
@@ -50,7 +50,7 @@ The tradeoff is that the README must serve two audiences — human readers and t
 
 ## LLM validation, not schema validation
 
-Praxis uses an LLM to validate documents against specs, not a schema validator or linter.
+Praxis uses an LLM to eval runs against specs, not a schema validator or linter.
 
 Schema validators can check field presence and type. They cannot check whether a `description` field is actually descriptive, whether a `## Scope` section actually explains the agent's scope, whether an ADR's "Consequences" section is genuinely thoughtful, or whether a service object's header comment explains when to use it.
 
@@ -58,16 +58,16 @@ The LLM reads your spec as instructions and exercises judgment — the same kind
 
 The tradeoff is that LLM validation requires an API key, costs money per call, and is non-deterministic at the margin. The content hash cache mitigates the cost by only calling the API when content changes. The non-determinism is acceptable for documentation quality checks.
 
-## One output file per role
+## One output file per expert
 
-Each role compiles to one standalone file. There is no "shared context" that is loaded at runtime — everything is inlined.
+Each expert compiles to one standalone file. There is no "shared context" that is loaded at runtime — everything is inlined.
 
 This simplifies deployment:
 - The file is self-contained
 - No runtime dependency on Praxis or the source documents
 - No file system access required at agent invocation time
 
-The tradeoff is file size — a role with many shared constitution docs will have a larger compiled profile. In practice, agent context windows are large enough that this is not a problem.
+The tradeoff is file size — an expert with many shared constitution docs will have a larger compiled profile. In practice, agent context windows are large enough that this is not a problem.
 
 ## No agent framework SDK
 

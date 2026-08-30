@@ -7,7 +7,7 @@ import { Logger } from "@/core/logger.js";
 import { Paths, SCAFFOLD_DIR, joinPath, relativePath } from "@/core/paths.js";
 
 /** Content types `praxis add` can create. */
-export type AddableType = "role" | "responsibility";
+export type AddableType = "expert" | "practice";
 
 /**
  * Registers the `praxis add` command group.
@@ -19,17 +19,32 @@ export function registerAddCommand(program: Command): void {
   const add = program.command("add").description("Add new content from templates");
 
   add
-    .command("role <name>")
-    .description("Create a new role from template")
+    .command("expert <name>")
+    .description("Create a new expert from template")
     .action((name: string) => {
-      runAdd("role", name);
+      runAdd("expert", name);
+    });
+
+  add
+    .command("practice <name>")
+    .description("Create a new practice from template")
+    .action((name: string) => {
+      runAdd("practice", name);
+    });
+
+  // Deprecated v1 aliases.
+  add
+    .command("role <name>")
+    .description("Deprecated: use `praxis add expert`")
+    .action((name: string) => {
+      runAdd("expert", name);
     });
 
   add
     .command("responsibility <name>")
-    .description("Create a new responsibility from template")
+    .description("Deprecated: use `praxis add practice`")
     .action((name: string) => {
-      runAdd("responsibility", name);
+      runAdd("practice", name);
     });
 }
 
@@ -81,8 +96,8 @@ export class AddCommand {
    * @throws PraxisError if the target file already exists or the template is missing
    */
   add(type: AddableType, name: string): void {
-    const subdir = type === "role" ? "roles" : "responsibilities";
-    const targetDir = type === "role" ? this.config.rolesDir : this.config.responsibilitiesDir;
+    const subdir = type === "expert" ? "experts" : "practices";
+    const targetDir = type === "expert" ? this.config.expertsDir : this.config.practicesDir;
     const templatePath = joinPath(this.scaffoldDir, "core", subdir, "_template.md");
     const targetFile = joinPath(targetDir, `${name}.md`);
     const relTargetFile = relativePath(this.root, targetFile);
@@ -103,17 +118,17 @@ export class AddCommand {
   /**
    * Fills template placeholders with the provided name.
    *
-   * For roles: replaces `{role_name}` (Title Case) and `{required_alias}` (kebab-case).
-   * For responsibilities: replaces `{verb_what_title}` (Title Case).
+   * For experts: replaces `{expert_name}` (Title Case) and `{required_alias}` (kebab-case).
+   * For practices: replaces `{practice_title}` (Title Case).
    */
   private fillTemplate(type: AddableType, name: string, template: string): string {
     const titleCase = this.toTitleCase(name);
 
-    if (type === "role") {
-      return template.replace(/\{role_name\}/g, titleCase).replace(/\{required_alias\}/g, name);
+    if (type === "expert") {
+      return template.replace(/\{expert_name\}/g, titleCase).replace(/\{required_alias\}/g, name);
     }
 
-    return template.replace(/\{verb_what_title\}/g, titleCase);
+    return template.replace(/\{practice_title\}/g, titleCase);
   }
 
   /**

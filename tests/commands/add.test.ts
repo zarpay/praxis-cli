@@ -16,14 +16,14 @@ const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
 function makeTmpdir(): string {
   const dir = join(tmpdir(), `praxis-add-test-${randomUUID()}`);
   mkdirSync(join(dir, ".praxis"), { recursive: true });
-  mkdirSync(join(dir, "content", "roles"), { recursive: true });
-  mkdirSync(join(dir, "content", "responsibilities"), { recursive: true });
+  mkdirSync(join(dir, "content", "experts"), { recursive: true });
+  mkdirSync(join(dir, "content", "practices"), { recursive: true });
   // Write config pointing to content/ subdirs
   writeFileSync(
     join(dir, ".praxis", "config.json"),
     JSON.stringify({
-      rolesDir: "content/roles",
-      responsibilitiesDir: "content/responsibilities",
+      expertsDir: "content/experts",
+      practicesDir: "content/practices",
     }),
   );
   return dir;
@@ -45,35 +45,33 @@ describe("AddCommand", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it("creates a role file from template", () => {
-    command.add("role", "code-reviewer");
+  it("creates an expert file from template", () => {
+    command.add("expert", "code-reviewer");
 
-    expect(existsSync(join(root, "content", "roles", "code-reviewer.md"))).toBe(true);
+    expect(existsSync(join(root, "content", "experts", "code-reviewer.md"))).toBe(true);
   });
 
-  it("fills role template placeholders", () => {
-    command.add("role", "code-reviewer");
+  it("fills expert template placeholders", () => {
+    command.add("expert", "code-reviewer");
 
-    const content = readFileSync(join(root, "content", "roles", "code-reviewer.md"), "utf-8");
+    const content = readFileSync(join(root, "content", "experts", "code-reviewer.md"), "utf-8");
 
     expect(content).toContain('title: "Code Reviewer"');
     expect(content).toContain('alias: "code-reviewer"');
     expect(content).toContain("# Code Reviewer (a.k.a **Code Reviewer**)");
   });
 
-  it("creates a responsibility file from template", () => {
-    command.add("responsibility", "review-pull-requests");
+  it("creates a practice file from template", () => {
+    command.add("practice", "review-pull-requests");
 
-    expect(existsSync(join(root, "content", "responsibilities", "review-pull-requests.md"))).toBe(
-      true,
-    );
+    expect(existsSync(join(root, "content", "practices", "review-pull-requests.md"))).toBe(true);
   });
 
-  it("fills responsibility template placeholders", () => {
-    command.add("responsibility", "review-pull-requests");
+  it("fills practice template placeholders", () => {
+    command.add("practice", "review-pull-requests");
 
     const content = readFileSync(
-      join(root, "content", "responsibilities", "review-pull-requests.md"),
+      join(root, "content", "practices", "review-pull-requests.md"),
       "utf-8",
     );
 
@@ -82,10 +80,10 @@ describe("AddCommand", () => {
   });
 
   it("refuses to overwrite existing file", () => {
-    const existing = join(root, "content", "roles", "existing.md");
+    const existing = join(root, "content", "experts", "existing.md");
     writeFileSync(existing, "# My custom content\n");
 
-    expect(() => command.add("role", "existing")).toThrow("File already exists");
+    expect(() => command.add("expert", "existing")).toThrow("File already exists");
 
     // Original content preserved
     expect(readFileSync(existing, "utf-8")).toBe("# My custom content\n");
@@ -96,14 +94,14 @@ describe("AddCommand", () => {
     mkdirSync(emptyScaffold, { recursive: true });
     const broken = new AddCommand({ root, scaffoldDir: emptyScaffold });
 
-    expect(() => broken.add("role", "anything")).toThrow("Template not found");
+    expect(() => broken.add("expert", "anything")).toThrow("Template not found");
   });
 
   it("handles multi-word hyphenated names", () => {
-    command.add("responsibility", "enforce-code-style-guide");
+    command.add("practice", "enforce-code-style-guide");
 
     const content = readFileSync(
-      join(root, "content", "responsibilities", "enforce-code-style-guide.md"),
+      join(root, "content", "practices", "enforce-code-style-guide.md"),
       "utf-8",
     );
 
@@ -112,8 +110,8 @@ describe("AddCommand", () => {
   });
 
   it("logs success message", () => {
-    command.add("role", "test-role");
+    command.add("expert", "test-expert");
 
-    expect(logOutput()).toContain("Created role: content/roles/test-role.md");
+    expect(logOutput()).toContain("Created expert: content/experts/test-expert.md");
   });
 });

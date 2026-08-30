@@ -34,9 +34,16 @@ describe("PraxisConfig", () => {
 
     expect(config.agentProfilesOutputDir).toBe(join(dir, "agent-profiles"));
     expect(config.plugins).toEqual([]);
-    expect(config.sources).toEqual(["roles", "responsibilities", "reference", "context"]);
-    expect(config.rolesDir).toBe(join(dir, "roles"));
-    expect(config.responsibilitiesDir).toBe(join(dir, "responsibilities"));
+    expect(config.sources).toEqual([
+      "experts",
+      "practices",
+      "roles",
+      "responsibilities",
+      "reference",
+      "context",
+    ]);
+    expect(config.expertsDir).toBe(join(dir, "experts"));
+    expect(config.practicesDir).toBe(join(dir, "practices"));
   });
 
   it("loads agentProfilesOutputDir from config file", () => {
@@ -110,8 +117,15 @@ describe("PraxisConfig", () => {
     // agentProfilesOutputDir should use default
     expect(config.agentProfilesOutputDir).toBe(join(dir, "agent-profiles"));
     expect(config.plugins).toEqual([{ name: "claude-code" }]);
-    expect(config.sources).toEqual(["roles", "responsibilities", "reference", "context"]);
-    expect(config.rolesDir).toBe(join(dir, "roles"));
+    expect(config.sources).toEqual([
+      "experts",
+      "practices",
+      "roles",
+      "responsibilities",
+      "reference",
+      "context",
+    ]);
+    expect(config.expertsDir).toBe(join(dir, "experts"));
   });
 
   it("pluginEnabled returns true for string-form plugins", () => {
@@ -150,22 +164,41 @@ describe("PraxisConfig", () => {
     expect(config.sources).toEqual(["knowledge", "docs"]);
   });
 
-  it("loads custom rolesDir from config", () => {
+  it("accepts deprecated v1 keys rolesDir and responsibilitiesDir", () => {
     const dir = makeTmpdir();
-    writeConfig(dir, { rolesDir: "knowledge/agents" });
+    writeConfig(dir, { rolesDir: "content/roles", responsibilitiesDir: "content/resps" });
 
     const config = new PraxisConfig(dir);
 
-    expect(config.rolesDir).toBe(join(dir, "knowledge", "agents"));
+    expect(config.expertsDir).toBe(join(dir, "content", "roles"));
+    expect(config.practicesDir).toBe(join(dir, "content", "resps"));
   });
 
-  it("loads custom responsibilitiesDir from config", () => {
+  it("prefers v2 keys over deprecated v1 keys when both are present", () => {
     const dir = makeTmpdir();
-    writeConfig(dir, { responsibilitiesDir: "knowledge/responsibilities" });
+    writeConfig(dir, { expertsDir: "experts", rolesDir: "roles" });
 
     const config = new PraxisConfig(dir);
 
-    expect(config.responsibilitiesDir).toBe(join(dir, "knowledge", "responsibilities"));
+    expect(config.expertsDir).toBe(join(dir, "experts"));
+  });
+
+  it("loads custom expertsDir from config", () => {
+    const dir = makeTmpdir();
+    writeConfig(dir, { expertsDir: "knowledge/agents" });
+
+    const config = new PraxisConfig(dir);
+
+    expect(config.expertsDir).toBe(join(dir, "knowledge", "agents"));
+  });
+
+  it("loads custom practicesDir from config", () => {
+    const dir = makeTmpdir();
+    writeConfig(dir, { practicesDir: "knowledge/responsibilities" });
+
+    const config = new PraxisConfig(dir);
+
+    expect(config.practicesDir).toBe(join(dir, "knowledge", "responsibilities"));
   });
 
   it("throws a descriptive error for invalid JSON", () => {

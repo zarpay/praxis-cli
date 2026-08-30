@@ -16,7 +16,7 @@ export type PraxisErrorCode =
   | "FILE_ALREADY_EXISTS"
   | "TEMPLATE_NOT_FOUND"
   | "SPEC_NOT_FOUND"
-  | "ROLE_NOT_FOUND"
+  | "EXPERT_NOT_FOUND"
   | "DOCUMENT_NOT_FOUND"
   | "VALIDATION_NOT_CONFIGURED"
   | "API_KEY_NOT_SET"
@@ -84,9 +84,9 @@ export const errors = {
     return new PraxisError("TEMPLATE_NOT_FOUND", `Template not found: ${templatePath}`);
   },
 
-  /** `praxis compile --alias` was given an alias no role file declares. */
-  roleNotFound(alias: string): PraxisError {
-    return new PraxisError("ROLE_NOT_FOUND", `No role found with alias: ${alias}`);
+  /** `praxis compile --alias` was given an alias no expert file declares. */
+  expertNotFound(alias: string): PraxisError {
+    return new PraxisError("EXPERT_NOT_FOUND", `No expert found with alias: ${alias}`);
   },
 
   // --- Validator ---
@@ -132,15 +132,15 @@ export const errors = {
   },
 
   /** No spec file matching a literal specFilePattern exists in the document's directory. */
-  specNotFound(pattern: string, dir: string, documentPath: string): PraxisError {
-    return new PraxisError("SPEC_NOT_FOUND", `No ${pattern} found in ${dir} for ${documentPath}`);
+  specNotFound(pattern: string, dir: string, targetPath: string): PraxisError {
+    return new PraxisError("SPEC_NOT_FOUND", `No ${pattern} found in ${dir} for ${targetPath}`);
   },
 
   /** No spec file matching a glob specFilePattern exists in the document's directory. */
-  specPatternNotFound(pattern: string, dir: string, documentPath: string): PraxisError {
+  specPatternNotFound(pattern: string, dir: string, targetPath: string): PraxisError {
     return new PraxisError(
       "SPEC_NOT_FOUND",
-      `No file matching '${pattern}' found in ${dir} for ${documentPath}`,
+      `No file matching '${pattern}' found in ${dir} for ${targetPath}`,
     );
   },
 

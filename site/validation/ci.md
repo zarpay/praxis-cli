@@ -1,6 +1,6 @@
 # CI Integration
 
-`praxis validate ci` is designed for pull request pipelines. It validates all documents, reports a summary, and exits with a code that your CI system can act on.
+`praxis eval ci` is designed for pull request pipelines. It validates all documents, reports a summary, and exits with a code that your CI system can act on.
 
 ## Basic setup
 
@@ -10,7 +10,7 @@ Add a step to your CI workflow after checkout:
 - name: Validate Praxis documents
   env:
     OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-  run: praxis validate ci
+  run: praxis eval ci
 ```
 
 Exit code 0 means all documents passed (or had only warnings). Exit code 1 means at least one document has a hard error.
@@ -20,7 +20,7 @@ Exit code 0 means all documents passed (or had only warnings). Exit code 1 means
 Fail on warnings as well as errors:
 
 ```bash
-praxis validate ci --strict
+praxis eval ci --strict
 ```
 
 Use this if your team treats spec warnings as blocking — for example, in a repository where every document must be fully compliant before merge.
@@ -41,8 +41,8 @@ name: Validate Knowledge
 on:
   pull_request:
     paths:
-      - 'roles/**'
-      - 'responsibilities/**'
+      - 'experts/**'
+      - 'practices/**'
       - 'reference/**'
       - 'context/**'
 
@@ -63,21 +63,21 @@ jobs:
       - name: Validate documents
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: praxis validate ci --strict
+        run: praxis eval ci --strict
 ```
 
 The `paths` filter on the trigger means this workflow only runs when knowledge documents change — not on every PR.
 
 ## Checking project health without validation
 
-`praxis status` exits with code 1 if there are structural issues (dangling references, orphaned responsibilities, missing required frontmatter fields). It does not require an API key, so it can run cheaply on every PR:
+`praxis status` exits with code 1 if there are structural issues (dangling references, orphaned practices, missing required frontmatter fields). It does not require an API key, so it can run cheaply on every PR:
 
 ```yaml
 - name: Check project health
   run: praxis status
 ```
 
-Use `praxis status` as a fast first check and `praxis validate ci` as the deeper LLM-backed check.
+Use `praxis status` as a fast first check and `praxis eval ci` as the deeper LLM-backed check.
 
 ## Managing API costs
 
@@ -85,11 +85,11 @@ A few practices that help keep validation costs predictable:
 
 - **Commit the cache** — unchanged documents are free.
 - **Use `paths` triggers** — only validate when knowledge files change.
-- **Use `--type` to scope** — if only roles changed, `praxis validate all --type roles` avoids re-validating everything.
+- **Use `--type` to scope** — if only experts changed, `praxis eval run --type experts` avoids re-validating everything.
 - **Pick an efficient model** — the default `x-ai/grok-4.1-fast` is tuned for speed and cost. Swap for a larger model if you need more nuanced judgment on complex specs.
 
 ## See also
 
-- [praxis validate](/commands/validate)
+- [praxis eval run](/commands/eval)
 - [Caching](/validation/caching)
 - [praxis status](/commands/status)

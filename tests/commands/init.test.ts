@@ -95,13 +95,14 @@ describe("InitCommand", () => {
       agentProfilesOutputDir: string;
       plugins: string[];
       sources: string[];
-      rolesDir: string;
+      expertsDir: string;
+      practicesDir: string;
       validation: { apiKeyEnvVar: string; model: string };
     }>(configPath);
     expect(config.agentProfilesOutputDir).toBe("./agent-profiles");
     expect(config.plugins).toEqual([]);
-    expect(config.sources).toEqual(["roles", "responsibilities", "reference", "context"]);
-    expect(config.rolesDir).toBe("roles");
+    expect(config.sources).toEqual(["experts", "practices", "reference", "context"]);
+    expect(config.expertsDir).toBe("experts");
     expect(config.validation).toEqual({
       apiKeyEnvVar: "OPENROUTER_API_KEY",
       model: "x-ai/grok-4.1-fast",
@@ -227,7 +228,7 @@ describe("InitCommand", () => {
     new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     // Scaffold files exist
-    expect(existsSync(join(dir, "roles", "README.md"))).toBe(true);
+    expect(existsSync(join(dir, "experts", "README.md"))).toBe(true);
 
     // Unrelated files preserved
     expect(readFileSync(join(dir, "src", "app.ts"), "utf-8")).toBe("console.log('hello');\n");
@@ -244,8 +245,8 @@ describe("InitCommand", () => {
       "context/constitution",
       "context/conventions",
       "context/lenses",
-      "roles",
-      "responsibilities",
+      "experts",
+      "practices",
       "reference",
     ];
 

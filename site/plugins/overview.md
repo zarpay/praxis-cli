@@ -4,10 +4,10 @@ Plugins receive compiled agent profiles and transform or extend them for specifi
 
 ## How plugins work
 
-After compiling a role, Praxis:
+After compiling an expert, Praxis:
 
 1. Writes the pure profile to `{agentProfilesOutputDir}/{alias}.md`
-2. Passes the profile content and role metadata to each enabled plugin
+2. Passes the profile content and expert metadata to each enabled plugin
 3. Each plugin writes its own output to its configured output directory
 
 Plugins are stateless — they receive a profile string and metadata, and they write files. They do not modify the compilation process or the pure profile output.
