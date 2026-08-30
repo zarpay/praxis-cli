@@ -62,8 +62,13 @@ export class Judge {
 
   private readonly specFilePattern: string;
 
+  /** Whether the target is one file or a pre-assembled cohort of files. */
+  private readonly kind: "file" | "cohort";
+
   constructor({
     targetPath,
+    targetContent,
+    kind = "file",
     specPath,
     specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
     useCache = true,
@@ -72,6 +77,9 @@ export class Judge {
     model,
   }: {
     targetPath: string;
+    /** Pre-assembled judgment input (cohorts); read from targetPath when omitted. */
+    targetContent?: string;
+    kind?: "file" | "cohort";
     specPath?: string;
     specFilePattern?: string;
     useCache?: boolean;
@@ -80,7 +88,8 @@ export class Judge {
     model?: string;
   }) {
     this.targetPath = targetPath;
-    this.targetContent = readText(targetPath);
+    this.targetContent = targetContent ?? readText(targetPath);
+    this.kind = kind;
     this.targetType = this.detectDocumentType();
     this.specFilePattern = specFilePattern;
     this.specPath = specPath ?? this.findSpec();
@@ -232,16 +241,26 @@ export class Judge {
 
   /** Builds the user prompt sent to the LLM for validation. */
   private buildValidationQuestion(): string {
+    const subject =
+      this.kind === "cohort"
+        ? `## FILES TO VALIDATE
+
+The following files form one unit (cohort). Judge them together as a
+set against the specification; each file is labeled with its path.
+
+Cohort: ${this.targetPath}`
+        : `## FILE TO VALIDATE
+
+File: ${baseName(this.targetPath)}
+Directory: ${parentDir(this.targetPath)}`;
+
     return `## SPECIFICATION
 
 \`\`\`
 ${this.specContent}
 \`\`\`
 
-## FILE TO VALIDATE
-
-File: ${baseName(this.targetPath)}
-Directory: ${parentDir(this.targetPath)}
+${subject}
 
 \`\`\`
 ${this.targetContent}

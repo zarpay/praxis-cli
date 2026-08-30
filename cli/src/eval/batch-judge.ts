@@ -6,6 +6,7 @@ import fg from "fast-glob";
 import { Frontmatter } from "@/core/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
+import { readText } from "@/core/files.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
 import { CacheManager } from "@/eval/cache-manager.js";
 import { Judge } from "@/eval/judge.js";
@@ -44,7 +45,26 @@ export interface EvalSummary {
   >;
 }
 
-/** A validation domain: a spec file and the documents it validates. */
+/** How a spec groups its targets into evaluation units. */
+type CohortMode = "by_file" | "by_directory";
+
+/** The accepted `cohort:` frontmatter values. */
+const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
+
+/**
+ * One evaluation unit: what receives a single verdict.
+ *
+ * Under `by_file` (the default) a unit is one file and `path` is that
+ * file. Under `by_directory` a unit is a directory matched by the
+ * spec's `paths:` patterns, `path` is the directory, and `files` are
+ * every file it contains — judged together as one input.
+ */
+interface EvalUnit {
+  path: string;
+  files: string[];
+}
+
+/** A validation domain: a spec file and the targets it validates. */
 interface ValidationDomain {
   /** Directory containing the spec file. */
   dir: string;
@@ -52,8 +72,12 @@ interface ValidationDomain {
   specPath: string;
   /** Type label derived from the spec's directory (root-relative path). */
   type: string;
-  /** Explicit target list when the spec declares `paths:` frontmatter. */
+  /** How targets group into evaluation units. */
+  cohort: CohortMode;
+  /** Explicit target files when the spec declares `paths:` (by_file). */
   targetFiles?: string[];
+  /** Matched directories when the spec declares `cohort: by_directory`. */
+  targetDirs?: string[];
 }
 
 /**
@@ -169,16 +193,16 @@ export class BatchJudge {
     this.sourceDocs = this.collectSourceDocuments();
 
     const queue = domains.flatMap((domain) =>
-      this.resolveDocuments(domain).map((docPath) => ({ docPath, domain })),
+      this.resolveUnits(domain).map((unit) => ({ unit, domain })),
     );
 
     this.validatedCount = 0;
     this.totalToValidate = queue.length;
 
-    for (const { docPath, domain } of queue) {
+    for (const { unit, domain } of queue) {
       if (this.stoppedEarly) break;
 
-      await this.validateDocument(docPath, domain.specPath, domain.type);
+      await this.validateUnit(unit, domain.specPath, domain.type);
       this.checkFailFast();
     }
 
@@ -186,14 +210,15 @@ export class BatchJudge {
   }
 
   /**
-   * Returns all files targeted by discovered validation specs.
+   * Returns the path of every evaluation unit the discovered specs target.
    *
-   * Includes files of any extension targeted via spec `paths:` frontmatter,
-   * not just .md files. Used by status to compute accurate coverage counts.
+   * Under `by_file` these are files of any extension; under
+   * `cohort: by_directory` each matched directory is one unit. Used by
+   * status to compute accurate coverage counts.
    */
   listTargetFiles(): string[] {
     const domains = this.discoverValidationDomains();
-    return domains.flatMap((domain) => this.resolveDocuments(domain));
+    return domains.flatMap((domain) => this.resolveUnits(domain).map((unit) => unit.path));
   }
 
   /**
@@ -268,14 +293,23 @@ export class BatchJudge {
   }
 
   /**
-   * Returns the list of documents a domain should validate.
+   * Returns the evaluation units a domain should validate.
    *
-   * Uses `targetFiles` when the spec declared `paths` frontmatter,
-   * otherwise scans the spec's own directory for sibling .md files.
+   * `cohort: by_directory` domains yield one unit per matched directory,
+   * containing every (non-spec, non-template) file under it; empty
+   * directories yield no unit. `by_file` domains yield one unit per
+   * target file — from `paths:` when declared, otherwise the spec's
+   * sibling .md files.
    */
-  private resolveDocuments(domain: ValidationDomain): string[] {
+  private resolveUnits(domain: ValidationDomain): EvalUnit[] {
+    if (domain.cohort === "by_directory") {
+      return (domain.targetDirs ?? [])
+        .map((dir) => ({ path: dir, files: this.collectMembers(dir) }))
+        .filter((unit) => unit.files.length > 0);
+    }
+
     if (domain.targetFiles) {
-      return domain.targetFiles;
+      return domain.targetFiles.map((file) => ({ path: file, files: [file] }));
     }
 
     return fg
@@ -289,7 +323,25 @@ export class BatchJudge {
       .filter((f) => {
         const name = baseName(f);
         return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
-      });
+      })
+      .map((file) => ({ path: file, files: [file] }));
+  }
+
+  /** Collects a cohort directory's member files, sorted, spec/template-filtered. */
+  private collectMembers(dir: string): string[] {
+    return fg
+      .sync("**/*", {
+        cwd: dir,
+        onlyFiles: true,
+        absolute: true,
+        dot: true,
+        ignore: this.absoluteIgnore,
+      })
+      .filter((f) => {
+        const name = baseName(f);
+        return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
+      })
+      .sort();
   }
 
   /**
@@ -318,8 +370,21 @@ export class BatchJudge {
 
         const fm = Frontmatter.fromFile(specPath);
         const pathPatterns = fm.array("paths") as string[];
+        const cohort = this.readCohort(fm, specPath);
 
-        if (pathPatterns.length > 0) {
+        if (cohort === "by_directory") {
+          const targetDirs = fg
+            .sync(pathPatterns, {
+              cwd: this.root,
+              onlyDirectories: true,
+              absolute: true,
+              dot: true,
+              ignore: this.absoluteIgnore,
+            })
+            .sort();
+
+          domains.push({ dir, specPath, type, cohort, targetDirs });
+        } else if (pathPatterns.length > 0) {
           const targetFiles = fg
             .sync(pathPatterns, {
               cwd: this.root,
@@ -333,14 +398,33 @@ export class BatchJudge {
               return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
             });
 
-          domains.push({ dir, specPath, type, targetFiles });
+          domains.push({ dir, specPath, type, cohort, targetFiles });
         } else {
-          domains.push({ dir, specPath, type });
+          domains.push({ dir, specPath, type, cohort });
         }
       }
     }
 
     return domains;
+  }
+
+  /**
+   * Reads and validates a spec's `cohort:` frontmatter value.
+   *
+   * @throws PraxisError when the value is outside the two-member enum
+   */
+  private readCohort(fm: Frontmatter, specPath: string): CohortMode {
+    const raw = fm.value("cohort");
+
+    if (raw === undefined || raw === null) {
+      return "by_file";
+    }
+
+    if (typeof raw === "string" && (COHORT_MODES as string[]).includes(raw)) {
+      return raw as CohortMode;
+    }
+
+    throw errors.invalidCohortValue(String(raw), relativePath(this.root, specPath));
   }
 
   /** Checks if the last result triggers fail-fast (stops on errors, not warnings). */
@@ -355,21 +439,28 @@ export class BatchJudge {
   }
 
   /**
-   * Validates a single document and appends the result.
+   * Validates one evaluation unit and appends the result.
    *
+   * Single-file units judge the file as-is; cohort units assemble every
+   * member into one path-labeled judgment input, so the set receives a
+   * single verdict whose cache entry is keyed on the member contents.
    * Tracks cache hit/miss statistics for reporting.
    */
-  private async validateDocument(docPath: string, specPath: string, type: string): Promise<void> {
+  private async validateUnit(unit: EvalUnit, specPath: string, type: string): Promise<void> {
     this.validatedCount++;
     const index = this.validatedCount;
     const total = this.totalToValidate;
     const counter = chalk.dim(`[${index}/${total}]`);
+    const isCohort = unit.files.length > 1 || unit.files[0] !== unit.path;
+    const label = isCohort ? ` ${chalk.dim(`(cohort · ${unit.files.length} files)`)}` : "";
 
-    console.log(`\n${counter} ${chalk.bold(baseName(docPath))}`);
+    console.log(`\n${counter} ${chalk.bold(baseName(unit.path))}${label}`);
 
     try {
       const judge = new Judge({
-        targetPath: docPath,
+        targetPath: unit.path,
+        targetContent: isCohort ? this.assembleCohort(unit) : undefined,
+        kind: isCohort ? "cohort" : "file",
         specPath,
         specFilePattern: this.specFilePattern,
         useCache: this.useCache,
@@ -388,9 +479,9 @@ export class BatchJudge {
 
       const batchResult: TargetVerdict = {
         ...result,
-        path: docPath,
+        path: unit.path,
         type,
-        filename: baseName(docPath),
+        filename: baseName(unit.path),
       };
 
       if (result.compliant) {
@@ -408,14 +499,24 @@ export class BatchJudge {
       console.log(`\t${chalk.red("✗ ERROR")}`);
       console.log(`\t${chalk.dim("·")} ${(err as Error).message}`);
       this.results.push({
-        path: docPath,
+        path: unit.path,
         type,
-        filename: baseName(docPath),
+        filename: baseName(unit.path),
         compliant: false,
         severity: "error",
         issues: [`Validation failed: ${(err as Error).message}`],
         reason: (err as Error).message,
       });
     }
+  }
+
+  /**
+   * Assembles a cohort's members into one judgment input, each labeled
+   * with its project-relative path so critiques can locate their file.
+   */
+  private assembleCohort(unit: EvalUnit): string {
+    return unit.files
+      .map((file) => `===== FILE: ${relativePath(this.root, file)} =====\n\n${readText(file)}`)
+      .join("\n\n");
   }
 }

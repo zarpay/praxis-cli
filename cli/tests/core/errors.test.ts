@@ -40,6 +40,14 @@ describe("errors", () => {
     expect(err.message).toBe("Template not found: /scaffold/core/roles/_template.md");
   });
 
+  it("invalidCohortValue", () => {
+    const err = errors.invalidCohortValue("by_magic", "docs/services.sme.md");
+    expect(err.code).toBe("INVALID_COHORT");
+    expect(err.message).toBe(
+      'Invalid cohort value "by_magic" in docs/services.sme.md — expected "by_file" or "by_directory"',
+    );
+  });
+
   it("unknownDocumentType", () => {
     const err = errors.unknownDocumentType("bogus");
     expect(err.code).toBe("UNKNOWN_DOCUMENT_TYPE");

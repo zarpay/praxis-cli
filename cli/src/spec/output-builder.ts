@@ -23,6 +23,8 @@ export interface AgentMetadata {
   permissionMode?: string;
   /** Glob patterns for files this profile validates (written as paths: in output). */
   validates?: string[];
+  /** How validated targets group into evaluation units (written as cohort: in output). */
+  cohort?: string;
 }
 
 /**

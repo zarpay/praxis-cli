@@ -115,6 +115,52 @@ describe("ExpertCompiler", () => {
     });
   });
 
+  describe("cohort frontmatter", () => {
+    it("compiles cohort through to the pure profile frontmatter", async () => {
+      const expertFile = join(expertsDir, "cohort-expert.md");
+      writeFileSync(
+        expertFile,
+        [
+          "---",
+          "alias: Grouper",
+          "description: judges services by directory",
+          "validates:",
+          '  - "src/services/*"',
+          "cohort: by_directory",
+          "---",
+          "# Grouper",
+        ].join("\n"),
+      );
+
+      await compiler.compile(expertFile);
+      const profile = readFileSync(join(agentProfilesDir, "grouper.md"), "utf-8");
+
+      expect(profile).toContain("cohort: by_directory");
+    });
+
+    it("compiles cohort through to the Claude Code agent frontmatter", async () => {
+      const expertFile = join(expertsDir, "cohort-expert.md");
+      writeFileSync(
+        expertFile,
+        [
+          "---",
+          "alias: Grouper",
+          "description: judges services by directory",
+          "validates:",
+          '  - "src/services/*"',
+          "cohort: by_directory",
+          "---",
+          "# Grouper",
+        ].join("\n"),
+      );
+
+      await compiler.compile(expertFile);
+      const agent = readFileSync(join(agentsOutputDir, "grouper.md"), "utf-8");
+
+      expect(agent).toContain("cohort: by_directory");
+    });
+  });
+
   describe("legacy frontmatter", () => {
     it("inlines files listed under the deprecated responsibilities: key", async () => {
       const legacyFile = join(expertsDir, "legacy.md");

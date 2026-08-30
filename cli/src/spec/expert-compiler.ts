@@ -142,10 +142,18 @@ export class ExpertCompiler {
 
     if (profilesDir) {
       const validates = metadata?.validates;
-      const content =
-        validates && validates.length > 0
-          ? `---\npaths:\n${validates.map((p) => `  - "${p}"`).join("\n")}\n---\n\n${profile}`
-          : profile;
+      let content = profile;
+
+      if (validates && validates.length > 0) {
+        const lines = [`paths:`, ...validates.map((p) => `  - "${p}"`)];
+
+        if (metadata.cohort) {
+          lines.push(`cohort: ${metadata.cohort}`);
+        }
+
+        content = `---\n${lines.join("\n")}\n---\n\n${profile}`;
+      }
+
       writeText(joinPath(profilesDir, `${alias.toLowerCase()}.md`), content);
     }
 
@@ -286,6 +294,10 @@ export class ExpertCompiler {
     const validates = fm.array("validates") as string[];
 
     if (validates.length > 0) metadata.validates = validates;
+
+    const cohort = fm.value("cohort") as string | undefined;
+
+    if (cohort) metadata.cohort = cohort;
 
     return metadata;
   }

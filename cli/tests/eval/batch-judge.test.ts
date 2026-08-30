@@ -1,4 +1,6 @@
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { HttpResponse, http } from "msw";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/core/config.js";
@@ -6,6 +8,7 @@ import { BatchJudge } from "@/eval/batch-judge.js";
 import { CacheManager } from "@/eval/cache-manager.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
+  OPENROUTER_URL,
   createOpenRouterServer,
   useOpenRouterResponse,
   validationToolCallResponse,
@@ -364,6 +367,185 @@ describe("BatchJudge", () => {
       // Only counted.md in docs/valid/ should be validated; nothing from docs/ignored/
       expect(results).toHaveLength(1);
       expect(results[0].filename).toBe("counted.md");
+
+      cleanup();
+    });
+  });
+
+  describe("cohort: by_directory", () => {
+    /** A spec grouping first-layer service directories into single units. */
+    function cohortProject() {
+      return createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/services.sme.md":
+            '---\npaths:\n  - "src/services/*"\ncohort: by_directory\n---\n# Service Spec',
+          "src/services/alpha/a.ts": "ALPHA_A_CONTENT",
+          "src/services/alpha/b.ts": "ALPHA_B_CONTENT",
+          "src/services/beta/c.ts": "BETA_C_CONTENT",
+        },
+        validation: { specFilePattern: "*.sme.md" },
+      });
+    }
+
+    it("judges each matched directory as one evaluation unit", async () => {
+      useCompliantFixture();
+      const { root, cleanup } = cohortProject();
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.sme.md",
+      });
+
+      const results = await batch.validateAll();
+
+      expect(results.map((r) => r.filename).sort()).toEqual(["alpha", "beta"]);
+
+      cleanup();
+    });
+
+    it("sends every member file in a single judgment request", async () => {
+      const bodies: string[] = [];
+      server.use(
+        http.post(OPENROUTER_URL, async ({ request }) => {
+          bodies.push(await request.text());
+          return HttpResponse.json(
+            validationToolCallResponse("validation_pass", { reason: "Fully compliant." }),
+          );
+        }),
+      );
+      const { root, cleanup } = cohortProject();
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.sme.md",
+      });
+
+      await batch.validateAll();
+
+      const alphaBody = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
+      expect(alphaBody).toContain("ALPHA_B_CONTENT");
+
+      cleanup();
+    });
+
+    it("labels each member with its project-relative path in the request", async () => {
+      const bodies: string[] = [];
+      server.use(
+        http.post(OPENROUTER_URL, async ({ request }) => {
+          bodies.push(await request.text());
+          return HttpResponse.json(
+            validationToolCallResponse("validation_pass", { reason: "Fully compliant." }),
+          );
+        }),
+      );
+      const { root, cleanup } = cohortProject();
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.sme.md",
+      });
+
+      await batch.validateAll();
+
+      const alphaBody = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
+      expect(alphaBody).toContain("src/services/alpha/a.ts");
+
+      cleanup();
+    });
+
+    it("caches per cohort and invalidates when any member changes", async () => {
+      useCompliantFixture();
+      const { root, abs, cleanup } = cohortProject();
+
+      function makeBatch() {
+        return new BatchJudge({
+          root,
+          sources: ["docs"],
+          apiKeyEnvVar: "OPENROUTER_API_KEY",
+          model: "test",
+          specFilePattern: "*.sme.md",
+        });
+      }
+
+      const first = makeBatch();
+      await first.validateAll();
+      expect(first.cacheStats).toEqual({ hits: 0, misses: 2 });
+
+      const second = makeBatch();
+      await second.validateAll();
+      expect(second.cacheStats).toEqual({ hits: 2, misses: 0 });
+
+      writeFileSync(abs("src/services/alpha/a.ts"), "ALPHA_A_EDITED");
+
+      const third = makeBatch();
+      await third.validateAll();
+      expect(third.cacheStats).toEqual({ hits: 1, misses: 1 });
+
+      cleanup();
+    });
+
+    it("treats cohort: by_file as the ordinary per-file behavior", async () => {
+      useCompliantFixture();
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/services.sme.md":
+            '---\npaths:\n  - "src/services/**/*.ts"\ncohort: by_file\n---\n# Spec',
+          "src/services/alpha/a.ts": "A",
+          "src/services/beta/c.ts": "C",
+        },
+        validation: { specFilePattern: "*.sme.md" },
+      });
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.sme.md",
+      });
+
+      const results = await batch.validateAll();
+
+      expect(results.map((r) => r.filename).sort()).toEqual(["a.ts", "c.ts"]);
+
+      cleanup();
+    });
+
+    it("rejects an unknown cohort value with the accepted options", async () => {
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/services.sme.md": '---\npaths:\n  - "src/*"\ncohort: by_magic\n---\n# Spec',
+          "src/a.ts": "A",
+        },
+        validation: { specFilePattern: "*.sme.md" },
+      });
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        apiKeyEnvVar: "OPENROUTER_API_KEY",
+        model: "test",
+        specFilePattern: "*.sme.md",
+      });
+
+      await expect(batch.validateAll()).rejects.toThrow('Invalid cohort value "by_magic"');
 
       cleanup();
     });

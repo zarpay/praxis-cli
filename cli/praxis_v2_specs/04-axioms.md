@@ -21,7 +21,7 @@ status: proposed | active | deprecated
 mode: judgment | agentic          # see 03; agentic is explicit opt-in
 scope: hunk | file | file+context | cohort | changeset   # see 01; declarations in 03
 context: [ ... ]                  # file+context only; joins the content hash (05)
-cohort: by_directory | glob       # cohort only; membership boundary, never inferred
+cohort: by_file | by_directory    # cohort only; membership boundary, never inferred
 severity: error | warning
 grounded_in: backend/app/events/README.md#payload-schema   # spec traceability, established at ratification
 introduced: 2026-08-29

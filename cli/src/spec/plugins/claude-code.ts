@@ -287,6 +287,10 @@ export class ClaudeCodePlugin implements CompilerPlugin {
       for (const p of metadata.validates) {
         lines.push(`  - "${p}"`);
       }
+
+      if (metadata.cohort) {
+        lines.push(`cohort: ${metadata.cohort}`);
+      }
     }
 
     lines.push("---");

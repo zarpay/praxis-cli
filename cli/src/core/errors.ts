@@ -16,6 +16,7 @@ export type PraxisErrorCode =
   | "FILE_ALREADY_EXISTS"
   | "TEMPLATE_NOT_FOUND"
   | "SPEC_NOT_FOUND"
+  | "INVALID_COHORT"
   | "EXPERT_NOT_FOUND"
   | "DOCUMENT_NOT_FOUND"
   | "VALIDATION_NOT_CONFIGURED"
@@ -123,6 +124,14 @@ export const errors = {
         "  1. Get a key at https://openrouter.ai/keys",
         `  2. Set it: export ${envVarName}=your-key-here`,
       ].join("\n"),
+    );
+  },
+
+  /** A spec declared a `cohort:` value outside the two-member enum. */
+  invalidCohortValue(value: string, specPath: string): PraxisError {
+    return new PraxisError(
+      "INVALID_COHORT",
+      `Invalid cohort value "${value}" in ${specPath} — expected "by_file" or "by_directory"`,
     );
   },
 
