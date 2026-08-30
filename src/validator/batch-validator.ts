@@ -1,11 +1,10 @@
-import { basename, dirname, join, relative } from "node:path";
-
 import chalk from "chalk";
 import fg from "fast-glob";
 
 import { Frontmatter } from "@/compiler/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
+import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
 
 import { CacheManager, type CachedValidationResult } from "./cache-manager.js";
 import { DocumentValidator } from "./document-validator.js";
@@ -118,7 +117,7 @@ export class BatchValidator {
     this.apiKeyEnvVar = apiKeyEnvVar;
     this.model = model;
     this.specFilePattern = specFilePattern;
-    this.absoluteIgnore = ignore.map((p) => join(root, p));
+    this.absoluteIgnore = ignore.map((p) => joinPath(root, p));
   }
 
   /** Whether validation was stopped early due to fail-fast. */
@@ -149,7 +148,7 @@ export class BatchValidator {
    */
   async validateType(type: string): Promise<BatchValidationResult[]> {
     const domains = this.discoverValidationDomains();
-    const matching = domains.filter((d) => d.type === type || basename(d.dir) === type);
+    const matching = domains.filter((d) => d.type === type || baseName(d.dir) === type);
 
     if (matching.length === 0) {
       throw errors.unknownDocumentType(type);
@@ -243,7 +242,7 @@ export class BatchValidator {
     const docs = new Set<string>();
 
     for (const source of this.sources) {
-      const sourceAbsPath = join(this.root, source);
+      const sourceAbsPath = joinPath(this.root, source);
       const allMdFiles = fg.sync("**/*.md", {
         cwd: sourceAbsPath,
         onlyFiles: true,
@@ -253,7 +252,7 @@ export class BatchValidator {
       });
 
       for (const file of allMdFiles) {
-        const name = basename(file);
+        const name = baseName(file);
         if (isSpecFile(name, this.specFilePattern) || name.startsWith("_")) continue;
         docs.add(file);
       }
@@ -281,7 +280,7 @@ export class BatchValidator {
         ignore: this.absoluteIgnore,
       })
       .filter((f) => {
-        const name = basename(f);
+        const name = baseName(f);
         return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
       });
   }
@@ -298,7 +297,7 @@ export class BatchValidator {
     const domains: ValidationDomain[] = [];
 
     for (const source of this.sources) {
-      const sourceAbsPath = join(this.root, source);
+      const sourceAbsPath = joinPath(this.root, source);
       const specPaths = fg.sync(`**/${this.specFilePattern}`, {
         cwd: sourceAbsPath,
         onlyFiles: true,
@@ -307,8 +306,8 @@ export class BatchValidator {
       });
 
       for (const specPath of specPaths) {
-        const dir = dirname(specPath);
-        const type = relative(this.root, dir) || basename(dir);
+        const dir = parentDir(specPath);
+        const type = relativePath(this.root, dir) || baseName(dir);
 
         const fm = Frontmatter.fromFile(specPath);
         const pathPatterns = fm.array("paths") as string[];
@@ -323,7 +322,7 @@ export class BatchValidator {
               ignore: this.absoluteIgnore,
             })
             .filter((f) => {
-              const name = basename(f);
+              const name = baseName(f);
               return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
             });
 
@@ -358,7 +357,7 @@ export class BatchValidator {
     const total = this.totalToValidate;
     const counter = chalk.dim(`[${index}/${total}]`);
 
-    console.log(`\n${counter} ${chalk.bold(basename(docPath))}`);
+    console.log(`\n${counter} ${chalk.bold(baseName(docPath))}`);
 
     try {
       const validator = new DocumentValidator({
@@ -383,7 +382,7 @@ export class BatchValidator {
         ...result,
         path: docPath,
         type,
-        filename: basename(docPath),
+        filename: baseName(docPath),
       };
 
       if (result.compliant) {
@@ -403,7 +402,7 @@ export class BatchValidator {
       this.results.push({
         path: docPath,
         type,
-        filename: basename(docPath),
+        filename: baseName(docPath),
         compliant: false,
         severity: "error",
         issues: [`Validation failed: ${(err as Error).message}`],

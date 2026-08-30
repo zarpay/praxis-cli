@@ -1,9 +1,8 @@
-import { basename, join } from "node:path";
-
 import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
 import { exists, writeText } from "@/core/files.js";
+import { baseName, joinPath } from "@/core/paths.js";
 import { Logger } from "@/core/logger.js";
 import { isSpecFile } from "@/validator/spec-pattern.js";
 
@@ -92,7 +91,7 @@ export class RoleCompiler {
     let compiled = 0;
 
     for (const roleFile of roleFiles) {
-      const name = basename(roleFile);
+      const name = baseName(roleFile);
       if (name === "_template.md" || isSpecFile(name, this.specFilePattern)) {
         continue;
       }
@@ -141,7 +140,7 @@ export class RoleCompiler {
         validates && validates.length > 0
           ? `---\npaths:\n${validates.map((p) => `  - "${p}"`).join("\n")}\n---\n\n${profile}`
           : profile;
-      writeText(join(profilesDir, `${roleAlias.toLowerCase()}.md`), content);
+      writeText(joinPath(profilesDir, `${roleAlias.toLowerCase()}.md`), content);
     }
 
     // Run each enabled plugin
@@ -227,7 +226,7 @@ export class RoleCompiler {
   private readBodies(relPaths: string[], missingLabel: string): string[] {
     return relPaths
       .map((relPath) => {
-        const fullPath = join(this.root, relPath);
+        const fullPath = joinPath(this.root, relPath);
         if (!exists(fullPath)) {
           this.logger.warn(`${missingLabel}: ${relPath}`);
           return null;

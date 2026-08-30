@@ -1,12 +1,18 @@
 import {
+  type FSWatcher,
   copyFileSync,
   existsSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
+  statSync,
   unlinkSync,
+  watch,
   writeFileSync,
 } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
+
+export type { FSWatcher } from "node:fs";
 
 /**
  * Standard file operations for the project.
@@ -66,4 +72,44 @@ export function ensureDir(path: string): void {
 /** Deletes a file. Throws if the path does not exist. */
 export function removeFile(path: string): void {
   unlinkSync(path);
+}
+
+/** Size of a file in bytes. */
+export function fileSize(path: string): number {
+  return statSync(path).size;
+}
+
+/**
+ * Recursively lists all files under a directory.
+ *
+ * @returns Paths relative to `dir`, sorted alphabetically for
+ *   deterministic output
+ */
+export function listFilesRecursive(dir: string): string[] {
+  const results: string[] = [];
+
+  for (const entry of readdirSync(dir)) {
+    const fullPath = join(dir, entry);
+    if (statSync(fullPath).isDirectory()) {
+      results.push(...listFilesRecursive(fullPath).map((child) => join(entry, child)));
+    } else {
+      results.push(entry);
+    }
+  }
+
+  return results.sort();
+}
+
+/**
+ * Watches a directory tree for changes.
+ *
+ * @param dir - Directory to watch recursively
+ * @param onChange - Called with the changed filename (or null when the
+ *   platform cannot report one)
+ * @returns The watcher; callers close() it to stop watching
+ */
+export function watchDir(dir: string, onChange: (filename: string | null) => void): FSWatcher {
+  return watch(dir, { recursive: true }, (_event, filename) => {
+    onChange(filename === null ? null : String(filename));
+  });
 }

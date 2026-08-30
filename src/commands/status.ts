@@ -1,5 +1,3 @@
-import { basename, join, relative, resolve } from "node:path";
-
 import type { Command } from "commander";
 import chalk from "chalk";
 import fg from "fast-glob";
@@ -9,7 +7,7 @@ import { GlobExpander } from "@/compiler/glob-expander.js";
 import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
 import { exists } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
-import { Paths } from "@/core/paths.js";
+import { Paths, baseName, joinPath, relativePath, resolvePath } from "@/core/paths.js";
 import { BatchValidator } from "@/validator/batch-validator.js";
 import { CacheManager } from "@/validator/cache-manager.js";
 import { isSpecFile } from "@/validator/spec-pattern.js";
@@ -99,7 +97,7 @@ export class StatusCommand {
     this.logger = logger;
     this.specFilePattern = this.config.validation?.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN;
     this.globExpander = new GlobExpander(root, this.specFilePattern);
-    this.absoluteIgnore = this.config.ignore.map((p) => resolve(root, p));
+    this.absoluteIgnore = this.config.ignore.map((p) => resolvePath(root, p));
   }
 
   /** Whether a report contains any structural issue worth a non-zero exit. */
@@ -123,7 +121,7 @@ export class StatusCommand {
     let references = 0;
     let contextCount = 0;
     for (const source of this.config.sources) {
-      const sourceDir = resolve(this.root, source);
+      const sourceDir = resolvePath(this.root, source);
       const allFiles = await this.listContentFiles(sourceDir, true);
       for (const file of allFiles) {
         const type = Frontmatter.fromFile(file).value("type") as string | undefined;
@@ -142,7 +140,7 @@ export class StatusCommand {
     for (const roleFile of roleFiles) {
       const fm = Frontmatter.fromFile(roleFile);
       const alias = fm.value("alias") as string | undefined;
-      const roleName = basename(roleFile);
+      const roleName = baseName(roleFile);
 
       if (alias) {
         roleAliases.set(alias.toLowerCase(), roleName);
@@ -166,7 +164,7 @@ export class StatusCommand {
               for (const m of matches) allReferencedResps.add(m);
             }
           } else {
-            const fullPath = join(this.root, pattern);
+            const fullPath = joinPath(this.root, pattern);
             if (!exists(fullPath)) {
               danglingRefs.push({ role: roleName, ref: pattern });
             }
@@ -181,9 +179,9 @@ export class StatusCommand {
     // Find orphaned responsibilities
     const orphanedResponsibilities: string[] = [];
     for (const respFile of respFiles) {
-      const relPath = relative(this.root, respFile);
+      const relPath = relativePath(this.root, respFile);
       if (!allReferencedResps.has(relPath)) {
-        orphanedResponsibilities.push(basename(respFile));
+        orphanedResponsibilities.push(baseName(respFile));
       }
     }
 
@@ -192,7 +190,7 @@ export class StatusCommand {
     for (const respFile of respFiles) {
       const owner = Frontmatter.fromFile(respFile).value("owner") as string | undefined;
       if (owner && !roleAliases.has(owner.toLowerCase())) {
-        unmatchedOwners.push({ responsibility: basename(respFile), owner });
+        unmatchedOwners.push({ responsibility: baseName(respFile), owner });
       }
     }
 
@@ -340,7 +338,7 @@ export class StatusCommand {
     });
 
     return files.filter(
-      (f) => !isSpecFile(f, this.specFilePattern) && !basename(f).startsWith("_"),
+      (f) => !isSpecFile(f, this.specFilePattern) && !baseName(f).startsWith("_"),
     );
   }
 }

@@ -1,6 +1,6 @@
-import { basename } from "node:path";
-
 import picomatch from "picomatch";
+
+import { baseName } from "@/core/paths.js";
 
 /**
  * Checks whether a pattern contains any glob metacharacters.
@@ -24,7 +24,7 @@ export function hasGlobChars(pattern: string): boolean {
  * @param pattern - The configured specFilePattern
  */
 export function isSpecFile(filePathOrName: string, pattern: string): boolean {
-  const name = basename(filePathOrName);
+  const name = baseName(filePathOrName);
   if (!hasGlobChars(pattern)) {
     return name === pattern;
   }

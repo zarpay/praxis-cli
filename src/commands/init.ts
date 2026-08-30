@@ -1,19 +1,16 @@
-import { readdirSync, statSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
-
 import type { Command } from "commander";
 
 import { PraxisConfig } from "@/core/config.js";
-import { copyFile, ensureDir, exists, readText, writeText } from "@/core/files.js";
+import {
+  copyFile,
+  ensureDir,
+  exists,
+  listFilesRecursive,
+  readText,
+  writeText,
+} from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
-
-/**
- * Resolved path to the scaffold directory shipped with the package.
- *
- * At runtime, `import.meta.dirname` resolves to `dist/` (the built output).
- * The scaffold directory sits one level up at the package root.
- */
-const SCAFFOLD_DIR = join(import.meta.dirname, "..", "scaffold");
+import { SCAFFOLD_DIR, joinPath, relativePath, resolvePath } from "@/core/paths.js";
 
 /**
  * Registers the `praxis init` command.
@@ -29,7 +26,7 @@ export function registerInitCommand(program: Command): void {
     .action((directory: string) => {
       const logger = new Logger();
       try {
-        new InitCommand({ targetDir: resolve(directory), logger }).init();
+        new InitCommand({ targetDir: resolvePath(directory), logger }).init();
       } catch (err) {
         logger.error(err instanceof Error ? err.message : String(err));
         process.exit(1);
@@ -84,15 +81,15 @@ export class InitCommand {
 
     // Step 3: Copy plugin scaffold files for each enabled plugin
     for (const pluginEntry of config.plugins) {
-      const pluginScaffoldDir = join(this.scaffoldDir, "plugins", pluginEntry.name);
+      const pluginScaffoldDir = joinPath(this.scaffoldDir, "plugins", pluginEntry.name);
       if (!exists(pluginScaffoldDir)) {
         continue;
       }
 
       // Resolve the plugin output directory within the target
       const pluginOutputDir = pluginEntry.outputDir
-        ? resolve(this.targetDir, pluginEntry.outputDir)
-        : join(this.targetDir, "plugins", "praxis");
+        ? resolvePath(this.targetDir, pluginEntry.outputDir)
+        : joinPath(this.targetDir, "plugins", "praxis");
 
       const templateVars: Record<string, string> = {
         claudeCodePluginName: pluginEntry.claudeCodePluginName ?? "praxis",
@@ -123,13 +120,13 @@ export class InitCommand {
    * @returns Count of files created and skipped
    */
   private copyCoreScaffold(): { created: number; skipped: number } {
-    const sourceDir = join(this.scaffoldDir, "core");
+    const sourceDir = joinPath(this.scaffoldDir, "core");
     let created = 0;
     let skipped = 0;
 
-    for (const relPath of this.walkDir(sourceDir)) {
-      const srcPath = join(sourceDir, relPath);
-      const destPath = join(this.targetDir, relPath);
+    for (const relPath of listFilesRecursive(sourceDir)) {
+      const srcPath = joinPath(sourceDir, relPath);
+      const destPath = joinPath(this.targetDir, relPath);
 
       if (exists(destPath)) {
         skipped++;
@@ -162,9 +159,9 @@ export class InitCommand {
     let created = 0;
     let skipped = 0;
 
-    for (const relPath of this.walkDir(sourceDir)) {
-      const srcPath = join(sourceDir, relPath);
-      const destPath = join(targetPluginDir, relPath);
+    for (const relPath of listFilesRecursive(sourceDir)) {
+      const srcPath = joinPath(sourceDir, relPath);
+      const destPath = joinPath(targetPluginDir, relPath);
 
       if (exists(destPath)) {
         skipped++;
@@ -181,33 +178,11 @@ export class InitCommand {
         copyFile(srcPath, destPath);
       }
 
-      const displayPath = relative(this.targetDir, destPath);
+      const displayPath = relativePath(this.targetDir, destPath);
       this.logger.success(`Created ${displayPath}`);
       created++;
     }
 
     return { created, skipped };
-  }
-
-  /**
-   * Recursively walks a directory, yielding relative file paths.
-   *
-   * Returns paths sorted alphabetically for deterministic output.
-   */
-  private walkDir(dir: string, base = dir): string[] {
-    const results: string[] = [];
-
-    for (const entry of readdirSync(dir)) {
-      const fullPath = join(dir, entry);
-      const stat = statSync(fullPath);
-
-      if (stat.isDirectory()) {
-        results.push(...this.walkDir(fullPath, base));
-      } else {
-        results.push(relative(base, fullPath));
-      }
-    }
-
-    return results.sort();
   }
 }

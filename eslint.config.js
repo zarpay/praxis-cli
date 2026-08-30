@@ -68,6 +68,24 @@ export default tseslint.config(
     },
   },
   {
+    // File and path operations go through the standard core modules;
+    // node:fs and node:path are importable only inside them. Tests may
+    // use the node primitives directly to set up fixtures.
+    files: ["src/**/*.ts"],
+    ignores: ["src/core/files.ts", "src/core/paths.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // The config file itself is plain JS and outside the tsconfig project.
     files: ["eslint.config.js"],
     extends: [tseslint.configs.disableTypeChecked],

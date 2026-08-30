@@ -1,8 +1,6 @@
-import { resolve } from "node:path";
-
 import { errors } from "./errors.js";
 import { exists, readJson } from "./files.js";
-import { configFile } from "./paths.js";
+import { configFile, resolvePath } from "./paths.js";
 
 /** Normalized plugin configuration entry. */
 export interface PluginConfigEntry {
@@ -88,7 +86,7 @@ export class PraxisConfig {
     if (val === false) {
       return null;
     }
-    return resolve(this.root, val);
+    return resolvePath(this.root, val);
   }
 
   /** Array of normalized plugin config entries. */
@@ -118,12 +116,12 @@ export class PraxisConfig {
 
   /** Absolute path to the roles directory for compilation. */
   get rolesDir(): string {
-    return resolve(this.root, this.data.rolesDir);
+    return resolvePath(this.root, this.data.rolesDir);
   }
 
   /** Absolute path to the responsibilities directory. */
   get responsibilitiesDir(): string {
-    return resolve(this.root, this.data.responsibilitiesDir);
+    return resolvePath(this.root, this.data.responsibilitiesDir);
   }
 
   /** Validation configuration, or undefined if not configured. */

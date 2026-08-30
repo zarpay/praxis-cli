@@ -1,23 +1,13 @@
-import { join, relative } from "node:path";
-
 import type { Command } from "commander";
 
 import { PraxisConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { exists, readText, writeText } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
-import { Paths } from "@/core/paths.js";
+import { Paths, SCAFFOLD_DIR, joinPath, relativePath } from "@/core/paths.js";
 
 /** Content types `praxis add` can create. */
 export type AddableType = "role" | "responsibility";
-
-/**
- * Resolved path to the scaffold directory shipped with the package.
- *
- * At runtime, `import.meta.dirname` resolves to `dist/` (the built output).
- * The scaffold directory sits one level up at the package root.
- */
-const SCAFFOLD_DIR = join(import.meta.dirname, "..", "scaffold");
 
 /**
  * Registers the `praxis add` command group.
@@ -93,9 +83,9 @@ export class AddCommand {
   add(type: AddableType, name: string): void {
     const subdir = type === "role" ? "roles" : "responsibilities";
     const targetDir = type === "role" ? this.config.rolesDir : this.config.responsibilitiesDir;
-    const templatePath = join(this.scaffoldDir, "core", subdir, "_template.md");
-    const targetFile = join(targetDir, `${name}.md`);
-    const relTargetFile = relative(this.root, targetFile);
+    const templatePath = joinPath(this.scaffoldDir, "core", subdir, "_template.md");
+    const targetFile = joinPath(targetDir, `${name}.md`);
+    const relTargetFile = relativePath(this.root, targetFile);
 
     if (exists(targetFile)) {
       throw errors.fileAlreadyExists(relTargetFile);

@@ -1,10 +1,9 @@
-import { dirname, join } from "node:path";
-
 import chalk from "chalk";
 import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, readText } from "@/core/files.js";
+import { joinPath, parentDir } from "@/core/paths.js";
 
 import type { CacheFileData } from "./cache-manager.js";
 import { contentHash } from "./cache-manager.js";
@@ -85,10 +84,10 @@ export function computeCurrentHash(
 
 /** Finds the spec file in the same directory as the document. */
 function findSpecForDocument(documentPath: string, specFilePattern: string): string | null {
-  const dir = dirname(documentPath);
+  const dir = parentDir(documentPath);
 
   if (!hasGlobChars(specFilePattern)) {
-    const specPath = join(dir, specFilePattern);
+    const specPath = joinPath(dir, specFilePattern);
     return exists(specPath) ? specPath : null;
   }
 

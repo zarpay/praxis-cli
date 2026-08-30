@@ -1,6 +1,3 @@
-import { watch, type FSWatcher } from "node:fs";
-import { resolve } from "node:path";
-
 import type { Command } from "commander";
 import fg from "fast-glob";
 
@@ -8,8 +5,9 @@ import { Frontmatter } from "@/compiler/frontmatter.js";
 import { RoleCompiler } from "@/compiler/role-compiler.js";
 import { PraxisConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
+import { type FSWatcher, watchDir } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
-import { Paths } from "@/core/paths.js";
+import { Paths, resolvePath } from "@/core/paths.js";
 
 /**
  * Registers the `praxis compile` command.
@@ -114,17 +112,15 @@ export class CompileCommand {
     const watchers: FSWatcher[] = [];
 
     for (const source of this.config.sources) {
-      const sourceDir = resolve(this.root, source);
+      const sourceDir = resolvePath(this.root, source);
       this.logger.info(`Watching ${sourceDir} for changes...`);
 
-      const watcher = watch(sourceDir, { recursive: true }, (_event, filename) => {
+      const watcher = watchDir(sourceDir, (filename) => {
         if (timer) clearTimeout(timer);
 
         timer = setTimeout(async () => {
           try {
-            this.logger.info(
-              `Change detected${filename ? `: ${String(filename)}` : ""}, recompiling...`,
-            );
+            this.logger.info(`Change detected${filename ? `: ${filename}` : ""}, recompiling...`);
             await this.compiler.compileAll();
           } catch (err) {
             this.logger.error(err instanceof Error ? err.message : String(err));

@@ -1,8 +1,7 @@
-import { basename } from "node:path";
-
 import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
+import { baseName } from "@/core/paths.js";
 import { hasGlobChars, isSpecFile } from "@/validator/spec-pattern.js";
 
 /**
@@ -60,7 +59,7 @@ export class GlobExpander {
 
   /** Checks whether a file path ends with an excluded filename. */
   private isExcluded(filePath: string): boolean {
-    const name = basename(filePath);
+    const name = baseName(filePath);
     return name === "_template.md" || isSpecFile(name, this.specFilePattern);
   }
 }

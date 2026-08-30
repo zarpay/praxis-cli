@@ -1,5 +1,3 @@
-import { resolve } from "node:path";
-
 import type { Command } from "commander";
 
 import chalk from "chalk";
@@ -8,7 +6,7 @@ import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig, type ValidationConfig } from "
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
-import { Paths } from "@/core/paths.js";
+import { Paths, resolvePath } from "@/core/paths.js";
 import { BatchValidator, type ValidationSummary } from "@/validator/batch-validator.js";
 import { type CachedValidationResult, CacheManager } from "@/validator/cache-manager.js";
 import { DocumentValidator } from "@/validator/document-validator.js";
@@ -250,7 +248,7 @@ export class ValidateCommand {
    * @throws PraxisError if the document does not exist
    */
   report(path: string, options: { verbose: boolean }): void {
-    const absolutePath = resolve(path);
+    const absolutePath = resolvePath(path);
 
     if (!exists(absolutePath)) {
       throw errors.documentNotFound(path);

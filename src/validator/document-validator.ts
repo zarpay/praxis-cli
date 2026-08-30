@@ -1,11 +1,10 @@
-import { basename, dirname, join } from "node:path";
-
 import fg from "fast-glob";
 
 import { Frontmatter } from "@/compiler/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { exists, readText } from "@/core/files.js";
+import { baseName, joinPath, parentDir } from "@/core/paths.js";
 
 import { type CachedValidationResult, CacheManager, contentHash } from "./cache-manager.js";
 import { SYSTEM_PROMPT, VALIDATION_TOOLS } from "./prompts.js";
@@ -231,8 +230,8 @@ ${this.specContent}
 
 ## FILE TO VALIDATE
 
-File: ${basename(this.documentPath)}
-Directory: ${dirname(this.documentPath)}
+File: ${baseName(this.documentPath)}
+Directory: ${parentDir(this.documentPath)}
 
 \`\`\`
 ${this.documentContent}
@@ -247,7 +246,7 @@ ${this.documentContent}
    * the type is inferred from the document's directory path.
    */
   private detectDocumentType(): DocumentType {
-    if (basename(this.documentPath).startsWith("_")) {
+    if (baseName(this.documentPath).startsWith("_")) {
       return "template";
     }
 
@@ -271,10 +270,10 @@ ${this.documentContent}
 
   /** Finds the spec file in the document's directory using the configured pattern. */
   private findSpec(): string {
-    const baseDir = dirname(this.documentPath);
+    const baseDir = parentDir(this.documentPath);
 
     if (!hasGlobChars(this.specFilePattern)) {
-      const specPath = join(baseDir, this.specFilePattern);
+      const specPath = joinPath(baseDir, this.specFilePattern);
       if (exists(specPath)) return specPath;
       throw errors.specNotFound(this.specFilePattern, baseDir, this.documentPath);
     }

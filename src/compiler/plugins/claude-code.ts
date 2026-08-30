@@ -1,6 +1,5 @@
-import { join, resolve } from "node:path";
-
 import { exists, readJson, writeJson, writeText } from "@/core/files.js";
+import { joinPath, resolvePath } from "@/core/paths.js";
 
 import type { AgentMetadata } from "../output-builder.js";
 import type { CompilerPlugin, PluginOptions } from "./types.js";
@@ -198,9 +197,9 @@ export class ClaudeCodePlugin implements CompilerPlugin {
   constructor({ root, pluginConfig }: PluginOptions) {
     this.claudeCodePluginName = pluginConfig?.claudeCodePluginName ?? "praxis";
     this.outputDir = pluginConfig?.outputDir
-      ? resolve(root, pluginConfig.outputDir)
-      : join(root, "plugins", "praxis");
-    this.agentsDir = join(this.outputDir, "agents");
+      ? resolvePath(root, pluginConfig.outputDir)
+      : joinPath(root, "plugins", "praxis");
+    this.agentsDir = joinPath(this.outputDir, "agents");
   }
 
   /**
@@ -218,7 +217,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
     const frontmatter = this.buildFrontmatter(metadata);
     const content = frontmatter ? frontmatter + "\n" + profileContent : profileContent;
 
-    writeText(join(this.agentsDir, `${roleAlias.toLowerCase()}.md`), content);
+    writeText(joinPath(this.agentsDir, `${roleAlias.toLowerCase()}.md`), content);
   }
 
   /**
@@ -229,7 +228,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
    * creates it from defaults.
    */
   private ensurePluginJson(): void {
-    const pluginJsonPath = join(this.outputDir, ".claude-plugin", "plugin.json");
+    const pluginJsonPath = joinPath(this.outputDir, ".claude-plugin", "plugin.json");
 
     if (exists(pluginJsonPath)) {
       const existing = readJson<Record<string, unknown>>(pluginJsonPath);
@@ -247,8 +246,8 @@ export class ClaudeCodePlugin implements CompilerPlugin {
    * documents without needing an OpenRouter API key.
    */
   private ensureCommands(): void {
-    writeText(join(this.outputDir, "commands", "praxis-resolve.md"), PRAXIS_RESOLVE_COMMAND);
-    writeText(join(this.outputDir, "skills", "praxis", "SKILL.md"), PRAXIS_SKILL);
+    writeText(joinPath(this.outputDir, "commands", "praxis-resolve.md"), PRAXIS_RESOLVE_COMMAND);
+    writeText(joinPath(this.outputDir, "skills", "praxis", "SKILL.md"), PRAXIS_SKILL);
   }
 
   /**

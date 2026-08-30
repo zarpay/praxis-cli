@@ -74,4 +74,5 @@ Plugins implement `CompilerPlugin` interface (`src/compiler/plugins/types.ts`): 
 - **Formatting:** Double quotes, semicolons, trailing commas, 100-char line width
 - **Test location:** `tests/` mirrors `src/` structure, uses `.test.ts` suffix
 - **Excluded from compilation:** Files named `_template.md` or `README.md`
+- **File/path operations:** import from `@/core/files.js` (I/O: readText, writeText, exists, ...) and `@/core/paths.js` (composition: joinPath, baseName, ...; well-known locations: configFile, SCAFFOLD_DIR, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced).
 - **Logging:** Logger class writes to stderr (keeps stdout clean for piping)

@@ -1,12 +1,10 @@
 import { createHash } from "node:crypto";
-import { statSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
 
 import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
-import { exists, readText, removeFile, writeText } from "@/core/files.js";
-import { validationCacheDir } from "@/core/paths.js";
+import { exists, fileSize, readText, removeFile, writeText } from "@/core/files.js";
+import { baseName, joinPath, parentDir, validationCacheDir } from "@/core/paths.js";
 
 import { isSpecFile } from "./spec-pattern.js";
 
@@ -121,10 +119,10 @@ export class CacheManager {
       relativePath = documentPath;
     }
 
-    const dirPath = dirname(relativePath);
-    const base = basename(relativePath, ".md");
+    const dirPath = parentDir(relativePath);
+    const base = baseName(relativePath, ".md");
 
-    return join(this.cacheRoot, dirPath, `${base}.json`);
+    return joinPath(this.cacheRoot, dirPath, `${base}.json`);
   }
 
   /**
@@ -331,7 +329,7 @@ export class CacheManager {
 
     for (const file of cacheFiles) {
       try {
-        totalSize += statSync(file).size;
+        totalSize += fileSize(file);
       } catch {
         /* skip unreadable files */
       }
@@ -368,7 +366,7 @@ export class CacheManager {
     const cacheFiles = fg.sync("**/*.json", { cwd: this.cacheRoot, absolute: true });
 
     for (const cacheFile of cacheFiles) {
-      const docName = basename(cacheFile, ".json");
+      const docName = baseName(cacheFile, ".json");
       const relativePath = cacheFile.replace(`${this.cacheRoot}/`, "");
       const type = relativePath.split("/")[0] ?? "unknown";
       const docKey = relativePath.replace(/\.json$/, "");
@@ -478,10 +476,10 @@ export class CacheManager {
     ignore: string[] = [],
   ): Set<string> {
     const documents = new Set<string>();
-    const absoluteIgnore = ignore.map((p) => join(root, p));
+    const absoluteIgnore = ignore.map((p) => joinPath(root, p));
 
     for (const source of sources) {
-      const sourceDir = join(root, source);
+      const sourceDir = joinPath(root, source);
       if (!exists(sourceDir)) continue;
 
       const docFiles = fg.sync("**/*.md", {
@@ -491,10 +489,10 @@ export class CacheManager {
       });
 
       for (const relFile of docFiles) {
-        const name = basename(relFile);
-        if (isSpecFile(name, specFilePattern) || basename(relFile, ".md").startsWith("_")) continue;
+        const name = baseName(relFile);
+        if (isSpecFile(name, specFilePattern) || baseName(relFile, ".md").startsWith("_")) continue;
 
-        const key = join(source, relFile).replace(/\.md$/, "");
+        const key = joinPath(source, relFile).replace(/\.md$/, "");
         documents.add(key);
       }
     }
