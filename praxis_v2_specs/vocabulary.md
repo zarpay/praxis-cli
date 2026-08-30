@@ -6,6 +6,10 @@ Definitions the other documents depend on. Where a term has an everyday sense, t
 
 ## The knowledge side
 
+**Eval layer** — The core of Praxis v2: spec, scope, judge, cache, ledger, triage, axioms, calibration, metrics, briefs. Its input contract is a spec, a scope, and hashable content; it never knows how a spec was authored (11).
+
+**Spec layer** — Everything about producing and maintaining specs, including the compiler tools carried from v1 (roles, responsibilities, constitution, conventions, `praxis compile`, SME profiles). An optional authoring discipline: existing context files are already valid specs without it. The SME's `validates:` double duty is the one bridge between the layers (11).
+
 **Spec** — A document defining what valid looks like for a set of files. Not a new artifact: specs are the developer's *existing* context files — READMEs, CLAUDE.md, AGENTS.md, whatever carries context and direction — which the coding agent has in context while developing AND which optionally bundle into the SME at `praxis compile`. That double duty is the eval's foundation: the judge measures adherence to the exact direction the agent was given, so violations are harness signals, not knowledge gaps. Mechanically: a file matching `specFilePattern` (default `README.md`), optionally targeting files anywhere via `paths:` frontmatter. A spec is *self-authored* — the organization writes its own standard. This is the source of both the system's value (company-specific signal) and its central integrity risk (the metric's author controls the metric).
 
 **SME (subject matter expert)** — A compiled agent profile that is *also* a spec, via the `validates:` role frontmatter key. One artifact, two uses: an agent you can invoke for review or advice, and the specification files are validated against. The identity of these two is a Praxis design commitment, not an accident.

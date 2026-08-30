@@ -59,6 +59,7 @@ Two loops share the machinery: the **fast loop** — violations feed straight ba
 | [08-harness-feedback.md](./08-harness-feedback.md) | Briefs, diagnosis, agent-drafted PRs, intervention tracking | Early draft |
 | [09-cli-surface.md](./09-cli-surface.md) | Fully CLI-driven; agents as first-class CLI users; display and interaction | Draft |
 | [10-workspace.md](./10-workspace.md) | `.praxis/` layout: closed top level, ownership split, commit policy | Draft |
+| [11-spec-layer.md](./11-spec-layer.md) | Two layers: taxonomy-free eval core; compiler tools as optional spec authoring | Draft |
 
 Docs 01–03 are the load-bearing patterns; 04–08 capture the design conversation and should be revisited after 01–03 settle.
 
@@ -79,6 +80,8 @@ Every document below is bound by these. If a design violates one, the design cha
 **Don't use Praxis for what static linting can accomplish.** If you can write the check, write the check; if you can only describe the standard, write the axiom. The boundary is enforced at authoring time (the axiom gate), keeps the judge-error surface minimal, and keeps the metrics about violations that actually accumulate — judgment violations merge; linter violations don't.
 
 **The judge's context contains exactly what the axiom is about.** Less is myopia (axioms that need cross-file context don't get it); more is contamination (batch-mates normalize each other's violations) and cache destruction. Aggregation is never a cost optimization — it is reserved for genuinely cohort-shaped standards; prompt caching of the spec prefix is the legitimate route to the savings.
+
+**The eval layer is taxonomy-free.** Praxis is two layers: the eval layer (spec, scope, judge, ledger, axioms, metrics) and the spec layer, where the compiler tools and the v1 content taxonomy (roles, responsibilities, constitution, conventions) live as an optional authoring discipline. The eval layer's input contract is a spec, a scope, and hashable content — nothing in it may depend on how the spec was authored. See [11](./11-spec-layer.md).
 
 **The CLI is the only interface, and agents are first-class users of it.** Agents check axioms, validate files, and read reports by running `praxis` — never through per-harness tools or skills, which would mean a second surface that drifts. Help text is the API documentation, `--json` output is a stable contract, exit codes carry meaning, stdout stays parseable. Harness packages, where they exist, are documentation of CLI usage, never an alternative interface. See [09](./09-cli-surface.md).
 
