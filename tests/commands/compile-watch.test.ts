@@ -3,8 +3,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { watchAndRecompile } from "@/commands/compile.js";
-import { RoleCompiler } from "@/compiler/role-compiler.js";
+import { CompileCommand } from "@/commands/compile.js";
 import { PraxisConfig } from "@/core/config.js";
 import type { Logger } from "@/core/logger.js";
 
@@ -16,13 +15,12 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-describe("watchAndRecompile", () => {
+describe("CompileCommand.watch()", () => {
   let tmpdir: string;
   let cleanup: () => void;
   let logOutput: () => string;
   let logger: Logger;
-  let compiler: RoleCompiler;
-  let config: PraxisConfig;
+  let command: CompileCommand;
   let watchers: FSWatcher[] = [];
 
   beforeEach(() => {
@@ -33,8 +31,7 @@ describe("watchAndRecompile", () => {
     const capture = createCaptureLogger();
     logger = capture.logger;
     logOutput = capture.output;
-    config = new PraxisConfig(tmpdir);
-    compiler = new RoleCompiler({ root: tmpdir, logger, config });
+    command = new CompileCommand({ root: tmpdir, config: new PraxisConfig(tmpdir), logger });
   });
 
   afterEach(() => {
@@ -46,7 +43,7 @@ describe("watchAndRecompile", () => {
   });
 
   it("returns FSWatcher instances that can be closed", () => {
-    watchers = watchAndRecompile(tmpdir, config, compiler, logger, { debounceMs: 50 });
+    watchers = command.watch({ debounceMs: 50 });
 
     expect(watchers.length).toBeGreaterThan(0);
     for (const watcher of watchers) {
@@ -55,14 +52,14 @@ describe("watchAndRecompile", () => {
   });
 
   it("logs watching message on start", () => {
-    watchers = watchAndRecompile(tmpdir, config, compiler, logger, { debounceMs: 50 });
+    watchers = command.watch({ debounceMs: 50 });
 
     expect(logOutput()).toContain("Watching");
     expect(logOutput()).toContain("for changes");
   });
 
   it("triggers recompile on file change", async () => {
-    watchers = watchAndRecompile(tmpdir, config, compiler, logger, { debounceMs: 50 });
+    watchers = command.watch({ debounceMs: 50 });
 
     // Modify a file in a source directory
     writeFileSync(
@@ -78,7 +75,7 @@ describe("watchAndRecompile", () => {
   });
 
   it("debounces rapid changes", async () => {
-    watchers = watchAndRecompile(tmpdir, config, compiler, logger, { debounceMs: 100 });
+    watchers = command.watch({ debounceMs: 100 });
 
     // Trigger 5 rapid writes
     for (let i = 0; i < 5; i++) {

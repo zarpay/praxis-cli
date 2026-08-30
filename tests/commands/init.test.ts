@@ -6,7 +6,7 @@ import { rmSync } from "node:fs";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { initProject } from "@/commands/init.js";
+import { InitCommand } from "@/commands/init.js";
 import { Logger } from "@/core/logger.js";
 import { readJsonFile } from "../helpers/read-json.js";
 
@@ -35,7 +35,7 @@ function walkDir(dir: string, base = dir): string[] {
   return results.sort();
 }
 
-describe("initProject", () => {
+describe("InitCommand", () => {
   const dirs: string[] = [];
   const logger = new Logger();
 
@@ -51,7 +51,7 @@ describe("initProject", () => {
     dirs.push(dir);
 
     expect(existsSync(dir)).toBe(false);
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
     expect(existsSync(dir)).toBe(true);
   });
 
@@ -59,7 +59,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     const coreDir = join(SCAFFOLD_DIR, "core");
     for (const relPath of walkDir(coreDir)) {
@@ -72,7 +72,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     const coreDir = join(SCAFFOLD_DIR, "core");
     for (const relPath of walkDir(coreDir)) {
@@ -86,7 +86,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     const configPath = join(dir, ".praxis", "config.json");
     expect(existsSync(configPath)).toBe(true);
@@ -112,7 +112,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     // Default config has plugins: [], so no Claude Code files
     expect(existsSync(join(dir, "plugins", "praxis"))).toBe(false);
@@ -129,7 +129,7 @@ describe("initProject", () => {
       JSON.stringify({ agentProfilesOutputDir: "./agent-profiles", plugins: ["claude-code"] }),
     );
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     // Default outputDir is plugins/praxis
     expect(existsSync(join(dir, "plugins", "praxis", ".claude-plugin", "plugin.json"))).toBe(true);
@@ -145,7 +145,7 @@ describe("initProject", () => {
       JSON.stringify({ plugins: ["claude-code"] }),
     );
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     const pluginJson = readJsonFile<{ name: string }>(
       join(dir, "plugins", "praxis", ".claude-plugin", "plugin.json"),
@@ -174,7 +174,7 @@ describe("initProject", () => {
       }),
     );
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     const pluginJsonPath = join(dir, "my-plugins", "custom", ".claude-plugin", "plugin.json");
     expect(existsSync(pluginJsonPath)).toBe(true);
@@ -192,7 +192,7 @@ describe("initProject", () => {
     const readmePath = join(dir, "README.md");
     writeFileSync(readmePath, "# My Custom README\n");
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     // Verify our custom content was preserved, not overwritten
     const content = readFileSync(readmePath, "utf-8");
@@ -203,13 +203,13 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     // Modify one file to verify it's not overwritten
     const readmePath = join(dir, "README.md");
     writeFileSync(readmePath, "modified");
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     const content = readFileSync(readmePath, "utf-8");
     expect(content).toBe("modified");
@@ -224,7 +224,7 @@ describe("initProject", () => {
     writeFileSync(join(dir, "src", "app.ts"), "console.log('hello');\n");
     writeFileSync(join(dir, "package.json"), '{ "name": "my-app" }\n');
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     // Scaffold files exist
     expect(existsSync(join(dir, "roles", "README.md"))).toBe(true);
@@ -238,7 +238,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     const expectedDirs = [
       "context/constitution",
@@ -264,7 +264,7 @@ describe("initProject", () => {
       JSON.stringify({ plugins: ["claude-code"] }),
     );
 
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     expect(
       existsSync(join(dir, "plugins", "praxis", ".claude-plugin")),

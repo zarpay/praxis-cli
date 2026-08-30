@@ -12,39 +12,6 @@ import { Paths } from "@/core/paths.js";
 const DIVIDER = chalk.cyan("─".repeat(42));
 
 /**
- * Prints the contents of a Praxis config file to stdout with a formatted header.
- *
- * @param configPath - Absolute path to the config.json file
- */
-export function showConfig(configPath: string): void {
-  const raw = readFileSync(configPath, "utf-8");
-  const parsed = JSON.parse(raw) as unknown;
-
-  console.log();
-  console.log("  " + chalk.bold("Praxis Config"));
-  console.log("  " + DIVIDER);
-  console.log("  " + chalk.dim(configPath));
-  console.log();
-  console.log(JSON.stringify(parsed, null, 2));
-  console.log();
-}
-
-/**
- * Opens a Praxis config file in the user's preferred editor.
- *
- * Checks VISUAL, then EDITOR, then falls back to vi.
- *
- * @param configPath - Absolute path to the config.json file
- */
-export function editConfig(configPath: string): void {
-  const editor = process.env["VISUAL"] ?? process.env["EDITOR"] ?? "vi";
-  const result = spawnSync(editor, [configPath], { stdio: "inherit" });
-  if (result.error) {
-    throw result.error;
-  }
-}
-
-/**
  * Registers the `praxis config` command group.
  *
  * Provides subcommands for viewing (`show`) and editing (`edit`)
@@ -59,8 +26,7 @@ export function registerConfigCommand(program: Command): void {
     .action(() => {
       const logger = new Logger();
       try {
-        const paths = new Paths();
-        showConfig(join(paths.root, ".praxis", "config.json"));
+        makeCommand().show();
       } catch (err) {
         logger.error(err instanceof Error ? err.message : String(err));
         process.exit(1);
@@ -73,11 +39,58 @@ export function registerConfigCommand(program: Command): void {
     .action(() => {
       const logger = new Logger();
       try {
-        const paths = new Paths();
-        editConfig(join(paths.root, ".praxis", "config.json"));
+        makeCommand().edit();
       } catch (err) {
         logger.error(err instanceof Error ? err.message : String(err));
         process.exit(1);
       }
     });
+}
+
+/** Builds a ConfigCommand for the current project's config file. */
+function makeCommand(): ConfigCommand {
+  return new ConfigCommand({ configPath: join(new Paths().root, ".praxis", "config.json") });
+}
+
+/**
+ * Views and edits a Praxis config file.
+ *
+ * Bound to one config file path at construction; show() prints it,
+ * edit() opens it in the user's preferred editor.
+ */
+export class ConfigCommand {
+  private readonly configPath: string;
+
+  constructor({ configPath }: { configPath: string }) {
+    this.configPath = configPath;
+  }
+
+  /** Prints the config file to stdout as formatted JSON with a header. */
+  show(): void {
+    const raw = readFileSync(this.configPath, "utf-8");
+    const parsed = JSON.parse(raw) as unknown;
+
+    console.log();
+    console.log("  " + chalk.bold("Praxis Config"));
+    console.log("  " + DIVIDER);
+    console.log("  " + chalk.dim(this.configPath));
+    console.log();
+    console.log(JSON.stringify(parsed, null, 2));
+    console.log();
+  }
+
+  /**
+   * Opens the config file in the user's preferred editor.
+   *
+   * Checks VISUAL, then EDITOR, then falls back to vi.
+   *
+   * @throws The spawn error if the editor could not be started
+   */
+  edit(): void {
+    const editor = process.env["VISUAL"] ?? process.env["EDITOR"] ?? "vi";
+    const result = spawnSync(editor, [this.configPath], { stdio: "inherit" });
+    if (result.error) {
+      throw result.error;
+    }
+  }
 }

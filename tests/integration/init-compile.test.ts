@@ -6,7 +6,7 @@ import { rmSync } from "node:fs";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { initProject } from "@/commands/init.js";
+import { InitCommand } from "@/commands/init.js";
 import { RoleCompiler } from "@/compiler/role-compiler.js";
 import { Logger } from "@/core/logger.js";
 import { readJsonFile } from "../helpers/read-json.js";
@@ -17,7 +17,7 @@ const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
 /**
  * Integration test: init → compile → verify output.
  *
- * Scaffolds a fresh Praxis project via initProject, enables the
+ * Scaffolds a fresh Praxis project via InitCommand, enables the
  * claude-code plugin via config, runs the compiler, and verifies
  * that agent files are produced with the expected structure.
  */
@@ -29,7 +29,7 @@ describe("init → compile integration", () => {
     dir = join(tmpdir(), `praxis-integration-${randomUUID()}`);
 
     // Scaffold the project (creates .praxis/ which Paths uses for root detection)
-    initProject(dir, logger, SCAFFOLD_DIR);
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     // Enable claude-code plugin in config
     writeFileSync(

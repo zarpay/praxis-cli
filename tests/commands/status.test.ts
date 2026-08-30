@@ -3,13 +3,13 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { analyzeProject } from "@/commands/status.js";
+import { StatusCommand } from "@/commands/status.js";
 import { PraxisConfig } from "@/core/config.js";
 
 import { createCompilerTmpdir } from "../helpers/compiler-tmpdir.js";
 import { createValidatorTmpdir } from "../helpers/validator-tmpdir.js";
 
-describe("analyzeProject", () => {
+describe("StatusCommand", () => {
   let tmpdir: string;
   let cleanup: () => void;
   let config: PraxisConfig;
@@ -26,7 +26,7 @@ describe("analyzeProject", () => {
   });
 
   it("counts roles, responsibilities, references, and context", async () => {
-    const report = await analyzeProject(tmpdir, config);
+    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     expect(report.counts.roles).toBeGreaterThanOrEqual(1);
     expect(report.counts.responsibilities).toBeGreaterThanOrEqual(1);
@@ -35,7 +35,7 @@ describe("analyzeProject", () => {
   });
 
   it("excludes _template.md and README.md from counts", async () => {
-    const report = await analyzeProject(tmpdir, config);
+    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     // Roles dir has README.md + content files; reported count must be less than total .md files
     const allRoleFiles = readdirSync(join(tmpdir, "content", "roles")).filter((f) =>
@@ -50,7 +50,7 @@ describe("analyzeProject", () => {
       "---\nalias: BadRefs\ndescription: test\nrefs:\n  - content/reference/nonexistent.md\n---\n# Bad",
     );
 
-    const report = await analyzeProject(tmpdir, config);
+    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     expect(report.danglingRefs).toContainEqual({
       role: "bad-refs.md",
@@ -64,7 +64,7 @@ describe("analyzeProject", () => {
       "---\ntitle: Orphan\ntype: responsibility\nowner: nobody\n---\n# Orphan",
     );
 
-    const report = await analyzeProject(tmpdir, config);
+    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     expect(report.orphanedResponsibilities).toContain("orphan.md");
   });
@@ -75,7 +75,7 @@ describe("analyzeProject", () => {
       "---\nalias: NoDesc\n---\n# No Description",
     );
 
-    const report = await analyzeProject(tmpdir, config);
+    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     expect(report.rolesMissingDescription).toContain("no-desc.md");
   });
@@ -86,7 +86,7 @@ describe("analyzeProject", () => {
       "---\nalias: BadGlob\ndescription: test\nrefs:\n  - content/reference/nope-*.md\n---\n# Bad",
     );
 
-    const report = await analyzeProject(tmpdir, config);
+    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     expect(report.zeroMatchGlobs).toContainEqual({
       role: "bad-glob.md",
@@ -100,7 +100,7 @@ describe("analyzeProject", () => {
       "---\ntitle: Unmatched\ntype: responsibility\nowner: phantom-role\n---\n# Unmatched",
     );
 
-    const report = await analyzeProject(tmpdir, config);
+    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     expect(report.unmatchedOwners).toContainEqual({
       responsibility: "unmatched.md",
@@ -126,10 +126,10 @@ describe("analyzeProject", () => {
       }),
     );
     const ignoringConfig = new PraxisConfig(tmpdir);
-    const report = await analyzeProject(tmpdir, ignoringConfig);
+    const report = await new StatusCommand({ root: tmpdir, config: ignoringConfig }).analyze();
 
     // validates-role.md is in the roles dir but should be excluded
-    const baseReport = await analyzeProject(tmpdir, config);
+    const baseReport = await new StatusCommand({ root: tmpdir, config }).analyze();
     expect(report.counts.roles).toBe(baseReport.counts.roles - 1);
   });
 
@@ -151,7 +151,7 @@ describe("analyzeProject", () => {
     });
 
     const nonMdConfig = new PraxisConfig(root);
-    const report = await analyzeProject(root, nonMdConfig);
+    const report = await new StatusCommand({ root, config: nonMdConfig }).analyze();
 
     // Both .rb files should appear as not-validated (in cache coverage)
     expect(report.validation.notValidated).toBe(2);
@@ -161,7 +161,7 @@ describe("analyzeProject", () => {
   });
 
   it("reports clean for a healthy project", async () => {
-    const report = await analyzeProject(tmpdir, config);
+    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
 
     // The default fixtures form a healthy project
     expect(report.danglingRefs).toEqual([]);

@@ -35,10 +35,8 @@ export function registerInitCommand(program: Command): void {
     .argument("[directory]", "target directory (defaults to current directory)", ".")
     .action((directory: string) => {
       const logger = new Logger();
-      const targetDir = resolve(directory);
-
       try {
-        initProject(targetDir, logger);
+        new InitCommand({ targetDir: resolve(directory), logger }).init();
       } catch (err) {
         logger.error(err instanceof Error ? err.message : String(err));
         process.exit(1);
@@ -47,179 +45,188 @@ export function registerInitCommand(program: Command): void {
 }
 
 /**
- * Scaffolds a Praxis project into the target directory.
+ * Scaffolds a Praxis project into a target directory.
  *
+ * init() performs three steps:
  * 1. Copies all core scaffold files (content, config, README, etc.)
  * 2. Reads the scaffolded config to determine which plugins are enabled
  * 3. Copies plugin-specific scaffold files for each enabled plugin
  *
- * Skips files that already exist to avoid overwriting user content.
- *
- * @param targetDir - Absolute path to the project root
- * @param logger - Logger instance for output
- * @param scaffoldDir - Override scaffold source (for testing)
+ * Files that already exist are skipped, never overwritten, which also
+ * makes init idempotent.
  */
-export function initProject(targetDir: string, logger: Logger, scaffoldDir = SCAFFOLD_DIR): void {
-  if (!existsSync(targetDir)) {
-    mkdirSync(targetDir, { recursive: true });
+export class InitCommand {
+  private readonly targetDir: string;
+  private readonly scaffoldDir: string;
+  private readonly logger: Logger;
+
+  constructor({
+    targetDir,
+    scaffoldDir = SCAFFOLD_DIR,
+    logger = new Logger(),
+  }: {
+    targetDir: string;
+    scaffoldDir?: string;
+    logger?: Logger;
+  }) {
+    this.targetDir = targetDir;
+    this.scaffoldDir = scaffoldDir;
+    this.logger = logger;
   }
 
-  let created = 0;
-  let skipped = 0;
-
-  // Step 1: Copy core scaffold files
-  const coreDir = join(scaffoldDir, "core");
-  const coreResult = copyScaffoldDir(coreDir, targetDir, logger);
-  created += coreResult.created;
-  skipped += coreResult.skipped;
-
-  // Step 2: Read config to determine which plugins to scaffold
-  const config = new PraxisConfig(targetDir);
-
-  // Step 3: Copy plugin scaffold files for each enabled plugin
-  for (const pluginEntry of config.plugins) {
-    const pluginScaffoldDir = join(scaffoldDir, "plugins", pluginEntry.name);
-    if (!existsSync(pluginScaffoldDir)) {
-      continue;
+  /** Runs the scaffold, logging each created file and a final summary. */
+  init(): void {
+    if (!existsSync(this.targetDir)) {
+      mkdirSync(this.targetDir, { recursive: true });
     }
 
-    // Resolve the plugin output directory within the target
-    const pluginOutputDir = pluginEntry.outputDir
-      ? resolve(targetDir, pluginEntry.outputDir)
-      : join(targetDir, "plugins", "praxis");
+    let created = 0;
+    let skipped = 0;
 
-    const templateVars: Record<string, string> = {
-      claudeCodePluginName: pluginEntry.claudeCodePluginName ?? "praxis",
-    };
+    // Step 1: Copy core scaffold files
+    const coreResult = this.copyCoreScaffold();
+    created += coreResult.created;
+    skipped += coreResult.skipped;
 
-    const pluginResult = copyPluginScaffold(
-      pluginScaffoldDir,
-      pluginOutputDir,
-      templateVars,
-      logger,
-      targetDir,
-    );
-    created += pluginResult.created;
-    skipped += pluginResult.skipped;
-  }
+    // Step 2: Read config to determine which plugins to scaffold
+    const config = new PraxisConfig(this.targetDir);
 
-  console.log();
-  logger.info(`Initialized Praxis project: ${created} files created, ${skipped} skipped`);
-  console.log();
-  console.log("Next steps:");
-  console.log("  1. Edit context/constitution/ to define your organization's identity");
-  console.log("  2. Edit context/conventions/ to document your standards");
-  console.log("  3. Run `praxis compile` to generate agent files");
-  console.log("  4. Define new roles in roles/ as your organization grows");
-}
-
-/**
- * Copies all files from a scaffold source directory into a target directory.
- *
- * @returns Count of files created and skipped
- */
-function copyScaffoldDir(
-  sourceDir: string,
-  targetDir: string,
-  logger: Logger,
-): { created: number; skipped: number } {
-  let created = 0;
-  let skipped = 0;
-
-  for (const relPath of walkDir(sourceDir)) {
-    const srcPath = join(sourceDir, relPath);
-    const destPath = join(targetDir, relPath);
-    const destDir = dirname(destPath);
-
-    if (!existsSync(destDir)) {
-      mkdirSync(destDir, { recursive: true });
-    }
-
-    if (existsSync(destPath)) {
-      skipped++;
-      continue;
-    }
-
-    copyFileSync(srcPath, destPath);
-    logger.success(`Created ${relPath}`);
-    created++;
-  }
-
-  return { created, skipped };
-}
-
-/**
- * Copies plugin scaffold files into the resolved plugin output directory.
- *
- * Replaces template variables (e.g. `{claudeCodePluginName}`) in `.json` file contents.
- *
- * @param sourceDir - Plugin scaffold source directory
- * @param targetPluginDir - Resolved output directory for this plugin
- * @param templateVars - Template variables to substitute in JSON files
- * @param logger - Logger instance
- * @param projectRoot - Project root for relative path display
- * @returns Count of files created and skipped
- */
-function copyPluginScaffold(
-  sourceDir: string,
-  targetPluginDir: string,
-  templateVars: Record<string, string>,
-  logger: Logger,
-  projectRoot: string,
-): { created: number; skipped: number } {
-  let created = 0;
-  let skipped = 0;
-
-  for (const relPath of walkDir(sourceDir)) {
-    const srcPath = join(sourceDir, relPath);
-    const destPath = join(targetPluginDir, relPath);
-    const destDir = dirname(destPath);
-
-    if (!existsSync(destDir)) {
-      mkdirSync(destDir, { recursive: true });
-    }
-
-    if (existsSync(destPath)) {
-      skipped++;
-      continue;
-    }
-
-    if (relPath.endsWith(".json")) {
-      let content = readFileSync(srcPath, "utf-8");
-      for (const [key, value] of Object.entries(templateVars)) {
-        content = content.replaceAll(`{${key}}`, value);
+    // Step 3: Copy plugin scaffold files for each enabled plugin
+    for (const pluginEntry of config.plugins) {
+      const pluginScaffoldDir = join(this.scaffoldDir, "plugins", pluginEntry.name);
+      if (!existsSync(pluginScaffoldDir)) {
+        continue;
       }
-      writeFileSync(destPath, content);
-    } else {
+
+      // Resolve the plugin output directory within the target
+      const pluginOutputDir = pluginEntry.outputDir
+        ? resolve(this.targetDir, pluginEntry.outputDir)
+        : join(this.targetDir, "plugins", "praxis");
+
+      const templateVars: Record<string, string> = {
+        claudeCodePluginName: pluginEntry.claudeCodePluginName ?? "praxis",
+      };
+
+      const pluginResult = this.copyPluginScaffold(
+        pluginScaffoldDir,
+        pluginOutputDir,
+        templateVars,
+      );
+      created += pluginResult.created;
+      skipped += pluginResult.skipped;
+    }
+
+    console.log();
+    this.logger.info(`Initialized Praxis project: ${created} files created, ${skipped} skipped`);
+    console.log();
+    console.log("Next steps:");
+    console.log("  1. Edit context/constitution/ to define your organization's identity");
+    console.log("  2. Edit context/conventions/ to document your standards");
+    console.log("  3. Run `praxis compile` to generate agent files");
+    console.log("  4. Define new roles in roles/ as your organization grows");
+  }
+
+  /**
+   * Copies all core scaffold files into the target directory.
+   *
+   * @returns Count of files created and skipped
+   */
+  private copyCoreScaffold(): { created: number; skipped: number } {
+    const sourceDir = join(this.scaffoldDir, "core");
+    let created = 0;
+    let skipped = 0;
+
+    for (const relPath of this.walkDir(sourceDir)) {
+      const srcPath = join(sourceDir, relPath);
+      const destPath = join(this.targetDir, relPath);
+      const destDir = dirname(destPath);
+
+      if (!existsSync(destDir)) {
+        mkdirSync(destDir, { recursive: true });
+      }
+
+      if (existsSync(destPath)) {
+        skipped++;
+        continue;
+      }
+
       copyFileSync(srcPath, destPath);
+      this.logger.success(`Created ${relPath}`);
+      created++;
     }
 
-    const displayPath = relative(projectRoot, destPath);
-    logger.success(`Created ${displayPath}`);
-    created++;
+    return { created, skipped };
   }
 
-  return { created, skipped };
-}
+  /**
+   * Copies plugin scaffold files into the resolved plugin output directory.
+   *
+   * Replaces template variables (e.g. `{claudeCodePluginName}`) in `.json` file contents.
+   *
+   * @param sourceDir - Plugin scaffold source directory
+   * @param targetPluginDir - Resolved output directory for this plugin
+   * @param templateVars - Template variables to substitute in JSON files
+   * @returns Count of files created and skipped
+   */
+  private copyPluginScaffold(
+    sourceDir: string,
+    targetPluginDir: string,
+    templateVars: Record<string, string>,
+  ): { created: number; skipped: number } {
+    let created = 0;
+    let skipped = 0;
 
-/**
- * Recursively walks a directory, yielding relative file paths.
- *
- * Returns paths sorted alphabetically for deterministic output.
- */
-function walkDir(dir: string, base = dir): string[] {
-  const results: string[] = [];
+    for (const relPath of this.walkDir(sourceDir)) {
+      const srcPath = join(sourceDir, relPath);
+      const destPath = join(targetPluginDir, relPath);
+      const destDir = dirname(destPath);
 
-  for (const entry of readdirSync(dir)) {
-    const fullPath = join(dir, entry);
-    const stat = statSync(fullPath);
+      if (!existsSync(destDir)) {
+        mkdirSync(destDir, { recursive: true });
+      }
 
-    if (stat.isDirectory()) {
-      results.push(...walkDir(fullPath, base));
-    } else {
-      results.push(relative(base, fullPath));
+      if (existsSync(destPath)) {
+        skipped++;
+        continue;
+      }
+
+      if (relPath.endsWith(".json")) {
+        let content = readFileSync(srcPath, "utf-8");
+        for (const [key, value] of Object.entries(templateVars)) {
+          content = content.replaceAll(`{${key}}`, value);
+        }
+        writeFileSync(destPath, content);
+      } else {
+        copyFileSync(srcPath, destPath);
+      }
+
+      const displayPath = relative(this.targetDir, destPath);
+      this.logger.success(`Created ${displayPath}`);
+      created++;
     }
+
+    return { created, skipped };
   }
 
-  return results.sort();
+  /**
+   * Recursively walks a directory, yielding relative file paths.
+   *
+   * Returns paths sorted alphabetically for deterministic output.
+   */
+  private walkDir(dir: string, base = dir): string[] {
+    const results: string[] = [];
+
+    for (const entry of readdirSync(dir)) {
+      const fullPath = join(dir, entry);
+      const stat = statSync(fullPath);
+
+      if (stat.isDirectory()) {
+        results.push(...this.walkDir(fullPath, base));
+      } else {
+        results.push(relative(base, fullPath));
+      }
+    }
+
+    return results.sort();
+  }
 }

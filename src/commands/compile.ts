@@ -7,6 +7,7 @@ import fg from "fast-glob";
 import { Frontmatter } from "@/compiler/frontmatter.js";
 import { RoleCompiler } from "@/compiler/role-compiler.js";
 import { PraxisConfig } from "@/core/config.js";
+import { errors } from "@/core/errors.js";
 import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 
@@ -26,22 +27,20 @@ export function registerCompileCommand(program: Command): void {
       const logger = new Logger();
 
       try {
-        const paths = new Paths();
-        const config = new PraxisConfig(paths.root);
-        const compiler = new RoleCompiler({ root: paths.root, logger, config });
+        const command = new CompileCommand({ root: new Paths().root, logger });
 
         if (options.alias) {
-          await compileOne(config, compiler, logger, options.alias);
+          await command.compileAlias(options.alias);
           if (options.watch) {
             logger.warn("--watch is not supported with --alias, ignoring");
           }
           return;
         }
 
-        await compiler.compileAll();
+        await command.compileAll();
 
         if (options.watch) {
-          watchAndRecompile(paths.root, config, compiler, logger);
+          command.watch();
         }
       } catch (err) {
         logger.error(err instanceof Error ? err.message : String(err));
@@ -51,96 +50,115 @@ export function registerCompileCommand(program: Command): void {
 }
 
 /**
- * Watches source directories and recompiles on changes.
+ * Compiles role definitions, by alias or in bulk, with optional watching.
  *
- * Uses `fs.watch` with recursive mode to detect file changes.
- * Debounces rapid changes to avoid redundant compilations.
- *
- * @param root - Project root directory
- * @param config - PraxisConfig instance
- * @param compiler - RoleCompiler instance
- * @param logger - Logger instance
- * @param options - Configuration overrides (debounce timing)
- * @returns Array of FSWatcher instances (one per source directory)
+ * A thin command layer over RoleCompiler: adds alias lookup and the
+ * watch loop, while RoleCompiler owns the actual compilation.
  */
-export function watchAndRecompile(
-  root: string,
-  config: PraxisConfig,
-  compiler: RoleCompiler,
-  logger: Logger,
-  options?: { debounceMs?: number },
-): FSWatcher[] {
-  const debounceMs = options?.debounceMs ?? 300;
-  let timer: ReturnType<typeof setTimeout> | null = null;
+export class CompileCommand {
+  private readonly root: string;
+  private readonly config: PraxisConfig;
+  private readonly logger: Logger;
+  private readonly compiler: RoleCompiler;
 
-  const watchers: FSWatcher[] = [];
+  constructor({
+    root,
+    config,
+    logger = new Logger(),
+  }: {
+    root: string;
+    config?: PraxisConfig;
+    logger?: Logger;
+  }) {
+    this.root = root;
+    this.config = config ?? new PraxisConfig(root);
+    this.logger = logger;
+    this.compiler = new RoleCompiler({ root, logger, config: this.config });
+  }
 
-  for (const source of config.sources) {
-    const sourceDir = resolve(root, source);
-    logger.info(`Watching ${sourceDir} for changes...`);
+  /** Compiles all role files in the project's roles directory. */
+  async compileAll(): Promise<{ compiled: number }> {
+    return this.compiler.compileAll();
+  }
 
-    const watcher = watch(sourceDir, { recursive: true }, (_event, filename) => {
-      if (timer) clearTimeout(timer);
+  /**
+   * Compiles a single agent by looking up its role file via alias.
+   *
+   * @param alias - The role alias to compile (case-insensitive)
+   * @throws PraxisError if no role file declares the alias
+   */
+  async compileAlias(alias: string): Promise<void> {
+    const roleFile = await this.findRoleByAlias(alias);
 
-      timer = setTimeout(async () => {
-        try {
-          logger.info(`Change detected${filename ? `: ${String(filename)}` : ""}, recompiling...`);
-          await compiler.compileAll();
-        } catch (err) {
-          logger.error(err instanceof Error ? err.message : String(err));
-        }
-      }, debounceMs);
+    if (!roleFile) {
+      throw errors.roleNotFound(alias);
+    }
+
+    await this.compiler.compile(roleFile);
+  }
+
+  /**
+   * Watches source directories and recompiles on changes.
+   *
+   * Uses `fs.watch` with recursive mode to detect file changes.
+   * Debounces rapid changes to avoid redundant compilations.
+   *
+   * @param options - Configuration overrides (debounce timing)
+   * @returns Array of FSWatcher instances (one per source directory);
+   *   callers that need to stop watching close them
+   */
+  watch(options?: { debounceMs?: number }): FSWatcher[] {
+    const debounceMs = options?.debounceMs ?? 300;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const watchers: FSWatcher[] = [];
+
+    for (const source of this.config.sources) {
+      const sourceDir = resolve(this.root, source);
+      this.logger.info(`Watching ${sourceDir} for changes...`);
+
+      const watcher = watch(sourceDir, { recursive: true }, (_event, filename) => {
+        if (timer) clearTimeout(timer);
+
+        timer = setTimeout(async () => {
+          try {
+            this.logger.info(
+              `Change detected${filename ? `: ${String(filename)}` : ""}, recompiling...`,
+            );
+            await this.compiler.compileAll();
+          } catch (err) {
+            this.logger.error(err instanceof Error ? err.message : String(err));
+          }
+        }, debounceMs);
+      });
+
+      watchers.push(watcher);
+    }
+
+    return watchers;
+  }
+
+  /**
+   * Searches role files for one matching the given alias.
+   *
+   * @param targetAlias - The alias to search for (case-insensitive)
+   * @returns The absolute path to the matching role file, or null
+   */
+  private async findRoleByAlias(targetAlias: string): Promise<string | null> {
+    const roleFiles = await fg("*.md", {
+      cwd: this.config.rolesDir,
+      onlyFiles: true,
+      absolute: true,
     });
 
-    watchers.push(watcher);
-  }
-
-  return watchers;
-}
-
-/**
- * Compiles a single agent by looking up its role file via alias.
- *
- * Searches all role files in the roles directory for one whose
- * `alias` frontmatter field matches the target (case-insensitive).
- */
-async function compileOne(
-  config: PraxisConfig,
-  compiler: RoleCompiler,
-  logger: Logger,
-  aliasName: string,
-): Promise<void> {
-  const roleFile = await findRoleByAlias(config.rolesDir, aliasName);
-
-  if (!roleFile) {
-    logger.error(`No role found with alias: ${aliasName}`);
-    process.exit(1);
-  }
-
-  await compiler.compile(roleFile);
-}
-
-/**
- * Searches role files for one matching the given alias.
- *
- * @param rolesDir - Absolute path to the roles directory
- * @param targetAlias - The alias to search for (case-insensitive)
- * @returns The absolute path to the matching role file, or null
- */
-async function findRoleByAlias(rolesDir: string, targetAlias: string): Promise<string | null> {
-  const roleFiles = await fg("*.md", {
-    cwd: rolesDir,
-    onlyFiles: true,
-    absolute: true,
-  });
-
-  for (const roleFile of roleFiles) {
-    const fm = Frontmatter.fromFile(roleFile);
-    const alias = fm.value("alias") as string | undefined;
-    if (alias?.toLowerCase() === targetAlias.toLowerCase()) {
-      return roleFile;
+    for (const roleFile of roleFiles) {
+      const fm = Frontmatter.fromFile(roleFile);
+      const alias = fm.value("alias") as string | undefined;
+      if (alias?.toLowerCase() === targetAlias.toLowerCase()) {
+        return roleFile;
+      }
     }
-  }
 
-  return null;
+    return null;
+  }
 }

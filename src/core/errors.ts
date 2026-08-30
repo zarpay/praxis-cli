@@ -16,6 +16,8 @@ export type PraxisErrorCode =
   | "FILE_ALREADY_EXISTS"
   | "TEMPLATE_NOT_FOUND"
   | "SPEC_NOT_FOUND"
+  | "ROLE_NOT_FOUND"
+  | "DOCUMENT_NOT_FOUND"
   | "VALIDATION_NOT_CONFIGURED"
   | "API_KEY_NOT_SET"
   | "OPENROUTER_API_ERROR"
@@ -82,7 +84,48 @@ export const errors = {
     return new PraxisError("TEMPLATE_NOT_FOUND", `Template not found: ${templatePath}`);
   },
 
+  /** `praxis compile --alias` was given an alias no role file declares. */
+  roleNotFound(alias: string): PraxisError {
+    return new PraxisError("ROLE_NOT_FOUND", `No role found with alias: ${alias}`);
+  },
+
   // --- Validator ---
+
+  /** `validate report` was given a path that does not exist. */
+  documentNotFound(path: string): PraxisError {
+    return new PraxisError("DOCUMENT_NOT_FOUND", `Document not found: ${path}`);
+  },
+
+  /** The `validation` config section is absent or incomplete (command-level, with guidance). */
+  missingValidationConfig(): PraxisError {
+    return new PraxisError(
+      "VALIDATION_NOT_CONFIGURED",
+      [
+        "Missing validation configuration in .praxis/config.json",
+        "",
+        "Add a 'validation' section to your config:",
+        '  "validation": {',
+        '    "apiKeyEnvVar": "OPENROUTER_API_KEY",',
+        '    "model": "x-ai/grok-4.1-fast"',
+        "  }",
+      ].join("\n"),
+    );
+  },
+
+  /** The API key environment variable is unset (command-level, with setup guidance). */
+  missingApiKey(envVarName: string): PraxisError {
+    return new PraxisError(
+      "API_KEY_NOT_SET",
+      [
+        `Missing ${envVarName} environment variable`,
+        "",
+        "To use document validation, you need an OpenRouter API key:",
+        "  1. Get a key at https://openrouter.ai/keys",
+        `  2. Set it: export ${envVarName}=your-key-here`,
+      ].join("\n"),
+    );
+  },
+
 
   /** `validate all --type` was given a type no validation domain matches. */
   unknownDocumentType(type: string): PraxisError {
