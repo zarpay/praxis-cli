@@ -1,0 +1,16 @@
+{
+  "version": "2.0",
+  "validations": {
+    "dacac2eb": {
+      "spec_path": "tests/README.md",
+      "document_type": "unknown",
+      "cached_at": "2026-08-30T23:06:28.998Z",
+      "content_hash": "77af5a6c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all three test conventions. Subject framing: the top-level describe names the module ('tasting-menu'), nested describes are all 'when' clauses, and each it reads as a sentence with describe. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toEqual/toMatchObject. Functionality over implementation: tests exercise only the exported buildMenu public API, use the honest in-memory createMemoryStore with no spies or mocks, and build fresh state in beforeEach so suites don't depend on each other."
+      }
+    }
+  }
+}

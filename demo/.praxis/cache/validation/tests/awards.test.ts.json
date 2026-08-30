@@ -1,0 +1,16 @@
+{
+  "version": "2.0",
+  "validations": {
+    "dacac2eb": {
+      "spec_path": "tests/README.md",
+      "document_type": "unknown",
+      "cached_at": "2026-08-30T23:06:10.388Z",
+      "content_hash": "32e25fb2",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file conforms to all three test conventions. Subject framing: the top-level describe names the unit under test ('awards', the module under test), nested describes use 'when' clauses, and each it reads as a sentence with describe + it. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toMatchObject. Functionality, not implementation: tests exercise only public APIs (pickWinners, createReview's run, and the honest in-memory memory store), assert on returned values only, use no spies or mocks, and build data fresh in beforeEach setup with no cross-suite dependencies."
+      }
+    }
+  }
+}

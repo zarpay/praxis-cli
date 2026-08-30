@@ -1,11 +1,6 @@
 import type { Result } from "../../domain/types.js";
 import type { Store } from "../../store/memory-store.js";
-import type { TastingMenu } from "./menu-types.js";
-
-/** Input for building a tasting menu; stops caps the tour length. */
-export interface BuildMenuInput {
-  stops: number;
-}
+import type { BuildMenuInput, TastingMenu } from "./tasting-menu-types.js";
 
 /**
  * Builds a tasting tour: up to `stops` parlors, each paired with its

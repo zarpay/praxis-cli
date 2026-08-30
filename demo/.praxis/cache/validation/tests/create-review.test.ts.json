@@ -1,0 +1,16 @@
+{
+  "version": "2.0",
+  "validations": {
+    "dacac2eb": {
+      "spec_path": "tests/README.md",
+      "document_type": "unknown",
+      "cached_at": "2026-08-30T23:06:14.725Z",
+      "content_hash": "1b12bbd9",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file fully conforms to the Test Conventions specification. The top-level describe names the module ('create-review'), every nested describe is a 'when' clause, and each it states one observable outcome so describe + it reads as a sentence. Every it block contains exactly one expect, with compound shapes asserted once via toMatchObject. Tests exercise only the public `run` API and observable store state (listReviews), use the honest in-memory memory store with no spies or mocks, and build fresh data per test via validInput() plus a fresh store in beforeEach, so suites have no shared state or ordering dependencies."
+      }
+    }
+  }
+}

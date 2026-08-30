@@ -12,6 +12,6 @@
   ],
   "validation": {
     "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast"
+    "model": "deepseek/deepseek-v4-flash-0731"
   }
 }

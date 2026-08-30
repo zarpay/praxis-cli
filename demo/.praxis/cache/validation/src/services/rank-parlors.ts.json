@@ -1,0 +1,16 @@
+{
+  "version": "2.0",
+  "validations": {
+    "0311531a": {
+      "spec_path": "src/services/README.md",
+      "document_type": "unknown",
+      "cached_at": "2026-08-30T23:06:01.692Z",
+      "content_hash": "150eacde",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file conforms to every criterion in the Service Conventions specification. Structure: it exports a single runtime entry point, `run(store, input)`, with the Store first and a single input object, returning `Result<RankedParlor[]>` from the domain types; the module name `rank-parlors.ts` is verb-first kebab-case. Behavior: domain failures are returned as `{ ok: false, error }` values with no throws; the error message names the field and what would be accepted ('minReviews must be a whole number of 0 or more'); validation runs top-to-bottom before any work; the service does one thing; and all I/O goes through the injected Store (listParlors/listReviews) with no timers, fetch, or console. Documentation: the doc comment states the purpose in one sentence and enumerates the domain failure modes (minReviews negative or not a whole number), matching the actual validation so callers can handle every error without reading the body."
+      }
+    }
+  }
+}

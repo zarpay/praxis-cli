@@ -1,0 +1,16 @@
+{
+  "version": "2.0",
+  "validations": {
+    "dacac2eb": {
+      "spec_path": "tests/README.md",
+      "document_type": "unknown",
+      "cached_at": "2026-08-30T23:06:24.583Z",
+      "content_hash": "16726c81",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file fully conforms to the specification. The top-level describe names the module ('rank-parlors'), all nested describes are 'when' clauses, and each it states a single observable outcome that reads as a sentence with its describes. Every it block contains exactly one expect, with compound shapes asserted once via toMatchObject/toEqual. Tests exercise only the public run APIs against an honest in-memory store with no spies or mocking, and each test gets a fresh store via beforeEach, so suites have no shared state or ordering dependence."
+      }
+    }
+  }
+}

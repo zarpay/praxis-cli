@@ -11,3 +11,8 @@ export interface TastingMenu {
   title: string;
   stops: TastingStop[];
 }
+
+/** Input for building a tasting menu; stops caps the tour length. */
+export interface BuildMenuInput {
+  stops: number;
+}
