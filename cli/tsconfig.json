@@ -17,8 +17,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@tests/*": ["./tests/*"]
-    },
-    "baseUrl": "."
+    }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
   "exclude": ["node_modules", "dist"]
