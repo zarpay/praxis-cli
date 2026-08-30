@@ -5,7 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.4.0] - 2026-08-30
+
+### Added
+
+- **`praxis eval` command family** — `eval run [targets...]` (no targets = full run), `eval ci`, `eval verdict <target>`. The `validate` subcommands remain as documented deprecated aliases.
+- **`praxis add expert|practice`** — with deprecated `add role|responsibility` aliases.
+- **Structured errors** — every error Praxis raises now carries a machine-readable code (`PraxisError`), with all message templates in one module.
+- **Config**: `expertsDir` / `practicesDir` keys (deprecated `rolesDir` / `responsibilitiesDir` still accepted); friendlier error naming the config path on malformed JSON.
 
 ### Changed
 
@@ -15,6 +22,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Expert / Practice** replace Role / Responsibility: scaffold directories are `experts/` and `practices/`, config keys are `expertsDir`/`practicesDir` (deprecated `rolesDir`/`responsibilitiesDir` accepted), frontmatter `type: expert|practice` (legacy `role|responsibility` accepted and mapped), expert files list `practices:` (legacy `responsibilities:` accepted), `praxis add expert|practice` (legacy `add role|responsibility` aliased). Compiled profile section headings (`# Role`, `# Responsibilities`) are unchanged — they are prompt idiom in the output format, and changing them would invalidate existing SME content hashes.
   - `praxis status` reports Experts/Practices; report fields renamed accordingly.
   - The judge system prompt now says "compliance judge"; docs site and generated plugin command/skill texts teach the new CLI.
+- **Exit codes aligned**: `validate document` (now `eval run <target>`) exits 0 on WARN, matching full runs; `validate ci --strict` fails on warnings (per its help text) instead of failing on not-yet-validated documents.
+- CLI version is read from package.json at build time instead of a hand-synced constant.
+- Internal: commands are dependency-injected classes; file and path operations centralized in `@/core/files` and `@/core/paths` (ESLint-enforced); type-checked lint rules; import grouping and alias-only imports.
+
+### Fixed
+
+- Validation summaries could report a negative "not validated" count when specs target non-markdown files.
+- Brace glob patterns (`{a,b}.md`) in expert refs were treated as literal paths.
+- The Claude Code plugin rewrote `plugin.json` once per compiled expert instead of once per run.
+- `prepublishOnly` now actually runs lint → typecheck → test → build as documented.
 
 ## [1.3.7] - 2026-06-05
 
