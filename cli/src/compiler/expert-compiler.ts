@@ -1,3 +1,4 @@
+import type { AgentMetadata } from "@/compiler/output-builder.js";
 import type { CompilerPlugin } from "@/compiler/plugins/types.js";
 
 import fg from "fast-glob";
@@ -5,7 +6,7 @@ import fg from "fast-glob";
 import { Frontmatter } from "@/compiler/frontmatter.js";
 import { GlobExpander } from "@/compiler/glob-expander.js";
 import { Markdown } from "@/compiler/markdown.js";
-import { type AgentMetadata, OutputBuilder } from "@/compiler/output-builder.js";
+import { OutputBuilder } from "@/compiler/output-builder.js";
 import { resolvePlugins } from "@/compiler/plugin-registry.js";
 import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
 import { exists, writeText } from "@/core/files.js";

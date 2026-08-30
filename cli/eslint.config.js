@@ -1,6 +1,7 @@
 import eslint from "@eslint/js";
 import stylistic from "@stylistic/eslint-plugin";
 import prettier from "eslint-config-prettier";
+import importX from "eslint-plugin-import-x";
 import perfectionist from "eslint-plugin-perfectionist";
 import tseslint from "typescript-eslint";
 
@@ -26,6 +27,7 @@ export default tseslint.config(
   {
     plugins: {
       "@stylistic": stylistic,
+      "import-x": importX,
       perfectionist,
     },
     languageOptions: {
@@ -47,6 +49,9 @@ export default tseslint.config(
         "error",
         { prefer: "type-imports", fixStyle: "separate-type-imports" },
       ],
+      // Mixed imports (type + value from one module) are split so the
+      // type half joins the type groups instead of hiding inline.
+      "import-x/consistent-type-specifier-style": ["error", "prefer-top-level"],
       // Unused variables are errors, but underscore-prefixed parameters
       // are allowed (the conventional "intentionally unused" marker).
       "@typescript-eslint/no-unused-vars": [

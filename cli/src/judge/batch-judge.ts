@@ -1,3 +1,5 @@
+import type { Verdict } from "@/judge/cache-manager.js";
+
 import chalk from "chalk";
 import fg from "fast-glob";
 
@@ -5,7 +7,7 @@ import { Frontmatter } from "@/compiler/frontmatter.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
-import { CacheManager, type Verdict } from "@/judge/cache-manager.js";
+import { CacheManager } from "@/judge/cache-manager.js";
 import { Judge } from "@/judge/judge.js";
 import { isSpecFile } from "@/judge/spec-pattern.js";
 

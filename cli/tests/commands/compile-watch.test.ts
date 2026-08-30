@@ -1,6 +1,8 @@
+import type { FSWatcher } from "node:fs";
+
 import type { Logger } from "@/core/logger.js";
 
-import { type FSWatcher, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 

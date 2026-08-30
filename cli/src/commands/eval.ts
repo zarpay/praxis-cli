@@ -1,14 +1,18 @@
 import type { Command } from "commander";
 
+import type { ValidationConfig } from "@/core/config.js";
+import type { EvalSummary } from "@/judge/batch-judge.js";
+import type { Verdict } from "@/judge/cache-manager.js";
+
 import chalk from "chalk";
 
-import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig, type ValidationConfig } from "@/core/config.js";
+import { DEFAULT_SPEC_FILE_PATTERN, PraxisConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, resolvePath } from "@/core/paths.js";
-import { BatchJudge, type EvalSummary } from "@/judge/batch-judge.js";
-import { type Verdict, CacheManager } from "@/judge/cache-manager.js";
+import { BatchJudge } from "@/judge/batch-judge.js";
+import { CacheManager } from "@/judge/cache-manager.js";
 import { Judge } from "@/judge/judge.js";
 import {
   buildReport,

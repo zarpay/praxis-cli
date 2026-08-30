@@ -1,12 +1,14 @@
 import type { Command } from "commander";
 
+import type { FSWatcher } from "@/core/files.js";
+
 import fg from "fast-glob";
 
 import { ExpertCompiler } from "@/compiler/expert-compiler.js";
 import { Frontmatter } from "@/compiler/frontmatter.js";
 import { PraxisConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
-import { type FSWatcher, watchDir } from "@/core/files.js";
+import { watchDir } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, resolvePath } from "@/core/paths.js";
 

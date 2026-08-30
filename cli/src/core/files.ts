@@ -1,5 +1,6 @@
+import type { FSWatcher } from "node:fs";
+
 import {
-  type FSWatcher,
   copyFileSync,
   existsSync,
   mkdirSync,
