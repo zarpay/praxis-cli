@@ -268,6 +268,7 @@ export class EvalCommand {
         useCache: options.cache,
         cacheManager: this.cacheManagerFor(judgeConfig, options.cache),
         judge: judgeConfig,
+        root: this.root,
       });
 
       const result = await judge.validate();

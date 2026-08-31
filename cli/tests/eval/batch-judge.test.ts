@@ -678,6 +678,124 @@ describe("BatchJudge", () => {
     });
   });
 
+  describe("exemplars frontmatter", () => {
+    /** A spec blessing one of its two targets as a positive example. */
+    function exemplarProject() {
+      return createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/events.sme.md": [
+            "---",
+            "paths:",
+            '  - "src/events/*.rb"',
+            "exemplars:",
+            '  - "src/events/referral_event.rb"',
+            "---",
+            "# Events Spec",
+          ].join("\n"),
+          "src/events/referral_event.rb": "REFERRAL_EXEMPLAR_CONTENT",
+          "src/events/signup_event.rb": "SIGNUP_CONTENT",
+        },
+        specFilePattern: "*.sme.md",
+      });
+    }
+
+    it("never issues a verdict for an exemplar file", async () => {
+      useCompliantFixture();
+      const { root, cleanup } = exemplarProject();
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        judges: [TEST_JUDGE],
+        specFilePattern: "*.sme.md",
+      });
+
+      const results = await batch.validateAll();
+
+      expect(results.map((r) => r.filename)).toEqual(["signup_event.rb"]);
+
+      cleanup();
+    });
+
+    it("inlines exemplars into the judgment request as labeled positives", async () => {
+      const bodies: string[] = [];
+      server.use(
+        http.post(OPENROUTER_URL, async ({ request }) => {
+          bodies.push(await request.text());
+          return HttpResponse.json(
+            validationToolCallResponse("validation_pass", { reason: "Fully compliant." }),
+          );
+        }),
+      );
+      const { root, cleanup } = exemplarProject();
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        judges: [TEST_JUDGE],
+        specFilePattern: "*.sme.md",
+      });
+
+      await batch.validateAll();
+
+      const body = bodies.find((b) => b.includes("SIGNUP_CONTENT"));
+      expect(body).toContain("EXEMPLAR: src/events/referral_event.rb");
+      expect(body).toContain("REFERRAL_EXEMPLAR_CONTENT");
+
+      cleanup();
+    });
+
+    it("keeps exemplars out of cohort membership while still showing them", async () => {
+      const bodies: string[] = [];
+      server.use(
+        http.post(OPENROUTER_URL, async ({ request }) => {
+          bodies.push(await request.text());
+          return HttpResponse.json(
+            validationToolCallResponse("validation_pass", { reason: "Fully compliant." }),
+          );
+        }),
+      );
+
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/services.sme.md": [
+            "---",
+            "paths:",
+            '  - "src/services/*"',
+            "cohort: by_directory",
+            "exemplars:",
+            '  - "src/services/alpha/golden.ts"',
+            "---",
+            "# Service Spec",
+          ].join("\n"),
+          "src/services/alpha/a.ts": "ALPHA_A_CONTENT",
+          "src/services/alpha/golden.ts": "GOLDEN_CONTENT",
+        },
+        specFilePattern: "*.sme.md",
+      });
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        judges: [TEST_JUDGE],
+        specFilePattern: "*.sme.md",
+      });
+
+      await batch.validateAll();
+
+      const body = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
+      expect(body).toContain("EXEMPLAR: src/services/alpha/golden.ts");
+      expect(body).not.toContain("FILE: src/services/alpha/golden.ts");
+
+      cleanup();
+    });
+  });
+
   describe("multiple judges", () => {
     const flash = { name: "flash", model: "flash-model", apiKeyEnvVar: "OPENROUTER_API_KEY" };
     const strict = { name: "strict", model: "strict-model", apiKeyEnvVar: "OPENROUTER_API_KEY" };

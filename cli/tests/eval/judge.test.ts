@@ -15,6 +15,7 @@ import {
   useOpenRouterResponse,
   validationToolCallResponse,
 } from "@tests/helpers/openrouter-msw.js";
+import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 /** Canned tool-call responses used across the validate() tests. */
 const fixtures = {
@@ -372,6 +373,68 @@ describe("Judge", () => {
 
       expect(hash).toHaveLength(8);
       expect(hash).toMatch(/^[a-f0-9]{8}$/);
+    });
+  });
+
+  describe("exemplars", () => {
+    /** A single-target project whose spec blesses one exemplar. */
+    function exemplarProject() {
+      return createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/events.sme.md": [
+            "---",
+            "exemplars:",
+            '  - "src/events/referral_event.rb"',
+            "---",
+            "# Events Spec",
+          ].join("\n"),
+          "src/events/referral_event.rb": "REFERRAL_EXEMPLAR_CONTENT",
+          "src/events/signup_event.rb": "SIGNUP_CONTENT",
+        },
+        specFilePattern: "*.sme.md",
+      });
+    }
+
+    it("resolves spec-declared exemplars from the project root into the prompt", async () => {
+      const bodies: string[] = [];
+      server.use(
+        http.post(OPENROUTER_URL, async ({ request }) => {
+          bodies.push(await request.text());
+          return HttpResponse.json(fixtures.pass);
+        }),
+      );
+      const { root, abs, cleanup } = exemplarProject();
+
+      const judge = new Judge({
+        targetPath: abs("src/events/signup_event.rb"),
+        specPath: abs("docs/events.sme.md"),
+        root,
+        useCache: false,
+        judge: TEST_JUDGE,
+      });
+      await judge.validate();
+
+      expect(bodies[0]).toContain("EXEMPLAR: src/events/referral_event.rb");
+      expect(bodies[0]).toContain("REFERRAL_EXEMPLAR_CONTENT");
+
+      cleanup();
+    });
+
+    it("throws when a spec declares exemplars and no project root is given", () => {
+      const { abs, cleanup } = exemplarProject();
+
+      expect(
+        () =>
+          new Judge({
+            targetPath: abs("src/events/signup_event.rb"),
+            specPath: abs("docs/events.sme.md"),
+            useCache: false,
+            judge: TEST_JUDGE,
+          }),
+      ).toThrow(/project root/);
+
+      cleanup();
     });
   });
 

@@ -27,6 +27,8 @@ export interface AgentMetadata {
   cohort?: string;
   /** Glob patterns structurally excluded from judgment (written as excludes: in output). */
   excludes?: string[];
+  /** Spec-blessed positive examples (written as exemplars: in output). */
+  exemplars?: string[];
 }
 
 /**
@@ -52,6 +54,10 @@ export function evalTargetingLines(metadata: AgentMetadata): string[] {
 
   if (metadata.excludes && metadata.excludes.length > 0) {
     lines.push("excludes:", ...metadata.excludes.map((p) => `  - "${p}"`));
+  }
+
+  if (metadata.exemplars && metadata.exemplars.length > 0) {
+    lines.push("exemplars:", ...metadata.exemplars.map((p) => `  - "${p}"`));
   }
 
   return lines;

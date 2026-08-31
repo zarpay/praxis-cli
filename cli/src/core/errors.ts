@@ -16,6 +16,7 @@ export type PraxisErrorCode =
   | "FILE_ALREADY_EXISTS"
   | "TEMPLATE_NOT_FOUND"
   | "SPEC_NOT_FOUND"
+  | "MISSING_PROJECT_ROOT"
   | "INVALID_COHORT"
   | "EXPERT_NOT_FOUND"
   | "DOCUMENT_NOT_FOUND"
@@ -149,6 +150,14 @@ export const errors = {
         '    { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "apiKeyEnvVar": "OPENROUTER_API_KEY" }',
         "  ]",
       ].join("\n"),
+    );
+  },
+
+  /** A spec declares root-relative scoping globs but the Judge was built without a project root. */
+  missingProjectRoot(key: string, specPath: string): PraxisError {
+    return new PraxisError(
+      "MISSING_PROJECT_ROOT",
+      `Spec ${specPath} declares "${key}" but no project root was provided to resolve it against`,
     );
   },
 

@@ -294,6 +294,10 @@ export class ExpertCompiler {
 
     if (excludes.length > 0) metadata.excludes = excludes;
 
+    const exemplars = fm.array("exemplars") as string[];
+
+    if (exemplars.length > 0) metadata.exemplars = exemplars;
+
     return metadata;
   }
 }

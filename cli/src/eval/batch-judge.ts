@@ -97,6 +97,12 @@ interface ValidationDomain {
    * them (03: prevention beats calibration).
    */
   excludes: string[];
+  /**
+   * Spec-blessed positive examples from `exemplars:`, resolved to
+   * absolute glob patterns. Shielded from adverse judgment the same way
+   * excludes are; the Judge inlines them into the prompt as positives.
+   */
+  exemplars: string[];
   /** Explicit target files when the spec declares `paths:` (by_file). */
   targetFiles?: string[];
   /** Matched directories when the spec declares `cohort: by_directory`. */
@@ -345,9 +351,11 @@ export class BatchJudge {
    * sibling .md files.
    */
   private resolveUnits(domain: ValidationDomain): EvalUnit[] {
+    const shielded = [...domain.excludes, ...domain.exemplars];
+
     if (domain.cohort === "by_directory") {
       return (domain.targetDirs ?? [])
-        .map((dir) => ({ path: dir, files: this.collectMembers(dir, domain.excludes) }))
+        .map((dir) => ({ path: dir, files: this.collectMembers(dir, shielded) }))
         .filter((unit) => unit.files.length > 0);
     }
 
@@ -361,7 +369,7 @@ export class BatchJudge {
         onlyFiles: true,
         absolute: true,
         dot: true,
-        ignore: [...this.absoluteIgnore, ...domain.excludes],
+        ignore: [...this.absoluteIgnore, ...shielded],
       })
       .filter((f) => {
         const name = baseName(f);
@@ -370,15 +378,15 @@ export class BatchJudge {
       .map((file) => ({ path: file, files: [file] }));
   }
 
-  /** Collects a cohort directory's member files, sorted, spec/template/excludes-filtered. */
-  private collectMembers(dir: string, excludes: string[]): string[] {
+  /** Collects a cohort directory's member files, sorted, minus specs, templates, and shielded paths. */
+  private collectMembers(dir: string, shielded: string[]): string[] {
     return fg
       .sync("**/*", {
         cwd: dir,
         onlyFiles: true,
         absolute: true,
         dot: true,
-        ignore: [...this.absoluteIgnore, ...excludes],
+        ignore: [...this.absoluteIgnore, ...shielded],
       })
       .filter((f) => {
         const name = baseName(f);
@@ -415,6 +423,10 @@ export class BatchJudge {
         const pathPatterns = fm.array("paths") as string[];
         const cohort = this.readCohort(fm, specPath);
         const excludes = (fm.array("excludes") as string[]).map((p) => joinPath(this.root, p));
+        const exemplars = (fm.array("exemplars") as string[]).map((p) => joinPath(this.root, p));
+        // Exemplars are shielded from adverse judgment exactly like
+        // excludes; they reach the judge only as inlined positives.
+        const shielded = [...this.absoluteIgnore, ...excludes, ...exemplars];
 
         if (cohort === "by_directory") {
           const targetDirs = fg
@@ -423,11 +435,11 @@ export class BatchJudge {
               onlyDirectories: true,
               absolute: true,
               dot: true,
-              ignore: [...this.absoluteIgnore, ...excludes],
+              ignore: shielded,
             })
             .sort();
 
-          domains.push({ dir, specPath, type, cohort, excludes, targetDirs });
+          domains.push({ dir, specPath, type, cohort, excludes, exemplars, targetDirs });
         } else if (pathPatterns.length > 0) {
           const targetFiles = fg
             .sync(pathPatterns, {
@@ -435,16 +447,16 @@ export class BatchJudge {
               onlyFiles: true,
               absolute: true,
               dot: true,
-              ignore: [...this.absoluteIgnore, ...excludes],
+              ignore: shielded,
             })
             .filter((f) => {
               const name = baseName(f);
               return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
             });
 
-          domains.push({ dir, specPath, type, cohort, excludes, targetFiles });
+          domains.push({ dir, specPath, type, cohort, excludes, exemplars, targetFiles });
         } else {
-          domains.push({ dir, specPath, type, cohort, excludes });
+          domains.push({ dir, specPath, type, cohort, excludes, exemplars });
         }
       }
     }
@@ -519,6 +531,7 @@ export class BatchJudge {
         useCache: this.useCache,
         cacheManager: this.cacheManagers[judgeIndex] ?? undefined,
         judge: judgeConfig,
+        root: this.root,
       });
 
       const result = await judge.validate();

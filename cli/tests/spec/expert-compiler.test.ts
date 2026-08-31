@@ -199,6 +199,32 @@ describe("ExpertCompiler", () => {
     });
   });
 
+  describe("exemplars frontmatter", () => {
+    it("compiles exemplars through to the pure profile frontmatter", async () => {
+      const expertFile = join(expertsDir, "blesser.md");
+      writeFileSync(
+        expertFile,
+        [
+          "---",
+          "alias: Blesser",
+          "description: judges events with a golden example",
+          "validates:",
+          '  - "src/events/*.rb"',
+          "exemplars:",
+          '  - "src/events/referral_event.rb"',
+          "---",
+          "# Blesser",
+        ].join("\n"),
+      );
+
+      await compiler.compile(expertFile);
+      const profile = readFileSync(join(agentProfilesDir, "blesser.md"), "utf-8");
+
+      expect(profile).toContain("exemplars:");
+      expect(profile).toContain('- "src/events/referral_event.rb"');
+    });
+  });
+
   describe("legacy frontmatter", () => {
     it("inlines files listed under the deprecated responsibilities: key", async () => {
       const legacyFile = join(expertsDir, "legacy.md");

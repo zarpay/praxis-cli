@@ -11,7 +11,7 @@ import {
 import { errors } from "@/core/errors.js";
 import { exists, readText } from "@/core/files.js";
 import { Frontmatter } from "@/core/frontmatter.js";
-import { baseName, joinPath, parentDir } from "@/core/paths.js";
+import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
 import { CacheManager, contentHash } from "@/eval/cache-manager.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
@@ -65,6 +65,11 @@ export class Judge {
   private wasCacheHit = false;
   private readonly judge?: JudgeConfig;
 
+  /** Project root the spec's scoping globs (exemplars:) resolve against. */
+  private readonly root?: string;
+  /** Spec-blessed positive examples: root-relative path plus content. */
+  private readonly exemplars: { path: string; content: string }[];
+
   private readonly specFilePattern: string;
 
   /** Whether the target is one file or a pre-assembled cohort of files. */
@@ -79,6 +84,7 @@ export class Judge {
     useCache = true,
     cacheManager,
     judge,
+    root,
   }: {
     targetPath: string;
     /** Pre-assembled judgment input (cohorts); read from targetPath when omitted. */
@@ -90,6 +96,8 @@ export class Judge {
     cacheManager?: CacheManager;
     /** The judge to invoke; required for validate() to reach the API. */
     judge?: JudgeConfig;
+    /** Project root; required when the spec declares scoping globs. */
+    root?: string;
   }) {
     this.targetPath = targetPath;
     this.targetContent = targetContent ?? readText(targetPath);
@@ -98,6 +106,8 @@ export class Judge {
     this.specFilePattern = specFilePattern;
     this.specPath = specPath ?? this.findSpec();
     this.specContent = readText(this.specPath);
+    this.root = root;
+    this.exemplars = this.resolveExemplars();
     this.useCache = useCache;
     this.judge = judge;
     this.cacheManager =
@@ -240,6 +250,53 @@ export class Judge {
     }
   }
 
+  /**
+   * Resolves the spec's `exemplars:` globs into labeled file contents.
+   *
+   * Exemplars are spec-blessed positive examples (03): shielded from
+   * adverse judgment by the batch scoping filters, and inlined into the
+   * prompt as concrete references for what compliance looks like.
+   *
+   * @throws PraxisError when the spec declares exemplars but no project
+   *   root was provided to resolve the root-relative globs against
+   */
+  private resolveExemplars(): { path: string; content: string }[] {
+    const patterns = Frontmatter.fromContent(this.specContent).array("exemplars") as string[];
+
+    if (patterns.length === 0) return [];
+
+    const root = this.root;
+
+    if (!root) throw errors.missingProjectRoot("exemplars", this.specPath);
+
+    return fg
+      .sync(patterns, { cwd: root, onlyFiles: true, absolute: true, dot: true })
+      .sort()
+      .map((file) => ({ path: relativePath(root, file), content: readText(file) }));
+  }
+
+  /**
+   * Renders the exemplars prompt section, or an empty string when the
+   * spec blesses none.
+   */
+  private buildExemplarSection(): string {
+    if (this.exemplars.length === 0) return "";
+
+    const blocks = this.exemplars
+      .map((e) => `===== EXEMPLAR: ${e.path} =====\n\n${e.content}`)
+      .join("\n\n");
+
+    return `## EXEMPLARS
+
+The following files are spec-blessed positive examples. They are not
+under judgment — use them as concrete references for what satisfying
+the specification looks like.
+
+${blocks}
+
+`;
+  }
+
   /** Builds the user prompt sent to the LLM for validation. */
   private buildValidationQuestion(): string {
     const subject =
@@ -261,7 +318,7 @@ Directory: ${parentDir(this.targetPath)}`;
 ${this.specContent}
 \`\`\`
 
-${subject}
+${this.buildExemplarSection()}${subject}
 
 \`\`\`
 ${this.targetContent}
