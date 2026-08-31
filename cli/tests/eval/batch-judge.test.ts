@@ -796,6 +796,62 @@ describe("BatchJudge", () => {
     });
   });
 
+  describe("context frontmatter", () => {
+    it("inlines context files into every unit's judgment request, never judging them", async () => {
+      const bodies: string[] = [];
+      server.use(
+        http.post(OPENROUTER_URL, async ({ request }) => {
+          bodies.push(await request.text());
+          return HttpResponse.json(
+            validationToolCallResponse("validation_pass", { reason: "Fully compliant." }),
+          );
+        }),
+      );
+
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/events.sme.md": [
+            "---",
+            "paths:",
+            '  - "src/events/*.rb"',
+            "context:",
+            '  - "src/services/*.ts"',
+            "---",
+            "# Events Spec",
+          ].join("\n"),
+          "src/events/signup_event.rb": "SIGNUP_CONTENT",
+          "src/events/referral_event.rb": "REFERRAL_CONTENT",
+          "src/services/store.ts": "STORE_CONTEXT_CONTENT",
+        },
+        specFilePattern: "*.sme.md",
+      });
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        judges: [TEST_JUDGE],
+        specFilePattern: "*.sme.md",
+      });
+
+      const results = await batch.validateAll();
+
+      expect(results.map((r) => r.filename).sort()).toEqual([
+        "referral_event.rb",
+        "signup_event.rb",
+      ]);
+      expect(bodies).toHaveLength(2);
+
+      for (const body of bodies) {
+        expect(body).toContain("CONTEXT: src/services/store.ts");
+        expect(body).toContain("STORE_CONTEXT_CONTENT");
+      }
+
+      cleanup();
+    });
+  });
+
   describe("multiple judges", () => {
     const flash = { name: "flash", model: "flash-model", apiKeyEnvVar: "OPENROUTER_API_KEY" };
     const strict = { name: "strict", model: "strict-model", apiKeyEnvVar: "OPENROUTER_API_KEY" };

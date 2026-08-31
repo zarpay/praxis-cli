@@ -378,7 +378,10 @@ export class EvalCommand {
       throw errors.missingJudges();
     }
 
-    const reporter = new VerdictReporter({ specFilePattern: this.config.specFilePattern });
+    const reporter = new VerdictReporter({
+      specFilePattern: this.config.specFilePattern,
+      root: this.root,
+    });
 
     for (const judge of judges) {
       const manager = new CacheManager({ projectRoot: this.root, judge: cacheIdentity(judge) });

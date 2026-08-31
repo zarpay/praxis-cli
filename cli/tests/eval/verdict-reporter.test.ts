@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { contentHash } from "@/eval/cache-manager.js";
+import { assistHashInput, resolveAssistInputs } from "@/eval/judgment-input.js";
 import { VerdictReporter } from "@/eval/verdict-reporter.js";
 
 const DOC_CONTENT = "# Guide\nA target under report.";
@@ -120,6 +121,40 @@ describe("VerdictReporter", () => {
       const report = reporter.build(join(dir, "missing.md"), null);
 
       expect(report.currentHash).toBeNull();
+    });
+
+    it("reports stale when a spec-declared context file changed since validation", () => {
+      const specContent = ['---', 'context:', '  - "services/store.ts"', '---', '# Spec'].join(
+        "\n",
+      );
+      writeFileSync(join(dir, "README.md"), specContent);
+      mkdirSync(join(dir, "services"), { recursive: true });
+      writeFileSync(join(dir, "services", "store.ts"), "STORE_V1");
+
+      const rootReporter = new VerdictReporter({ root: dir });
+      const specPath = join(dir, "README.md");
+      const assist = resolveAssistInputs({ specContent, specPath, root: dir });
+      const cacheData = {
+        ...freshCacheData(),
+        content_hash: contentHash(DOC_CONTENT, specContent, assistHashInput(assist)),
+      };
+
+      expect(rootReporter.build(targetPath, cacheData).status).toBe("pass");
+
+      writeFileSync(join(dir, "services", "store.ts"), "STORE_V2");
+
+      expect(rootReporter.build(targetPath, cacheData).status).toBe("stale");
+    });
+
+    it("skips the staleness check when a context-declaring spec has no root to resolve against", () => {
+      const specContent = ['---', 'context:', '  - "services/store.ts"', '---', '# Spec'].join(
+        "\n",
+      );
+      writeFileSync(join(dir, "README.md"), specContent);
+
+      const report = reporter.build(targetPath, freshCacheData());
+
+      expect(report).toMatchObject({ currentHash: null, isStale: false });
     });
   });
 

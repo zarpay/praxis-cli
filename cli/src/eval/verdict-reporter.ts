@@ -8,6 +8,7 @@ import { exists, readText } from "@/core/files.js";
 import { joinPath, parentDir } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
 import { contentHash } from "@/eval/cache-manager.js";
+import { assistHashInput, resolveAssistInputs } from "@/eval/judgment-input.js";
 
 /** All possible report states. */
 export type ReportStatus = "not_validated" | "pass" | "warn" | "fail" | "stale";
@@ -39,13 +40,19 @@ const DIVIDER_WIDTH = 50;
  */
 export class VerdictReporter {
   private readonly specFilePattern: string;
+  /** Project root the spec's assist-input globs resolve against. */
+  private readonly root?: string;
 
   constructor({
     specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
+    root,
   }: {
     specFilePattern?: string;
+    /** Required for accurate staleness on specs declaring exemplars:/context:. */
+    root?: string;
   } = {}) {
     this.specFilePattern = specFilePattern;
+    this.root = root;
   }
 
   /**
@@ -158,9 +165,11 @@ export class VerdictReporter {
   /**
    * Computes the target's current content hash, resolving the spec from
    * the cached spec path when available, otherwise from the target's
-   * own directory.
+   * own directory. Assist inputs (exemplars:/context:) join the hash
+   * exactly as they do in the Judge.
    *
-   * Returns null when the target or its spec cannot be read.
+   * Returns null when the target, its spec, or its assist inputs cannot
+   * be resolved — skipping the staleness check rather than inventing one.
    */
   private currentHash(targetPath: string, specPath?: string): string | null {
     try {
@@ -169,7 +178,14 @@ export class VerdictReporter {
 
       if (!resolvedSpec || !exists(resolvedSpec)) return null;
 
-      return contentHash(targetContent, readText(resolvedSpec));
+      const specContent = readText(resolvedSpec);
+      const assist = resolveAssistInputs({
+        specContent,
+        specPath: resolvedSpec,
+        root: this.root,
+      });
+
+      return contentHash(targetContent, specContent, assistHashInput(assist));
     } catch {
       return null;
     }

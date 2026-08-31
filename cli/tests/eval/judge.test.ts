@@ -1,6 +1,6 @@
 import { HttpResponse, http } from "msw";
 import { randomUUID } from "node:crypto";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir as osTmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
@@ -421,6 +421,35 @@ describe("Judge", () => {
       cleanup();
     });
 
+    it("editing an exemplar invalidates the cached verdict", async () => {
+      useOpenRouterResponse(server, fixtures.pass);
+      const { root, abs, cleanup } = exemplarProject();
+
+      function makeJudge(): Judge {
+        return new Judge({
+          targetPath: abs("src/events/signup_event.rb"),
+          specPath: abs("docs/events.sme.md"),
+          root,
+          cacheManager: new CacheManager({ projectRoot: root }),
+          judge: TEST_JUDGE,
+        });
+      }
+
+      await makeJudge().validate();
+
+      const second = makeJudge();
+      await second.validate();
+      expect(second.cacheHit).toBe(true);
+
+      writeFileSync(abs("src/events/referral_event.rb"), "REFERRAL_EXEMPLAR_EDITED");
+
+      const third = makeJudge();
+      await third.validate();
+      expect(third.cacheHit).toBe(false);
+
+      cleanup();
+    });
+
     it("throws when a spec declares exemplars and no project root is given", () => {
       const { abs, cleanup } = exemplarProject();
 
@@ -433,6 +462,101 @@ describe("Judge", () => {
             judge: TEST_JUDGE,
           }),
       ).toThrow(/project root/);
+
+      cleanup();
+    });
+  });
+
+  describe("context", () => {
+    /** A single-target project whose spec declares assist-only context. */
+    function contextProject() {
+      return createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/events.sme.md": [
+            "---",
+            "context:",
+            '  - "src/services/*.ts"',
+            "---",
+            "# Events Spec",
+          ].join("\n"),
+          "src/services/store.ts": "STORE_CONTEXT_CONTENT",
+          "src/events/signup_event.rb": "SIGNUP_CONTENT",
+        },
+        specFilePattern: "*.sme.md",
+      });
+    }
+
+    /** Builds a cache-bound Judge for the context project. */
+    function makeJudge(root: string, abs: (p: string) => string): Judge {
+      return new Judge({
+        targetPath: abs("src/events/signup_event.rb"),
+        specPath: abs("docs/events.sme.md"),
+        root,
+        cacheManager: new CacheManager({ projectRoot: root }),
+        judge: TEST_JUDGE,
+      });
+    }
+
+    it("inlines spec-declared context files into the prompt as assist-only", async () => {
+      const bodies: string[] = [];
+      server.use(
+        http.post(OPENROUTER_URL, async ({ request }) => {
+          bodies.push(await request.text());
+          return HttpResponse.json(fixtures.pass);
+        }),
+      );
+      const { root, abs, cleanup } = contextProject();
+
+      const judge = new Judge({
+        targetPath: abs("src/events/signup_event.rb"),
+        specPath: abs("docs/events.sme.md"),
+        root,
+        useCache: false,
+        judge: TEST_JUDGE,
+      });
+      await judge.validate();
+
+      expect(bodies[0]).toContain("CONTEXT: src/services/store.ts");
+      expect(bodies[0]).toContain("STORE_CONTEXT_CONTENT");
+
+      cleanup();
+    });
+
+    it("editing a context file invalidates the cached verdict", async () => {
+      useOpenRouterResponse(server, fixtures.pass);
+      const { root, abs, cleanup } = contextProject();
+
+      await makeJudge(root, abs).validate();
+
+      const second = makeJudge(root, abs);
+      await second.validate();
+      expect(second.cacheHit).toBe(true);
+
+      writeFileSync(abs("src/services/store.ts"), "STORE_CONTEXT_EDITED");
+
+      const third = makeJudge(root, abs);
+      await third.validate();
+      expect(third.cacheHit).toBe(false);
+
+      cleanup();
+    });
+
+    it("records the resolved context files with their hashes in the cache entry", async () => {
+      useOpenRouterResponse(server, fixtures.pass);
+      const { root, abs, cleanup } = contextProject();
+
+      await makeJudge(root, abs).validate();
+
+      const cacheFile = abs(".praxis/cache/validation/src/events/signup_event.rb.json");
+      const parsed = JSON.parse(readFileSync(cacheFile, "utf-8")) as {
+        verdicts: Record<string, { context_files?: { path: string; hash: string }[] }>;
+      };
+      const entry = Object.values(parsed.verdicts)[0];
+
+      expect(entry.context_files).toEqual([
+        { path: "src/services/store.ts", hash: expect.stringMatching(/^[0-9a-f]{8}$/) as string },
+      ]);
 
       cleanup();
     });

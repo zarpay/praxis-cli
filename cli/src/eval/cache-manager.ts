@@ -1,3 +1,5 @@
+import type { AssistFileRecord } from "@/eval/judgment-input.js";
+
 import fg from "fast-glob";
 import { createHash } from "node:crypto";
 
@@ -51,6 +53,10 @@ interface VerdictEntry {
   target_type: string;
   cached_at: string;
   content_hash: string;
+  /** Resolved exemplar files the judge saw, with content hashes (present when the spec blesses any). */
+  exemplar_files?: AssistFileRecord[];
+  /** Resolved context files the judge saw, with content hashes (present when the spec declares any). */
+  context_files?: AssistFileRecord[];
   result: Verdict;
 }
 
@@ -158,7 +164,14 @@ export class CacheManager {
     targetPath: string;
     contentHash: string;
     result: Verdict;
-    metadata: { targetType: string; specPath: string };
+    metadata: {
+      targetType: string;
+      specPath: string;
+      /** Resolved exemplar provenance, recorded when the spec blesses any. */
+      exemplarFiles?: AssistFileRecord[];
+      /** Resolved context provenance, recorded when the spec declares any. */
+      contextFiles?: AssistFileRecord[];
+    };
   }): void {
     const cachePath = this.cachePathFor(targetPath);
 
@@ -174,6 +187,14 @@ export class CacheManager {
         issues: result.issues.map(sanitizeText),
       },
     };
+
+    if (metadata.exemplarFiles && metadata.exemplarFiles.length > 0) {
+      entry.exemplar_files = metadata.exemplarFiles;
+    }
+
+    if (metadata.contextFiles && metadata.contextFiles.length > 0) {
+      entry.context_files = metadata.contextFiles;
+    }
 
     const fileData = this.loadFile(cachePath);
     fileData.verdicts[this.verdictKey(metadata.specPath)] = entry;
@@ -500,15 +521,21 @@ export class CacheManager {
 }
 
 /**
- * Computes a cache-key hash from target and spec content.
+ * Computes a cache-key hash from the full judgment input.
  *
- * Returns the first 8 characters of the SHA256 hex digest. Both inputs
- * participate so that editing either the target or its spec
- * invalidates the cached verdict.
+ * Returns the first 8 characters of the SHA256 hex digest. Every input
+ * the judge saw participates — target, spec, and the serialized assist
+ * inputs (exemplars/context, see judgment-input.ts) — so editing any of
+ * them invalidates the cached verdict. The assist component defaults to
+ * empty, leaving plain specs' hashes unchanged.
  */
-export function contentHash(targetContent: string, specContent: string): string {
+export function contentHash(
+  targetContent: string,
+  specContent: string,
+  assistInput = "",
+): string {
   return createHash("sha256")
-    .update(targetContent + specContent)
+    .update(targetContent + specContent + assistInput)
     .digest("hex")
     .slice(0, 8);
 }
