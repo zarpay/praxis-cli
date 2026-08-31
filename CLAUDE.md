@@ -15,6 +15,7 @@ This is a three-project repository:
 - Run all CLI commands (`npm test`, `npm run lint`, etc.) from `cli/`, not the repo root.
 - The demo depends on `cli/dist/` — run `npm run build` in `cli/` before exercising the demo against fresh changes.
 - `praxis eval run` in the demo needs `OPENROUTER_API_KEY`; `praxis compile` and `praxis status` work offline.
+- Site docs (`site/`) are part of a feature's definition of done: update the affected pages in the same milestone branch as the code, so docs and implementation merge and publish together.
 
 ## Branching
 
