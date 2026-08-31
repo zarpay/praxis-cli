@@ -59,7 +59,7 @@ Spec discovered (specFilePattern match, frontmatter read)
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never judged), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
-Key files: `src/eval/judge.ts`, `src/prompts/` (one prompt per file), `src/eval/judgment-input.ts`, `src/eval/cache-manager.ts`, `src/eval/batch-judge.ts`, `src/eval/verdict-reporter.ts`, `src/eval/judge-hash.ts`.
+Key files: `src/eval/judge.ts`, `src/prompts/` (one prompt per file), `src/eval/judgment-input.ts`, `src/eval/cache-manager.ts`, `src/eval/eval-run.ts`, `src/eval/verdict-reporter.ts`, `src/eval/judge-hash.ts`.
 
 ### Project Root Detection
 

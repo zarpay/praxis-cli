@@ -111,14 +111,16 @@ interface ValidationDomain {
 }
 
 /**
- * Validates multiple Praxis documents and aggregates results.
+ * One evaluation run: everything a single `praxis eval run` invocation
+ * does across all configured judges.
  *
- * Discovers validation domains by scanning source directories for
- * directories containing README.md files, validates each document
- * against its directory's README spec, and collects results with
- * optional fail-fast behavior and cache statistics.
+ * Discovers validation domains (specs and their scoping frontmatter),
+ * resolves them into evaluation units, judges every unit with every
+ * judge, and aggregates results, cache statistics, and the summary.
+ * The ledger records a run of this class as one run record per judge
+ * (05: runs are per judge).
  */
-export class BatchJudge extends PraxisProjectBase {
+export class EvalRun extends PraxisProjectBase {
   /** Source directories (relative to root) scanned for spec files. */
   readonly sources: string[];
   /** Whether validation stops at the first error result. */
@@ -541,7 +543,7 @@ export class BatchJudge extends PraxisProjectBase {
         this.cacheStats.misses++;
       }
 
-      const batchResult: TargetVerdict = {
+      const runResult: TargetVerdict = {
         ...result,
         path: unit.path,
         type,
@@ -554,7 +556,7 @@ export class BatchJudge extends PraxisProjectBase {
         ...(result.compliant ? [] : result.issues.map((issue) => `\t${chalk.dim("·")} ${issue}`)),
       ]);
 
-      this.results.push(batchResult);
+      this.results.push(runResult);
     } catch (err) {
       this.out.print([
         `\t${chalk.red("✗ ERROR")}`,

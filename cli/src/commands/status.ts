@@ -10,8 +10,8 @@ import { Frontmatter } from "@/core/frontmatter.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, baseName, joinPath, relativePath, resolvePath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
-import { BatchJudge } from "@/eval/batch-judge.js";
 import { CacheManager } from "@/eval/cache-manager.js";
+import { EvalRun } from "@/eval/eval-run.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
 import { GlobExpander } from "@/spec/glob-expander.js";
 
@@ -307,19 +307,19 @@ export class StatusCommand extends PraxisProjectBase {
   /**
    * Tallies cached validation verdicts across all spec-targeted files.
    *
-   * Discovers targets via BatchJudge (any file extension, including
+   * Discovers targets via EvalRun (any file extension, including
    * files reached through spec `paths:` frontmatter) and reads each
    * file's cached verdict without making API calls.
    */
   private tallyValidation(): StatusReport["validation"] {
-    const batchJudge = new BatchJudge({
+    const evalRun = new EvalRun({
       root: this.root,
       sources: this.config.sources,
       ignore: this.config.ignore,
       judges: this.config.judges,
       specFilePattern: this.specFilePattern,
     });
-    const targets = batchJudge.listTargetFiles();
+    const targets = evalRun.listTargetFiles();
 
     // One cache namespace per judge; the legacy un-namespaced cache
     // when no judges are configured. Reading needs no API keys.

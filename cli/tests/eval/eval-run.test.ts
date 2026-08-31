@@ -3,7 +3,7 @@ import { writeFileSync } from "node:fs";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/core/config.js";
-import { BatchJudge } from "@/eval/batch-judge.js";
+import { EvalRun } from "@/eval/eval-run.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,
@@ -39,7 +39,7 @@ function useErrorFixture(): void {
   );
 }
 
-describe("BatchJudge", () => {
+describe("EvalRun", () => {
   let tmpdir: string;
   let cleanup: () => void;
   let config: PraxisConfig;
@@ -61,14 +61,14 @@ describe("BatchJudge", () => {
     it("validates documents across all types", async () => {
       useCompliantFixture();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
         judges: [TEST_JUDGE],
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       expect(results.length).toBeGreaterThan(0);
       expect(results.every((r) => r.compliant)).toBe(true);
@@ -79,27 +79,27 @@ describe("BatchJudge", () => {
     it("validates only documents of the specified type", async () => {
       useCompliantFixture();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
         judges: [TEST_JUDGE],
       });
-      const results = await batch.validateType("experts");
+      const results = await run.validateType("experts");
 
       expect(results.length).toBeGreaterThan(0);
       expect(results.every((r) => r.type.includes("experts"))).toBe(true);
     });
 
     it("throws for unknown document type", async () => {
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
         judges: [TEST_JUDGE],
       });
 
-      await expect(batch.validateType("bogus")).rejects.toThrow("Unknown document type: bogus");
+      await expect(run.validateType("bogus")).rejects.toThrow("Unknown document type: bogus");
     });
   });
 
@@ -107,7 +107,7 @@ describe("BatchJudge", () => {
     it("stops on first error when fail-fast is enabled", async () => {
       useErrorFixture();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root: tmpdir,
         sources: config.sources,
         failFast: true,
@@ -115,9 +115,9 @@ describe("BatchJudge", () => {
         judges: [TEST_JUDGE],
       });
 
-      await batch.validateAll();
+      await run.validateAll();
 
-      expect(batch.stopped).toBe(true);
+      expect(run.stopped).toBe(true);
     });
   });
 
@@ -134,7 +134,7 @@ describe("BatchJudge", () => {
         specFilePattern: "SPEC.md",
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["roles"],
         useCache: false,
@@ -142,7 +142,7 @@ describe("BatchJudge", () => {
         specFilePattern: "SPEC.md",
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       expect(results).toHaveLength(1);
       expect(results[0].filename).toBe("engineer.md");
@@ -164,14 +164,14 @@ describe("BatchJudge", () => {
         },
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["specs", "docs"],
         useCache: false,
         judges: [TEST_JUDGE],
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
       const filenames = results.map((r) => r.filename).sort();
 
       expect(filenames).toEqual(["deep.md", "guide.md"]);
@@ -191,14 +191,14 @@ describe("BatchJudge", () => {
         },
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["specs", "docs"],
         useCache: false,
         judges: [TEST_JUDGE],
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
       const filenames = results.map((r) => r.filename);
       const paths = results.map((r) => r.path);
 
@@ -219,14 +219,14 @@ describe("BatchJudge", () => {
         },
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["roles"],
         useCache: false,
         judges: [TEST_JUDGE],
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       expect(results).toHaveLength(1);
       expect(results[0].filename).toBe("engineer.md");
@@ -250,7 +250,7 @@ describe("BatchJudge", () => {
 
       useCompliantFixture();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         ignore: ["docs/smes/**"],
@@ -259,7 +259,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       // The spec was discovered despite being in an ignored directory
       expect(results).toHaveLength(1);
@@ -280,7 +280,7 @@ describe("BatchJudge", () => {
 
       useCompliantFixture();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         ignore: ["docs/smes/**"],
@@ -289,7 +289,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       // only article.md validated; other.md in ignored dir is excluded from paths expansion
       expect(results).toHaveLength(1);
@@ -310,7 +310,7 @@ describe("BatchJudge", () => {
         },
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         ignore: ["docs/generated/**"],
@@ -319,7 +319,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.praxis.md",
       });
 
-      const docs = batch["collectSourceDocuments"]();
+      const docs = run["collectSourceDocuments"]();
       expect(docs.size).toBe(1); // only counted.md; generated/output.md is ignored
 
       cleanup();
@@ -338,7 +338,7 @@ describe("BatchJudge", () => {
 
       useCompliantFixture();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         ignore: ["docs/ignored/**"],
@@ -347,7 +347,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.praxis.md",
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       // Only counted.md in docs/valid/ should be validated; nothing from docs/ignored/
       expect(results).toHaveLength(1);
@@ -377,7 +377,7 @@ describe("BatchJudge", () => {
       useCompliantFixture();
       const { root, cleanup } = cohortProject();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -385,7 +385,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       expect(results.map((r) => r.filename).sort()).toEqual(["alpha", "beta"]);
 
@@ -404,7 +404,7 @@ describe("BatchJudge", () => {
       );
       const { root, cleanup } = cohortProject();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -412,7 +412,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await batch.validateAll();
+      await run.validateAll();
 
       const alphaBody = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
       expect(alphaBody).toContain("ALPHA_B_CONTENT");
@@ -432,7 +432,7 @@ describe("BatchJudge", () => {
       );
       const { root, cleanup } = cohortProject();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -440,7 +440,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await batch.validateAll();
+      await run.validateAll();
 
       const alphaBody = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
       expect(alphaBody).toContain("src/services/alpha/a.ts");
@@ -452,8 +452,8 @@ describe("BatchJudge", () => {
       useCompliantFixture();
       const { root, abs, cleanup } = cohortProject();
 
-      function makeBatch() {
-        return new BatchJudge({
+      function makeRun() {
+        return new EvalRun({
           root,
           sources: ["docs"],
           judges: [TEST_JUDGE],
@@ -461,17 +461,17 @@ describe("BatchJudge", () => {
         });
       }
 
-      const first = makeBatch();
+      const first = makeRun();
       await first.validateAll();
       expect(first.cacheStats).toEqual({ hits: 0, misses: 2 });
 
-      const second = makeBatch();
+      const second = makeRun();
       await second.validateAll();
       expect(second.cacheStats).toEqual({ hits: 2, misses: 0 });
 
       writeFileSync(abs("src/services/alpha/a.ts"), "ALPHA_A_EDITED");
 
-      const third = makeBatch();
+      const third = makeRun();
       await third.validateAll();
       expect(third.cacheStats).toEqual({ hits: 1, misses: 1 });
 
@@ -491,7 +491,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -499,7 +499,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       expect(results.map((r) => r.filename).sort()).toEqual(["a.ts", "c.ts"]);
 
@@ -516,7 +516,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -524,7 +524,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await expect(batch.validateAll()).rejects.toThrow('Invalid cohort value "by_magic"');
+      await expect(run.validateAll()).rejects.toThrow('Invalid cohort value "by_magic"');
 
       cleanup();
     });
@@ -552,7 +552,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -560,7 +560,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       expect(results.map((r) => r.filename)).toEqual(["referral_event.rb"]);
 
@@ -579,14 +579,14 @@ describe("BatchJudge", () => {
         },
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
         judges: [TEST_JUDGE],
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       expect(results.map((r) => r.filename)).toEqual(["good.md"]);
 
@@ -623,7 +623,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -631,7 +631,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await batch.validateAll();
+      await run.validateAll();
 
       const alphaBody = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
       expect(alphaBody).toBeDefined();
@@ -662,7 +662,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -670,7 +670,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       expect(results.map((r) => r.filename)).toEqual(["alpha"]);
 
@@ -704,7 +704,7 @@ describe("BatchJudge", () => {
       useCompliantFixture();
       const { root, cleanup } = exemplarProject();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -712,7 +712,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       expect(results.map((r) => r.filename)).toEqual(["signup_event.rb"]);
 
@@ -731,7 +731,7 @@ describe("BatchJudge", () => {
       );
       const { root, cleanup } = exemplarProject();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -739,7 +739,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await batch.validateAll();
+      await run.validateAll();
 
       const body = bodies.find((b) => b.includes("SIGNUP_CONTENT"));
       expect(body).toContain("EXEMPLAR: src/events/referral_event.rb");
@@ -778,7 +778,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -786,7 +786,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await batch.validateAll();
+      await run.validateAll();
 
       const body = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
       expect(body).toContain("EXEMPLAR: src/services/alpha/golden.ts");
@@ -827,7 +827,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -835,7 +835,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       expect(results.map((r) => r.filename).sort()).toEqual([
         "referral_event.rb",
@@ -888,14 +888,14 @@ describe("BatchJudge", () => {
       useCompliantFixture();
       const { root, cleanup } = twoJudgeProject();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
         judges: [flash, strict],
       });
 
-      const results = await batch.validateAll();
+      const results = await run.validateAll();
 
       expect(results.map((r) => r.judge).sort()).toEqual(["flash", "strict"]);
 
@@ -906,16 +906,16 @@ describe("BatchJudge", () => {
       useCompliantFixture();
       const { root, cleanup } = twoJudgeProject();
 
-      const first = new BatchJudge({ root, sources: ["docs"], judges: [flash, strict] });
+      const first = new EvalRun({ root, sources: ["docs"], judges: [flash, strict] });
       await first.validateAll();
       expect(first.cacheStats).toEqual({ hits: 0, misses: 2 });
 
-      const second = new BatchJudge({ root, sources: ["docs"], judges: [flash, strict] });
+      const second = new EvalRun({ root, sources: ["docs"], judges: [flash, strict] });
       await second.validateAll();
       expect(second.cacheStats).toEqual({ hits: 2, misses: 0 });
 
       // A judge with different behavioral settings gets no hits from the others.
-      const third = new BatchJudge({
+      const third = new EvalRun({
         root,
         sources: ["docs"],
         judges: [{ ...flash, name: "hot", temperature: 0.9 }],
@@ -930,10 +930,10 @@ describe("BatchJudge", () => {
       useCompliantFixture();
       const { root, cleanup } = twoJudgeProject();
 
-      const first = new BatchJudge({ root, sources: ["docs"], judges: [flash] });
+      const first = new EvalRun({ root, sources: ["docs"], judges: [flash] });
       await first.validateAll();
 
-      const renamed = new BatchJudge({
+      const renamed = new EvalRun({
         root,
         sources: ["docs"],
         judges: [{ ...flash, name: "renamed" }],
@@ -949,15 +949,15 @@ describe("BatchJudge", () => {
       useSplitVerdicts();
       const { root, cleanup } = twoJudgeProject();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
         judges: [flash, strict],
       });
 
-      await batch.validateAll();
-      const summary = batch.summary();
+      await run.validateAll();
+      const summary = run.summary();
 
       expect(summary.byJudge).toEqual({
         flash: { compliant: 1, warnings: 0, errors: 0 },
@@ -984,7 +984,7 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root,
         sources: ["docs"],
         useCache: false,
@@ -992,8 +992,8 @@ describe("BatchJudge", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await batch.validateAll();
-      const summary = batch.summary();
+      await run.validateAll();
+      const summary = run.summary();
 
       // Three validated targets outnumber the zero .md source docs;
       // the totals must reflect the targets, never a negative remainder.
@@ -1007,14 +1007,14 @@ describe("BatchJudge", () => {
     it("aggregates results correctly", async () => {
       useCompliantFixture();
 
-      const batch = new BatchJudge({
+      const run = new EvalRun({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
         judges: [TEST_JUDGE],
       });
-      await batch.validateAll();
-      const summary = batch.summary();
+      await run.validateAll();
+      const summary = run.summary();
 
       expect(summary.total).toBeGreaterThan(0);
       expect(summary.compliant).toBe(summary.total);

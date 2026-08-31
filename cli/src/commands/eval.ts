@@ -2,8 +2,8 @@ import type { Command } from "commander";
 
 import type { JudgeConfig } from "@/core/config.js";
 import type { DisplayEntry } from "@/core/logger.js";
-import type { EvalSummary } from "@/eval/batch-judge.js";
 import type { Verdict } from "@/eval/cache-manager.js";
+import type { EvalSummary } from "@/eval/eval-run.js";
 
 import chalk from "chalk";
 
@@ -12,8 +12,8 @@ import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, resolvePath } from "@/core/paths.js";
-import { BatchJudge } from "@/eval/batch-judge.js";
 import { CacheManager } from "@/eval/cache-manager.js";
+import { EvalRun } from "@/eval/eval-run.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
 import { Judge } from "@/eval/judge.js";
 import { VerdictReporter } from "@/eval/verdict-reporter.js";
@@ -289,7 +289,7 @@ export class EvalCommand extends PraxisProjectBase {
   async all(options: AllOptions): Promise<EvalSummary> {
     const judges = this.requireJudges(options.judge);
 
-    const batch = new BatchJudge({
+    const run = new EvalRun({
       root: this.root,
       sources: this.config.sources,
       ignore: this.config.ignore,
@@ -301,20 +301,20 @@ export class EvalCommand extends PraxisProjectBase {
 
     if (options.type) {
       this.out.line(`Validating all ${options.type} documents...`);
-      await batch.validateType(options.type);
+      await run.validateType(options.type);
     } else {
       this.out.line("Validating all documents...");
-      await batch.validateAll();
+      await run.validateAll();
     }
 
-    if (batch.stopped) {
+    if (run.stopped) {
       this.out.print([
         "",
         { badge: "STOPPED", color: "yellow", value: "Validation stopped early due to --fail-fast" },
       ]);
     }
 
-    const summary = batch.summary();
+    const summary = run.summary();
     this.displaySummary(summary);
 
     if (options.cache) {
@@ -323,7 +323,7 @@ export class EvalCommand extends PraxisProjectBase {
         {
           badge: "CACHE",
           color: "blue",
-          value: `Hits: ${batch.cacheStats.hits}, Misses: ${batch.cacheStats.misses}`,
+          value: `Hits: ${run.cacheStats.hits}, Misses: ${run.cacheStats.misses}`,
         },
       ]);
     }
@@ -340,7 +340,7 @@ export class EvalCommand extends PraxisProjectBase {
   async ci(): Promise<EvalSummary> {
     const judges = this.requireJudges();
 
-    const batch = new BatchJudge({
+    const run = new EvalRun({
       root: this.root,
       sources: this.config.sources,
       ignore: this.config.ignore,
@@ -349,9 +349,9 @@ export class EvalCommand extends PraxisProjectBase {
     });
 
     this.out.line("Running CI validation...");
-    await batch.validateAll();
+    await run.validateAll();
 
-    const summary = batch.summary();
+    const summary = run.summary();
     this.displaySummary(summary);
 
     return summary;
