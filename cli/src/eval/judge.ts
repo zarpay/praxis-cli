@@ -66,11 +66,10 @@ export class Judge {
   readonly targetType: TargetType;
 
   private result: Verdict | null = null;
-  private readonly useCache: boolean;
   private readonly cacheManager: CacheManager | null;
   private wasCacheHit = false;
   private lastUsageValue: ProviderUsage | null = null;
-  private readonly judge?: JudgeConfig;
+  private readonly config?: JudgeConfig;
 
   /** Project root the spec's scoping globs (exemplars:/context:) resolve against. */
   private readonly root?: string;
@@ -90,7 +89,7 @@ export class Judge {
     specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
     useCache = true,
     cacheManager,
-    judge,
+    config,
     root,
   }: {
     targetPath: string;
@@ -101,8 +100,8 @@ export class Judge {
     specFilePattern?: string;
     useCache?: boolean;
     cacheManager?: CacheManager;
-    /** The judge to invoke; required for validate() to reach the API. */
-    judge?: JudgeConfig;
+    /** The judge configuration to invoke; required for validate() to reach the API. */
+    config?: JudgeConfig;
     /** Project root; required when the spec declares scoping globs. */
     root?: string;
   }) {
@@ -119,11 +118,10 @@ export class Judge {
       specPath: this.specPath,
       root,
     });
-    this.useCache = useCache;
-    this.judge = judge;
+    this.config = config;
     this.cacheManager =
       cacheManager ??
-      (useCache ? new CacheManager({ judge: judge && cacheIdentity(judge) }) : null);
+      (useCache ? new CacheManager({ judge: config && cacheIdentity(config) }) : null);
   }
 
   /** Whether the last validate() call returned a cached result. */
@@ -202,19 +200,19 @@ export class Judge {
    *   provider cannot be resolved, or (wrapped) when the provider fails
    */
   private async callProvider(): Promise<Verdict> {
-    const judge = this.judge;
+    const config = this.config;
 
-    if (!judge) {
+    if (!config) {
       throw errors.missingJudges();
     }
 
-    const apiKey = process.env[judge.apiKeyEnvVar];
+    const apiKey = process.env[config.apiKeyEnvVar];
 
     if (!apiKey) {
-      throw errors.apiKeyNotSet(judge.apiKeyEnvVar);
+      throw errors.apiKeyNotSet(config.apiKeyEnvVar);
     }
 
-    const provider = await resolveProvider(judge.provider ?? DEFAULT_JUDGE_PROVIDER, this.root);
+    const provider = await resolveProvider(config.provider ?? DEFAULT_JUDGE_PROVIDER, this.root);
 
     const request: ProviderRequest = {
       systemPrompt: systemPrompt(),
@@ -227,11 +225,11 @@ export class Judge {
         context: this.assist.context,
       }),
       tools: judgeTools(),
-      model: judge.model,
-      temperature: judge.temperature ?? DEFAULT_JUDGE_TEMPERATURE,
-      baseUrl: judge.baseUrl ?? DEFAULT_JUDGE_BASE_URL,
+      model: config.model,
+      temperature: config.temperature ?? DEFAULT_JUDGE_TEMPERATURE,
+      baseUrl: config.baseUrl ?? DEFAULT_JUDGE_BASE_URL,
       apiKey,
-      options: judge.options ?? {},
+      options: config.options ?? {},
     };
 
     let result: ProviderResult;

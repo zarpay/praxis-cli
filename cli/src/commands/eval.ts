@@ -164,7 +164,7 @@ export class EvalCommand extends PraxisProjectBase {
         specFilePattern: this.config.specFilePattern,
         useCache: options.cache,
         cacheManager: this.cacheManagerFor(judgeConfig, options.cache),
-        judge: judgeConfig,
+        config: judgeConfig,
         root: this.root,
       });
 

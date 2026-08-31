@@ -446,7 +446,7 @@ export class EvalRun extends PraxisProjectBase {
         specFilePattern: this.specFilePattern,
         useCache: this.useCache,
         cacheManager: this.cacheManagers[judgeIndex] ?? undefined,
-        judge: judgeConfig,
+        config: judgeConfig,
         root: this.root,
       });
 

@@ -63,7 +63,7 @@ describe("Judge", () => {
     return new Judge({
       targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
       useCache: false,
-      judge: TEST_JUDGE,
+      config: TEST_JUDGE,
     });
   }
 
@@ -159,7 +159,7 @@ describe("Judge", () => {
       const validator = new Judge({
         targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
         useCache: false,
-        judge: { name: "unset", model: "m", apiKeyEnvVar: "UNSET_KEY_VAR" },
+        config: { name: "unset", model: "m", apiKeyEnvVar: "UNSET_KEY_VAR" },
       });
 
       await expect(validator.validate()).rejects.toThrow(
@@ -174,7 +174,7 @@ describe("Judge", () => {
       const validator = new Judge({
         targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
         useCache: false,
-        judge: { name: "custom", model: "m", apiKeyEnvVar: "CUSTOM_API_KEY" },
+        config: { name: "custom", model: "m", apiKeyEnvVar: "CUSTOM_API_KEY" },
       });
 
       const result = await validator.validate();
@@ -242,7 +242,7 @@ describe("Judge", () => {
       const judge = new Judge({
         targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
         useCache: false,
-        judge: {
+        config: {
           name: "local",
           model: "org-model",
           apiKeyEnvVar: "OPENROUTER_API_KEY",
@@ -268,12 +268,12 @@ describe("Judge", () => {
       await new Judge({
         targetPath,
         useCache: false,
-        judge: { name: "hot", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY", temperature: 0.9 },
+        config: { name: "hot", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY", temperature: 0.9 },
       }).validate();
       await new Judge({
         targetPath,
         useCache: false,
-        judge: { name: "cool", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" },
+        config: { name: "cool", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" },
       }).validate();
 
       expect(temperatures).toEqual([0.9, 0.1]);
@@ -382,7 +382,7 @@ describe("Judge", () => {
         specPath: abs("docs/events.sme.md"),
         root,
         useCache: false,
-        judge: TEST_JUDGE,
+        config: TEST_JUDGE,
       });
       await judge.validate();
 
@@ -402,7 +402,7 @@ describe("Judge", () => {
           specPath: abs("docs/events.sme.md"),
           root,
           cacheManager: new CacheManager({ projectRoot: root }),
-          judge: TEST_JUDGE,
+          config: TEST_JUDGE,
         });
       }
 
@@ -430,7 +430,7 @@ describe("Judge", () => {
             targetPath: abs("src/events/signup_event.rb"),
             specPath: abs("docs/events.sme.md"),
             useCache: false,
-            judge: TEST_JUDGE,
+            config: TEST_JUDGE,
           }),
       ).toThrow(/project root/);
 
@@ -465,7 +465,7 @@ describe("Judge", () => {
         specPath: abs("docs/events.sme.md"),
         root,
         cacheManager: new CacheManager({ projectRoot: root }),
-        judge: TEST_JUDGE,
+        config: TEST_JUDGE,
       });
     }
 
@@ -484,7 +484,7 @@ describe("Judge", () => {
         specPath: abs("docs/events.sme.md"),
         root,
         useCache: false,
-        judge: TEST_JUDGE,
+        config: TEST_JUDGE,
       });
       await judge.validate();
 
@@ -577,7 +577,7 @@ describe("Judge", () => {
         targetPath: abs("docs/guide.md"),
         root,
         useCache: false,
-        judge: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
+        config: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
       });
       const result = await judge.validate();
 
@@ -593,7 +593,7 @@ describe("Judge", () => {
         targetPath: abs("docs/guide.md"),
         root,
         useCache: false,
-        judge: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
+        config: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
       });
       await judge.validate();
 
@@ -611,7 +611,7 @@ describe("Judge", () => {
           targetPath: abs("docs/guide.md"),
           root,
           cacheManager: new CacheManager({ projectRoot: root }),
-          judge: judgeConfig,
+          config: judgeConfig,
         });
       }
 
@@ -633,7 +633,7 @@ describe("Judge", () => {
         targetPath: abs("docs/guide.md"),
         root,
         useCache: false,
-        judge: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
+        config: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
       });
       const judgment = judge.validate();
 
@@ -654,7 +654,7 @@ describe("Judge", () => {
       const validator1 = new Judge({
         targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
         cacheManager,
-        judge: TEST_JUDGE,
+        config: TEST_JUDGE,
       });
       await validator1.validate();
       expect(validator1.cacheHit).toBe(false);
@@ -662,7 +662,7 @@ describe("Judge", () => {
       const validator2 = new Judge({
         targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
         cacheManager,
-        judge: TEST_JUDGE,
+        config: TEST_JUDGE,
       });
       await validator2.validate();
       expect(validator2.cacheHit).toBe(true);
