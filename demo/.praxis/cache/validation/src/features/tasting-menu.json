@@ -1,0 +1,37 @@
+{
+  "version": "3.0",
+  "verdicts": {
+    "e280f5fa:f83a92f1": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "f83a92f1"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:02:26.683Z",
+      "content_hash": "c604375b",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The tasting-menu feature satisfies all criteria in the specification. Structure: exactly one entry point (index.ts) re-exports the entire public API (buildMenu run + all types); types live in the dedicated tasting-menu-types.ts; the logic file build-menu.ts is verb-first kebab-case, exports a single `run`, returns Results over exceptions with a consumer-grade error message ('stops must be a whole number of 1 or more'). Cohesion: both build-menu.ts and tasting-menu-types.ts are reachable from index.ts through its import graph (no orphaned files); all files serve the single tasting-menu capability; the directory name describes the capability, not the implementation."
+      }
+    },
+    "e280f5fa:4e6f3185": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "4e6f3185"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:04:03.771Z",
+      "content_hash": "c604375b",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The tasting-menu feature module fully complies with the specification. It has exactly one entry point (index.ts), dedicated types file (tasting-menu-types.ts), verb-first kebab-case logic file (build-menu.ts) that follows service conventions, and maintains cohesion with no orphaned files and a single focused capability."
+      }
+    }
+  }
+}

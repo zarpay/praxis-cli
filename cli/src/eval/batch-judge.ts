@@ -11,7 +11,7 @@ import { Frontmatter } from "@/core/frontmatter.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { CacheManager } from "@/eval/cache-manager.js";
-import { judgeHash } from "@/eval/judge-hash.js";
+import { cacheIdentity } from "@/eval/judge-hash.js";
 import { Judge } from "@/eval/judge.js";
 
 /** Extended validation result that includes file path and type information. */
@@ -151,9 +151,11 @@ export class BatchJudge {
     this.failFast = failFast;
     this.useCache = useCache;
     this.judges = judges;
-    // Each judge gets its own cache namespace so verdicts never collide.
+    // Each judge gets its own manager bound to its identity: verdicts
+    // share one file per target, keyed by (spec, judge) so they never
+    // collide.
     this.cacheManagers = judges.map((judge) =>
-      useCache ? new CacheManager({ projectRoot: root, judgeHash: judgeHash(judge) }) : null,
+      useCache ? new CacheManager({ projectRoot: root, judge: cacheIdentity(judge) }) : null,
     );
     this.cacheStats = { hits: 0, misses: 0 };
     this.specFilePattern = specFilePattern;

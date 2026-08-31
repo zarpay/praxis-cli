@@ -1,0 +1,37 @@
+{
+  "version": "3.0",
+  "verdicts": {
+    "dacac2eb:f83a92f1": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "f83a92f1"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:03:28.696Z",
+      "content_hash": "1aa34b7c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file fully conforms to the test conventions specification. The top-level describe names the module ('create-review'), every nested describe is a 'when' clause, and each it statement reads as a sentence with describe. Every it block contains exactly one expect, using toMatchObject for compound shapes. Tests exercise only the public run API and observable store state via the injected collaborator, with no spies, mocks, or module-scope access. Test data is built fresh via validInput() and a fresh store in beforeEach, so suites are independent."
+      }
+    },
+    "dacac2eb:4e6f3185": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "4e6f3185"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:04:41.810Z",
+      "content_hash": "1aa34b7c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with all specification criteria: proper subject framing with module name and 'when' clauses, exactly one assertion per test block using appropriate matchers, and testing only public API functionality with real implementations and fresh state."
+      }
+    }
+  }
+}

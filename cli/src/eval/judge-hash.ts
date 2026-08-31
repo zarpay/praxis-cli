@@ -1,4 +1,5 @@
 import type { JudgeConfig } from "@/core/config.js";
+import type { CacheJudgeIdentity } from "@/eval/cache-manager.js";
 
 import { createHash } from "node:crypto";
 
@@ -72,4 +73,12 @@ function canonicalize(value: unknown): string {
   }
 
   return JSON.stringify(value);
+}
+
+/**
+ * The cache-facing identity of a judge: its behavioral hash plus the
+ * human-readable name and model recorded alongside cached verdicts.
+ */
+export function cacheIdentity(judge: JudgeConfig): CacheJudgeIdentity {
+  return { name: judge.name, model: judge.model, hash: judgeHash(judge) };
 }

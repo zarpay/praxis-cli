@@ -1,27 +1,25 @@
 import fg from "fast-glob";
 import { createHash } from "node:crypto";
+import { statSync } from "node:fs";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
-import { exists, fileSize, readText, removeFile, writeText } from "@/core/files.js";
+import { exists, readText, removeFile, writeText } from "@/core/files.js";
 import { baseName, joinPath, parentDir, validationCacheDir } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 
-/** Current cache format version. */
-const CACHE_VERSION = "2.0";
-
-/** Legacy cache format version, supported for transparent migration. */
-const CACHE_VERSION_V1 = "1.0";
+/** Current cache format version. Pre-3.0 files are ignored (v2 is a breaking release). */
+const CACHE_VERSION = "3.0";
 
 /** Severity level for validation issues. */
 export type Severity = "warning" | "error";
 
-/** Result of a single document validation, as stored in cache. */
+/** Result of a single judgment, as stored in cache. */
 export interface Verdict {
-  /** Whether the document satisfies its spec. */
+  /** Whether the target satisfies its spec. */
   compliant: boolean;
-  /** Specific deviations reported by the model (empty when compliant). */
+  /** Specific deviations reported by the judge (empty when compliant). */
   issues: string[];
-  /** The model's overall explanation of the verdict. */
+  /** The judge's overall explanation of the verdict. */
   reason: string;
   /** Present only when non-compliant: warning or error. */
   severity?: Severity;
@@ -30,8 +28,7 @@ export interface Verdict {
 /**
  * Cache data shape returned by readRaw() and readAllRaw().
  *
- * Uses the same structure as the legacy v1.0 format so callers
- * (e.g. report-formatter) don't need updating.
+ * A flattened per-verdict view for report consumers.
  */
 export interface CacheFileData {
   version: string;
@@ -45,28 +42,26 @@ export interface CacheFileData {
   result: Verdict;
 }
 
-/** Per-spec entry stored in the v2.0 validations map. */
-interface SpecCacheEntry {
+/**
+ * One stored verdict inside a target's cache file, carrying enough
+ * judge provenance to be read by a human in the committed JSON.
+ */
+interface VerdictEntry {
+  judge: { name: string; model: string; hash: string };
   spec_path: string;
-  document_type: string;
+  target_type: string;
   cached_at: string;
   content_hash: string;
   result: Verdict;
 }
 
-/** v2.0 cache file written to disk — one file per document, many entries per spec. */
-interface CacheFileDataV2 {
-  version: "2.0";
-  validations: Record<string, SpecCacheEntry>;
-}
-
-/** v1.0 cache file structure, used only for migration reading. */
-interface CacheFileDataV1 {
-  version: "1.0";
-  cached_at: string;
-  content_hash: string;
-  document: { path: string; type: string; spec_path: string };
-  result: Verdict;
+/**
+ * v3.0 cache file: one file per target, holding every verdict for it —
+ * all specs, all judges — keyed by `<specHash>:<judgeHash>`.
+ */
+interface CacheFile {
+  version: "3.0";
+  verdicts: Record<string, VerdictEntry>;
 }
 
 /** Information about an orphaned (stale) cache file. */
@@ -77,51 +72,59 @@ export interface OrphanedCacheFile {
   type: string;
 }
 
+/** Identity of the judge whose verdicts a CacheManager reads and writes. */
+export interface CacheJudgeIdentity {
+  name: string;
+  model: string;
+  hash: string;
+}
+
 /**
- * Manages a file-based validation result cache.
+ * Manages the file-based verdict cache.
  *
- * Cache files are stored as JSON under `.praxis/cache/validation/`
- * organized by document path. Each file contains a `validations` map
- * keyed by an 8-char hash of the spec path, allowing a single document
- * to hold cached results from multiple specs without overwriting.
+ * One JSON file per target under `.praxis/cache/validation/`, mirroring
+ * the target's project path. Each file holds every verdict for that
+ * target — all specs, all judges — keyed by `<specHash>:<judgeHash>`,
+ * so a target's complete judgment state lives in one committed artifact
+ * and cross-judge comparison is a single read.
  *
- * v1.0 cache files are transparently migrated to v2.0 on write.
+ * The judge hash in the key is what makes the cache's invalidation
+ * behavior the epoch structure (05): a behavioral judge change misses
+ * every old key and writes new ones; rolling the config back re-hits
+ * the old keys at zero cost; keys belonging to no configured judge are
+ * prunable. A CacheManager is bound to one judge identity; readers
+ * construct one per configured judge.
  */
 export class CacheManager {
-  /**
-   * Directory all cache files live under. Defaults to
-   * {root}/.praxis/cache/validation, extended by the judge's namespace
-   * when a judgeHash is given — per-judge namespacing is what keeps two
-   * judges' verdicts from ever colliding, and it makes the cache's
-   * invalidation behavior the epoch structure (05).
-   */
+  /** Directory all cache files live under (default: {root}/.praxis/cache/validation). */
   readonly cacheRoot: string;
   private readonly projectRoot: string | null;
+  private readonly judge: CacheJudgeIdentity | null;
 
   constructor({
     cacheRoot,
     projectRoot,
-    judgeHash,
+    judge,
   }: {
     /** Base cache directory; defaults to {projectRoot}/.praxis/cache/validation. */
     cacheRoot?: string;
     /** Project root for relative cache paths and default locations. */
     projectRoot?: string;
-    /** Judge identity hash; when given, the cache roots under its namespace. */
-    judgeHash?: string;
+    /** The judge whose verdicts this manager reads and writes. */
+    judge?: CacheJudgeIdentity;
   } = {}) {
     this.projectRoot = projectRoot ?? null;
-    const base = cacheRoot ?? this.defaultCacheRoot();
-    this.cacheRoot = judgeHash ? joinPath(base, judgeHash) : base;
+    this.cacheRoot = cacheRoot ?? this.defaultCacheRoot();
+    this.judge = judge ?? null;
   }
 
   /**
-   * Computes the filesystem path for a cache entry.
+   * Computes the filesystem path for a target's cache file.
    *
-   * When a projectRoot is set, strips it from absolute document paths
+   * When a projectRoot is set, strips it from absolute target paths
    * to produce a root-relative cache path. Otherwise uses the path as-is.
    *
-   * @param targetPath - Path to the validated document
+   * @param targetPath - Path to the judged target
    */
   cachePathFor(targetPath: string): string {
     let relativePath: string;
@@ -140,12 +143,12 @@ export class CacheManager {
   }
 
   /**
-   * Writes a validation result to the cache.
+   * Writes a verdict to the cache.
    *
-   * Reads the existing cache file first (if any) and upserts the result
-   * for this spec into the v2.0 validations map. Transparently migrates
-   * v1.0 files encountered on disk. Verifies JSON integrity before writing.
-   * Silently fails on I/O errors.
+   * Reads the target's existing cache file (if any) and upserts this
+   * judge's entry for the spec; other specs' and judges' entries are
+   * preserved. Verifies JSON integrity before writing. Silently fails
+   * on I/O errors.
    */
   write({
     targetPath,
@@ -159,12 +162,11 @@ export class CacheManager {
     metadata: { targetType: string; specPath: string };
   }): void {
     const cachePath = this.cachePathFor(targetPath);
-    const specKey = this.specHash(metadata.specPath);
-    const specRelPath = this.relSpecPath(metadata.specPath);
 
-    const entry: SpecCacheEntry = {
-      spec_path: specRelPath,
-      document_type: metadata.targetType,
+    const entry: VerdictEntry = {
+      judge: this.judgeIdentity(),
+      spec_path: this.relSpecPath(metadata.specPath),
+      target_type: metadata.targetType,
       cached_at: new Date().toISOString(),
       content_hash: contentHash,
       result: {
@@ -174,8 +176,8 @@ export class CacheManager {
       },
     };
 
-    const fileData = this.loadOrMigrate(cachePath);
-    fileData.validations[specKey] = entry;
+    const fileData = this.loadFile(cachePath);
+    fileData.verdicts[this.verdictKey(metadata.specPath)] = entry;
 
     try {
       const json = JSON.stringify(fileData, null, 2);
@@ -195,10 +197,10 @@ export class CacheManager {
   }
 
   /**
-   * Reads a cached validation result for a specific (document, spec) pair.
+   * Reads this judge's cached verdict for a (target, spec) pair.
    *
-   * Returns null if the cache file doesn't exist, the spec has no entry,
-   * or the content hash doesn't match. Handles both v1.0 and v2.0 files.
+   * Returns null if the cache file doesn't exist, the entry is absent,
+   * or the content hash doesn't match.
    */
   read({
     targetPath,
@@ -216,29 +218,17 @@ export class CacheManager {
     }
 
     try {
-      const raw = readText(cachePath);
-      const fileData = JSON.parse(raw) as { version: string };
+      const fileData = JSON.parse(readText(cachePath)) as { version: string };
 
-      if (fileData.version === CACHE_VERSION) {
-        const v2 = fileData as CacheFileDataV2;
-        const entry = v2.validations[this.specHash(specPath)];
-
-        if (entry?.content_hash !== contentHash) return null;
-
-        return entry.result;
+      if (fileData.version !== CACHE_VERSION) {
+        return null;
       }
 
-      if (fileData.version === CACHE_VERSION_V1) {
-        const v1 = fileData as CacheFileDataV1;
+      const entry = (fileData as CacheFile).verdicts[this.verdictKey(specPath)];
 
-        if (this.specHash(v1.document.spec_path) !== this.specHash(specPath)) return null;
+      if (entry?.content_hash !== contentHash) return null;
 
-        if (v1.content_hash !== contentHash) return null;
-
-        return v1.result;
-      }
-
-      return null;
+      return entry.result;
     } catch (err) {
       try {
         removeFile(cachePath);
@@ -257,11 +247,11 @@ export class CacheManager {
   }
 
   /**
-   * Reads a single cached validation result without hash validation.
+   * Reads one of this judge's cached verdicts without hash validation.
    *
    * When `specPath` is provided, returns the entry for that spec.
-   * When omitted, returns the first entry found (useful for single-spec documents).
-   * Returns null if no cache file exists or no matching entry is found.
+   * When omitted, returns this judge's first entry (useful for
+   * single-spec targets). Returns null if no matching entry exists.
    * Does not delete corrupt files (purely read-only).
    */
   readRaw({
@@ -271,75 +261,26 @@ export class CacheManager {
     targetPath: string;
     specPath?: string;
   }): CacheFileData | null {
-    const cachePath = this.cachePathFor(targetPath);
+    const entries = this.readEntries(targetPath);
 
-    if (!exists(cachePath)) {
-      return null;
-    }
+    const entry = specPath
+      ? entries.find((candidate) => this.verdictKeyOf(candidate) === this.verdictKey(specPath))
+      : entries[0];
 
-    try {
-      const raw = readText(cachePath);
-      const fileData = JSON.parse(raw) as { version: string };
+    if (!entry) return null;
 
-      if (fileData.version === CACHE_VERSION) {
-        const v2 = fileData as CacheFileDataV2;
-        const entry = specPath
-          ? v2.validations[this.specHash(specPath)]
-          : Object.values(v2.validations)[0];
-
-        if (!entry) return null;
-
-        return this.entryToCacheFileData(targetPath, entry);
-      }
-
-      if (fileData.version === CACHE_VERSION_V1) {
-        const v1 = fileData as CacheFileDataV1;
-
-        if (specPath && this.specHash(v1.document.spec_path) !== this.specHash(specPath)) {
-          return null;
-        }
-
-        return v1;
-      }
-
-      return null;
-    } catch {
-      return null;
-    }
+    return this.entryToCacheFileData(targetPath, entry);
   }
 
   /**
-   * Reads all cached validation results for a document across all specs.
+   * Reads all of this judge's cached verdicts for a target across specs.
    *
-   * Returns one CacheFileData per spec that has a cached entry. Returns
-   * an empty array if no cache file exists or it is unreadable.
+   * Returns an empty array if no cache file exists or it is unreadable.
    */
   readAllRaw({ targetPath }: { targetPath: string }): CacheFileData[] {
-    const cachePath = this.cachePathFor(targetPath);
-
-    if (!exists(cachePath)) {
-      return [];
-    }
-
-    try {
-      const raw = readText(cachePath);
-      const fileData = JSON.parse(raw) as { version: string };
-
-      if (fileData.version === CACHE_VERSION) {
-        const v2 = fileData as CacheFileDataV2;
-        return Object.values(v2.validations).map((entry) =>
-          this.entryToCacheFileData(targetPath, entry),
-        );
-      }
-
-      if (fileData.version === CACHE_VERSION_V1) {
-        return [fileData as CacheFileData];
-      }
-
-      return [];
-    } catch {
-      return [];
-    }
+    return this.readEntries(targetPath).map((entry) =>
+      this.entryToCacheFileData(targetPath, entry),
+    );
   }
 
   /**
@@ -355,7 +296,7 @@ export class CacheManager {
 
     for (const file of cacheFiles) {
       try {
-        totalSize += fileSize(file);
+        totalSize += statSync(file).size;
       } catch {
         /* skip unreadable files */
       }
@@ -375,8 +316,8 @@ export class CacheManager {
    * Stale hashes are no longer orphans — they get overwritten in-place.
    *
    * Known limitation: only deleted documents are detected. Entries whose
-   * spec was deleted (while the document still exists) are not reported.
-   * Not yet surfaced by any CLI command; kept for cache tooling.
+   * spec or judge was removed (while the target still exists) are not
+   * reported. Not yet surfaced by any CLI command; kept for cache tooling.
    *
    * @param root - Project root directory
    * @param sources - Array of source directory paths relative to root
@@ -410,41 +351,47 @@ export class CacheManager {
     return validationCacheDir(this.projectRoot ?? process.cwd());
   }
 
+  /** Reads a target's v3.0 entries belonging to this manager's judge. */
+  private readEntries(targetPath: string): VerdictEntry[] {
+    const cachePath = this.cachePathFor(targetPath);
+
+    if (!exists(cachePath)) {
+      return [];
+    }
+
+    try {
+      const fileData = JSON.parse(readText(cachePath)) as { version: string };
+
+      if (fileData.version !== CACHE_VERSION) {
+        return [];
+      }
+
+      const judgeHash = this.judgeIdentity().hash;
+
+      return Object.values((fileData as CacheFile).verdicts).filter(
+        (entry) => entry.judge.hash === judgeHash,
+      );
+    } catch {
+      return [];
+    }
+  }
+
   /**
-   * Loads an existing cache file and returns a v2.0 structure.
+   * Loads a target's cache file as a v3.0 structure.
    *
-   * If the file is v1.0, migrates it to v2.0 in memory by seeding the
-   * existing entry under its spec hash. If the file is absent or corrupt,
-   * returns a fresh empty v2.0 structure.
+   * Files that are absent, corrupt, or in a pre-3.0 format start fresh
+   * — v2 is a breaking release and old verdicts are simply re-judged.
    */
-  private loadOrMigrate(cachePath: string): CacheFileDataV2 {
-    const empty: CacheFileDataV2 = { version: "2.0", validations: {} };
+  private loadFile(cachePath: string): CacheFile {
+    const empty: CacheFile = { version: "3.0", verdicts: {} };
 
     if (!exists(cachePath)) return empty;
 
     try {
-      const raw = readText(cachePath);
-      const fileData = JSON.parse(raw) as { version: string };
+      const fileData = JSON.parse(readText(cachePath)) as { version: string };
 
       if (fileData.version === CACHE_VERSION) {
-        return fileData as CacheFileDataV2;
-      }
-
-      if (fileData.version === CACHE_VERSION_V1) {
-        const v1 = fileData as CacheFileDataV1;
-        const key = this.specHash(v1.document.spec_path);
-        return {
-          version: "2.0",
-          validations: {
-            [key]: {
-              spec_path: v1.document.spec_path,
-              document_type: v1.document.type,
-              cached_at: v1.cached_at,
-              content_hash: v1.content_hash,
-              result: v1.result,
-            },
-          },
-        };
+        return fileData as CacheFile;
       }
     } catch {
       /* corrupt file — start fresh */
@@ -453,15 +400,15 @@ export class CacheManager {
     return empty;
   }
 
-  /** Constructs a CacheFileData view from a SpecCacheEntry (for backwards-compat callers). */
-  private entryToCacheFileData(targetPath: string, entry: SpecCacheEntry): CacheFileData {
+  /** Constructs the flattened per-verdict view for report consumers. */
+  private entryToCacheFileData(targetPath: string, entry: VerdictEntry): CacheFileData {
     return {
       version: CACHE_VERSION,
       cached_at: entry.cached_at,
       content_hash: entry.content_hash,
       document: {
         path: targetPath,
-        type: entry.document_type,
+        type: entry.target_type,
         spec_path: entry.spec_path,
       },
       result: entry.result,
@@ -469,10 +416,30 @@ export class CacheManager {
   }
 
   /**
+   * The entry key for a (spec, judge) pair: `<specHash>:<judgeHash>`.
+   *
+   * Both dimensions of verdict identity live in the key, so one file
+   * holds a target's complete judgment state.
+   */
+  private verdictKey(specPath: string): string {
+    return `${this.specHash(specPath)}:${this.judgeIdentity().hash}`;
+  }
+
+  /** Recomputes an entry's key from its stored fields. */
+  private verdictKeyOf(entry: VerdictEntry): string {
+    return `${this.specHash(entry.spec_path)}:${entry.judge.hash}`;
+  }
+
+  /** This manager's judge identity, with a placeholder when unbound (tests). */
+  private judgeIdentity(): CacheJudgeIdentity {
+    return this.judge ?? { name: "unbound", model: "unbound", hash: "00000000" };
+  }
+
+  /**
    * Computes an 8-char SHA256 hash of the spec's project-relative path.
    *
-   * Used as the key in the v2.0 validations map. Normalizing to a
-   * project-relative path before hashing ensures stability across machines.
+   * Normalizing to a project-relative path before hashing ensures
+   * stability across machines.
    */
   private specHash(specPath: string): string {
     return createHash("sha256").update(this.relSpecPath(specPath)).digest("hex").slice(0, 8);
@@ -520,7 +487,9 @@ export class CacheManager {
       for (const relFile of docFiles) {
         const name = baseName(relFile);
 
-        if (isSpecFile(name, specFilePattern) || baseName(relFile, ".md").startsWith("_")) continue;
+        if (isSpecFile(name, specFilePattern) || baseName(relFile, ".md").startsWith("_")) {
+          continue;
+        }
 
         const key = joinPath(source, relFile).replace(/\.md$/, "");
         documents.add(key);
@@ -532,10 +501,10 @@ export class CacheManager {
 }
 
 /**
- * Computes a cache-key hash from document and spec content.
+ * Computes a cache-key hash from target and spec content.
  *
  * Returns the first 8 characters of the SHA256 hex digest. Both inputs
- * participate so that editing either the document or its spec
+ * participate so that editing either the target or its spec
  * invalidates the cached verdict.
  */
 export function contentHash(targetContent: string, specContent: string): string {

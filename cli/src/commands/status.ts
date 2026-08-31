@@ -11,7 +11,7 @@ import { Paths, baseName, joinPath, relativePath, resolvePath } from "@/core/pat
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { BatchJudge } from "@/eval/batch-judge.js";
 import { CacheManager } from "@/eval/cache-manager.js";
-import { judgeHash } from "@/eval/judge-hash.js";
+import { cacheIdentity } from "@/eval/judge-hash.js";
 import { GlobExpander } from "@/spec/glob-expander.js";
 
 /** Structured report of project health. */
@@ -327,7 +327,7 @@ export class StatusCommand {
       this.config.judges.length > 0
         ? this.config.judges.map((judge) => ({
             judge: judge.name,
-            manager: new CacheManager({ projectRoot: this.root, judgeHash: judgeHash(judge) }),
+            manager: new CacheManager({ projectRoot: this.root, judge: cacheIdentity(judge) }),
           }))
         : [{ judge: null, manager: new CacheManager({ projectRoot: this.root }) }];
 

@@ -14,6 +14,7 @@ import { Frontmatter } from "@/core/frontmatter.js";
 import { baseName, joinPath, parentDir } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
 import { CacheManager, contentHash } from "@/eval/cache-manager.js";
+import { cacheIdentity } from "@/eval/judge-hash.js";
 import { SYSTEM_PROMPT, JUDGE_TOOLS } from "@/eval/prompts.js";
 
 /** Known target types within the Praxis content structure. */
@@ -98,8 +99,10 @@ export class Judge {
     this.specPath = specPath ?? this.findSpec();
     this.specContent = readText(this.specPath);
     this.useCache = useCache;
-    this.cacheManager = cacheManager ?? (useCache ? new CacheManager({}) : null);
     this.judge = judge;
+    this.cacheManager =
+      cacheManager ??
+      (useCache ? new CacheManager({ judge: judge && cacheIdentity(judge) }) : null);
   }
 
   /** Whether the last validate() call returned a cached result. */

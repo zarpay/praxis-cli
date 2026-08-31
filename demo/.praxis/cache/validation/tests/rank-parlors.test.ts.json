@@ -1,0 +1,37 @@
+{
+  "version": "3.0",
+  "verdicts": {
+    "dacac2eb:f83a92f1": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "f83a92f1"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:03:38.701Z",
+      "content_hash": "4e966d3a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file conforms to all three test conventions. Subject framing: the top-level describe names the module ('rank-parlors'), every nested describe is a 'when' clause, and each it reads as a plain-language sentence when combined with its describes. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toMatchObject/toEqual. Functionality, not implementation: tests exercise only the exported run function (and the public createReview service for setup), use the honest in-memory store, assert on returned values only, contain no spies or mocks, and build fresh state in beforeEach so suites don't depend on each other."
+      }
+    },
+    "dacac2eb:4e6f3185": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "4e6f3185"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:04:50.322Z",
+      "content_hash": "4e966d3a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully satisfies all criteria in the specification: proper subject framing with module name and when clauses, one assertion per test block, and focus on functionality through the public API without implementation details."
+      }
+    }
+  }
+}

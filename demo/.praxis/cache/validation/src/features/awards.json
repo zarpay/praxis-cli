@@ -1,0 +1,40 @@
+{
+  "version": "3.0",
+  "verdicts": {
+    "e280f5fa:f83a92f1": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "f83a92f1"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:02:16.721Z",
+      "content_hash": "b05a69cf",
+      "result": {
+        "compliant": false,
+        "severity": "warning",
+        "issues": [
+          "The dedicated types file is named `award-types.ts`, but the spec's structure rule requires `<feature>-types.ts`; since the feature directory is `awards`, the file should be `awards-types.ts` to match the naming convention exactly."
+        ],
+        "reason": "The awards feature set conforms to the Feature Module Conventions: a single entry point (index.ts) re-exports the full public API (run as pickWinners, PickWinnersInput, Award); logic lives in a verb-first kebab-case file (pick-winners.ts) with one exported `run`, Result-based error handling, and consumer-grade error messages; all files are reachable from index.ts (no orphans); the files serve one capability (yearly awards); and the feature name describes the capability rather than its implementation."
+      }
+    },
+    "e280f5fa:4e6f3185": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "4e6f3185"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:03:56.272Z",
+      "content_hash": "b05a69cf",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The awards feature module satisfies all specification criteria: it has exactly one entry point (index.ts) that re-exports the public API, types are in a dedicated award-types.ts file, logic files follow verb-first kebab-case naming and service conventions, all files are reachable from the entry point, the feature has a single cohesive capability (award selection), and the feature name describes the capability rather than implementation."
+      }
+    }
+  }
+}

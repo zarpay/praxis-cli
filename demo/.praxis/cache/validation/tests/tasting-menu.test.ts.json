@@ -1,0 +1,37 @@
+{
+  "version": "3.0",
+  "verdicts": {
+    "dacac2eb:f83a92f1": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "f83a92f1"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:03:46.167Z",
+      "content_hash": "94c25420",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file conforms to all three test conventions. Subject framing: the top-level describe names the module ('tasting-menu'), nested describes are 'when' clauses, and each it reads as a sentence with describe. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toEqual/toMatchObject. Functionality, not implementation: tests exercise only the exported buildMenu public API, assert on returned values, use the honest in-memory createMemoryStore without spies or mocks, and build fresh state in beforeEach per suite. The file also matches the tests/*.test.ts path pattern."
+      }
+    },
+    "dacac2eb:4e6f3185": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "4e6f3185"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:04:59.894Z",
+      "content_hash": "94c25420",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file satisfies all criteria defined in the specification: proper subject framing with module name and when clauses, one assertion per block, and testing functionality rather than implementation using honest in-memory implementations and fresh test data."
+      }
+    }
+  }
+}

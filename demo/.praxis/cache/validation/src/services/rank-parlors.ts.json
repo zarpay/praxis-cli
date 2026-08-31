@@ -1,0 +1,37 @@
+{
+  "version": "3.0",
+  "verdicts": {
+    "0311531a:f83a92f1": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "f83a92f1"
+      },
+      "spec_path": "src/services/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:02:48.996Z",
+      "content_hash": "150eacde",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file conforms to every criterion in the Service Conventions specification. The module is verb-first kebab-case (rank-parlors.ts) and exports a single entry point, `run`, which takes the `Store` first and a single input object, returning `Result<RankedParlor[]>` from the domain types. Domain failures are returned as values (`{ ok: false, error }`) with a consumer-oriented message naming the field and the accepted form ('minReviews must be a whole number of 0 or more'). Input is validated at the top before any work begins. The service does one thing (ranks parlors) and performs no I/O except through the injected Store. The doc comment states the purpose in one sentence and enumerates the domain failure modes so callers can handle every error without reading the body."
+      }
+    },
+    "0311531a:4e6f3185": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "4e6f3185"
+      },
+      "spec_path": "src/services/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T00:04:24.715Z",
+      "content_hash": "150eacde",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file rank-parlors.ts fully satisfies all criteria in the specification: it exports the required run function with correct signature, follows verb-first kebab-case naming, implements domain failures as values with clear error messages, validates input before work, performs a single responsibility, uses only injected Store for I/O, and includes proper documentation with purpose statement and failure modes enumeration."
+      }
+    }
+  }
+}

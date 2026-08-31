@@ -12,13 +12,13 @@ v2 is a **breaking release**: v1 compatibility spellings are being removed rathe
 ### Added
 
 - **Multiple judges** — `judges: [{ name, model, apiKeyEnvVar, baseUrl?, temperature? }]` in config. Every judge evaluates every target; results, summaries (`By judge:`), `praxis status`, and `eval verdict` report per judge, never pooled. `eval run --judge <name>` runs one judge.
-- **Judge-hash cache namespacing** — each judge's verdicts live under `.praxis/cache/validation/<hash>/`, where the hash covers the judge's behavioral settings (whole config canonically hashed minus `name` and `apiKeyEnvVar`, plus the system prompt text). Renames and key rotation keep cache hits; model/endpoint/temperature/prompt changes invalidate — the hash is the epoch boundary.
+- **Judge-keyed verdict cache (format 3.0)** — one cache file per target holds every verdict for it, keyed by `<specHash>:<judgeHash>` with readable judge provenance on each entry. The judge hash covers behavioral settings only (whole config canonically hashed minus `name` and `apiKeyEnvVar`, plus the system prompt text): renames and key rotation keep cache hits; model/endpoint/temperature/prompt changes invalidate — the hash is the epoch boundary.
 - **`cohort:` spec frontmatter** — `by_file` (default) or `by_directory`: each directory matched by `paths:` is judged as one unit. Compiles through from expert `cohort:` frontmatter.
 
 ### Removed (breaking)
 
 - The `validation:` config section — configure `judges:` instead; `specFilePattern` moves top-level.
-- Pre-namespacing caches are not migrated; first v2 run re-judges (one-time cost).
+- Pre-3.0 cache files (v1/v2 formats) are ignored, not migrated; the first v2 run re-judges (one-time cost).
 
 ## [1.4.0] - 2026-08-30
 

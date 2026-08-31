@@ -134,43 +134,39 @@ Uses all defaults for that plugin.
 
 ---
 
-## `validation`
+## `judges`
 
-**Type:** `object`
-**Default:** Set by scaffold; no code fallback
+**Type:** `array`
+**Default:** `[]` (evaluation requires at least one)
 
-Configuration for AI-powered document validation via [OpenRouter](https://openrouter.ai).
+The judges — named inference backends that evaluate targets against specs. **Every configured judge evaluates every target**, and every report shows results per judge, never pooled. Run a single judge with `praxis eval run --judge <name>`.
 
 ```json
 {
   "judges": [
-    { "name": "default", "model": "x-ai/grok-4.1-fast", "apiKeyEnvVar": "OPENROUTER_API_KEY" }
-  ],
-  "specFilePattern": "README.md"
+    { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "apiKeyEnvVar": "OPENROUTER_API_KEY" },
+    { "name": "local", "model": "org-model", "baseUrl": "https://inference.internal/v1", "apiKeyEnvVar": "INTERNAL_KEY" }
+  ]
 }
 ```
 
-### `validation.apiKeyEnvVar`
+### Per-judge fields
 
-**Type:** `string`
-**Required**
+| Field | Required | Description |
+| --- | --- | --- |
+| `name` | yes | Unique label identifying the judge's verdicts in results and reports |
+| `model` | yes | Model identifier the backend understands (e.g. an [OpenRouter slug](https://openrouter.ai/models)) |
+| `apiKeyEnvVar` | yes | Environment variable holding the backend's API key |
+| `baseUrl` | no | OpenAI-compatible endpoint base; defaults to OpenRouter |
+| `temperature` | no | Sampling temperature for judgments; defaults to `0.1` |
 
-The name of the environment variable containing your OpenRouter API key. Praxis reads the key at runtime from `process.env[apiKeyEnvVar]`.
+Each target's cache file holds every judge's verdicts, keyed by a hash of the judge's *behavioral* settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the judging prompt. Renaming a judge or rotating a key keeps its cached verdicts; changing the model, endpoint, or temperature invalidates them.
 
-### `validation.model`
+::: warning Breaking change in v2
+The v1 `validation` section is removed. Configure `judges` instead, and move `specFilePattern` to the top level.
+:::
 
-**Type:** `string`
-**Required**
-
-The [OpenRouter model identifier](https://openrouter.ai/models) to use for validation. Example values:
-
-| Model | Notes |
-| --- | --- |
-| `x-ai/grok-4.1-fast` | Default; fast and cost-efficient |
-| `anthropic/claude-sonnet-4-5` | Higher quality, higher cost |
-| `google/gemini-flash-1.5` | Alternative fast option |
-
-### `validation.specFilePattern`
+## `specFilePattern`
 
 **Type:** `string`
 **Default:** `"README.md"`

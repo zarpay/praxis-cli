@@ -226,67 +226,6 @@ describe("CacheManager", () => {
     });
   });
 
-  describe("v1.0 migration", () => {
-    it("transparently migrates a v1.0 cache file to v2.0 on write", () => {
-      const targetPath = join(projectRoot, "roles", "test-expert.md");
-      const cachePath = manager.cachePathFor(targetPath);
-
-      const v1Data = {
-        version: "1.0",
-        cached_at: "2025-01-01T00:00:00.000Z",
-        content_hash: "oldhash1",
-        document: { path: targetPath, type: "role", spec_path: "roles/README.md" },
-        result: { compliant: true, issues: [] as string[], reason: "Old cached result" },
-      };
-      mkdirSync(dirname(cachePath), { recursive: true });
-      writeFileSync(cachePath, JSON.stringify(v1Data, null, 2));
-
-      manager.write({
-        targetPath,
-        contentHash: "newhash1",
-        result: { compliant: true, issues: [], reason: "New result" },
-        metadata: { targetType: "role", specPath: "roles/OTHER-README.md" },
-      });
-
-      const oldCached = manager.read({
-        targetPath,
-        contentHash: "oldhash1",
-        specPath: "roles/README.md",
-      });
-      expect(oldCached?.reason).toBe("Old cached result");
-
-      const newCached = manager.read({
-        targetPath,
-        contentHash: "newhash1",
-        specPath: "roles/OTHER-README.md",
-      });
-      expect(newCached?.reason).toBe("New result");
-    });
-
-    it("reads a v1.0 cache file without migration via read()", () => {
-      const targetPath = join(projectRoot, "roles", "test-expert.md");
-      const cachePath = manager.cachePathFor(targetPath);
-
-      const v1Data = {
-        version: "1.0",
-        cached_at: "2025-01-01T00:00:00.000Z",
-        content_hash: "oldhash1",
-        document: { path: targetPath, type: "role", spec_path: "roles/README.md" },
-        result: { compliant: true, issues: [] as string[], reason: "Cached" },
-      };
-      mkdirSync(dirname(cachePath), { recursive: true });
-      writeFileSync(cachePath, JSON.stringify(v1Data, null, 2));
-
-      const cached = manager.read({
-        targetPath,
-        contentHash: "oldhash1",
-        specPath: "roles/README.md",
-      });
-
-      expect(cached?.reason).toBe("Cached");
-    });
-  });
-
   describe("stats()", () => {
     it("returns zero counts for empty cache", () => {
       const stats = manager.stats();
@@ -337,33 +276,50 @@ describe("CacheManager", () => {
     });
   });
 
-  describe("judge-hash namespacing", () => {
-    it("roots the cache under the judge's namespace", () => {
-      const namespaced = new CacheManager({ cacheRoot, projectRoot, judgeHash: "abc12345" });
+  describe("per-judge verdict keys", () => {
+    const judgeA = { name: "a", model: "model-a", hash: "aaaa1111" };
+    const judgeB = { name: "b", model: "model-b", hash: "bbbb2222" };
 
-      expect(namespaced.cachePathFor(join(projectRoot, "roles", "a.md"))).toBe(
-        join(cacheRoot, "abc12345", "roles", "a.json"),
-      );
+    it("stores every judge's verdicts in the target's single cache file", () => {
+      const managerA = new CacheManager({ cacheRoot, projectRoot, judge: judgeA });
+      const managerB = new CacheManager({ cacheRoot, projectRoot, judge: judgeB });
+      const targetPath = join(projectRoot, "roles", "shared.md");
+
+      managerA.write({
+        targetPath,
+        contentHash: "hash1234",
+        result: { compliant: true, issues: [], reason: "judge A verdict" },
+        metadata: { targetType: "expert", specPath: "roles/README.md" },
+      });
+      managerB.write({
+        targetPath,
+        contentHash: "hash1234",
+        result: { compliant: false, issues: ["x"], reason: "judge B verdict", severity: "error" },
+        metadata: { targetType: "expert", specPath: "roles/README.md" },
+      });
+
+      // One artifact per target — both verdicts land in the same file.
+      expect(managerA.cachePathFor(targetPath)).toBe(managerB.cachePathFor(targetPath));
     });
 
     it("isolates verdicts between judges", () => {
-      const judgeA = new CacheManager({ cacheRoot, projectRoot, judgeHash: "aaaa1111" });
-      const judgeB = new CacheManager({ cacheRoot, projectRoot, judgeHash: "bbbb2222" });
+      const managerA = new CacheManager({ cacheRoot, projectRoot, judge: judgeA });
+      const managerB = new CacheManager({ cacheRoot, projectRoot, judge: judgeB });
       const targetPath = join(projectRoot, "roles", "shared.md");
 
-      judgeA.write({
+      managerA.write({
         targetPath,
         contentHash: "hash1234",
         result: { compliant: true, issues: [], reason: "judge A verdict" },
         metadata: { targetType: "expert", specPath: "roles/README.md" },
       });
 
-      const fromB = judgeB.read({
+      const fromB = managerB.read({
         targetPath,
         contentHash: "hash1234",
         specPath: "roles/README.md",
       });
-      const fromA = judgeA.read({
+      const fromA = managerA.read({
         targetPath,
         contentHash: "hash1234",
         specPath: "roles/README.md",
@@ -371,6 +327,51 @@ describe("CacheManager", () => {
 
       expect(fromB).toBeNull();
       expect(fromA?.reason).toBe("judge A verdict");
+    });
+
+    it("one judge's write preserves the other judge's verdict", () => {
+      const managerA = new CacheManager({ cacheRoot, projectRoot, judge: judgeA });
+      const managerB = new CacheManager({ cacheRoot, projectRoot, judge: judgeB });
+      const targetPath = join(projectRoot, "roles", "shared.md");
+      const metadata = { targetType: "expert", specPath: "roles/README.md" };
+
+      managerA.write({
+        targetPath,
+        contentHash: "hash1234",
+        result: { compliant: true, issues: [], reason: "judge A verdict" },
+        metadata,
+      });
+      managerB.write({
+        targetPath,
+        contentHash: "hash1234",
+        result: { compliant: true, issues: [], reason: "judge B verdict" },
+        metadata,
+      });
+
+      const fromA = managerA.read({
+        targetPath,
+        contentHash: "hash1234",
+        specPath: metadata.specPath,
+      });
+
+      expect(fromA?.reason).toBe("judge A verdict");
+    });
+
+    it("readRaw returns only the bound judge's entries", () => {
+      const managerA = new CacheManager({ cacheRoot, projectRoot, judge: judgeA });
+      const managerB = new CacheManager({ cacheRoot, projectRoot, judge: judgeB });
+      const targetPath = join(projectRoot, "roles", "shared.md");
+      const metadata = { targetType: "expert", specPath: "roles/README.md" };
+
+      managerA.write({
+        targetPath,
+        contentHash: "hash1234",
+        result: { compliant: true, issues: [], reason: "judge A verdict" },
+        metadata,
+      });
+
+      expect(managerB.readRaw({ targetPath })).toBeNull();
+      expect(managerA.readRaw({ targetPath })?.result.reason).toBe("judge A verdict");
     });
   });
 
@@ -446,7 +447,7 @@ describe("CacheManager", () => {
       const cached = manager.readRaw({ targetPath, specPath: metadata.specPath });
 
       expect(cached).not.toBeNull();
-      expect(cached!.version).toBe("2.0");
+      expect(cached!.version).toBe("3.0");
       expect(cached!.content_hash).toBe(hash);
       expect(cached!.cached_at).toBeTruthy();
       expect(cached!.document.path).toBe(targetPath);

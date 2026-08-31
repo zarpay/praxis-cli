@@ -13,7 +13,7 @@ import { Logger } from "@/core/logger.js";
 import { Paths, resolvePath } from "@/core/paths.js";
 import { BatchJudge } from "@/eval/batch-judge.js";
 import { CacheManager } from "@/eval/cache-manager.js";
-import { judgeHash } from "@/eval/judge-hash.js";
+import { cacheIdentity } from "@/eval/judge-hash.js";
 import { Judge } from "@/eval/judge.js";
 import {
   buildReport,
@@ -382,7 +382,7 @@ export class EvalCommand {
     }
 
     for (const judge of judges) {
-      const manager = new CacheManager({ projectRoot: this.root, judgeHash: judgeHash(judge) });
+      const manager = new CacheManager({ projectRoot: this.root, judge: cacheIdentity(judge) });
 
       if (judges.length > 1) {
         console.log(`\n${chalk.cyan(`Judge: ${judge.name}`)}`);
@@ -437,7 +437,7 @@ export class EvalCommand {
   private cacheManagerFor(judge: JudgeConfig, useCache: boolean): CacheManager | undefined {
     if (!useCache) return undefined;
 
-    return new CacheManager({ projectRoot: this.root, judgeHash: judgeHash(judge) });
+    return new CacheManager({ projectRoot: this.root, judge: cacheIdentity(judge) });
   }
 
   /** Prints a single validation result with colored status. */
