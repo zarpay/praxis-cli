@@ -161,6 +161,44 @@ describe("ExpertCompiler", () => {
     });
   });
 
+  describe("excludes frontmatter", () => {
+    /** Writes an expert whose validates: targeting carries an excludes: list. */
+    function writeExcludingExpert(): string {
+      const expertFile = join(expertsDir, "excluder.md");
+      writeFileSync(
+        expertFile,
+        [
+          "---",
+          "alias: Excluder",
+          "description: judges events, minus the base class",
+          "validates:",
+          '  - "src/events/*.rb"',
+          "excludes:",
+          '  - "src/events/application_event.rb"',
+          "---",
+          "# Excluder",
+        ].join("\n"),
+      );
+      return expertFile;
+    }
+
+    it("compiles excludes through to the pure profile frontmatter", async () => {
+      await compiler.compile(writeExcludingExpert());
+      const profile = readFileSync(join(agentProfilesDir, "excluder.md"), "utf-8");
+
+      expect(profile).toContain("excludes:");
+      expect(profile).toContain('- "src/events/application_event.rb"');
+    });
+
+    it("compiles excludes through to the Claude Code agent frontmatter", async () => {
+      await compiler.compile(writeExcludingExpert());
+      const agent = readFileSync(join(agentsOutputDir, "excluder.md"), "utf-8");
+
+      expect(agent).toContain("excludes:");
+      expect(agent).toContain('- "src/events/application_event.rb"');
+    });
+  });
+
   describe("legacy frontmatter", () => {
     it("inlines files listed under the deprecated responsibilities: key", async () => {
       const legacyFile = join(expertsDir, "legacy.md");

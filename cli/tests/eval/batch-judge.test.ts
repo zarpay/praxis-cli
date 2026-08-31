@@ -530,6 +530,154 @@ describe("BatchJudge", () => {
     });
   });
 
+  describe("excludes frontmatter", () => {
+    it("never validates a file the spec excludes from paths targeting", async () => {
+      useCompliantFixture();
+
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/events.sme.md": [
+            "---",
+            "paths:",
+            '  - "src/events/*.rb"',
+            "excludes:",
+            '  - "src/events/application_event.rb"',
+            "---",
+            "# Events Spec",
+          ].join("\n"),
+          "src/events/application_event.rb": "class ApplicationEvent; end",
+          "src/events/referral_event.rb": "class ReferralEvent < ApplicationEvent; end",
+        },
+        specFilePattern: "*.sme.md",
+      });
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        judges: [TEST_JUDGE],
+        specFilePattern: "*.sme.md",
+      });
+
+      const results = await batch.validateAll();
+
+      expect(results.map((r) => r.filename)).toEqual(["referral_event.rb"]);
+
+      cleanup();
+    });
+
+    it("never validates an excluded sibling document when the spec has no paths", async () => {
+      useCompliantFixture();
+
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/README.md": '---\nexcludes:\n  - "docs/legacy.md"\n---\n# Docs Spec',
+          "docs/good.md": "# Good",
+          "docs/legacy.md": "# Legacy — structurally out of scope",
+        },
+      });
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        judges: [TEST_JUDGE],
+      });
+
+      const results = await batch.validateAll();
+
+      expect(results.map((r) => r.filename)).toEqual(["good.md"]);
+
+      cleanup();
+    });
+
+    it("keeps excluded files out of cohort membership", async () => {
+      const bodies: string[] = [];
+      server.use(
+        http.post(OPENROUTER_URL, async ({ request }) => {
+          bodies.push(await request.text());
+          return HttpResponse.json(
+            validationToolCallResponse("validation_pass", { reason: "Fully compliant." }),
+          );
+        }),
+      );
+
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/services.sme.md": [
+            "---",
+            "paths:",
+            '  - "src/services/*"',
+            "cohort: by_directory",
+            "excludes:",
+            '  - "src/services/alpha/generated.ts"',
+            "---",
+            "# Service Spec",
+          ].join("\n"),
+          "src/services/alpha/a.ts": "ALPHA_A_CONTENT",
+          "src/services/alpha/generated.ts": "GENERATED_CONTENT",
+        },
+        specFilePattern: "*.sme.md",
+      });
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        judges: [TEST_JUDGE],
+        specFilePattern: "*.sme.md",
+      });
+
+      await batch.validateAll();
+
+      const alphaBody = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
+      expect(alphaBody).toBeDefined();
+      expect(alphaBody).not.toContain("GENERATED_CONTENT");
+
+      cleanup();
+    });
+
+    it("yields no unit for an excluded directory under cohort: by_directory", async () => {
+      useCompliantFixture();
+
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/services.sme.md": [
+            "---",
+            "paths:",
+            '  - "src/services/*"',
+            "cohort: by_directory",
+            "excludes:",
+            '  - "src/services/beta"',
+            "---",
+            "# Service Spec",
+          ].join("\n"),
+          "src/services/alpha/a.ts": "ALPHA_A_CONTENT",
+          "src/services/beta/c.ts": "BETA_C_CONTENT",
+        },
+        specFilePattern: "*.sme.md",
+      });
+
+      const batch = new BatchJudge({
+        root,
+        sources: ["docs"],
+        useCache: false,
+        judges: [TEST_JUDGE],
+        specFilePattern: "*.sme.md",
+      });
+
+      const results = await batch.validateAll();
+
+      expect(results.map((r) => r.filename)).toEqual(["alpha"]);
+
+      cleanup();
+    });
+  });
+
   describe("multiple judges", () => {
     const flash = { name: "flash", model: "flash-model", apiKeyEnvVar: "OPENROUTER_API_KEY" };
     const strict = { name: "strict", model: "strict-model", apiKeyEnvVar: "OPENROUTER_API_KEY" };

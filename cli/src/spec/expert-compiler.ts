@@ -11,7 +11,7 @@ import { baseName, joinPath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { GlobExpander } from "@/spec/glob-expander.js";
 import { Markdown } from "@/spec/markdown.js";
-import { OutputBuilder } from "@/spec/output-builder.js";
+import { OutputBuilder, evalTargetingLines } from "@/spec/output-builder.js";
 import { resolvePlugins } from "@/spec/plugin-registry.js";
 
 /**
@@ -141,18 +141,9 @@ export class ExpertCompiler {
     const profilesDir = this.config.agentProfilesOutputDir;
 
     if (profilesDir) {
-      const validates = metadata?.validates;
-      let content = profile;
-
-      if (validates && validates.length > 0) {
-        const lines = [`paths:`, ...validates.map((p) => `  - "${p}"`)];
-
-        if (metadata.cohort) {
-          lines.push(`cohort: ${metadata.cohort}`);
-        }
-
-        content = `---\n${lines.join("\n")}\n---\n\n${profile}`;
-      }
+      const targeting = metadata ? evalTargetingLines(metadata) : [];
+      const content =
+        targeting.length > 0 ? `---\n${targeting.join("\n")}\n---\n\n${profile}` : profile;
 
       writeText(joinPath(profilesDir, `${alias.toLowerCase()}.md`), content);
     }
@@ -298,6 +289,10 @@ export class ExpertCompiler {
     const cohort = fm.value("cohort") as string | undefined;
 
     if (cohort) metadata.cohort = cohort;
+
+    const excludes = fm.array("excludes") as string[];
+
+    if (excludes.length > 0) metadata.excludes = excludes;
 
     return metadata;
   }

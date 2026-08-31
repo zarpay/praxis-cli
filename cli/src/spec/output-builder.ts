@@ -25,6 +25,36 @@ export interface AgentMetadata {
   validates?: string[];
   /** How validated targets group into evaluation units (written as cohort: in output). */
   cohort?: string;
+  /** Glob patterns structurally excluded from judgment (written as excludes: in output). */
+  excludes?: string[];
+}
+
+/**
+ * Renders the eval-targeting frontmatter lines a compiled profile carries.
+ *
+ * The compiled profile doubles as a spec for the eval layer; these lines
+ * (`paths:`, `cohort:`, `excludes:`) are how an expert's targeting keys
+ * compile through. Returns an empty array when the expert declares no
+ * `validates:` targeting — the other keys are meaningless without it.
+ * Shared by the pure-profile writer and every plugin so the two outputs
+ * can never drift.
+ */
+export function evalTargetingLines(metadata: AgentMetadata): string[] {
+  const validates = metadata.validates ?? [];
+
+  if (validates.length === 0) return [];
+
+  const lines = ["paths:", ...validates.map((p) => `  - "${p}"`)];
+
+  if (metadata.cohort) {
+    lines.push(`cohort: ${metadata.cohort}`);
+  }
+
+  if (metadata.excludes && metadata.excludes.length > 0) {
+    lines.push("excludes:", ...metadata.excludes.map((p) => `  - "${p}"`));
+  }
+
+  return lines;
 }
 
 /**

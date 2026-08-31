@@ -3,6 +3,7 @@ import type { CompilerPlugin, PluginOptions } from "@/spec/plugins/types.js";
 
 import { exists, readJson, writeJson, writeText } from "@/core/files.js";
 import { joinPath, resolvePath } from "@/core/paths.js";
+import { evalTargetingLines } from "@/spec/output-builder.js";
 
 /** Default plugin.json content used when no scaffold file exists. */
 const DEFAULT_PLUGIN_JSON = {
@@ -282,16 +283,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
       lines.push(`permissionMode: ${metadata.permissionMode}`);
     }
 
-    if (metadata.validates && metadata.validates.length > 0) {
-      lines.push("paths:");
-      for (const p of metadata.validates) {
-        lines.push(`  - "${p}"`);
-      }
-
-      if (metadata.cohort) {
-        lines.push(`cohort: ${metadata.cohort}`);
-      }
-    }
+    lines.push(...evalTargetingLines(metadata));
 
     lines.push("---");
     return lines.join("\n");

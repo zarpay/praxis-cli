@@ -90,6 +90,13 @@ interface ValidationDomain {
   type: string;
   /** How targets group into evaluation units. */
   cohort: CohortMode;
+  /**
+   * Structural exclusions from the spec's `excludes:` frontmatter,
+   * resolved to absolute glob patterns. Excluded files never become
+   * units and never enter cohort membership — the judge never sees
+   * them (03: prevention beats calibration).
+   */
+  excludes: string[];
   /** Explicit target files when the spec declares `paths:` (by_file). */
   targetFiles?: string[];
   /** Matched directories when the spec declares `cohort: by_directory`. */
@@ -340,7 +347,7 @@ export class BatchJudge {
   private resolveUnits(domain: ValidationDomain): EvalUnit[] {
     if (domain.cohort === "by_directory") {
       return (domain.targetDirs ?? [])
-        .map((dir) => ({ path: dir, files: this.collectMembers(dir) }))
+        .map((dir) => ({ path: dir, files: this.collectMembers(dir, domain.excludes) }))
         .filter((unit) => unit.files.length > 0);
     }
 
@@ -354,7 +361,7 @@ export class BatchJudge {
         onlyFiles: true,
         absolute: true,
         dot: true,
-        ignore: this.absoluteIgnore,
+        ignore: [...this.absoluteIgnore, ...domain.excludes],
       })
       .filter((f) => {
         const name = baseName(f);
@@ -363,15 +370,15 @@ export class BatchJudge {
       .map((file) => ({ path: file, files: [file] }));
   }
 
-  /** Collects a cohort directory's member files, sorted, spec/template-filtered. */
-  private collectMembers(dir: string): string[] {
+  /** Collects a cohort directory's member files, sorted, spec/template/excludes-filtered. */
+  private collectMembers(dir: string, excludes: string[]): string[] {
     return fg
       .sync("**/*", {
         cwd: dir,
         onlyFiles: true,
         absolute: true,
         dot: true,
-        ignore: this.absoluteIgnore,
+        ignore: [...this.absoluteIgnore, ...excludes],
       })
       .filter((f) => {
         const name = baseName(f);
@@ -407,6 +414,7 @@ export class BatchJudge {
         const fm = Frontmatter.fromFile(specPath);
         const pathPatterns = fm.array("paths") as string[];
         const cohort = this.readCohort(fm, specPath);
+        const excludes = (fm.array("excludes") as string[]).map((p) => joinPath(this.root, p));
 
         if (cohort === "by_directory") {
           const targetDirs = fg
@@ -415,11 +423,11 @@ export class BatchJudge {
               onlyDirectories: true,
               absolute: true,
               dot: true,
-              ignore: this.absoluteIgnore,
+              ignore: [...this.absoluteIgnore, ...excludes],
             })
             .sort();
 
-          domains.push({ dir, specPath, type, cohort, targetDirs });
+          domains.push({ dir, specPath, type, cohort, excludes, targetDirs });
         } else if (pathPatterns.length > 0) {
           const targetFiles = fg
             .sync(pathPatterns, {
@@ -427,16 +435,16 @@ export class BatchJudge {
               onlyFiles: true,
               absolute: true,
               dot: true,
-              ignore: this.absoluteIgnore,
+              ignore: [...this.absoluteIgnore, ...excludes],
             })
             .filter((f) => {
               const name = baseName(f);
               return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
             });
 
-          domains.push({ dir, specPath, type, cohort, targetFiles });
+          domains.push({ dir, specPath, type, cohort, excludes, targetFiles });
         } else {
-          domains.push({ dir, specPath, type, cohort });
+          domains.push({ dir, specPath, type, cohort, excludes });
         }
       }
     }
