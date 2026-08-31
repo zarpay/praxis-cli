@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 
 import type { JudgeConfig } from "@/core/config.js";
+import type { DisplayEntry } from "@/core/logger.js";
 import type { EvalSummary } from "@/eval/batch-judge.js";
 import type { Verdict } from "@/eval/cache-manager.js";
 
@@ -436,15 +437,20 @@ export class EvalCommand extends PraxisProjectBase {
 
   /** Prints a single validation result with colored status. */
   private displayResult(path: string, result: Verdict, verbose: boolean): void {
-    const warning = result.severity === "warning";
-
     this.out.print([
-      result.compliant
-        ? { badge: "PASS", color: "green", value: path }
-        : { badge: warning ? "WARN" : "FAIL", color: warning ? "yellow" : "red", value: path },
+      this.resultBadge(path, result),
       ...(result.compliant ? [] : result.issues.map((issue) => `  - ${issue}`)),
       ...(verbose ? ["", "Reasoning:", result.reason] : []),
     ]);
+  }
+
+  /** The colored status badge entry for a single verdict line. */
+  private resultBadge(path: string, result: Verdict): DisplayEntry {
+    if (result.compliant) return { badge: "PASS", color: "green", value: path };
+
+    if (result.severity === "warning") return { badge: "WARN", color: "yellow", value: path };
+
+    return { badge: "FAIL", color: "red", value: path };
   }
 
   /** Prints the aggregated validation summary. */

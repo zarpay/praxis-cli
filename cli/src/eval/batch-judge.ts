@@ -549,11 +549,8 @@ export class BatchJudge extends PraxisProjectBase {
         judge: judgeConfig.name,
       };
 
-      const warning = result.severity === "warning";
       this.out.print([
-        result.compliant
-          ? `\t${chalk.green("✓ PASS")}`
-          : `\t${warning ? chalk.yellow("⚠ WARN") : chalk.red("✗ FAIL")}`,
+        `\t${this.verdictMark(result)}`,
         ...(result.compliant ? [] : result.issues.map((issue) => `\t${chalk.dim("·")} ${issue}`)),
       ]);
 
@@ -580,6 +577,15 @@ export class BatchJudge extends PraxisProjectBase {
    * Assembles a cohort's members into one judgment input, each labeled
    * with its project-relative path so critiques can locate their file.
    */
+  /** The colored ✓/⚠/✗ progress mark for a verdict. */
+  private verdictMark(result: Verdict): string {
+    if (result.compliant) return chalk.green("✓ PASS");
+
+    if (result.severity === "warning") return chalk.yellow("⚠ WARN");
+
+    return chalk.red("✗ FAIL");
+  }
+
   private assembleCohort(unit: EvalUnit): string {
     return unit.files
       .map((file) => `===== FILE: ${relativePath(this.root, file)} =====\n\n${readText(file)}`)

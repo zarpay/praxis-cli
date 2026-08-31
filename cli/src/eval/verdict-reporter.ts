@@ -132,10 +132,18 @@ export class VerdictReporter extends PraxisBase {
 
   /** Summarizes a cached verdict as `[STATUS] (n issues)` for the staleness block. */
   private lastResultSummary(result: CacheFileData["result"]): string {
-    const status = result.compliant ? "PASS" : result.severity === "warning" ? "WARN" : "FAIL";
     const count = result.issues.length;
+    const noun = count === 1 ? "issue" : "issues";
+    const suffix = count > 0 ? ` (${count} ${noun})` : "";
 
-    return `[${status}]${count > 0 ? ` (${count} issue${count === 1 ? "" : "s"})` : ""}`;
+    return `[${this.statusLabel(result)}]${suffix}`;
+  }
+
+  /** Maps a cached verdict to its PASS/WARN/FAIL label. */
+  private statusLabel(result: CacheFileData["result"]): string {
+    if (result.compliant) return "PASS";
+
+    return result.severity === "warning" ? "WARN" : "FAIL";
   }
 
   /**

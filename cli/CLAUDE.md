@@ -84,6 +84,7 @@ Plugins implement `CompilerPlugin` interface (`src/spec/plugins/types.ts`): `nam
 - **Path aliases:** `@/*` → `./src/*`, `@tests/*` → `./tests/*` (tsconfig.json and vitest.config.ts). Imports always use aliases, never relative paths (ESLint-enforced; sole exception: `../package.json`).
 - **Import order:** third-party types, internal types, third-party values, internal values — blank line between groups, alphabetical within (perfectionist, autofixable)
 - **Import extensions:** `.js` required for local imports (ESM)
+- **No nested ternaries** (ESLint `no-nested-ternary`): a ternary never appears inside another ternary's branch, object literal included — use if/else or a small helper.
 - **Conditionals breathe:** blank line before and after `if`/`switch`, except at block edges (@stylistic, autofixable)
 - **Unused args:** Prefix with `_` (eslint rule)
 - **Formatting:** Double quotes, semicolons, trailing commas, 100-char line width

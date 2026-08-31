@@ -40,6 +40,9 @@ export default tseslint.config(
     rules: {
       // Always use === / !==; loose equality hides coercion bugs.
       eqeqeq: ["error", "always"],
+      // A ternary inside a ternary is unreadable; use if/else or a
+      // small helper instead.
+      "no-nested-ternary": "error",
       // Braces required whenever a statement spans multiple lines;
       // single-line guards like `if (x) return;` stay legal.
       curly: ["error", "multi-line"],
