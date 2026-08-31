@@ -522,7 +522,7 @@ export class BatchJudge {
     const judgeLabel =
       this.judges.length > 1 ? ` ${chalk.cyan(`[judge: ${judgeConfig.name}]`)}` : "";
 
-    this.out.lines(["", `${counter} ${chalk.bold(baseName(unit.path))}${cohortLabel}${judgeLabel}`]);
+    this.out.print(["", `${counter} ${chalk.bold(baseName(unit.path))}${cohortLabel}${judgeLabel}`]);
 
     try {
       const judge = new Judge({
@@ -553,19 +553,17 @@ export class BatchJudge {
         judge: judgeConfig.name,
       };
 
-      if (result.compliant) {
-        this.out.line(`\t${chalk.green("✓ PASS")}`);
-      } else {
-        const warning = result.severity === "warning";
-        this.out.lines([
-          `\t${warning ? chalk.yellow("⚠ WARN") : chalk.red("✗ FAIL")}`,
-          ...result.issues.map((issue) => `\t${chalk.dim("·")} ${issue}`),
-        ]);
-      }
+      const warning = result.severity === "warning";
+      this.out.print([
+        result.compliant
+          ? `\t${chalk.green("✓ PASS")}`
+          : `\t${warning ? chalk.yellow("⚠ WARN") : chalk.red("✗ FAIL")}`,
+        ...(result.compliant ? [] : result.issues.map((issue) => `\t${chalk.dim("·")} ${issue}`)),
+      ]);
 
       this.results.push(batchResult);
     } catch (err) {
-      this.out.lines([
+      this.out.print([
         `\t${chalk.red("✗ ERROR")}`,
         `\t${chalk.dim("·")} ${(err as Error).message}`,
       ]);

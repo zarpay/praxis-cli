@@ -87,67 +87,89 @@ export class Logger {
   }
 }
 
-/** Chalk styles a Display line or badge may name. */
+/** Chalk styles a Display entry may name. */
 export type LineColor = "green" | "yellow" | "red" | "blue" | "cyan" | "gray" | "dim" | "bold";
 
+/** A line of text, optionally styled as a whole. */
+export interface TextEntry {
+  text: string;
+  color?: LineColor;
+}
+
+/** A colored `[LABEL]` badge, optionally followed by a value and indented. */
+export interface BadgeEntry {
+  badge: string;
+  color: LineColor;
+  value?: string | number;
+  indent?: number;
+}
+
+/** A title between two divider lines. */
+export interface HeaderEntry {
+  header: string;
+  char?: string;
+  width?: number;
+}
+
 /**
- * One renderable line: plain text, a `[color, text]` tuple to style the
- * whole line, or a falsy value to skip it — so conditional lines inline
- * naturally (`count > 0 && `...``).
+ * One renderable entry: a plain string, a structured entry, or a falsy
+ * value to skip — so conditional entries inline naturally
+ * (`count > 0 && { badge: ... }`).
  */
-export type DisplayLine = string | readonly [LineColor, string] | null | false | undefined;
+export type DisplayEntry =
+  | string
+  | TextEntry
+  | BadgeEntry
+  | HeaderEntry
+  | null
+  | false
+  | undefined;
 
 /**
  * Renders a command's user-facing output to stdout.
  *
  * Where {@link Logger} carries diagnostics on stderr, Display carries
- * the output itself: verdicts, summaries, reports. Its vocabulary is
- * the CLI's few rendering idioms — line blocks, colored `[BADGE]`
- * labels, and titled dividers — so callers describe output as data
- * instead of stacking `console.log` calls.
+ * the output itself: verdicts, summaries, reports. A whole output block
+ * is one print() call with a payload of entries — plain strings, styled
+ * text, `[BADGE]` labels, titled dividers — so callers describe output
+ * as data instead of stacking calls.
  *
  * Chalk handles NO_COLOR and non-TTY detection itself, so colored
  * entries degrade to plain text automatically when piped.
  */
 export class Display {
-  /** Writes one line; a falsy entry is skipped, no argument means a blank line. */
-  line(entry: DisplayLine = ""): void {
-    if (entry === null || entry === false || entry === undefined) return;
-
-    if (typeof entry === "string") {
-      console.log(entry);
-      return;
-    }
-
-    const [color, text] = entry;
-    console.log(chalk[color](text));
-  }
-
-  /** Writes each entry on its own line, skipping falsy entries. */
-  lines(entries: readonly DisplayLine[]): void {
+  /** Renders each entry in order, skipping falsy entries. */
+  print(entries: readonly DisplayEntry[]): void {
     for (const entry of entries) {
-      // Skipped here rather than delegated: line()'s no-argument default
-      // would otherwise turn an explicit `undefined` into a blank line.
       if (entry === null || entry === false || entry === undefined) continue;
 
-      this.line(entry);
+      if (typeof entry === "string") {
+        console.log(entry);
+      } else if ("badge" in entry) {
+        this.printBadge(entry);
+      } else if ("header" in entry) {
+        this.printHeader(entry);
+      } else {
+        console.log(entry.color ? chalk[entry.color](entry.text) : entry.text);
+      }
     }
   }
 
-  /** Writes a colored `[LABEL]` badge, optionally followed by a message and indented. */
-  badge(
-    color: LineColor,
-    label: string,
-    message = "",
-    { indent = 0 }: { indent?: number } = {},
-  ): void {
-    const badge = chalk[color](`[${label}]`);
-    console.log(`${" ".repeat(indent)}${badge}${message ? ` ${message}` : ""}`);
+  /** Renders a single entry; no argument means a blank line. */
+  line(entry: DisplayEntry = ""): void {
+    this.print([entry]);
   }
 
-  /** Writes a title between two divider lines. */
-  header(title: string, { char = "=", width = 50 }: { char?: string; width?: number } = {}): void {
+  /** Renders `[LABEL] value`, label colored, optionally indented. */
+  private printBadge({ badge, color, value, indent = 0 }: BadgeEntry): void {
+    const label = chalk[color](`[${badge}]`);
+    const suffix = value === undefined ? "" : ` ${value}`;
+    console.log(`${" ".repeat(indent)}${label}${suffix}`);
+  }
+
+  /** Renders a title between two divider lines. */
+  private printHeader({ header, char = "=", width = 50 }: HeaderEntry): void {
     const divider = char.repeat(width);
-    this.lines([divider, title, divider]);
+    this.print([divider, header, divider]);
   }
 }

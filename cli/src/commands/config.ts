@@ -69,7 +69,7 @@ export class ConfigCommand {
   show(): void {
     const parsed = readJson(this.configPath);
 
-    this.out.lines([
+    this.out.print([
       "",
       "  " + chalk.bold("Praxis Config"),
       "  " + DIVIDER,

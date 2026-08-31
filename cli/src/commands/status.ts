@@ -228,7 +228,7 @@ export class StatusCommand {
   /** Displays the status report to the console. */
   display(report: StatusReport): void {
     this.logger.info("Praxis Project Status");
-    this.out.lines([
+    this.out.print([
       "",
       `  Experts:            ${report.counts.experts}`,
       `  Practices:          ${report.counts.practices}`,
@@ -244,10 +244,12 @@ export class StatusCommand {
 
       this.out.line();
       this.logger.info(`Validation (judge: ${v.judge})`);
-      this.out.badge("green", "PASS", String(v.pass), { indent: 2 });
-      this.out.badge("yellow", "WARN", String(v.warn), { indent: 2 });
-      this.out.badge("red", "FAIL", String(v.fail), { indent: 2 });
-      this.out.badge("gray", "NOT VALIDATED", String(v.notValidated), { indent: 2 });
+      this.out.print([
+        { badge: "PASS", color: "green", value: v.pass, indent: 2 },
+        { badge: "WARN", color: "yellow", value: v.warn, indent: 2 },
+        { badge: "FAIL", color: "red", value: v.fail, indent: 2 },
+        { badge: "NOT VALIDATED", color: "gray", value: v.notValidated, indent: 2 },
+      ]);
     }
 
     const issueBlocks: [heading: string, items: string[]][] = [
@@ -274,7 +276,7 @@ export class StatusCommand {
 
       this.out.line();
       this.logger.warn(heading);
-      this.out.lines(items.map((item) => `  ${item}`));
+      this.out.print(items.map((item) => `  ${item}`));
       issueCount += items.length;
     }
 

@@ -108,7 +108,7 @@ export class InitCommand {
 
     this.out.line();
     this.logger.info(`Initialized Praxis project: ${created} files created, ${skipped} skipped`);
-    this.out.lines([
+    this.out.print([
       "",
       "Next steps:",
       "  1. Edit context/constitution/ to define your organization's identity",

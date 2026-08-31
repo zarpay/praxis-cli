@@ -89,14 +89,15 @@ export class VerdictReporter {
     return { targetPath, status: "fail", cacheData, currentHash, isStale: false };
   }
 
-  /** Renders a report to stdout. */
+  /** Renders a report to stdout as one payload. */
   render(report: VerdictReport, verbose: boolean): void {
     const { cacheData } = report;
+    const issues = cacheData?.result.issues ?? [];
+    const showIssues = cacheData && !cacheData.result.compliant && issues.length > 0;
 
-    this.out.line();
-    this.out.header("Validation Report", { width: DIVIDER_WIDTH });
-
-    this.out.lines([
+    this.out.print([
+      "",
+      { header: "Validation Report", width: DIVIDER_WIDTH },
       "",
       `  Document:  ${report.targetPath}`,
       cacheData && `  Type:      ${cacheData.document.type}`,
@@ -104,36 +105,29 @@ export class VerdictReporter {
       cacheData && `  Validated: ${this.formatDate(cacheData.cached_at)}`,
       "",
       `  Status:    ${this.statusBadge(report.status)}`,
+      ...(report.isStale && cacheData
+        ? [
+            "",
+            { text: "  ! Document has changed since last validation", color: "yellow" as const },
+            { text: "    Run `praxis eval run <target>` to re-validate", color: "yellow" as const },
+            "",
+            `  Last result: ${this.lastResultSummary(cacheData.result)}`,
+          ]
+        : []),
+      ...(showIssues ? ["", "  Issues:", ...issues.map((i) => `    - ${i}`)] : []),
+      ...(report.status === "not_validated"
+        ? ["", `  Run ${chalk.cyan("`praxis eval run " + report.targetPath + "`")} to validate.`]
+        : []),
+      ...(verbose && cacheData
+        ? [
+            "",
+            { header: "AI Reasoning:", char: "-", width: DIVIDER_WIDTH },
+            cacheData.result.reason,
+          ]
+        : []),
+      "",
+      "=".repeat(DIVIDER_WIDTH),
     ]);
-
-    if (report.isStale && cacheData) {
-      this.out.lines([
-        "",
-        ["yellow", "  ! Document has changed since last validation"],
-        ["yellow", "    Run `praxis eval run <target>` to re-validate"],
-        "",
-        `  Last result: ${this.lastResultSummary(cacheData.result)}`,
-      ]);
-    }
-
-    if (cacheData && !cacheData.result.compliant && cacheData.result.issues.length > 0) {
-      this.out.lines(["", "  Issues:", ...cacheData.result.issues.map((i) => `    - ${i}`)]);
-    }
-
-    if (report.status === "not_validated") {
-      this.out.lines([
-        "",
-        `  Run ${chalk.cyan("`praxis eval run " + report.targetPath + "`")} to validate.`,
-      ]);
-    }
-
-    if (verbose && cacheData) {
-      this.out.line();
-      this.out.header("AI Reasoning:", { char: "-", width: DIVIDER_WIDTH });
-      this.out.line(cacheData.result.reason);
-    }
-
-    this.out.lines(["", "=".repeat(DIVIDER_WIDTH)]);
   }
 
   /** Summarizes a cached verdict as `[STATUS] (n issues)` for the staleness block. */

@@ -128,85 +128,120 @@ describe("Display", () => {
     spy.mockRestore();
   });
 
-  describe("line()", () => {
-    it("writes one line to stdout", () => {
-      new Display().line("hello");
+  describe("print() — plain and skipped entries", () => {
+    it("writes each string entry on its own line in order", () => {
+      new Display().print(["first", "second", "third"]);
 
-      expect(logged).toEqual(["hello"]);
+      expect(logged).toEqual(["first", "second", "third"]);
+    });
+
+    it("renders empty strings as blank lines", () => {
+      new Display().print(["", "body", ""]);
+
+      expect(logged).toEqual(["", "body", ""]);
+    });
+
+    it("skips null, false, and undefined entries so conditionals inline", () => {
+      const shown = false;
+
+      new Display().print(["kept", null, shown && "skipped", undefined, "also kept"]);
+
+      expect(logged).toEqual(["kept", "also kept"]);
+    });
+  });
+
+  describe("print() — text entries", () => {
+    it("colors a text entry with the named chalk style", () => {
+      new Display().print([{ text: "  ! Document has changed", color: "yellow" }]);
+
+      expect(logged).toEqual([chalk.yellow("  ! Document has changed")]);
+    });
+
+    it("renders a text entry without color as plain text", () => {
+      new Display().print([{ text: "plain body" }]);
+
+      expect(logged).toEqual(["plain body"]);
+    });
+  });
+
+  describe("print() — badge entries", () => {
+    it("renders a colored bracket label followed by the value", () => {
+      new Display().print([{ badge: "PASS", color: "green", value: "docs/guide.md" }]);
+
+      expect(logged).toEqual([`${chalk.green("[PASS]")} docs/guide.md`]);
+    });
+
+    it("accepts numeric values directly", () => {
+      new Display().print([{ badge: "Errors", color: "red", value: 3 }]);
+
+      expect(logged).toEqual([`${chalk.red("[Errors]")} 3`]);
+    });
+
+    it("renders the label alone when no value is given", () => {
+      new Display().print([{ badge: "STOPPED", color: "yellow" }]);
+
+      expect(logged).toEqual([chalk.yellow("[STOPPED]")]);
+    });
+
+    it("indents by the requested width", () => {
+      new Display().print([{ badge: "FAIL", color: "red", value: 3, indent: 2 }]);
+
+      expect(logged).toEqual([`  ${chalk.red("[FAIL]")} 3`]);
+    });
+  });
+
+  describe("print() — header entries", () => {
+    it("renders the title between divider lines", () => {
+      new Display().print([{ header: "Summary" }]);
+
+      expect(logged).toEqual(["=".repeat(50), "Summary", "=".repeat(50)]);
+    });
+
+    it("honors a custom divider character and width", () => {
+      new Display().print([{ header: "AI Reasoning:", char: "-", width: 10 }]);
+
+      expect(logged).toEqual(["----------", "AI Reasoning:", "----------"]);
+    });
+  });
+
+  describe("print() — a whole block as one payload", () => {
+    it("renders mixed entry kinds in order", () => {
+      const notValidated = 0;
+
+      new Display().print([
+        "",
+        { header: "Summary" },
+        "Total documents: 12",
+        { badge: "Compliant", color: "green", value: 9 },
+        notValidated > 0 && { badge: "Not Validated", color: "gray", value: notValidated },
+        "",
+        { text: "done", color: "dim" },
+      ]);
+
+      expect(logged).toEqual([
+        "",
+        "=".repeat(50),
+        "Summary",
+        "=".repeat(50),
+        "Total documents: 12",
+        `${chalk.green("[Compliant]")} 9`,
+        "",
+        chalk.dim("done"),
+      ]);
+    });
+  });
+
+  describe("line()", () => {
+    it("writes a single entry", () => {
+      new Display().line("Validating docs/guide.md...");
+
+      expect(logged).toEqual(["Validating docs/guide.md..."]);
     });
 
     it("writes a blank line when called with no argument", () => {
       new Display().line();
 
       expect(logged).toEqual([""]);
-    });
-
-    it("colors a tuple line with the named chalk style", () => {
-      new Display().line(["yellow", "  ! Document has changed"]);
-
-      expect(logged).toEqual([chalk.yellow("  ! Document has changed")]);
-    });
-  });
-
-  describe("lines()", () => {
-    it("writes each entry on its own line in order", () => {
-      new Display().lines(["first", "second", "third"]);
-
-      expect(logged).toEqual(["first", "second", "third"]);
-    });
-
-    it("skips null, false, and undefined entries", () => {
-      const shown = false;
-
-      new Display().lines(["kept", null, shown && "skipped", undefined, "also kept"]);
-
-      expect(logged).toEqual(["kept", "also kept"]);
-    });
-
-    it("renders empty strings as blank lines", () => {
-      new Display().lines(["", "body", ""]);
-
-      expect(logged).toEqual(["", "body", ""]);
-    });
-
-    it("mixes plain and colored entries", () => {
-      new Display().lines(["plain", ["red", "angry"], ["dim", "quiet"]]);
-
-      expect(logged).toEqual(["plain", chalk.red("angry"), chalk.dim("quiet")]);
-    });
-  });
-
-  describe("badge()", () => {
-    it("renders a colored bracket label followed by the message", () => {
-      new Display().badge("green", "PASS", "docs/guide.md");
-
-      expect(logged).toEqual([`${chalk.green("[PASS]")} docs/guide.md`]);
-    });
-
-    it("renders the label alone when no message is given", () => {
-      new Display().badge("yellow", "STOPPED");
-
-      expect(logged).toEqual([chalk.yellow("[STOPPED]")]);
-    });
-
-    it("indents by the requested width", () => {
-      new Display().badge("red", "FAIL", "3", { indent: 2 });
-
-      expect(logged).toEqual([`  ${chalk.red("[FAIL]")} 3`]);
-    });
-  });
-
-  describe("header()", () => {
-    it("renders the title between divider lines", () => {
-      new Display().header("Summary");
-
-      expect(logged).toEqual(["=".repeat(50), "Summary", "=".repeat(50)]);
-    });
-
-    it("honors a custom divider character and width", () => {
-      new Display().header("AI Reasoning:", { char: "-", width: 10 });
-
-      expect(logged).toEqual(["----------", "AI Reasoning:", "----------"]);
     });
   });
 });

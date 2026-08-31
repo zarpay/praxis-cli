@@ -315,16 +315,24 @@ export class EvalCommand {
     }
 
     if (batch.stopped) {
-      this.out.line();
-      this.out.badge("yellow", "STOPPED", "Validation stopped early due to --fail-fast");
+      this.out.print([
+        "",
+        { badge: "STOPPED", color: "yellow", value: "Validation stopped early due to --fail-fast" },
+      ]);
     }
 
     const summary = batch.summary();
     this.displaySummary(summary);
 
     if (options.cache) {
-      this.out.line();
-      this.out.badge("blue", "CACHE", `Hits: ${batch.cacheStats.hits}, Misses: ${batch.cacheStats.misses}`);
+      this.out.print([
+        "",
+        {
+          badge: "CACHE",
+          color: "blue",
+          value: `Hits: ${batch.cacheStats.hits}, Misses: ${batch.cacheStats.misses}`,
+        },
+      ]);
     }
 
     return summary;
@@ -385,7 +393,7 @@ export class EvalCommand {
       const manager = new CacheManager({ projectRoot: this.root, judge: cacheIdentity(judge) });
 
       if (judges.length > 1) {
-        this.out.lines(["", ["cyan", `Judge: ${judge.name}`]]);
+        this.out.print(["", { text: `Judge: ${judge.name}`, color: "cyan" }]);
       }
 
       const cacheData = manager.readRaw({ targetPath: absolutePath });
@@ -436,53 +444,50 @@ export class EvalCommand {
 
   /** Prints a single validation result with colored status. */
   private displayResult(path: string, result: Verdict, verbose: boolean): void {
-    if (result.compliant) {
-      this.out.badge("green", "PASS", path);
-    } else {
-      const warning = result.severity === "warning";
-      this.out.badge(warning ? "yellow" : "red", warning ? "WARN" : "FAIL", path);
-      this.out.lines(result.issues.map((issue) => `  - ${issue}`));
-    }
+    const warning = result.severity === "warning";
 
-    if (verbose) {
-      this.out.lines(["", "Reasoning:", result.reason]);
-    }
+    this.out.print([
+      result.compliant
+        ? { badge: "PASS", color: "green", value: path }
+        : { badge: warning ? "WARN" : "FAIL", color: warning ? "yellow" : "red", value: path },
+      ...(result.compliant ? [] : result.issues.map((issue) => `  - ${issue}`)),
+      ...(verbose ? ["", "Reasoning:", result.reason] : []),
+    ]);
   }
 
   /** Prints the aggregated validation summary. */
   private displaySummary(summary: EvalSummary): void {
-    this.out.line();
-    this.out.header("Summary");
-    this.out.line(`Total documents: ${summary.total}`);
-    this.out.badge("green", "Compliant", String(summary.compliant));
-    this.out.badge("yellow", "Warnings", String(summary.warnings));
-    this.out.badge("red", "Errors", String(summary.errors));
+    // Judges are separate instruments — with more than one, their
+    // series render separately and are never pooled into one number.
+    const judgeNames = Object.keys(summary.byJudge);
 
-    if (summary.notValidated > 0) {
-      this.out.badge("gray", "Not Validated", `${summary.notValidated} (no spec found)`);
-    }
-
-    this.out.lines([
+    this.out.print([
+      "",
+      { header: "Summary" },
+      `Total documents: ${summary.total}`,
+      { badge: "Compliant", color: "green", value: summary.compliant },
+      { badge: "Warnings", color: "yellow", value: summary.warnings },
+      { badge: "Errors", color: "red", value: summary.errors },
+      summary.notValidated > 0 && {
+        badge: "Not Validated",
+        color: "gray",
+        value: `${summary.notValidated} (no spec found)`,
+      },
       "",
       "By type:",
       ...Object.entries(summary.byType).map(
         ([type, stats]) => `  ${type}: ${stats.compliant}/${stats.total} compliant`,
       ),
+      ...(judgeNames.length > 1
+        ? [
+            "",
+            "By judge:",
+            ...judgeNames.map((name) => {
+              const stats = summary.byJudge[name];
+              return `  ${name}: ${chalk.green(String(stats.compliant))} pass, ${chalk.yellow(String(stats.warnings))} warn, ${chalk.red(String(stats.errors))} fail`;
+            }),
+          ]
+        : []),
     ]);
-
-    // Judges are separate instruments — with more than one, their
-    // series render separately and are never pooled into one number.
-    const judgeNames = Object.keys(summary.byJudge);
-
-    if (judgeNames.length > 1) {
-      this.out.lines([
-        "",
-        "By judge:",
-        ...judgeNames.map((name) => {
-          const stats = summary.byJudge[name];
-          return `  ${name}: ${chalk.green(String(stats.compliant))} pass, ${chalk.yellow(String(stats.warnings))} warn, ${chalk.red(String(stats.errors))} fail`;
-        }),
-      ]);
-    }
   }
 }
