@@ -92,3 +92,22 @@ committed cache under `.praxis/cache/` is that run's shared evidence:
   the spec permitted (its own reasoning said so); the fix was
   sharpening `tests/README.md`, after which all four suites re-judged
   clean. The spec is part of the instrument.
+
+## Deliberately non-compliant content
+
+Some of this repo is wrong on purpose — it exists so Praxis has real
+FAILs and WARNs to report, and real shields to prove:
+
+- `src/features/loyalty/` — no `index.ts`, orphaned file, two unrelated
+  capabilities (cohort FAIL)
+- `src/services/apply-discount.ts` — throws for domain failures, vague
+  errors, console I/O (FAIL)
+- `tests/discounts.test.ts` — vague framing, many assertions per block,
+  tests implementation (flagged)
+- `src/services/legacy-import.ts` — awful, but `excludes:`-shielded:
+  never judged
+- `src/services/_wip-refund.ts`, `knowledge/experts/_expert-template.md`
+  — underscore-prefixed: never judged, never compiled
+- `src/generated/` — covered by the config's `ignore:` patterns
+
+Do not "fix" these files; the eval layer's output depends on them.

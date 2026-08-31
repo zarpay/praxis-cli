@@ -1,0 +1,37 @@
+{
+  "version": "3.0",
+  "verdicts": {
+    "244fa7f3:0ac6cb25": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ac6cb25"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "target_type": "expert",
+      "cached_at": "2026-08-31T14:22:12.790Z",
+      "content_hash": "9345eb3c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria in the specification. Frontmatter includes title, type ('expert'), alias, and a two-sentence description. The body opens with a level-1 heading naming the expert and its alias ('Service Steward (a.k.a **Scooper**)'), and states in prose that it is the subject-matter expert on how Scoop Society services are written. No placeholder text (TODO, TBD, lorem ipsum) is present."
+      }
+    },
+    "244fa7f3:e216be4c": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e216be4c"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "target_type": "expert",
+      "cached_at": "2026-08-31T14:24:59.655Z",
+      "content_hash": "9345eb3c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification: it contains all required frontmatter fields with correct types, opens with the required level-1 heading naming the expert and alias, clearly states what the expert is the subject-matter expert on, and contains no prohibited placeholder text."
+      }
+    }
+  }
+}

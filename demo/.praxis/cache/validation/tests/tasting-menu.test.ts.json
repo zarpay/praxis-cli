@@ -41,12 +41,12 @@
       },
       "spec_path": "tests/README.md",
       "target_type": "unknown",
-      "cached_at": "2026-08-31T13:52:39.947Z",
-      "content_hash": "94c25420",
+      "cached_at": "2026-08-31T14:24:43.553Z",
+      "content_hash": "1d27ad5e",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file satisfies all three test conventions. Subject framing: the top-level describe names the module under test ('tasting-menu'), nested describes are when-clauses naming the situation, and each it states one observable outcome so describe + it reads as a sentence. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toEqual/toMatchObject. Functionality, not implementation: tests exercise only the exported buildMenu public API against a real in-memory store, assert on returned values only, use no spies or mocks, and build fresh state per test via beforeEach so suites are independent."
+        "reason": "The file conforms to all three test conventions. Subject framing: the top-level describe names the unit by module name ('tasting-menu'), nested describes are when-clauses, and each it states one observable outcome that reads as a sentence with its describe. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toMatchObject/toEqual/toHaveLength. Functionality, not implementation: tests exercise only the exported buildMenu public API, assert on returned values, use the honest in-memory createMemoryStore without spies or mocking, never reach into module scope, and build state fresh in beforeEach so suites don't depend on each other."
       }
     },
     "dacac2eb:e216be4c": {
@@ -57,12 +57,12 @@
       },
       "spec_path": "tests/README.md",
       "target_type": "unknown",
-      "cached_at": "2026-08-31T13:53:40.856Z",
-      "content_hash": "94c25420",
+      "cached_at": "2026-08-31T14:26:23.451Z",
+      "content_hash": "1d27ad5e",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification: proper subject framing with module name and 'when' clauses, exactly one assertion per test block, and focuses on functionality through the public API with fresh test data and no implementation-specific testing."
+        "reason": "The test file fully complies with all requirements in the specification: proper subject framing with module name and when clauses, one assertion per test block, and testing functionality through public API without implementation details."
       }
     }
   }

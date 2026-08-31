@@ -1,6 +1,7 @@
 ---
 paths:
   - "tests/*.test.ts"
+cohort: by_file
 ---
 
 # Test Conventions

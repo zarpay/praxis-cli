@@ -65,7 +65,7 @@ export class ExpertCompiler extends PraxisProjectBase {
   /**
    * Compiles all role files found in the project's roles directory.
    *
-   * Skips templates (`_template.md`), spec files, and roles without
+   * Skips templates (underscore-prefixed files), spec files, and roles without
    * an alias (compile() logs a warning for the latter).
    *
    * @returns Summary with the count of compiled agents
@@ -82,7 +82,9 @@ export class ExpertCompiler extends PraxisProjectBase {
     for (const expertFile of expertFiles) {
       const name = baseName(expertFile);
 
-      if (name === "_template.md" || isSpecFile(name, this.specFilePattern)) {
+      // Underscore-prefixed files are templates/scratch — the same
+      // rule the eval layer applies when collecting judgment targets.
+      if (name.startsWith("_") || isSpecFile(name, this.specFilePattern)) {
         continue;
       }
 

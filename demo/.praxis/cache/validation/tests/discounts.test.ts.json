@@ -1,0 +1,51 @@
+{
+  "version": "3.0",
+  "verdicts": {
+    "dacac2eb:0ac6cb25": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ac6cb25"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T14:24:26.200Z",
+      "content_hash": "c2f1d782",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Subject framing: the top-level describe must name the unit under test by its module name (e.g. describe('apply-discount', ...)), but the file uses describe('should work', ...).",
+          "Subject framing: nested describe blocks must name the situation as a when clause (e.g. describe('when the code is unknown', ...)); the file has no nested describes at all.",
+          "Subject framing: each it must state one observable outcome in plain language so describe + it reads as a sentence; the file uses it('does stuff', ...), which states no outcome.",
+          "One assertion per block: every it block must contain exactly one expect; the single it block contains five expects covering unrelated outcomes (discount value, unknown code, store length, store id, throwing on empty code), each of which should be its own it block.",
+          "Functionality, not implementation: the test relies on internal array ordering via store.listParlors()[0] and asserts on unrelated store internals (list length, element id) rather than observable behavior of applyDiscount; it should assert only on returned values/observable state relevant to the unit under test."
+        ],
+        "reason": "The file deliberately violates the test conventions laid out in the specification and fails multiple required criteria."
+      }
+    },
+    "dacac2eb:e216be4c": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e216be4c"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T14:26:05.539Z",
+      "content_hash": "c2f1d782",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Top-level describe uses 'should work' instead of naming the unit under test by its module name (e.g., 'apply-discount')",
+          "No nested describe blocks with 'when' clauses to name the situation",
+          "The it statement uses vague language 'does stuff' instead of stating an observable outcome in plain language",
+          "The single it block contains 5 expect statements, violating the 'one assertion per block' rule",
+          "Tests implementation details (internal array ordering) instead of focusing on observable behavior"
+        ],
+        "reason": "The file violates multiple required criteria in the test conventions specification, including subject framing rules, the one assertion per block rule, and the functionality-over-implementation principle."
+      }
+    }
+  }
+}

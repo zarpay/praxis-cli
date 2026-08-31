@@ -1,6 +1,10 @@
 ---
 paths:
   - "src/services/*.ts"
+excludes:
+  - "src/services/legacy-import.ts"
+exemplars:
+  - "src/services/create-review.ts"
 ---
 
 # Role
@@ -56,6 +60,21 @@ Scoop Society service has seen them all.
 - [ ] Every deviation includes the fix, not just the finding
 - [ ] Error messages were read as an API consumer would read them
 
+# Constitution
+
+# Scoop Society Identity
+
+Scoop Society reviews ice cream honestly. Every expert operating here
+shares three commitments:
+
+- **Consumer-grade clarity**: anything a caller can see — an error
+  message, a review, an API shape — is written for the person reading
+  it, not the developer who wrote it.
+- **Boring correctness**: conventions beat cleverness. A predictable
+  codebase is the product.
+- **Evidence over vibes**: critiques cite the convention they enforce;
+  standards without a written source do not exist.
+
 # Context
 
 # Result Handling
@@ -70,3 +89,20 @@ the only thing the API consumer sees.
 Error messages name what was wrong **and what would be accepted
 instead**. They are written for the person holding the malformed
 request, not for the developer reading the source.
+
+# Reference
+
+# API Shape Reference
+
+The JSON API surface services ultimately serve:
+
+| Route | Returns |
+| --- | --- |
+| `GET /parlors` | `Parlor[]` |
+| `GET /parlors/:id/reviews` | `Review[]` |
+| `POST /parlors/:id/reviews` | `Review` (201) or `{ error }` (422) |
+| `GET /rankings` | `RankedParlor[]` |
+
+Domain failures surface as `{ error: string }` with a 4xx status; the
+`error` string is shown to API consumers verbatim, which is why service
+error messages must name what was wrong and what would be accepted.

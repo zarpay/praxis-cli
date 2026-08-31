@@ -1,0 +1,69 @@
+{
+  "version": "3.0",
+  "verdicts": {
+    "e280f5fa:0ac6cb25": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ac6cb25"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T14:22:30.722Z",
+      "content_hash": "cd9d0ad5",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Structure — exactly one entry point: the feature has no `index.ts` re-exporting its public API. The spec requires exactly one entry point, `index.ts`, and nothing outside the feature should import other files in it; the cohort must add an `index.ts` that re-exports the feature's entire public API.",
+          "Structure — types file: there is no dedicated `loyalty-types.ts` file as required by the '<feature>-types.ts' convention.",
+          "Structure — logic file conventions: `punch-card.ts` is not verb-first kebab-case and neither file exports a single `run`; they export multiple functions/constants and return plain numbers/booleans/strings instead of `Result` values with consumer-grade error messages, violating the service conventions the spec incorporates.",
+          "Cohesion — no orphaned files: `summer-promo.ts` is imported by nothing and, with no `index.ts`, no file in the directory is reachable through an entry-point import graph. Every file must be reachable from `index.ts`.",
+          "Cohesion — one capability per feature: the directory mixes a loyalty punch-card capability with an unrelated summer-promo capability. These must be split into separate features."
+        ],
+        "reason": "The loyalty cohort does not conform to the Feature Module Conventions. There is no `index.ts` entry point, the directory contains two unrelated capabilities, files are orphaned/unreachable, and the logic files do not follow the required service conventions (verb-first kebab-case names, a single exported `run`, Results over exceptions). The files themselves even document these as deliberate violations."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:e216be4c": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e216be4c"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T14:25:18.553Z",
+      "content_hash": "cd9d0ad5",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Missing required entry point: Exactly one entry point, index.ts, which re-exports the feature's entire public API. Nothing outside the feature imports any other file in it.",
+          "Orphaned files: Every file in the directory must be reachable from index.ts through its import graph. Both punch-card.ts and summer-promo.ts are orphaned.",
+          "Multiple capabilities: The files serve two unrelated purposes (loyalty punch cards and summer promotions), violating 'one capability per feature' rule."
+        ],
+        "reason": "The loyalty cohort violates multiple required criteria in the specification, most critically missing the required index.ts entry point and containing unrelated capabilities."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    }
+  }
+}

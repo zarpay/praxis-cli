@@ -21,5 +21,9 @@
       "model": "deepseek/deepseek-v3.2",
       "apiKeyEnvVar": "OPENROUTER_API_KEY"
     }
+  ],
+  "specFilePattern": "{README.md,*.sme.md}",
+  "ignore": [
+    "src/generated/**"
   ]
 }

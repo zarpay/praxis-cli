@@ -225,6 +225,20 @@ describe("ExpertCompiler", () => {
     });
   });
 
+  describe("template skipping", () => {
+    it("never compiles underscore-prefixed files, whatever their name", async () => {
+      const templateFile = join(expertsDir, "_expert-template.md");
+      writeFileSync(
+        templateFile,
+        ["---", "alias: Todo", "description: placeholder", "---", "# TODO"].join("\n"),
+      );
+
+      await compiler.compileAll();
+
+      expect(existsSync(join(agentProfilesDir, "todo.md"))).toBe(false);
+    });
+  });
+
   describe("legacy frontmatter", () => {
     it("inlines files listed under the deprecated responsibilities: key", async () => {
       const legacyFile = join(expertsDir, "legacy.md");

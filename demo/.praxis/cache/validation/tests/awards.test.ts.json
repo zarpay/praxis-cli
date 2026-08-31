@@ -41,12 +41,12 @@
       },
       "spec_path": "tests/README.md",
       "target_type": "unknown",
-      "cached_at": "2026-08-31T13:51:25.011Z",
-      "content_hash": "e242314a",
+      "cached_at": "2026-08-31T14:23:37.984Z",
+      "content_hash": "b35b5069",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file satisfies all three test conventions. Subject framing: the top-level describe names the unit by its module name ('awards'), nested describes are 'when' clauses, and each it states one observable outcome that reads as a sentence with its describe. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toMatchObject. Functionality, not implementation: tests exercise only public APIs (pickWinners and the create-review run function), use the honest in-memory store as an injected collaborator, contain no spies or mocking, and build fresh data in beforeEach setup so suites are independent."
+        "reason": "The file satisfies all criteria in the specification. The top-level describe names the unit by its module name ('awards'), nested describes are all 'when' clauses, and each it states one observable outcome so describe + it reads as a sentence. Every it block contains exactly one expect, and compound shapes are asserted once via toMatchObject. Tests exercise only public APIs (pickWinners and the create-review run function), use the honest in-memory store with no spies or mocks, and build data fresh in beforeEach setup with no cross-suite dependencies. The file also matches the tests/*.test.ts path pattern."
       }
     },
     "dacac2eb:e216be4c": {
@@ -57,12 +57,12 @@
       },
       "spec_path": "tests/README.md",
       "target_type": "unknown",
-      "cached_at": "2026-08-31T13:53:12.036Z",
-      "content_hash": "e242314a",
+      "cached_at": "2026-08-31T14:25:44.656Z",
+      "content_hash": "b35b5069",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The test file fully complies with all specification criteria: proper subject framing with module name and 'when' clauses, one assertion per test block using appropriate matchers, and focus on functionality through public API with fresh test data."
+        "reason": "The file fully satisfies all criteria defined in the specification: proper subject framing with module name and 'when' clauses, exactly one assertion per test block, and testing functionality through public API without implementation details."
       }
     }
   }

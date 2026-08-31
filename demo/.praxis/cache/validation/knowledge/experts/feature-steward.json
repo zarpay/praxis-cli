@@ -1,0 +1,37 @@
+{
+  "version": "3.0",
+  "verdicts": {
+    "244fa7f3:0ac6cb25": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ac6cb25"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "target_type": "expert",
+      "cached_at": "2026-08-31T14:22:06.701Z",
+      "content_hash": "268389a1",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria in the specification. Required frontmatter (title, type='expert', alias, description) is present and valid. The body opens with a level-1 heading naming the expert and its alias ('# Feature Steward (a.k.a **Sundae**)'), and states in prose what the expert is the subject-matter expert on. No placeholder text (TODO, TBD, lorem ipsum) is present."
+      }
+    },
+    "244fa7f3:e216be4c": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e216be4c"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "target_type": "expert",
+      "cached_at": "2026-08-31T14:24:51.742Z",
+      "content_hash": "268389a1",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria: required frontmatter fields (title, type, alias, description) are present and correctly formatted; the body opens with a level-1 heading naming the expert and its alias; the body clearly states what the expert is the subject-matter expert on; and there is no placeholder text."
+      }
+    }
+  }
+}

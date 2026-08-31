@@ -41,12 +41,12 @@
       },
       "spec_path": "tests/README.md",
       "target_type": "unknown",
-      "cached_at": "2026-08-31T13:52:11.632Z",
-      "content_hash": "4e966d3a",
+      "cached_at": "2026-08-31T14:24:34.894Z",
+      "content_hash": "a1734e88",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file fully conforms to the test conventions specification. Subject framing: the top-level describe names the module ('rank-parlors'), every nested describe is a 'when' clause, and each it statement reads as a sentence when combined with its describes. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toMatchObject/toEqual. Functionality, not implementation: tests exercise only the exported run function (and the createReview service for setup), assert on returned values, use the honest in-memory store with no spies or mocks, and build data fresh in beforeEach setup with no cross-suite dependencies. The file also matches the tests/*.test.ts path pattern."
+        "reason": "The file satisfies all three test conventions.\n\n**Subject framing:** The top-level `describe('rank-parlors', ...)` names the unit by module name. All nested `describe` blocks use `when` clauses ('when no parlors have reviews', 'when parlors have different ratings', 'when a minimum review count is set', 'when minReviews is negative'). Each `it` states one observable outcome in plain language, and each `describe` + `it` reads as a sentence.\n\n**One assertion per block:** Every `it` block contains exactly one `expect`. Compound shapes are asserted once with `toMatchObject`/`toEqual` rather than field-by-field.\n\n**Functionality, not implementation:** Tests exercise the public `run` API only, use the honest in-memory `createMemoryStore` collaborator (no spies or mocks), never reach into module scope, and build fresh state in `beforeEach` so suites don't depend on each other's state or ordering. The `reviewParlor` helper uses another service's public API to set up observable state, which is functionality, not implementation."
       }
     },
     "dacac2eb:e216be4c": {
@@ -57,12 +57,12 @@
       },
       "spec_path": "tests/README.md",
       "target_type": "unknown",
-      "cached_at": "2026-08-31T13:53:28.990Z",
-      "content_hash": "4e966d3a",
+      "cached_at": "2026-08-31T14:26:14.861Z",
+      "content_hash": "a1734e88",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification: proper subject framing with module names and 'when' clauses, exactly one assertion per test block using appropriate matchers, and focus on functionality through the public API without implementation details or mocking."
+        "reason": "The test file satisfies all criteria in the specification: proper subject framing with module name and 'when' clauses, one assertion per test block, and focuses on functionality through the public API without implementation details."
       }
     }
   }
