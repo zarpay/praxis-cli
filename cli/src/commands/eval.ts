@@ -9,7 +9,7 @@ import chalk from "chalk";
 import { PraxisConfig } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
-import { Logger } from "@/core/logger.js";
+import { Display, Logger } from "@/core/logger.js";
 import { Paths, resolvePath } from "@/core/paths.js";
 import { BatchJudge } from "@/eval/batch-judge.js";
 import { CacheManager } from "@/eval/cache-manager.js";
@@ -206,6 +206,7 @@ function makeCommand(): EvalCommand {
  * problems are thrown as PraxisError.
  */
 export class EvalCommand {
+  private readonly out = new Display();
   private readonly root: string;
   private readonly config: PraxisConfig;
 
@@ -256,7 +257,7 @@ export class EvalCommand {
   async document(path: string, options: DocumentOptions): Promise<Verdict> {
     const judges = this.requireJudges(options.judge);
 
-    console.log(`Validating ${path}...`);
+    this.out.line(`Validating ${path}...`);
 
     let worst: Verdict | null = null;
 
@@ -306,27 +307,24 @@ export class EvalCommand {
     });
 
     if (options.type) {
-      console.log(`Validating all ${options.type} documents...`);
+      this.out.line(`Validating all ${options.type} documents...`);
       await batch.validateType(options.type);
     } else {
-      console.log("Validating all documents...");
+      this.out.line("Validating all documents...");
       await batch.validateAll();
     }
 
     if (batch.stopped) {
-      console.log();
-      console.log(chalk.yellow("[STOPPED]") + " Validation stopped early due to --fail-fast");
+      this.out.line();
+      this.out.badge("yellow", "STOPPED", "Validation stopped early due to --fail-fast");
     }
 
     const summary = batch.summary();
     this.displaySummary(summary);
 
     if (options.cache) {
-      console.log();
-      console.log(
-        chalk.blue("[CACHE]") +
-          ` Hits: ${batch.cacheStats.hits}, Misses: ${batch.cacheStats.misses}`,
-      );
+      this.out.line();
+      this.out.badge("blue", "CACHE", `Hits: ${batch.cacheStats.hits}, Misses: ${batch.cacheStats.misses}`);
     }
 
     return summary;
@@ -349,7 +347,7 @@ export class EvalCommand {
       specFilePattern: this.config.specFilePattern,
     });
 
-    console.log("Running CI validation...");
+    this.out.line("Running CI validation...");
     await batch.validateAll();
 
     const summary = batch.summary();
@@ -387,11 +385,11 @@ export class EvalCommand {
       const manager = new CacheManager({ projectRoot: this.root, judge: cacheIdentity(judge) });
 
       if (judges.length > 1) {
-        console.log(`\n${chalk.cyan(`Judge: ${judge.name}`)}`);
+        this.out.lines(["", ["cyan", `Judge: ${judge.name}`]]);
       }
 
       const cacheData = manager.readRaw({ targetPath: absolutePath });
-      reporter.display(reporter.build(absolutePath, cacheData), options.verbose);
+      reporter.render(reporter.build(absolutePath, cacheData), options.verbose);
     }
   }
 
@@ -439,55 +437,52 @@ export class EvalCommand {
   /** Prints a single validation result with colored status. */
   private displayResult(path: string, result: Verdict, verbose: boolean): void {
     if (result.compliant) {
-      console.log(`${chalk.green("[PASS]")} ${path}`);
-    } else if (result.severity === "warning") {
-      console.log(`${chalk.yellow("[WARN]")} ${path}`);
-      result.issues.forEach((issue) => console.log(`  - ${issue}`));
+      this.out.badge("green", "PASS", path);
     } else {
-      console.log(`${chalk.red("[FAIL]")} ${path}`);
-      result.issues.forEach((issue) => console.log(`  - ${issue}`));
+      const warning = result.severity === "warning";
+      this.out.badge(warning ? "yellow" : "red", warning ? "WARN" : "FAIL", path);
+      this.out.lines(result.issues.map((issue) => `  - ${issue}`));
     }
 
     if (verbose) {
-      console.log(`\nReasoning:\n${result.reason}`);
+      this.out.lines(["", "Reasoning:", result.reason]);
     }
   }
 
   /** Prints the aggregated validation summary. */
   private displaySummary(summary: EvalSummary): void {
-    console.log();
-    console.log("=".repeat(50));
-    console.log("Summary");
-    console.log("=".repeat(50));
-    console.log(`Total documents: ${summary.total}`);
-    console.log(`${chalk.green("[Compliant]")} ${summary.compliant}`);
-    console.log(`${chalk.yellow("[Warnings]")} ${summary.warnings}`);
-    console.log(`${chalk.red("[Errors]")} ${summary.errors}`);
+    this.out.line();
+    this.out.header("Summary");
+    this.out.line(`Total documents: ${summary.total}`);
+    this.out.badge("green", "Compliant", String(summary.compliant));
+    this.out.badge("yellow", "Warnings", String(summary.warnings));
+    this.out.badge("red", "Errors", String(summary.errors));
 
     if (summary.notValidated > 0) {
-      console.log(`${chalk.gray("[Not Validated]")} ${summary.notValidated} (no spec found)`);
+      this.out.badge("gray", "Not Validated", `${summary.notValidated} (no spec found)`);
     }
 
-    console.log();
-    console.log("By type:");
-    for (const [type, stats] of Object.entries(summary.byType)) {
-      console.log(`  ${type}: ${stats.compliant}/${stats.total} compliant`);
-    }
+    this.out.lines([
+      "",
+      "By type:",
+      ...Object.entries(summary.byType).map(
+        ([type, stats]) => `  ${type}: ${stats.compliant}/${stats.total} compliant`,
+      ),
+    ]);
 
     // Judges are separate instruments — with more than one, their
     // series render separately and are never pooled into one number.
     const judgeNames = Object.keys(summary.byJudge);
 
     if (judgeNames.length > 1) {
-      console.log();
-      console.log("By judge:");
-
-      for (const name of judgeNames) {
-        const stats = summary.byJudge[name];
-        console.log(
-          `  ${name}: ${chalk.green(String(stats.compliant))} pass, ${chalk.yellow(String(stats.warnings))} warn, ${chalk.red(String(stats.errors))} fail`,
-        );
-      }
+      this.out.lines([
+        "",
+        "By judge:",
+        ...judgeNames.map((name) => {
+          const stats = summary.byJudge[name];
+          return `  ${name}: ${chalk.green(String(stats.compliant))} pass, ${chalk.yellow(String(stats.warnings))} warn, ${chalk.red(String(stats.errors))} fail`;
+        }),
+      ]);
     }
   }
 }

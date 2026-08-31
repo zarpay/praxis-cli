@@ -9,7 +9,7 @@ import {
   readText,
   writeText,
 } from "@/core/files.js";
-import { Logger } from "@/core/logger.js";
+import { Display, Logger } from "@/core/logger.js";
 import { SCAFFOLD_DIR, joinPath, relativePath, resolvePath } from "@/core/paths.js";
 
 /**
@@ -48,6 +48,7 @@ export function registerInitCommand(program: Command): void {
 export class InitCommand {
   private readonly targetDir: string;
   private readonly scaffoldDir: string;
+  private readonly out = new Display();
   private readonly logger: Logger;
 
   constructor({
@@ -105,14 +106,16 @@ export class InitCommand {
       skipped += pluginResult.skipped;
     }
 
-    console.log();
+    this.out.line();
     this.logger.info(`Initialized Praxis project: ${created} files created, ${skipped} skipped`);
-    console.log();
-    console.log("Next steps:");
-    console.log("  1. Edit context/constitution/ to define your organization's identity");
-    console.log("  2. Edit context/conventions/ to document your standards");
-    console.log("  3. Run `praxis compile` to generate agent files");
-    console.log("  4. Define new roles in roles/ as your organization grows");
+    this.out.lines([
+      "",
+      "Next steps:",
+      "  1. Edit context/constitution/ to define your organization's identity",
+      "  2. Edit context/conventions/ to document your standards",
+      "  3. Run `praxis compile` to generate agent files",
+      "  4. Define new roles in roles/ as your organization grows",
+    ]);
   }
 
   /**

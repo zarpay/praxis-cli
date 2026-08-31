@@ -8,6 +8,7 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
 import { Frontmatter } from "@/core/frontmatter.js";
+import { Display } from "@/core/logger.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { CacheManager } from "@/eval/cache-manager.js";
@@ -126,6 +127,8 @@ export class BatchJudge {
   readonly failFast: boolean;
   /** Cache hit/miss counts accumulated across the run. */
   readonly cacheStats: { hits: number; misses: number };
+
+  private readonly out = new Display();
 
   private readonly useCache: boolean;
   private readonly judges: JudgeConfig[];
@@ -519,7 +522,7 @@ export class BatchJudge {
     const judgeLabel =
       this.judges.length > 1 ? ` ${chalk.cyan(`[judge: ${judgeConfig.name}]`)}` : "";
 
-    console.log(`\n${counter} ${chalk.bold(baseName(unit.path))}${cohortLabel}${judgeLabel}`);
+    this.out.lines(["", `${counter} ${chalk.bold(baseName(unit.path))}${cohortLabel}${judgeLabel}`]);
 
     try {
       const judge = new Judge({
@@ -551,19 +554,21 @@ export class BatchJudge {
       };
 
       if (result.compliant) {
-        console.log(`\t${chalk.green("✓ PASS")}`);
-      } else if (result.severity === "warning") {
-        console.log(`\t${chalk.yellow("⚠ WARN")}`);
-        result.issues.forEach((issue) => console.log(`\t${chalk.dim("·")} ${issue}`));
+        this.out.line(`\t${chalk.green("✓ PASS")}`);
       } else {
-        console.log(`\t${chalk.red("✗ FAIL")}`);
-        result.issues.forEach((issue) => console.log(`\t${chalk.dim("·")} ${issue}`));
+        const warning = result.severity === "warning";
+        this.out.lines([
+          `\t${warning ? chalk.yellow("⚠ WARN") : chalk.red("✗ FAIL")}`,
+          ...result.issues.map((issue) => `\t${chalk.dim("·")} ${issue}`),
+        ]);
       }
 
       this.results.push(batchResult);
     } catch (err) {
-      console.log(`\t${chalk.red("✗ ERROR")}`);
-      console.log(`\t${chalk.dim("·")} ${(err as Error).message}`);
+      this.out.lines([
+        `\t${chalk.red("✗ ERROR")}`,
+        `\t${chalk.dim("·")} ${(err as Error).message}`,
+      ]);
       this.results.push({
         path: unit.path,
         type,

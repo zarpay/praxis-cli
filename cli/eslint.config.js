@@ -193,6 +193,16 @@ export default tseslint.config(
     },
   },
   {
+    // All terminal output goes through the logger module: Display for
+    // stdout reports, Logger for stderr diagnostics. Raw console calls
+    // are allowed only inside that module.
+    files: ["src/**/*.ts"],
+    ignores: ["src/core/logger.ts"],
+    rules: {
+      "no-console": "error",
+    },
+  },
+  {
     // The config file itself is plain JS and outside the tsconfig project.
     files: ["eslint.config.js"],
     extends: [tseslint.configs.disableTypeChecked],

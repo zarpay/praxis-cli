@@ -1,12 +1,11 @@
 import type { Command } from "commander";
 
-import chalk from "chalk";
 import fg from "fast-glob";
 
 import { PraxisConfig } from "@/core/config.js";
 import { exists } from "@/core/files.js";
 import { Frontmatter } from "@/core/frontmatter.js";
-import { Logger } from "@/core/logger.js";
+import { Display, Logger } from "@/core/logger.js";
 import { Paths, baseName, joinPath, relativePath, resolvePath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { BatchJudge } from "@/eval/batch-judge.js";
@@ -85,6 +84,7 @@ export function registerStatusCommand(program: Command): void {
 export class StatusCommand {
   private readonly root: string;
   private readonly config: PraxisConfig;
+  private readonly out = new Display();
   private readonly logger: Logger;
   private readonly specFilePattern: string;
   private readonly globExpander: GlobExpander;
@@ -228,11 +228,13 @@ export class StatusCommand {
   /** Displays the status report to the console. */
   display(report: StatusReport): void {
     this.logger.info("Praxis Project Status");
-    console.log();
-    console.log(`  Experts:            ${report.counts.experts}`);
-    console.log(`  Practices:          ${report.counts.practices}`);
-    console.log(`  References:         ${report.counts.references}`);
-    console.log(`  Context files:      ${report.counts.context}`);
+    this.out.lines([
+      "",
+      `  Experts:            ${report.counts.experts}`,
+      `  Practices:          ${report.counts.practices}`,
+      `  References:         ${report.counts.references}`,
+      `  Context files:      ${report.counts.context}`,
+    ]);
 
     // Validation summary — one block per judge, never pooled
     for (const v of report.validation) {
@@ -240,62 +242,43 @@ export class StatusCommand {
 
       if (totalDocs === 0) continue;
 
-      console.log();
+      this.out.line();
       this.logger.info(`Validation (judge: ${v.judge})`);
-      console.log(`  ${chalk.green("[PASS]")} ${v.pass}`);
-      console.log(`  ${chalk.yellow("[WARN]")} ${v.warn}`);
-      console.log(`  ${chalk.red("[FAIL]")} ${v.fail}`);
-      console.log(`  ${chalk.gray("[NOT VALIDATED]")} ${v.notValidated}`);
+      this.out.badge("green", "PASS", String(v.pass), { indent: 2 });
+      this.out.badge("yellow", "WARN", String(v.warn), { indent: 2 });
+      this.out.badge("red", "FAIL", String(v.fail), { indent: 2 });
+      this.out.badge("gray", "NOT VALIDATED", String(v.notValidated), { indent: 2 });
     }
+
+    const issueBlocks: [heading: string, items: string[]][] = [
+      [
+        "Dangling references (file not found):",
+        report.danglingRefs.map(({ expert, ref }) => `${expert} → ${ref}`),
+      ],
+      ["Orphaned practices (not referenced by any expert):", report.orphanedPractices],
+      ["Experts missing description:", report.expertsMissingDescription],
+      [
+        "Glob patterns matching zero files:",
+        report.zeroMatchGlobs.map(({ expert, pattern }) => `${expert}: ${pattern}`),
+      ],
+      [
+        "Practices with unknown owners:",
+        report.unmatchedOwners.map(({ practice, owner }) => `${practice} (owner: ${owner})`),
+      ],
+    ];
 
     let issueCount = 0;
 
-    if (report.danglingRefs.length > 0) {
-      console.log();
-      this.logger.warn("Dangling references (file not found):");
-      for (const { expert, ref } of report.danglingRefs) {
-        console.log(`  ${expert} → ${ref}`);
-        issueCount++;
-      }
+    for (const [heading, items] of issueBlocks) {
+      if (items.length === 0) continue;
+
+      this.out.line();
+      this.logger.warn(heading);
+      this.out.lines(items.map((item) => `  ${item}`));
+      issueCount += items.length;
     }
 
-    if (report.orphanedPractices.length > 0) {
-      console.log();
-      this.logger.warn("Orphaned practices (not referenced by any expert):");
-      for (const resp of report.orphanedPractices) {
-        console.log(`  ${resp}`);
-        issueCount++;
-      }
-    }
-
-    if (report.expertsMissingDescription.length > 0) {
-      console.log();
-      this.logger.warn("Experts missing description:");
-      for (const role of report.expertsMissingDescription) {
-        console.log(`  ${role}`);
-        issueCount++;
-      }
-    }
-
-    if (report.zeroMatchGlobs.length > 0) {
-      console.log();
-      this.logger.warn("Glob patterns matching zero files:");
-      for (const { expert, pattern } of report.zeroMatchGlobs) {
-        console.log(`  ${expert}: ${pattern}`);
-        issueCount++;
-      }
-    }
-
-    if (report.unmatchedOwners.length > 0) {
-      console.log();
-      this.logger.warn("Practices with unknown owners:");
-      for (const { practice, owner } of report.unmatchedOwners) {
-        console.log(`  ${practice} (owner: ${owner})`);
-        issueCount++;
-      }
-    }
-
-    console.log();
+    this.out.line();
 
     if (issueCount === 0) {
       this.logger.success("No issues found");

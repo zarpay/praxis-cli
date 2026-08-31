@@ -5,6 +5,7 @@ import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, readText } from "@/core/files.js";
+import { Display } from "@/core/logger.js";
 import { joinPath, parentDir } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
 import { contentHash } from "@/eval/cache-manager.js";
@@ -35,10 +36,11 @@ const DIVIDER_WIDTH = 50;
  *
  * Two public methods, kept deliberately separate (07, presentation
  * idiom): build() derives pure structured data — recomputing the
- * target's current content hash to detect staleness — and display()
- * renders a report for the terminal.
+ * target's current content hash to detect staleness — and render()
+ * displays a report on the terminal.
  */
 export class VerdictReporter {
+  private readonly out = new Display();
   private readonly specFilePattern: string;
   /** Project root the spec's assist-input globs resolve against. */
   private readonly root?: string;
@@ -88,78 +90,58 @@ export class VerdictReporter {
   }
 
   /** Renders a report to stdout. */
-  display(report: VerdictReport, verbose: boolean): void {
-    console.log();
-    console.log("=".repeat(DIVIDER_WIDTH));
-    console.log("Validation Report");
-    console.log("=".repeat(DIVIDER_WIDTH));
+  render(report: VerdictReport, verbose: boolean): void {
+    const { cacheData } = report;
 
-    // Target info
-    console.log();
-    console.log(`  Document:  ${report.targetPath}`);
+    this.out.line();
+    this.out.header("Validation Report", { width: DIVIDER_WIDTH });
 
-    if (report.cacheData) {
-      console.log(`  Type:      ${report.cacheData.document.type}`);
-      console.log(`  Spec:      ${report.cacheData.document.spec_path}`);
-      console.log(`  Validated: ${this.formatDate(report.cacheData.cached_at)}`);
+    this.out.lines([
+      "",
+      `  Document:  ${report.targetPath}`,
+      cacheData && `  Type:      ${cacheData.document.type}`,
+      cacheData && `  Spec:      ${cacheData.document.spec_path}`,
+      cacheData && `  Validated: ${this.formatDate(cacheData.cached_at)}`,
+      "",
+      `  Status:    ${this.statusBadge(report.status)}`,
+    ]);
+
+    if (report.isStale && cacheData) {
+      this.out.lines([
+        "",
+        ["yellow", "  ! Document has changed since last validation"],
+        ["yellow", "    Run `praxis eval run <target>` to re-validate"],
+        "",
+        `  Last result: ${this.lastResultSummary(cacheData.result)}`,
+      ]);
     }
 
-    // Status badge
-    console.log();
-    console.log(`  Status:    ${this.statusBadge(report.status)}`);
-
-    // Staleness warning
-    if (report.isStale && report.cacheData) {
-      console.log();
-      console.log(chalk.yellow("  ! Document has changed since last validation"));
-      console.log(chalk.yellow("    Run `praxis eval run <target>` to re-validate"));
-
-      // Show the underlying cached result for context
-      const cachedStatus = report.cacheData.result.compliant
-        ? "PASS"
-        : report.cacheData.result.severity === "warning"
-          ? "WARN"
-          : "FAIL";
-      const issueCount = report.cacheData.result.issues.length;
-      console.log();
-      console.log(
-        `  Last result: [${cachedStatus}]${issueCount > 0 ? ` (${issueCount} issue${issueCount === 1 ? "" : "s"})` : ""}`,
-      );
+    if (cacheData && !cacheData.result.compliant && cacheData.result.issues.length > 0) {
+      this.out.lines(["", "  Issues:", ...cacheData.result.issues.map((i) => `    - ${i}`)]);
     }
 
-    // Issues
-    if (
-      report.cacheData &&
-      !report.cacheData.result.compliant &&
-      report.cacheData.result.issues.length > 0
-    ) {
-      console.log();
-      console.log("  Issues:");
-
-      for (const issue of report.cacheData.result.issues) {
-        console.log(`    - ${issue}`);
-      }
-    }
-
-    // Not validated guidance
     if (report.status === "not_validated") {
-      console.log();
-      console.log(
+      this.out.lines([
+        "",
         `  Run ${chalk.cyan("`praxis eval run " + report.targetPath + "`")} to validate.`,
-      );
+      ]);
     }
 
-    // Verbose: full AI reasoning
-    if (verbose && report.cacheData) {
-      console.log();
-      console.log("-".repeat(DIVIDER_WIDTH));
-      console.log("AI Reasoning:");
-      console.log("-".repeat(DIVIDER_WIDTH));
-      console.log(report.cacheData.result.reason);
+    if (verbose && cacheData) {
+      this.out.line();
+      this.out.header("AI Reasoning:", { char: "-", width: DIVIDER_WIDTH });
+      this.out.line(cacheData.result.reason);
     }
 
-    console.log();
-    console.log("=".repeat(DIVIDER_WIDTH));
+    this.out.lines(["", "=".repeat(DIVIDER_WIDTH)]);
+  }
+
+  /** Summarizes a cached verdict as `[STATUS] (n issues)` for the staleness block. */
+  private lastResultSummary(result: CacheFileData["result"]): string {
+    const status = result.compliant ? "PASS" : result.severity === "warning" ? "WARN" : "FAIL";
+    const count = result.issues.length;
+
+    return `[${status}]${count > 0 ? ` (${count} issue${count === 1 ? "" : "s"})` : ""}`;
   }
 
   /**

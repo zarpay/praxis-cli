@@ -158,7 +158,7 @@ describe("VerdictReporter", () => {
     });
   });
 
-  describe("display()", () => {
+  describe("render()", () => {
     let consoleSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
@@ -174,19 +174,19 @@ describe("VerdictReporter", () => {
     }
 
     it("displays the not_validated state with run guidance", () => {
-      reporter.display(reporter.build(targetPath, null), false);
+      reporter.render(reporter.build(targetPath, null), false);
 
       expect(output()).toContain("NOT VALIDATED");
     });
 
     it("names the eval command in the guidance, not the removed v1 verb", () => {
-      reporter.display(reporter.build(targetPath, null), false);
+      reporter.render(reporter.build(targetPath, null), false);
 
       expect(output()).toContain("praxis eval run");
     });
 
     it("displays the pass state with the target's type and spec", () => {
-      reporter.display(reporter.build(targetPath, freshCacheData()), false);
+      reporter.render(reporter.build(targetPath, freshCacheData()), false);
 
       expect(output()).toContain("Document is compliant");
     });
@@ -198,7 +198,7 @@ describe("VerdictReporter", () => {
         severity: "error",
       });
 
-      reporter.display(reporter.build(targetPath, cacheData), false);
+      reporter.render(reporter.build(targetPath, cacheData), false);
 
       expect(output()).toContain("Missing owner field");
     });
@@ -206,19 +206,19 @@ describe("VerdictReporter", () => {
     it("displays the staleness warning when the target changed", () => {
       writeFileSync(targetPath, "# Guide\nEdited since the verdict.");
 
-      reporter.display(reporter.build(targetPath, freshCacheData()), false);
+      reporter.render(reporter.build(targetPath, freshCacheData()), false);
 
       expect(output()).toContain("Document has changed since last validation");
     });
 
     it("shows the AI reasoning only when verbose", () => {
-      reporter.display(reporter.build(targetPath, freshCacheData()), true);
+      reporter.render(reporter.build(targetPath, freshCacheData()), true);
 
       expect(output()).toContain("AI Reasoning:");
     });
 
     it("hides the AI reasoning when not verbose", () => {
-      reporter.display(reporter.build(targetPath, freshCacheData()), false);
+      reporter.render(reporter.build(targetPath, freshCacheData()), false);
 
       expect(output()).not.toContain("AI Reasoning:");
     });

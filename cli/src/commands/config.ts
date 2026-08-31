@@ -4,7 +4,7 @@ import chalk from "chalk";
 import { spawnSync } from "node:child_process";
 
 import { readJson } from "@/core/files.js";
-import { Logger } from "@/core/logger.js";
+import { Display, Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 
 /** Horizontal rule used in the config header output. */
@@ -58,6 +58,7 @@ function makeCommand(): ConfigCommand {
  * edit() opens it in the user's preferred editor.
  */
 export class ConfigCommand {
+  private readonly out = new Display();
   private readonly configPath: string;
 
   constructor({ configPath }: { configPath: string }) {
@@ -68,13 +69,15 @@ export class ConfigCommand {
   show(): void {
     const parsed = readJson(this.configPath);
 
-    console.log();
-    console.log("  " + chalk.bold("Praxis Config"));
-    console.log("  " + DIVIDER);
-    console.log("  " + chalk.dim(this.configPath));
-    console.log();
-    console.log(JSON.stringify(parsed, null, 2));
-    console.log();
+    this.out.lines([
+      "",
+      "  " + chalk.bold("Praxis Config"),
+      "  " + DIVIDER,
+      "  " + chalk.dim(this.configPath),
+      "",
+      JSON.stringify(parsed, null, 2),
+      "",
+    ]);
   }
 
   /**

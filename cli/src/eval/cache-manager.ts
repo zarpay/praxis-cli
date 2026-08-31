@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, fileSize, readText, removeFile, writeText } from "@/core/files.js";
+import { Logger } from "@/core/logger.js";
 import { baseName, joinPath, parentDir, validationCacheDir } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 
@@ -103,6 +104,7 @@ export interface CacheJudgeIdentity {
 export class CacheManager {
   /** Directory all cache files live under (default: {root}/.praxis/cache/validation). */
   readonly cacheRoot: string;
+  private readonly logger = new Logger();
   private readonly projectRoot: string | null;
   private readonly judge: CacheJudgeIdentity | null;
 
@@ -211,7 +213,7 @@ export class CacheManager {
       }
 
       if (process.env["DEBUG"]) {
-        console.warn(`Warning: Failed to write cache file (${(err as Error).message})`);
+        this.logger.warn(`Failed to write cache file (${(err as Error).message})`);
       }
     }
   }
@@ -257,9 +259,7 @@ export class CacheManager {
       }
 
       if (process.env["DEBUG"]) {
-        console.warn(
-          `Warning: Removed corrupt cache file ${cachePath} (${(err as Error).message})`,
-        );
+        this.logger.warn(`Removed corrupt cache file ${cachePath} (${(err as Error).message})`);
       }
 
       return null;
