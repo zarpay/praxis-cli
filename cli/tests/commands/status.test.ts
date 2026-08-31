@@ -160,4 +160,53 @@ describe("StatusCommand", () => {
     expect(report.expertsMissingDescription).toEqual([]);
     expect(report.zeroMatchGlobs).toEqual([]);
   });
+
+  describe("layer split", () => {
+    it("marks the compiler in use when the experts directory exists", async () => {
+      const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+
+      expect(report.compilerInUse).toBe(true);
+    });
+
+    it("skips framework health entirely for an eval-only project", async () => {
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/README.md": "# Spec",
+          "docs/guide.md": "# Guide",
+          // An orphaned-looking practice that must NOT be reported:
+          // framework health is off when no experts directory exists.
+          "docs/stray-practice.md": "---\nowner: nobody\n---\n# Stray",
+        },
+      });
+
+      const report = await new StatusCommand({ root }).analyze();
+
+      expect(report.compilerInUse).toBe(false);
+      expect(report.counts).toEqual({ experts: 0, practices: 0, references: 0, context: 0 });
+      expect(report.unmatchedOwners).toEqual([]);
+      expect(report.orphanedPractices).toEqual([]);
+      expect(StatusCommand.hasIssues(report)).toBe(false);
+
+      cleanup();
+    });
+
+    it("still tallies validation state for an eval-only project", async () => {
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/README.md": "# Spec",
+          "docs/guide.md": "# Guide",
+        },
+        judges: [{ name: "test", model: "test-model", apiKeyEnvVar: "OPENROUTER_API_KEY" }],
+      });
+
+      const report = await new StatusCommand({ root }).analyze();
+
+      expect(report.validation).toHaveLength(1);
+      expect(report.validation[0]).toMatchObject({ judge: "test", notValidated: 1 });
+
+      cleanup();
+    });
+  });
 });

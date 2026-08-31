@@ -57,11 +57,11 @@ describe("InitCommand", () => {
     expect(existsSync(dir)).toBe(true);
   });
 
-  it("writes all core scaffold files", () => {
+  it("writes all spec-layer scaffold files with --spec-layer", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger, specLayer: true }).init();
 
     const coreDir = join(SCAFFOLD_DIR, "core");
     for (const relPath of walkDir(coreDir)) {
@@ -70,11 +70,11 @@ describe("InitCommand", () => {
     }
   });
 
-  it("writes correct content for each core scaffold file", () => {
+  it("writes correct content for each spec-layer scaffold file", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger, specLayer: true }).init();
 
     const coreDir = join(SCAFFOLD_DIR, "core");
     for (const relPath of walkDir(coreDir)) {
@@ -84,11 +84,11 @@ describe("InitCommand", () => {
     }
   });
 
-  it("scaffolds .praxis/config.json", () => {
+  it("scaffolds the full taxonomy config with --spec-layer", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger, specLayer: true }).init();
 
     const configPath = join(dir, ".praxis", "config.json");
     expect(existsSync(configPath)).toBe(true);
@@ -108,6 +108,34 @@ describe("InitCommand", () => {
     expect(config.judges).toEqual([
       { name: "default", model: "x-ai/grok-4.1-fast", apiKeyEnvVar: "OPENROUTER_API_KEY" },
     ]);
+  });
+
+  it("scaffolds only the eval-layer .praxis tree by default", () => {
+    const dir = makeTmpdir();
+    dirs.push(dir);
+
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
+
+    expect(walkDir(dir)).toEqual([join(".praxis", "config.json")]);
+  });
+
+  it("default eval-layer config declares judges and empty sources", () => {
+    const dir = makeTmpdir();
+    dirs.push(dir);
+
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
+
+    const config = readJsonFile<{
+      sources: string[];
+      specFilePattern: string;
+      judges: { name: string }[];
+      expertsDir?: string;
+    }>(join(dir, ".praxis", "config.json"));
+    expect(config.sources).toEqual([]);
+    expect(config.specFilePattern).toBe("README.md");
+    expect(config.judges).toHaveLength(1);
+    // No taxonomy keys: the spec layer is opt-in.
+    expect(config.expertsDir).toBeUndefined();
   });
 
   it("does not scaffold Claude Code files by default", () => {
@@ -189,29 +217,28 @@ describe("InitCommand", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    // Pre-create the README with custom content
-    mkdirSync(dir, { recursive: true });
-    const readmePath = join(dir, "README.md");
-    writeFileSync(readmePath, "# My Custom README\n");
+    // Pre-create the config with custom content
+    mkdirSync(join(dir, ".praxis"), { recursive: true });
+    const configPath = join(dir, ".praxis", "config.json");
+    writeFileSync(configPath, '{ "sources": ["docs"] }');
 
     new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
 
     // Verify our custom content was preserved, not overwritten
-    const content = readFileSync(readmePath, "utf-8");
-    expect(content).toBe("# My Custom README\n");
+    expect(readFileSync(configPath, "utf-8")).toBe('{ "sources": ["docs"] }');
   });
 
   it("is idempotent — second run skips all files", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger, specLayer: true }).init();
 
     // Modify one file to verify it's not overwritten
     const readmePath = join(dir, "README.md");
     writeFileSync(readmePath, "modified");
 
-    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger, specLayer: true }).init();
 
     const content = readFileSync(readmePath, "utf-8");
     expect(content).toBe("modified");
@@ -226,7 +253,7 @@ describe("InitCommand", () => {
     writeFileSync(join(dir, "src", "app.ts"), "console.log('hello');\n");
     writeFileSync(join(dir, "package.json"), '{ "name": "my-app" }\n');
 
-    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger, specLayer: true }).init();
 
     // Scaffold files exist
     expect(existsSync(join(dir, "experts", "README.md"))).toBe(true);
@@ -236,11 +263,11 @@ describe("InitCommand", () => {
     expect(readFileSync(join(dir, "package.json"), "utf-8")).toBe('{ "name": "my-app" }\n');
   });
 
-  it("creates all expected core directories", () => {
+  it("creates all expected spec-layer directories with --spec-layer", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger, specLayer: true }).init();
 
     const expectedDirs = [
       "context/constitution",

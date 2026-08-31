@@ -17,6 +17,12 @@ import { GlobExpander } from "@/spec/glob-expander.js";
 
 /** Structured report of project health. */
 export interface StatusReport {
+  /**
+   * Whether the spec-layer compiler is in use (the experts directory
+   * exists). Framework health only surfaces when it is (11): eval-only
+   * projects are never asked about a taxonomy they don't have.
+   */
+  compilerInUse: boolean;
   /** Document counts by content type. */
   counts: {
     experts: number;
@@ -108,6 +114,21 @@ export class StatusCommand extends PraxisProjectBase {
 
   /** Analyzes the project and returns a structured health report. */
   async analyze(): Promise<StatusReport> {
+    // Framework health only applies when the spec-layer compiler is in
+    // use; eval-only projects get validation state and nothing else.
+    if (!exists(this.config.expertsDir)) {
+      return {
+        compilerInUse: false,
+        counts: { experts: 0, practices: 0, references: 0, context: 0 },
+        validation: this.tallyValidation(),
+        orphanedPractices: [],
+        danglingRefs: [],
+        expertsMissingDescription: [],
+        zeroMatchGlobs: [],
+        unmatchedOwners: [],
+      };
+    }
+
     // Count content files by type using config-driven paths
     const expertFiles = await this.listContentFiles(this.config.expertsDir, false);
     const practiceFiles = await this.listContentFiles(this.config.practicesDir, false);
@@ -198,6 +219,7 @@ export class StatusCommand extends PraxisProjectBase {
     }
 
     return {
+      compilerInUse: true,
       counts: {
         experts: expertFiles.length,
         practices: practiceFiles.length,
@@ -213,16 +235,19 @@ export class StatusCommand extends PraxisProjectBase {
     };
   }
 
-  /** Displays the status report to the console. */
+  /** Displays the status report: eval state always, framework health only when the compiler is in use. */
   display(report: StatusReport): void {
     this.logger.info("Praxis Project Status");
-    this.out.print([
-      "",
-      `  Experts:            ${report.counts.experts}`,
-      `  Practices:          ${report.counts.practices}`,
-      `  References:         ${report.counts.references}`,
-      `  Context files:      ${report.counts.context}`,
-    ]);
+
+    if (report.compilerInUse) {
+      this.out.print([
+        "",
+        `  Experts:            ${report.counts.experts}`,
+        `  Practices:          ${report.counts.practices}`,
+        `  References:         ${report.counts.references}`,
+        `  Context files:      ${report.counts.context}`,
+      ]);
+    }
 
     // Validation summary — one block per judge, never pooled
     for (const v of report.validation) {
@@ -239,6 +264,8 @@ export class StatusCommand extends PraxisProjectBase {
         { badge: "NOT VALIDATED", color: "gray", value: v.notValidated, indent: 2 },
       ]);
     }
+
+    if (!report.compilerInUse) return;
 
     const issueBlocks: [heading: string, items: string[]][] = [
       [

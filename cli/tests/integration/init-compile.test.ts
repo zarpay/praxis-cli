@@ -28,7 +28,7 @@ describe("init → compile integration", () => {
     dir = join(tmpdir(), `praxis-integration-${randomUUID()}`);
 
     // Scaffold the project (creates .praxis/ which Paths uses for root detection)
-    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger }).init();
+    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger, specLayer: true }).init();
 
     // Enable claude-code plugin in config
     writeFileSync(
