@@ -21,9 +21,9 @@ import {
   assistHashInput,
   resolveAssistInputs,
 } from "@/eval/judgment-input.js";
-import judgeTools from "@/eval/prompts/judge-tools.js";
-import systemPrompt from "@/eval/prompts/system-prompt.js";
-import validationQuestion from "@/eval/prompts/validation-question.js";
+import judgeTools from "@/prompts/judge-tools.js";
+import systemPrompt from "@/prompts/system-prompt.js";
+import validationQuestion from "@/prompts/validation-question.js";
 
 /** Known target types within the Praxis content structure. */
 export type TargetType =

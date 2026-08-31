@@ -1,11 +1,11 @@
-import type { AssistFile } from "@/eval/judgment-input.js";
+import type { PromptFile } from "@/prompts/prompt-file.js";
 
-import judgeTools from "@/eval/prompts/judge-tools.js";
-import systemPrompt from "@/eval/prompts/system-prompt.js";
-import validationQuestion from "@/eval/prompts/validation-question.js";
+import judgeTools from "@/prompts/judge-tools.js";
+import systemPrompt from "@/prompts/system-prompt.js";
+import validationQuestion from "@/prompts/validation-question.js";
 
 /** Sentinel assist file so the section templates render deterministically. */
-const SENTINEL_FILE: AssistFile = { path: "«path»", content: "«content»" };
+const SENTINEL_FILE: PromptFile = { path: "«path»", content: "«content»" };
 
 /** Sentinel inputs for the question template, one per variant. */
 const SENTINEL_INPUT = {

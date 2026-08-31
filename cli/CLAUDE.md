@@ -23,6 +23,7 @@ Praxis is two layers (see `praxis_v2_specs/11-spec-layer.md`), and `src/` mirror
 - **`src/spec/`** — the spec layer: compiles experts, practices, and context into self-contained SME agent profiles. Owns the content taxonomy.
 - **`src/eval/`** — the eval layer: judges targets against specs, caches verdicts, and (as v2 lands) writes the ledger. Taxonomy-free.
 - **`src/core/`** — shared primitives both layers use: config, errors, files, paths, logger, frontmatter, spec-pattern.
+- **`src/prompts/`** — every LLM/agent-facing prompt, one per file as a typed default-export function. A shared leaf like core: both layers import it, it imports neither (ESLint-enforced).
 - **`src/commands/`** — CLI wiring; the only place the two layers meet.
 
 **The layers never import each other** (ESLint-enforced): the spec layer produces files the eval layer consumes as plain specs.
@@ -58,7 +59,7 @@ Spec discovered (specFilePattern match, frontmatter read)
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never judged), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
-Key files: `src/eval/judge.ts`, `src/eval/prompts/` (one prompt per file), `src/eval/judgment-input.ts`, `src/eval/cache-manager.ts`, `src/eval/batch-judge.ts`, `src/eval/verdict-reporter.ts`, `src/eval/judge-hash.ts`.
+Key files: `src/eval/judge.ts`, `src/prompts/` (one prompt per file), `src/eval/judgment-input.ts`, `src/eval/cache-manager.ts`, `src/eval/batch-judge.ts`, `src/eval/verdict-reporter.ts`, `src/eval/judge-hash.ts`.
 
 ### Project Root Detection
 
@@ -92,6 +93,6 @@ Plugins implement `CompilerPlugin` interface (`src/spec/plugins/types.ts`): `nam
 - **Excluded from compilation:** Files named `_template.md` or `README.md`
 - **File/path operations:** import from `@/core/files.js` (I/O: readText, writeText, exists, ...) and `@/core/paths.js` (composition: joinPath, baseName, ...; well-known locations: configFile, SCAFFOLD_DIR, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced).
 - **Construct at invocation time, not import time:** module tops hold definitions, not work. `new Paths()` (and anything touching cwd or the filesystem) belongs in the command wiring helpers (`makeCommand()`), executed at action dispatch — never as a module-level instance or exported singleton (decided 2026-08-31: import-time cwd capture, test isolation, and `praxis init` running before `.praxis/` exists).
-- **Prompts:** every LLM/agent-facing prompt lives in a `prompts/` directory (`src/eval/prompts/` for the judge, `src/spec/plugins/prompts/` for plugin-written agent content), one prompt per file, as that file's default-export function — typed parameters wherever the prompt templates. No prompt text inline anywhere else. The judge hash covers the complete judge-facing surface via `src/eval/prompts/prompt-surface.ts`; rewording any of it is a judge-identity change (new epoch), by design.
+- **Prompts:** every LLM/agent-facing prompt lives in `src/prompts/`, one prompt per file, as that file's default-export function — typed parameters wherever the prompt templates. No prompt text inline anywhere else. The judge hash covers the complete judge-facing surface via `src/prompts/prompt-surface.ts`; rewording any of it is a judge-identity change (new epoch), by design.
 - **Base classes:** classes extend `PraxisBase` (`@/core/base.js`) for the shared plumbing — protected `out` (Display) and `logger` (Logger), injectable — or `PraxisProjectBase` when bound to a project, which adds protected `root` and a `config` that resolves lazily from it on first access. Don't re-declare these fields.
 - **Terminal output:** all output goes through `@/core/logger.js` — `Display.print([...])` renders a whole stdout block as one payload of entries (plain strings; `{ text, color }`; `{ badge, color, value, indent? }`; `{ header, char?, width? }`; falsy entries skipped so conditionals inline), with `line()` for single lines; `Logger` writes stderr diagnostics. Raw `console.*` is banned outside that module (ESLint `no-console`).

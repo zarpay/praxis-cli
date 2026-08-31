@@ -3,9 +3,9 @@ import type { CompilerPlugin, PluginOptions } from "@/spec/plugins/types.js";
 
 import { exists, readJson, writeJson, writeText } from "@/core/files.js";
 import { joinPath, resolvePath } from "@/core/paths.js";
+import praxisResolveCommand from "@/prompts/praxis-resolve-command.js";
+import praxisSkill from "@/prompts/praxis-skill.js";
 import { evalTargetingLines } from "@/spec/output-builder.js";
-import praxisResolveCommand from "@/spec/plugins/prompts/praxis-resolve-command.js";
-import praxisSkill from "@/spec/plugins/prompts/praxis-skill.js";
 
 /** Default plugin.json content used when no scaffold file exists. */
 const DEFAULT_PLUGIN_JSON = {

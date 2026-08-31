@@ -196,6 +196,26 @@ export default tseslint.config(
     },
   },
   {
+    // Prompts are a shared leaf like core: both layers may import them,
+    // so they may import neither layer (only @/core and each other).
+    files: ["src/prompts/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+          ],
+          patterns: [
+            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
+            { group: ["@/eval/*", "@/spec/*"], message: "Prompts are a shared leaf: they must not depend on either layer." },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // All terminal output goes through the logger module: Display for
     // stdout reports, Logger for stderr diagnostics. Raw console calls
     // are allowed only inside that module.

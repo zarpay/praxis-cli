@@ -1,8 +1,8 @@
-import type { AssistFile } from "@/eval/judgment-input.js";
+import type { PromptFile } from "@/prompts/prompt-file.js";
 
 import { baseName, parentDir } from "@/core/paths.js";
-import contextSection from "@/eval/prompts/context-section.js";
-import exemplarSection from "@/eval/prompts/exemplar-section.js";
+import contextSection from "@/prompts/context-section.js";
+import exemplarSection from "@/prompts/exemplar-section.js";
 
 /** Everything the user prompt is built from. */
 export interface ValidationQuestionInput {
@@ -15,9 +15,9 @@ export interface ValidationQuestionInput {
   /** Whether the target is one file or a pre-assembled cohort of files. */
   kind: "file" | "cohort";
   /** Spec-blessed positive examples, inlined and never judged. */
-  exemplars: readonly AssistFile[];
+  exemplars: readonly PromptFile[];
   /** Assist-only reference files, inlined and never judged. */
-  context: readonly AssistFile[];
+  context: readonly PromptFile[];
 }
 
 /**

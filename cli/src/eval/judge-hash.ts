@@ -4,7 +4,7 @@ import type { CacheJudgeIdentity } from "@/eval/cache-manager.js";
 import { createHash } from "node:crypto";
 
 import { DEFAULT_JUDGE_BASE_URL, DEFAULT_JUDGE_TEMPERATURE } from "@/core/config.js";
-import promptSurface from "@/eval/prompts/prompt-surface.js";
+import promptSurface from "@/prompts/prompt-surface.js";
 
 /**
  * Judge identity hashing.
