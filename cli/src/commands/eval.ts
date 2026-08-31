@@ -15,13 +15,9 @@ import { BatchJudge } from "@/eval/batch-judge.js";
 import { CacheManager } from "@/eval/cache-manager.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
 import { Judge } from "@/eval/judge.js";
-import {
-  buildReport,
-  computeCurrentHash,
-  displayReport as displayValidationReport,
-} from "@/eval/report-formatter.js";
+import { VerdictReporter } from "@/eval/verdict-reporter.js";
 
-/** Options for `validate document`. */
+/** Options for a single-target `eval run`. */
 interface DocumentOptions {
   spec?: string;
   judge?: string;
@@ -29,7 +25,7 @@ interface DocumentOptions {
   cache: boolean;
 }
 
-/** Options for `validate all`. */
+/** Options for a full `eval run`. */
 interface AllOptions {
   type?: string;
   judge?: string;
@@ -381,6 +377,8 @@ export class EvalCommand {
       throw errors.missingJudges();
     }
 
+    const reporter = new VerdictReporter({ specFilePattern: this.config.specFilePattern });
+
     for (const judge of judges) {
       const manager = new CacheManager({ projectRoot: this.root, judge: cacheIdentity(judge) });
 
@@ -389,13 +387,7 @@ export class EvalCommand {
       }
 
       const cacheData = manager.readRaw({ targetPath: absolutePath });
-
-      // Use spec_path from cache if available, otherwise auto-detect
-      const specPath = cacheData?.document.spec_path ?? undefined;
-      const currentHash = computeCurrentHash(absolutePath, specPath, this.config.specFilePattern);
-
-      const report = buildReport(absolutePath, cacheData, currentHash);
-      displayValidationReport(report, options.verbose);
+      reporter.display(reporter.build(absolutePath, cacheData), options.verbose);
     }
   }
 

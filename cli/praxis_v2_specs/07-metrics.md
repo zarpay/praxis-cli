@@ -29,7 +29,7 @@
 
 ## Presentation idiom
 
-Follow the existing v1 pattern (`report-formatter.ts`): pure `build*` functions returning structured data, separate `display*` renderers — `--json` falls out for free, and the structured form is what briefs (08) consume.
+Follow the existing pattern (`VerdictReporter` in `verdict-reporter.ts`): a pure `build()` returning structured data, a separate `display()` renderer — `--json` falls out for free, and the structured form is what briefs (08) consume.
 
 ## Open questions
 
