@@ -20,6 +20,15 @@
       "name": "v32",
       "model": "deepseek/deepseek-v3.2",
       "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    },
+    {
+      "name": "counter",
+      "model": "none",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY",
+      "provider": "./praxis-providers/word-count.js",
+      "options": {
+        "minWords": 20
+      }
     }
   ],
   "specFilePattern": "{README.md,*.sme.md}",

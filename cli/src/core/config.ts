@@ -21,6 +21,9 @@ export const DEFAULT_SPEC_FILE_PATTERN = "README.md";
 /** Default inference endpoint when a judge declares no baseUrl. */
 export const DEFAULT_JUDGE_BASE_URL = "https://openrouter.ai/api/v1";
 
+/** Provider used when a judge declares none. */
+export const DEFAULT_JUDGE_PROVIDER = "openrouter";
+
 /** Default sampling temperature when a judge declares none. */
 export const DEFAULT_JUDGE_TEMPERATURE = 0.1;
 
@@ -40,6 +43,14 @@ export interface JudgeConfig {
   baseUrl?: string;
   /** Sampling temperature for judgments; defaults to 0.1. */
   temperature?: number;
+  /**
+   * Provider that executes judgments: a built-in registry name, or a
+   * ./relative ESM module path resolved from the project root whose
+   * default export is a provider factory. Defaults to "openrouter".
+   */
+  provider?: string;
+  /** Free-form settings passed through to the provider verbatim. */
+  options?: Record<string, unknown>;
 }
 
 /** Config shape as it may appear on disk (all fields optional). */
@@ -226,6 +237,8 @@ export class PraxisConfig {
         apiKeyEnvVar: entry.apiKeyEnvVar!,
         ...(entry.baseUrl !== undefined && { baseUrl: entry.baseUrl }),
         ...(entry.temperature !== undefined && { temperature: entry.temperature }),
+        ...(entry.provider !== undefined && { provider: entry.provider }),
+        ...(entry.options !== undefined && { options: entry.options }),
       };
     });
   }

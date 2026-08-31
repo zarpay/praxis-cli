@@ -52,7 +52,7 @@ Spec discovered (specFilePattern match, frontmatter read)
   → Content hash computed over the full judgment input: target + spec + assist (SHA256, 8-char prefix)
   → Cache checked: one file per target at .praxis/cache/validation/<target-path>.json,
       verdicts keyed <specHash>:<judgeHash> (format 3.0)
-  → On miss: one LLM call per configured judge via OpenRouter (tool_choice: required)
+  → On miss: one call per configured judge via its provider (default: OpenRouter, tool_choice: required)
   → Verdict from the tool call (pass/warn/fail + issues); cached with content_hash
       and assist provenance (exemplar_files/context_files with per-file hashes)
 ```
@@ -73,7 +73,7 @@ Config lives at `{root}/.praxis/config.json` with these fields:
 - `practicesDir: string` — where practice `.md` files live (default: `"practices"`; deprecated `responsibilitiesDir` accepted)
 - `agentProfilesOutputDir: string | false` — where pure profiles are written (default: `"./agent-profiles"`)
 - `plugins: (string | PluginConfigEntry)[]` — enabled plugins with optional per-plugin config (default: `[]`). String entries are normalized to `{ name: theString }`. Object entries support `name`, `outputDir`, `claudeCodePluginName`.
-- `judges: { name, model, apiKeyEnvVar, baseUrl?, temperature? }[]` — the configured judges; every judge evaluates every target, each with its own cache namespace keyed by its behavioral hash (`src/eval/judge-hash.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
+- `judges: { name, model, apiKeyEnvVar, baseUrl?, temperature?, provider?, options? }[]` — the configured judges; every judge evaluates every target, each with its own cache namespace keyed by its behavioral hash. `provider` selects the execution backend: a built-in registry name (default `"openrouter"`) or a `./relative` ESM module path whose default export is a provider factory (`src/eval/providers/types.ts`); `options` passes through to the provider verbatim (`src/eval/judge-hash.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
 - `specFilePattern?: string` — top-level; filename or glob for spec files (default `README.md`).
 
 ### Plugin System

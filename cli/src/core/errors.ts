@@ -24,7 +24,11 @@ export type PraxisErrorCode =
   | "UNKNOWN_JUDGE"
   | "JUDGES_NOT_CONFIGURED"
   | "API_KEY_NOT_SET"
-  | "OPENROUTER_API_ERROR"
+  | "JUDGE_API_ERROR"
+  | "UNKNOWN_JUDGE_PROVIDER"
+  | "JUDGE_PROVIDER_LOAD_FAILED"
+  | "INVALID_JUDGE_PROVIDER"
+  | "JUDGE_PROVIDER_FAILED"
   | "NO_TOOL_CALL"
   | "UNEXPECTED_TOOL_CALL";
 
@@ -192,9 +196,46 @@ export const errors = {
     return new PraxisError("API_KEY_NOT_SET", `${envVarName} environment variable not set`);
   },
 
-  /** OpenRouter responded with a non-OK HTTP status. */
-  openRouterApiError(status: number, body: string): PraxisError {
-    return new PraxisError("OPENROUTER_API_ERROR", `OpenRouter API error (${status}): ${body}`);
+  /** The judge provider's backend responded with a non-OK HTTP status. */
+  judgeApiError(provider: string, status: number, body: string): PraxisError {
+    return new PraxisError(
+      "JUDGE_API_ERROR",
+      `Judge provider "${provider}" API error (${status}): ${body}`,
+    );
+  },
+
+  /** A judge named a provider that is neither built in nor a ./relative module path. */
+  unknownJudgeProvider(name: string, available: string[]): PraxisError {
+    return new PraxisError(
+      "UNKNOWN_JUDGE_PROVIDER",
+      `Unknown judge provider: "${name}". Built-in providers: ${available.join(", ")}. ` +
+        "A custom provider must be a ./relative module path.",
+    );
+  },
+
+  /** A local provider module could not be imported. */
+  judgeProviderLoadFailed(path: string, cause: string): PraxisError {
+    return new PraxisError(
+      "JUDGE_PROVIDER_LOAD_FAILED",
+      `Failed to load judge provider "${path}": ${cause}`,
+    );
+  },
+
+  /** A loaded provider module does not implement the provider contract. */
+  invalidJudgeProvider(spec: string, problem: string): PraxisError {
+    return new PraxisError(
+      "INVALID_JUDGE_PROVIDER",
+      `Invalid judge provider "${spec}": ${problem} — ` +
+        "a provider module's default export must be a factory returning { name, judge() }",
+    );
+  },
+
+  /** A provider's judge() threw something other than a PraxisError. */
+  judgeProviderFailed(provider: string, message: string): PraxisError {
+    return new PraxisError(
+      "JUDGE_PROVIDER_FAILED",
+      `Judge provider "${provider}" failed: ${message}`,
+    );
   },
 
   /** The model answered without calling a validation tool. */

@@ -88,6 +88,73 @@
           "hash": "a1beb8f5"
         }
       ]
+    },
+    "0311531a:8d4c2b8f": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "8d4c2b8f"
+      },
+      "spec_path": "src/services/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:52:15.609Z",
+      "content_hash": "e60d77e5",
+      "result": {
+        "compliant": false,
+        "severity": "warning",
+        "issues": [],
+        "reason": "None"
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:be933a57": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "be933a57"
+      },
+      "spec_path": "src/services/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:53:37.679Z",
+      "content_hash": "e60d77e5",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification. It exports a run function with the correct signature, performs input validation before work, provides clear error messages, does one thing (ranking parlors), uses only injected Store for I/O, and includes proper documentation with purpose and failure modes."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:a28ce678": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "a28ce678"
+      },
+      "spec_path": "src/services/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:54:12.950Z",
+      "content_hash": "e60d77e5",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 642 words."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
     }
   }
 }

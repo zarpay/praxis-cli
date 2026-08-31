@@ -104,6 +104,84 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:8d4c2b8f": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "8d4c2b8f"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:52:11.345Z",
+      "content_hash": "c2dc0a8a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "...empty?"
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:be933a57": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "be933a57"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:53:17.187Z",
+      "content_hash": "c2dc0a8a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The tasting-menu feature directory fully satisfies all criteria in the specification: it has exactly one entry point (index.ts), dedicated types file (tasting-menu-types.ts), properly named logic file (build-menu.ts) following service conventions, no orphaned files, one coherent capability, and a descriptive feature name."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:a28ce678": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "a28ce678"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:54:12.946Z",
+      "content_hash": "c2dc0a8a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 883 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

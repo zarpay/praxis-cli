@@ -110,6 +110,84 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:8d4c2b8f": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "8d4c2b8f"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:52:09.412Z",
+      "content_hash": "486559a7",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The cohort (src/features/awards) satisfies every criterion in the specification. Structure: exactly one entry point index.ts re-exporting the feature's public API (pickWinners, PickWinnersInput, Award); types live in the dedicated award-types.ts file; logic file pick-winners.ts is verb-first kebab-case and follows service conventions — one exported run, Result over exceptions, consumer-grade error messages. Cohesion: no orphaned files (both pick-winners.ts and award-types.ts are reachable from index.ts through its import graph); the single capability is yearly awards picked from review standings, served by two tightly related files; the feature name 'awards' describes the capability, not the implementation. No violations found."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:be933a57": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "be933a57"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:52:55.738Z",
+      "content_hash": "486559a7",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The 'awards' feature module fully satisfies all criteria defined in the specification. It demonstrates proper structure, cohesion, and follows all required conventions."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:a28ce678": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "a28ce678"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:54:12.942Z",
+      "content_hash": "486559a7",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 948 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

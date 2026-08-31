@@ -218,7 +218,7 @@ describe("Judge", () => {
       );
 
       await expect(makeValidator().validate()).rejects.toThrow(
-        "OpenRouter API error (502): upstream unavailable",
+        'Judge provider "openrouter" API error (502): upstream unavailable',
       );
     });
 
@@ -557,6 +557,116 @@ describe("Judge", () => {
       expect(entry.context_files).toEqual([
         { path: "src/services/store.ts", hash: expect.stringMatching(/^[0-9a-f]{8}$/) as string },
       ]);
+
+      cleanup();
+    });
+  });
+
+  describe("providers", () => {
+    /** A project with one spec-covered target and a local echo provider module. */
+    function providerProject(providerSource: string) {
+      return createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/README.md": "# Spec",
+          "docs/guide.md": "# Guide",
+          "praxis-providers/echo.mjs": providerSource,
+        },
+      });
+    }
+
+    const ECHO_PROVIDER = `export default function echoProvider() {
+      return {
+        name: "echo",
+        async judge() {
+          return {
+            verdict: { compliant: true, issues: [], reason: "echoed" },
+            usage: { promptTokens: 7, completionTokens: 3, costUsd: 0.0001 },
+          };
+        },
+      };
+    }
+    `;
+
+    const THROWING_PROVIDER = `export default function throwingProvider() {
+      return {
+        name: "flaky",
+        async judge() {
+          throw new Error("socket hang up");
+        },
+      };
+    }
+    `;
+
+    it("judges through a local provider module with no HTTP call", async () => {
+      // onUnhandledRequest: "error" makes any network attempt fail loudly.
+      const { root, abs, cleanup } = providerProject(ECHO_PROVIDER);
+
+      const judge = new Judge({
+        targetPath: abs("docs/guide.md"),
+        root,
+        useCache: false,
+        judge: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
+      });
+      const result = await judge.validate();
+
+      expect(result).toEqual({ compliant: true, issues: [], reason: "echoed" });
+
+      cleanup();
+    });
+
+    it("exposes the provider's usage after a real call", async () => {
+      const { root, abs, cleanup } = providerProject(ECHO_PROVIDER);
+
+      const judge = new Judge({
+        targetPath: abs("docs/guide.md"),
+        root,
+        useCache: false,
+        judge: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
+      });
+      await judge.validate();
+
+      expect(judge.lastUsage).toEqual({ promptTokens: 7, completionTokens: 3, costUsd: 0.0001 });
+
+      cleanup();
+    });
+
+    it("reports null usage for a cache hit", async () => {
+      const { root, abs, cleanup } = providerProject(ECHO_PROVIDER);
+      const judgeConfig = { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" };
+
+      function makeJudge(): Judge {
+        return new Judge({
+          targetPath: abs("docs/guide.md"),
+          root,
+          cacheManager: new CacheManager({ projectRoot: root }),
+          judge: judgeConfig,
+        });
+      }
+
+      await makeJudge().validate();
+
+      const second = makeJudge();
+      await second.validate();
+
+      expect(second.cacheHit).toBe(true);
+      expect(second.lastUsage).toBeNull();
+
+      cleanup();
+    });
+
+    it("wraps a provider's own failure with the provider's name", async () => {
+      const { root, abs, cleanup } = providerProject(THROWING_PROVIDER);
+
+      const judge = new Judge({
+        targetPath: abs("docs/guide.md"),
+        root,
+        useCache: false,
+        judge: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
+      });
+      const judgment = judge.validate();
+
+      await expect(judgment).rejects.toThrow('Judge provider "flaky" failed: socket hang up');
 
       cleanup();
     });

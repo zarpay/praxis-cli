@@ -100,10 +100,42 @@ describe("errors", () => {
     expect(err.message).toBe("OPENROUTER_API_KEY environment variable not set");
   });
 
-  it("openRouterApiError", () => {
-    const err = errors.openRouterApiError(502, "upstream unavailable");
-    expect(err.code).toBe("OPENROUTER_API_ERROR");
-    expect(err.message).toBe("OpenRouter API error (502): upstream unavailable");
+  it("judgeApiError", () => {
+    const err = errors.judgeApiError("openrouter", 502, "upstream unavailable");
+    expect(err.code).toBe("JUDGE_API_ERROR");
+    expect(err.message).toBe('Judge provider "openrouter" API error (502): upstream unavailable');
+  });
+
+  it("unknownJudgeProvider", () => {
+    const err = errors.unknownJudgeProvider("bogus", ["openrouter"]);
+    expect(err.code).toBe("UNKNOWN_JUDGE_PROVIDER");
+    expect(err.message).toBe(
+      'Unknown judge provider: "bogus". Built-in providers: openrouter. ' +
+        "A custom provider must be a ./relative module path.",
+    );
+  });
+
+  it("judgeProviderLoadFailed", () => {
+    const err = errors.judgeProviderLoadFailed("./providers/echo.js", "Cannot find module");
+    expect(err.code).toBe("JUDGE_PROVIDER_LOAD_FAILED");
+    expect(err.message).toBe(
+      'Failed to load judge provider "./providers/echo.js": Cannot find module',
+    );
+  });
+
+  it("invalidJudgeProvider", () => {
+    const err = errors.invalidJudgeProvider("./providers/echo.js", "default export is not a function");
+    expect(err.code).toBe("INVALID_JUDGE_PROVIDER");
+    expect(err.message).toBe(
+      'Invalid judge provider "./providers/echo.js": default export is not a function — ' +
+        "a provider module's default export must be a factory returning { name, judge() }",
+    );
+  });
+
+  it("judgeProviderFailed", () => {
+    const err = errors.judgeProviderFailed("echo", "socket hang up");
+    expect(err.code).toBe("JUDGE_PROVIDER_FAILED");
+    expect(err.message).toBe('Judge provider "echo" failed: socket hang up');
   });
 
   it("noToolCall", () => {

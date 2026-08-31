@@ -32,6 +32,58 @@
         "issues": [],
         "reason": "The file satisfies all criteria defined in the specification: it contains all required frontmatter fields with correct types, opens with the required level-1 heading naming the expert and alias, clearly states what the expert is the subject-matter expert on, and contains no prohibited placeholder text."
       }
+    },
+    "244fa7f3:8d4c2b8f": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "8d4c2b8f"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "target_type": "expert",
+      "cached_at": "2026-08-31T20:52:04.428Z",
+      "content_hash": "9345eb3c",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Only three of the four required frontmatter fields are present...",
+          "The body states what the expert is an SME on..."
+        ],
+        "reason": "The file ..."
+      }
+    },
+    "244fa7f3:be933a57": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "be933a57"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "target_type": "expert",
+      "cached_at": "2026-08-31T20:52:45.062Z",
+      "content_hash": "9345eb3c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification: all required frontmatter fields are present with correct values, the body opens with the required level-1 heading naming the expert and its alias, the body clearly states what the expert is the subject-matter expert on, and there is no prohibited placeholder text."
+      }
+    },
+    "244fa7f3:a28ce678": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "a28ce678"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "target_type": "expert",
+      "cached_at": "2026-08-31T20:54:12.936Z",
+      "content_hash": "9345eb3c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 286 words."
+      }
     }
   }
 }

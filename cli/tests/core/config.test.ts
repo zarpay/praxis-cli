@@ -255,6 +255,38 @@ describe("PraxisConfig", () => {
       expect(config.judges).toEqual([]);
     });
 
+    it("passes provider and options through to the judge config", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, {
+        judges: [
+          {
+            name: "local",
+            model: "echo-model",
+            apiKeyEnvVar: "OR_KEY",
+            provider: "./praxis-providers/echo.js",
+            options: { region: "us-east-1" },
+          },
+        ],
+      });
+
+      const config = new PraxisConfig(dir);
+
+      expect(config.judges[0].provider).toBe("./praxis-providers/echo.js");
+      expect(config.judges[0].options).toEqual({ region: "us-east-1" });
+    });
+
+    it("leaves provider and options absent when unconfigured", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, {
+        judges: [{ name: "flash", model: "model-a", apiKeyEnvVar: "OR_KEY" }],
+      });
+
+      const config = new PraxisConfig(dir);
+
+      expect(config.judges[0].provider).toBeUndefined();
+      expect(config.judges[0].options).toBeUndefined();
+    });
+
     it("rejects duplicate judge names", () => {
       const dir = makeTmpdir();
       writeConfig(dir, {

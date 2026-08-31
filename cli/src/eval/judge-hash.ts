@@ -3,7 +3,11 @@ import type { CacheJudgeIdentity } from "@/eval/cache-manager.js";
 
 import { createHash } from "node:crypto";
 
-import { DEFAULT_JUDGE_BASE_URL, DEFAULT_JUDGE_TEMPERATURE } from "@/core/config.js";
+import {
+  DEFAULT_JUDGE_BASE_URL,
+  DEFAULT_JUDGE_PROVIDER,
+  DEFAULT_JUDGE_TEMPERATURE,
+} from "@/core/config.js";
 import promptSurface from "@/prompts/prompt-surface.js";
 
 /**
@@ -52,6 +56,8 @@ export function judgeHash(judge: JudgeConfig, prompts: string = promptSurface())
 
   behavioral["baseUrl"] ??= DEFAULT_JUDGE_BASE_URL;
   behavioral["temperature"] ??= DEFAULT_JUDGE_TEMPERATURE;
+  behavioral["provider"] ??= DEFAULT_JUDGE_PROVIDER;
+  behavioral["options"] ??= {};
   behavioral["promptSurface"] = prompts;
 
   return createHash("sha256").update(canonicalize(behavioral)).digest("hex").slice(0, 8);

@@ -64,6 +64,94 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:8d4c2b8f": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "8d4c2b8f"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:52:10.385Z",
+      "content_hash": "cd9d0ad5",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "structure..."
+        ],
+        "reason": "..."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:be933a57": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "be933a57"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:53:06.190Z",
+      "content_hash": "cd9d0ad5",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Missing required index.ts entry point - specification requires exactly one entry point index.ts that re-exports the feature's entire public API",
+          "Multiple unrelated capabilities in one feature - punch-card.ts and summer-promo.ts serve different purposes, violating 'one capability per feature'",
+          "Orphaned files - both files are unreachable since there's no index.ts to import from",
+          "Missing types file - no loyalty-types.ts file exists as required by specification",
+          "File naming violation - summer-promo.ts is not verb-first kebab-case as required"
+        ],
+        "reason": "The loyalty feature cohort violates multiple required criteria in the specification, most critically missing the required index.ts entry point and containing multiple unrelated capabilities."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:a28ce678": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "a28ce678"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:54:12.944Z",
+      "content_hash": "cd9d0ad5",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 762 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

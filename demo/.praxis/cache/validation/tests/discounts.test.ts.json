@@ -46,6 +46,65 @@
         ],
         "reason": "The file violates multiple required criteria in the test conventions specification, including subject framing rules, the one assertion per block rule, and the functionality-over-implementation principle."
       }
+    },
+    "dacac2eb:8d4c2b8f": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "8d4c2b8f"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:52:23.656Z",
+      "content_hash": "c2f1d782",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "...",
+          "..."
+        ],
+        "reason": "..."
+      }
+    },
+    "dacac2eb:be933a57": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "be933a57"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:54:02.164Z",
+      "content_hash": "c2f1d782",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Violates subject framing criterion: The top-level describe should name the unit under test by its module name, not vague phrasing like 'should work'. Specification requires 'describe('create-review', ...)' format.",
+          "Violates subject framing criterion: No nested describe blocks naming situations as 'when' clauses. Specification requires nested describe blocks to name the situation as a 'when' clause.",
+          "Violates one assertion per block criterion: The single it block contains 5 expect statements. Specification requires exactly one expect per it block.",
+          "Violates functionality, not implementation criterion: Tests implementation details like internal array ordering ('expect(store.listParlors()[0].id).toBe(parlor.id)') rather than observable behavior through public API.",
+          "Violates functionality, not implementation criterion: Tests unrelated assertions about store state ('expect(store.listParlors().length).toBeGreaterThan(0)') that aren't the primary outcome of the unit under test."
+        ],
+        "reason": "The file violates multiple required criteria in the test conventions specification. It demonstrates deliberate violations of core testing principles including subject framing, single assertion per block, and functionality-focused testing."
+      }
+    },
+    "dacac2eb:a28ce678": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "a28ce678"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:54:12.953Z",
+      "content_hash": "c2f1d782",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 403 words."
+      }
     }
   }
 }

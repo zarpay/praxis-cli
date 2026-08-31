@@ -64,6 +64,54 @@
         "issues": [],
         "reason": "The test file satisfies all criteria in the specification: proper subject framing with module name and 'when' clauses, one assertion per test block, and focuses on functionality through the public API without implementation details."
       }
+    },
+    "dacac2eb:8d4c2b8f": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "8d4c2b8f"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:52:25.539Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The only `expect` is actually the inner one (assertEquals) — the outer call had a single argument, so it's ambiguous/parse error territory. Let's be precise: the vitest `expect` takes one value; `expect(assertEquals(...))` would assert on the return value of assertEquals, and with bare single-arg call it's invalid — so the outer expect cannot be counted; there is exactly one expect-equivalent assertion (the inner assertEquals). The file satisfies the spec: exact one assertion per it, tests public API only, no implementation/reaching, no spies, fresh store in beforeEach, subject framing and when clauses. Pass."
+      }
+    },
+    "dacac2eb:be933a57": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "be933a57"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:54:04.909Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification. It follows the three main rules: proper subject framing with descriptive describe/it blocks, one assertion per block, and testing functionality rather than implementation."
+      }
+    },
+    "dacac2eb:a28ce678": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "a28ce678"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:54:12.955Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 585 words."
+      }
     }
   }
 }

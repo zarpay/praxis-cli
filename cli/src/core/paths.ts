@@ -1,4 +1,5 @@
 import { basename, dirname, join, relative, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
@@ -25,6 +26,11 @@ export function resolvePath(...segments: string[]): string {
 /** The relative path from one location to another (see node:path relative). */
 export function relativePath(from: string, to: string): string {
   return relative(from, to);
+}
+
+/** Converts an absolute path to a file:// URL string (for dynamic import()). */
+export function fileUrl(absolutePath: string): string {
+  return pathToFileURL(absolutePath).href;
 }
 
 /** The last segment of a path, optionally with an extension stripped. */

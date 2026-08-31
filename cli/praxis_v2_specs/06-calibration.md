@@ -51,7 +51,7 @@ Judges are **named and plural in config**. v1's singular `validation: { model, a
 
 A team that wants two models evaluating the same work configures both; every configured judge evaluates every target, contributing critiques side by side.
 
-Where code may be sent is the org's decision, made here: a judge is an endpoint plus a model, so an org with private inference points its judges at it (per-judge `baseUrl`). Praxis does not redact — a judge sees exactly what the axiom's scope declares, nothing else.
+Where code may be sent is the org's decision, made here: a judge is an endpoint plus a model, so an org with private inference points its judges at it (per-judge `baseUrl` for OpenAI-compatible endpoints; per-judge `provider` for anything else — a custom provider module implements the normalized verdict+usage contract). Praxis does not redact — a judge sees exactly what the axiom's scope declares, nothing else.
 
 **Nothing about the single-judge design changes — n judges are n instruments running the same protocol.** Each judge has its own judge hash, and therefore its own cache namespace (05), its own epochs (02), and its own calibration records. This is why the earlier decisions were shaped the way they were: provenance-mandatory verdicts and hash-namespaced caches were designed for judges changing *over time*; simultaneous judges are the same machinery with several namespaces live at once. Adding or removing a judge opens or ends that judge's series and touches nobody else's.
 

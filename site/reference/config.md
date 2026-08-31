@@ -163,6 +163,45 @@ The judges — named inference backends that evaluate targets against specs. **E
 Each target's cache file holds every judge's verdicts, keyed by a hash of the judge's *behavioral* settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the judging prompt. Renaming a judge or rotating a key keeps its cached verdicts; changing the model, endpoint, or temperature invalidates them.
 
 ::: warning Breaking change in v2
+### Providers
+
+Each judge runs through a **provider** — the backend that executes the judgment and returns a normalized verdict plus usage (tokens and, where reported, cost). `provider` defaults to `"openrouter"`, which speaks to OpenRouter or any OpenAI-compatible endpoint (`baseUrl`). A judge can instead point at a local ESM module, resolved from the project root:
+
+```json
+{
+  "judges": [
+    { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "apiKeyEnvVar": "OPENROUTER_API_KEY" },
+    {
+      "name": "internal",
+      "model": "org-model",
+      "apiKeyEnvVar": "INTERNAL_KEY",
+      "provider": "./praxis-providers/internal.js",
+      "options": { "region": "us-east-1" }
+    }
+  ]
+}
+```
+
+```js
+// praxis-providers/internal.js — default export is a factory
+export default function internalProvider() {
+  return {
+    name: "internal",
+    async judge(request) {
+      // request: systemPrompt, userPrompt, tools, model, temperature,
+      //          baseUrl, apiKey (resolved), options
+      // call anything; return the normalized contract:
+      return {
+        verdict: { compliant: true, issues: [], reason: "..." },
+        usage: { promptTokens: 812, completionTokens: 41, costUsd: null },
+      };
+    },
+  };
+}
+```
+
+`options` is passed to the provider verbatim. For the built-in OpenRouter provider it is spread into the request body first, so it can add backend fields (routing, reasoning settings) but never overrides `model`, `temperature`, or the tool-calling protocol. Both `provider` and `options` are part of the judge's behavioral identity: changing them re-judges that judge's targets. A local provider module is code your project runs — treat it with the same trust as an npm script.
+
 The v1 `validation` section is removed. Configure `judges` instead, and move `specFilePattern` to the top level.
 :::
 

@@ -93,6 +93,14 @@ committed cache under `.praxis/cache/` is that run's shared evidence:
   sharpening `tests/README.md`, after which all four suites re-judged
   clean. The spec is part of the instrument.
 
+## Custom judge provider
+
+`praxis-providers/word-count.js` is a local judge provider — the
+`counter` judge in `.praxis/config.json` runs through it instead of
+OpenRouter, proving judges are endpoint-agnostic: any module whose
+default export returns `{ name, judge(request) }` (normalized verdict +
+usage) can judge. It makes no network calls at all.
+
 ## Deliberately non-compliant content
 
 Some of this repo is wrong on purpose — it exists so Praxis has real

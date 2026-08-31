@@ -26,44 +26,88 @@ describe("judgeHash", () => {
       name: "flash",
     } as JudgeConfig;
 
-    expect(judgeHash(scrambled)).toBe(judgeHash(judge()));
+    const defaultHash = judgeHash(judge());
+    const scrambledHash = judgeHash(scrambled);
+
+    expect(scrambledHash).toBe(defaultHash);
   });
 
   it("ignores the judge's name — a rename must not invalidate verdicts", () => {
-    expect(judgeHash(judge({ name: "renamed" }))).toBe(judgeHash(judge()));
+    const defaultHash = judgeHash(judge());
+    const renamedHash = judgeHash(judge({ name: "renamed" }));
+
+    expect(renamedHash).toBe(defaultHash);
   });
 
   it("ignores apiKeyEnvVar — key rotation must not invalidate verdicts", () => {
-    expect(judgeHash(judge({ apiKeyEnvVar: "OTHER_KEY" }))).toBe(judgeHash(judge()));
+    const defaultHash = judgeHash(judge());
+    const rotatedKeyHash = judgeHash(judge({ apiKeyEnvVar: "OTHER_KEY" }));
+
+    expect(rotatedKeyHash).toBe(defaultHash);
   });
 
   it("changes when the model changes", () => {
-    expect(judgeHash(judge({ model: "other-model" }))).not.toBe(judgeHash(judge()));
+    const defaultHash = judgeHash(judge());
+    const otherModelHash = judgeHash(judge({ model: "other-model" }));
+
+    expect(otherModelHash).not.toBe(defaultHash);
   });
 
   it("changes when the baseUrl changes", () => {
-    expect(judgeHash(judge({ baseUrl: "https://inference.internal/v1" }))).not.toBe(
-      judgeHash(judge()),
-    );
+    const defaultHash = judgeHash(judge());
+    const privateEndpointHash = judgeHash(judge({ baseUrl: "https://inference.internal/v1" }));
+
+    expect(privateEndpointHash).not.toBe(defaultHash);
   });
 
   it("changes when the temperature changes", () => {
-    expect(judgeHash(judge({ temperature: 0.7 }))).not.toBe(judgeHash(judge()));
+    const defaultHash = judgeHash(judge());
+    const hotterHash = judgeHash(judge({ temperature: 0.7 }));
+
+    expect(hotterHash).not.toBe(defaultHash);
   });
 
   it("hashes omitted settings identically to their explicit defaults", () => {
-    const explicit = judge({ baseUrl: "https://openrouter.ai/api/v1", temperature: 0.1 });
+    const explicit = judge({
+      baseUrl: "https://openrouter.ai/api/v1",
+      temperature: 0.1,
+      provider: "openrouter",
+      options: {},
+    });
 
-    expect(judgeHash(explicit)).toBe(judgeHash(judge()));
+    const defaultHash = judgeHash(judge());
+    const explicitDefaultsHash = judgeHash(explicit);
+
+    expect(explicitDefaultsHash).toBe(defaultHash);
+  });
+
+  it("changes when the provider changes", () => {
+    const defaultHash = judgeHash(judge());
+    const customProviderHash = judgeHash(judge({ provider: "./praxis-providers/echo.js" }));
+
+    expect(customProviderHash).not.toBe(defaultHash);
+  });
+
+  it("changes when provider options change", () => {
+    const defaultHash = judgeHash(judge());
+    const customOptionsHash = judgeHash(judge({ options: { region: "us-east-1" } }));
+
+    expect(customOptionsHash).not.toBe(defaultHash);
   });
 
   it("changes when the system prompt changes", () => {
-    expect(judgeHash(judge(), "a different judging protocol")).not.toBe(judgeHash(judge()));
+    const defaultHash = judgeHash(judge());
+    const rewordedPromptHash = judgeHash(judge(), "a different judging protocol");
+
+    expect(rewordedPromptHash).not.toBe(defaultHash);
   });
 
   it("includes future unknown fields — new settings are behavioral by default", () => {
     const withFutureField = { ...judge(), maxTokens: 4096 } as unknown as JudgeConfig;
 
-    expect(judgeHash(withFutureField)).not.toBe(judgeHash(judge()));
+    const defaultHash = judgeHash(judge());
+    const futureFieldHash = judgeHash(withFutureField);
+
+    expect(futureFieldHash).not.toBe(defaultHash);
   });
 });

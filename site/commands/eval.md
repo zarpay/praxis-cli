@@ -8,7 +8,7 @@ AI-powered evaluation: judges targets against their specs.
 
 ## Prerequisites
 
-Evaluation calls an OpenRouter-compatible API. Configure one or more judges in `.praxis/config.json` and set each judge's key variable:
+Each judge runs through its configured provider — OpenRouter by default, or a custom provider module (see [Configuration — providers](/reference/config#providers)). Configure one or more judges in `.praxis/config.json` and set each judge's key variable:
 
 ```bash
 export OPENROUTER_API_KEY=your-key-here
@@ -135,7 +135,7 @@ Use `--verbose` to include the full AI reasoning from the cached result.
 ## How validation works
 
 1. The spec file (default: `README.md`) in the document's directory defines the validation criteria — plus any scoping frontmatter (`paths`, `cohort`, `excludes`, `exemplars`, `context`).
-2. Praxis sends the spec, the target, and any exemplar/context files to each configured judge via OpenRouter.
+2. Praxis sends the spec, the target, and any exemplar/context files to each configured judge via its provider (OpenRouter by default).
 3. The judge answers through a required tool call — pass, warn, or fail — with specific issues.
 4. The verdict is written to the cache at `.praxis/cache/validation/`, keyed by spec and judge.
 

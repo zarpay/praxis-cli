@@ -64,6 +64,54 @@
         "issues": [],
         "reason": "The file fully satisfies all criteria defined in the specification: proper subject framing with module name and 'when' clauses, exactly one assertion per test block, and testing functionality through public API without implementation details."
       }
+    },
+    "dacac2eb:8d4c2b8f": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "8d4c2b8f"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:52:20.182Z",
+      "content_hash": "b35b5069",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all the test conventions: the top-level describe names the unit under test by its module name ('awards'), nested describes use when clauses, each it states one observable outcome, every it block contains exactly one expect, tests exercise only the public API (pickWinners and the createReview service run function), use honest in-memory collaborators (createMemoryStore) with no spies or implementation reaching, and test data is built fresh inside describe/beforeEach setup without cross-suite dependencies. One subtle nuance: the expects use toMatchObject with an expression that can be false (result.ok && ...), which the matcher would treat as falsy and hence pass, but the spec's 'one assertion per block' criterion is still met since each block has exactly one expect; the intended observable behavior is stated clearly and the assertion is compound via toMatchObject as required. The file conforms to the required patterns without violations.</think>## Validation Report: awards.test.ts / tests/awards.test.ts (awards suite... assert `result.ok && result.value.find(...)` against `toMatchObject`, which could be weak if the `ok` flag were false (a falsy value would be compared). This does **not** violate the specification — the one-assertion rule is about count (exactly one `expect` per `it`), and the compound shape is asserted once via `toMatchObject` as permitted. No spies, no mocking of honest in-memory collaborators, no reaching into module scope, and each suite builds its own state in `beforeEach`/`describe` setup, so suites do not depend on ordering. Every required criterion is met.</think>**Verdict: PASS (conforms to specification)** — with a nuance noted below as a suggestion, not a violation, the file satisfies all criteria defined in the test conventions specification. No further action is required. If the author wants extra robustness, consider testing `result.ok` as an explicit assertion in the `describe` body before the value lookups, but this is optional and outside the specification's requirements.</think>**Verdict: PASS (conforms)** —- **No required criteria are violated. The file fully conforms to the specification's test conventions** — with a small optional robustness nuance noted below (not a spec violation). No required change is necessary. If the author wants extra robustness (optional, outside the spec): in the "
+      }
+    },
+    "dacac2eb:be933a57": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "be933a57"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:53:48.040Z",
+      "content_hash": "b35b5069",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully satisfies all criteria in the specification: proper subject framing with module name and when clauses, one assertion per test block using toMatchObject for compound shapes, and testing functionality through public API with injected dependencies rather than implementation details."
+      }
+    },
+    "dacac2eb:a28ce678": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "a28ce678"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T20:54:12.951Z",
+      "content_hash": "b35b5069",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 539 words."
+      }
     }
   }
 }

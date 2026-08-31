@@ -1,15 +1,17 @@
 import type { JudgeConfig } from "@/core/config.js";
 import type { Verdict } from "@/eval/cache-manager.js";
 import type { AssistInputs } from "@/eval/judgment-input.js";
+import type { ProviderRequest, ProviderResult, ProviderUsage } from "@/eval/providers/types.js";
 
 import fg from "fast-glob";
 
 import {
   DEFAULT_JUDGE_BASE_URL,
+  DEFAULT_JUDGE_PROVIDER,
   DEFAULT_JUDGE_TEMPERATURE,
   DEFAULT_SPEC_FILE_PATTERN,
 } from "@/core/config.js";
-import { errors } from "@/core/errors.js";
+import { PraxisError, errors } from "@/core/errors.js";
 import { exists, readText } from "@/core/files.js";
 import { Frontmatter } from "@/core/frontmatter.js";
 import { baseName, joinPath, parentDir } from "@/core/paths.js";
@@ -21,6 +23,7 @@ import {
   assistHashInput,
   resolveAssistInputs,
 } from "@/eval/judgment-input.js";
+import { resolveProvider } from "@/eval/providers/registry.js";
 import judgeTools from "@/prompts/judge-tools.js";
 import systemPrompt from "@/prompts/system-prompt.js";
 import validationQuestion from "@/prompts/validation-question.js";
@@ -45,12 +48,12 @@ const LEGACY_TYPES: Record<string, TargetType> = {
 };
 
 /**
- * AI-powered judge using the OpenRouter API.
+ * AI-powered judge.
  *
- * Judges a target against the spec file for its directory
- * (or an explicitly provided spec). The configured model evaluates
- * compliance and reports via a required tool call, producing structured
- * results with compliance status, issues, and severity.
+ * Judges a target against the spec file for its directory (or an
+ * explicitly provided spec) through the judge's configured provider
+ * (default: OpenRouter), which returns a normalized verdict with
+ * compliance status, issues, and severity — plus usage accounting.
  *
  * Supports caching: if a valid cached result exists for the current
  * content hash (document + spec), it is returned without an API call.
@@ -71,6 +74,7 @@ export class Judge {
   private readonly useCache: boolean;
   private readonly cacheManager: CacheManager | null;
   private wasCacheHit = false;
+  private lastUsageValue: ProviderUsage | null = null;
   private readonly judge?: JudgeConfig;
 
   /** Project root the spec's scoping globs (exemplars:/context:) resolve against. */
@@ -132,6 +136,14 @@ export class Judge {
     return this.wasCacheHit;
   }
 
+  /**
+   * Usage from the last real provider call, or null after a cache hit
+   * (nothing was spent). The ledger's read point (05).
+   */
+  get lastUsage(): ProviderUsage | null {
+    return this.lastUsageValue;
+  }
+
   /** Computes the cache-invalidation hash over the full judgment input (target + spec + assist). */
   getContentHash(): string {
     return contentHash(this.targetContent, this.specContent, assistHashInput(this.assist));
@@ -146,6 +158,8 @@ export class Judge {
    * @returns Structured validation result
    */
   async validate(): Promise<Verdict> {
+    this.lastUsageValue = null;
+
     if (this.cacheManager) {
       const hash = this.getContentHash();
       const cachedResult = this.cacheManager.read({
@@ -162,7 +176,7 @@ export class Judge {
     }
 
     this.wasCacheHit = false;
-    this.result = await this.callOpenRouter();
+    this.result = await this.callProvider();
 
     if (this.cacheManager && this.result) {
       this.cacheManager.write({
@@ -182,15 +196,17 @@ export class Judge {
   }
 
   /**
-   * Calls the OpenRouter API and returns a structured validation result via tool call.
+   * Resolves the judge's provider and obtains one verdict through it.
    *
-   * Sends the spec and file content to the model along with three validation tools.
-   * The model is required to call exactly one tool, eliminating text parsing entirely.
+   * Praxis owns the boundary: it resolves the API key from the
+   * environment, renders the prompts, and materializes defaults; the
+   * provider only executes the request. Usage from the result is kept
+   * for lastUsage.
    *
-   * @throws Error if config is missing, the API returns an error, or the model
-   *   does not return a tool call (e.g., the model does not support tool calling).
+   * @throws PraxisError when config or the key is missing, when the
+   *   provider cannot be resolved, or (wrapped) when the provider fails
    */
-  private async callOpenRouter(): Promise<Verdict> {
+  private async callProvider(): Promise<Verdict> {
     const judge = this.judge;
 
     if (!judge) {
@@ -203,75 +219,38 @@ export class Judge {
       throw errors.apiKeyNotSet(judge.apiKeyEnvVar);
     }
 
-    const baseUrl = judge.baseUrl ?? DEFAULT_JUDGE_BASE_URL;
+    const provider = await resolveProvider(judge.provider ?? DEFAULT_JUDGE_PROVIDER, this.root);
 
-    const response = await fetch(`${baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: judge.model,
-        messages: [
-          { role: "system", content: systemPrompt() },
-          {
-            role: "user",
-            content: validationQuestion({
-              specContent: this.specContent,
-              targetContent: this.targetContent,
-              targetPath: this.targetPath,
-              kind: this.kind,
-              exemplars: this.assist.exemplars,
-              context: this.assist.context,
-            }),
-          },
-        ],
-        tools: judgeTools(),
-        tool_choice: "required",
-        temperature: judge.temperature ?? DEFAULT_JUDGE_TEMPERATURE,
+    const request: ProviderRequest = {
+      systemPrompt: systemPrompt(),
+      userPrompt: validationQuestion({
+        specContent: this.specContent,
+        targetContent: this.targetContent,
+        targetPath: this.targetPath,
+        kind: this.kind,
+        exemplars: this.assist.exemplars,
+        context: this.assist.context,
       }),
-    });
-
-    if (!response.ok) {
-      const body = await response.text();
-      throw errors.openRouterApiError(response.status, body);
-    }
-
-    interface ToolCall {
-      id: string;
-      type: "function";
-      function: { name: string; arguments: string };
-    }
-    interface OpenRouterResponse {
-      choices: {
-        message: { role: string; content: string | null; tool_calls?: ToolCall[] };
-      }[];
-    }
-
-    const data = (await response.json()) as OpenRouterResponse;
-    const toolCall = data.choices[0]?.message?.tool_calls?.[0];
-
-    if (!toolCall) {
-      throw errors.noToolCall();
-    }
-
-    const args = JSON.parse(toolCall.function.arguments) as {
-      reason: string;
-      issues?: string[];
+      tools: judgeTools(),
+      model: judge.model,
+      temperature: judge.temperature ?? DEFAULT_JUDGE_TEMPERATURE,
+      baseUrl: judge.baseUrl ?? DEFAULT_JUDGE_BASE_URL,
+      apiKey,
+      options: judge.options ?? {},
     };
-    const { reason, issues = [] } = args;
 
-    switch (toolCall.function.name) {
-      case "validation_pass":
-        return { compliant: true, issues: [], reason };
-      case "validation_warn":
-        return { compliant: false, severity: "warning", issues, reason };
-      case "validation_fail":
-        return { compliant: false, severity: "error", issues, reason };
-      default:
-        throw errors.unexpectedToolCall(toolCall.function.name);
+    let result: ProviderResult;
+
+    try {
+      result = await provider.judge(request);
+    } catch (err) {
+      if (err instanceof PraxisError) throw err;
+
+      throw errors.judgeProviderFailed(provider.name, (err as Error).message);
     }
+
+    this.lastUsageValue = result.usage;
+    return result.verdict;
   }
 
   /**

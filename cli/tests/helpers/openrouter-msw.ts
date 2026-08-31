@@ -21,14 +21,16 @@ export type ValidationToolName = "validation_pass" | "validation_warn" | "valida
 
 /**
  * Builds an OpenRouter chat-completion response body containing a single
- * validation tool call, matching the shape Judge parses.
+ * validation tool call, matching the shape the provider parses.
  *
  * @param toolName - Which validation tool the "model" called
  * @param args - The tool arguments (reason, and issues for warn/fail)
+ * @param usage - Optional usage block (prompt_tokens/completion_tokens/cost)
  */
 export function validationToolCallResponse(
   toolName: ValidationToolName,
   args: { reason: string; issues?: string[] },
+  usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number },
 ): object {
   return {
     choices: [
@@ -46,6 +48,7 @@ export function validationToolCallResponse(
         },
       },
     ],
+    ...(usage && { usage }),
   };
 }
 
