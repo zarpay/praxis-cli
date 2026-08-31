@@ -1,9 +1,8 @@
 import fg from "fast-glob";
 import { createHash } from "node:crypto";
-import { statSync } from "node:fs";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
-import { exists, readText, removeFile, writeText } from "@/core/files.js";
+import { exists, fileSize, readText, removeFile, writeText } from "@/core/files.js";
 import { baseName, joinPath, parentDir, validationCacheDir } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 
@@ -296,7 +295,7 @@ export class CacheManager {
 
     for (const file of cacheFiles) {
       try {
-        totalSize += statSync(file).size;
+        totalSize += fileSize(file);
       } catch {
         /* skip unreadable files */
       }
