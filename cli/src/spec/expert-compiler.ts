@@ -107,9 +107,7 @@ export class ExpertCompiler extends PraxisProjectBase {
     const builder = new OutputBuilder();
 
     builder.addRole(md.body());
-    // "practices" is the v2 key; "responsibilities" is its accepted v1 alias.
-    const practiceKey = fm.array("practices").length > 0 ? "practices" : "responsibilities";
-    builder.addResponsibilities(await this.inlineRefs(fm, practiceKey));
+    builder.addResponsibilities(await this.inlineRefs(fm, "practices"));
     builder.addConstitution(await this.inlineConstitution(fm));
     builder.addContext(await this.inlineRefs(fm, "context"));
     builder.addReference(await this.inlineRefs(fm, "refs"));
@@ -145,7 +143,6 @@ export class ExpertCompiler extends PraxisProjectBase {
    * Resolves constitution frontmatter to glob patterns.
    *
    * Supports:
-   * - `constitution: true` (deprecated, warns and returns empty)
    * - `constitution: "context/constitution/*.md"` (string glob pattern)
    * - `constitution: ["context/constitution/*.md"]` (array of patterns)
    *
@@ -155,13 +152,6 @@ export class ExpertCompiler extends PraxisProjectBase {
     const raw = fm.parse()["constitution"];
 
     if (!raw) {
-      return [];
-    }
-
-    if (raw === true) {
-      this.logger.warn(
-        'constitution: true is deprecated. Use an explicit path like: constitution: "context/constitution/*.md"',
-      );
       return [];
     }
 
@@ -178,7 +168,7 @@ export class ExpertCompiler extends PraxisProjectBase {
     const raw = fm.parse()["constitution"];
     const expanded = await this.resolveConstitutionPatterns(fm);
 
-    if (raw && raw !== true && expanded.length === 0) {
+    if (raw && expanded.length === 0) {
       this.logger.warn("Constitution patterns matched zero files");
     }
 
@@ -192,7 +182,7 @@ export class ExpertCompiler extends PraxisProjectBase {
    * glob patterns that match nothing so authors catch typos early.
    *
    * @param fm - The parsed frontmatter
-   * @param key - The frontmatter key to read (e.g. "responsibilities", "context", "refs")
+   * @param key - The frontmatter key to read (e.g. "practices", "context", "refs")
    * @returns Array of body strings with frontmatter stripped
    */
   private async inlineRefs(fm: Frontmatter, key: string): Promise<string[]> {

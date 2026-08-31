@@ -47,7 +47,7 @@ export function registerStatusCommand(program: Command): void {
  * Analyzes a Praxis project's health and displays the results.
  *
  * analyze() scans configured directories, checks cross-references
- * between roles and responsibilities, and tallies cached validation
+ * between experts and practices, and tallies cached validation
  * verdicts. display() renders the resulting report for the terminal.
  */
 export class StatusCommand extends PraxisProjectBase {
@@ -129,8 +129,7 @@ export class StatusCommand extends PraxisProjectBase {
       }
 
       // Check all ref-type keys
-      // "practices" is the v2 key; "responsibilities" is its accepted v1 alias.
-      for (const key of ["practices", "responsibilities", "context", "refs"]) {
+      for (const key of ["practices", "context", "refs"]) {
         const patterns = fm.array(key) as string[];
 
         for (const pattern of patterns) {
@@ -141,7 +140,7 @@ export class StatusCommand extends PraxisProjectBase {
               zeroMatchGlobs.push({ expert: expertName, pattern });
             }
 
-            if (key === "practices" || key === "responsibilities") {
+            if (key === "practices") {
               for (const m of matches) allReferencedPractices.add(m);
             }
           } else {
@@ -151,7 +150,7 @@ export class StatusCommand extends PraxisProjectBase {
               danglingRefs.push({ expert: expertName, ref: pattern });
             }
 
-            if (key === "practices" || key === "responsibilities") {
+            if (key === "practices") {
               allReferencedPractices.add(pattern);
             }
           }
@@ -159,7 +158,7 @@ export class StatusCommand extends PraxisProjectBase {
       }
     }
 
-    // Find orphaned responsibilities
+    // Find orphaned practices
     const orphanedPractices: string[] = [];
     for (const practiceFile of practiceFiles) {
       const relPath = relativePath(this.root, practiceFile);

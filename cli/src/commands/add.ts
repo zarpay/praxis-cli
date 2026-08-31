@@ -30,21 +30,6 @@ export function registerAddCommand(program: Command): void {
     .action((name: string) => {
       runAdd("practice", name);
     });
-
-  // Deprecated v1 aliases.
-  add
-    .command("role <name>")
-    .description("Deprecated: use `praxis add expert`")
-    .action((name: string) => {
-      runAdd("expert", name);
-    });
-
-  add
-    .command("responsibility <name>")
-    .description("Deprecated: use `praxis add practice`")
-    .action((name: string) => {
-      runAdd("practice", name);
-    });
 }
 
 /** Shared action body: build an AddCommand for the current project and run it. */

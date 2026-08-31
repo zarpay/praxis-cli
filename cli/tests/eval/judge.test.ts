@@ -86,35 +86,6 @@ describe("Judge", () => {
       expect(validator.targetType).toBe("practice");
     });
 
-    it("maps deprecated v1 type values to their v2 names", () => {
-      const dir = join(osTmpdir(), `praxis-legacy-type-${randomUUID()}`);
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(join(dir, "README.md"), "# Spec");
-      writeFileSync(join(dir, "old-role.md"), "---\ntype: role\n---\n# Old");
-      writeFileSync(join(dir, "old-resp.md"), "---\ntype: responsibility\n---\n# Old");
-
-      const roleTyped = new Judge({ targetPath: join(dir, "old-role.md"), useCache: false });
-      const respTyped = new Judge({ targetPath: join(dir, "old-resp.md"), useCache: false });
-
-      expect(roleTyped.targetType).toBe("expert");
-      expect(respTyped.targetType).toBe("practice");
-
-      rmSync(dir, { recursive: true, force: true });
-    });
-
-    it("infers expert type from a legacy /roles/ path", () => {
-      const dir = join(osTmpdir(), `praxis-legacy-dir-${randomUUID()}`);
-      mkdirSync(join(dir, "roles"), { recursive: true });
-      writeFileSync(join(dir, "roles", "README.md"), "# Spec");
-      writeFileSync(join(dir, "roles", "untyped.md"), "# No frontmatter");
-
-      const judge = new Judge({ targetPath: join(dir, "roles", "untyped.md"), useCache: false });
-
-      expect(judge.targetType).toBe("expert");
-
-      rmSync(dir, { recursive: true, force: true });
-    });
-
     it("detects template type from filename prefix", () => {
       const validator = new Judge({
         targetPath: join(tmpdir, "content", "context", "constitution", "_template.md"),

@@ -239,30 +239,6 @@ describe("ExpertCompiler", () => {
     });
   });
 
-  describe("legacy frontmatter", () => {
-    it("inlines files listed under the deprecated responsibilities: key", async () => {
-      const legacyFile = join(expertsDir, "legacy.md");
-      writeFileSync(
-        legacyFile,
-        [
-          "---",
-          "alias: Legacy",
-          "description: legacy expert",
-          "responsibilities:",
-          "  - content/practices/test-practice.md",
-          "---",
-          "# Legacy",
-        ].join("\n"),
-      );
-
-      await compiler.compile(legacyFile);
-      const content = readFileSync(join(agentsOutputDir, "legacy.md"), "utf-8");
-
-      expect(content).toContain("# Responsibilities");
-      expect(content).toContain("Test Practice");
-    });
-  });
-
   describe("compileAll()", () => {
     it("compiles all roles in the roles directory", async () => {
       const result = await compiler.compileAll();
@@ -419,18 +395,6 @@ describe("ExpertCompiler", () => {
       await compiler.compile(expertFile);
 
       expect(logOutput()).toContain("Glob pattern matched zero files: content/reference/nope-*.md");
-    });
-
-    it("warns when constitution: true is deprecated", async () => {
-      const expertFile = join(expertsDir, "deprecated-const.md");
-      writeFileSync(
-        expertFile,
-        "---\nalias: DepConst\ndescription: test\nconstitution: true\n---\n# Deprecated Constitution",
-      );
-
-      await compiler.compile(expertFile);
-
-      expect(logOutput()).toContain("constitution: true is deprecated");
     });
 
     it("warns when constitution patterns match zero files", async () => {

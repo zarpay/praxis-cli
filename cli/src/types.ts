@@ -138,10 +138,6 @@ export interface RawConfig {
   ignore?: string[];
   expertsDir?: string;
   practicesDir?: string;
-  /** Deprecated v1 name for expertsDir; accepted and normalized. */
-  rolesDir?: string;
-  /** Deprecated v1 name for practicesDir; accepted and normalized. */
-  responsibilitiesDir?: string;
   judges?: Partial<JudgeConfig>[];
   /** Filename or glob pattern for spec files (default: "README.md"). */
   specFilePattern?: string;

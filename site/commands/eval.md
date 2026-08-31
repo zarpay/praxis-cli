@@ -2,10 +2,6 @@
 
 AI-powered evaluation: judges targets against their specs.
 
-::: info Deprecated aliases
-`praxis validate document|all|ci|report` still work as deprecated aliases for `eval run`, `eval ci`, and `eval verdict`. New usage belongs on `eval`.
-:::
-
 ## Prerequisites
 
 Each judge runs through its configured provider — OpenRouter by default, or a custom provider module (see [Configuration — providers](/reference/config#providers)). Configure one or more judges in `.praxis/config.json` and set each judge's key variable:

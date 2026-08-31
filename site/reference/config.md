@@ -230,22 +230,19 @@ Glob patterns are supported:
 - [Validation Domains](/concepts/validation-domains)
 - [Claude Code Plugin](/plugins/claude-code)
 
-## Compatibility with pre-1.4 projects
+## Breaking changes from 1.x
 
-Everything a 1.3.x project wrote keeps working — the old spellings are
-accepted and normalized, no migration required:
+v2 drops every 1.x compatibility spelling — nothing is aliased or
+normalized:
 
-| Legacy (still accepted) | Current |
+| Removed | Use instead |
 | --- | --- |
-| `rolesDir` config key | `expertsDir` |
-| `responsibilitiesDir` config key | `practicesDir` |
-| `type: role` frontmatter | `type: expert` |
-| `type: responsibility` frontmatter | `type: practice` |
+| `rolesDir` / `responsibilitiesDir` config keys | `expertsDir` / `practicesDir` |
+| `type: role` / `type: responsibility` frontmatter | `type: expert` / `type: practice` |
 | `responsibilities:` list in an expert file | `practices:` |
+| `validation:` config section | `judges:` + top-level `specFilePattern` |
+| `constitution: true` | an explicit glob, e.g. `constitution: "context/constitution/*.md"` |
 | `praxis validate document\|all\|ci\|report` | `praxis eval run\|ci\|verdict` |
 | `praxis add role\|responsibility` | `praxis add expert\|practice` |
 
-When both spellings are present (e.g. `expertsDir` and `rolesDir`), the
-current one wins. Default `sources` also include the legacy `roles` and
-`responsibilities` directory names, so unconfigured pre-1.4 projects
-keep being scanned.
+Default `sources` are `["experts", "practices", "reference", "context"]`.

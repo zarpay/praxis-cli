@@ -33,14 +33,7 @@ describe("PraxisConfig", () => {
 
     expect(config.agentProfilesOutputDir).toBe(join(dir, "agent-profiles"));
     expect(config.plugins).toEqual([]);
-    expect(config.sources).toEqual([
-      "experts",
-      "practices",
-      "roles",
-      "responsibilities",
-      "reference",
-      "context",
-    ]);
+    expect(config.sources).toEqual(["experts", "practices", "reference", "context"]);
     expect(config.expertsDir).toBe(join(dir, "experts"));
     expect(config.practicesDir).toBe(join(dir, "practices"));
   });
@@ -116,14 +109,7 @@ describe("PraxisConfig", () => {
     // agentProfilesOutputDir should use default
     expect(config.agentProfilesOutputDir).toBe(join(dir, "agent-profiles"));
     expect(config.plugins).toEqual([{ name: "claude-code" }]);
-    expect(config.sources).toEqual([
-      "experts",
-      "practices",
-      "roles",
-      "responsibilities",
-      "reference",
-      "context",
-    ]);
+    expect(config.sources).toEqual(["experts", "practices", "reference", "context"]);
     expect(config.expertsDir).toBe(join(dir, "experts"));
   });
 
@@ -161,25 +147,6 @@ describe("PraxisConfig", () => {
     const config = new PraxisConfig(dir);
 
     expect(config.sources).toEqual(["knowledge", "docs"]);
-  });
-
-  it("accepts deprecated v1 keys rolesDir and responsibilitiesDir", () => {
-    const dir = makeTmpdir();
-    writeConfig(dir, { rolesDir: "content/roles", responsibilitiesDir: "content/resps" });
-
-    const config = new PraxisConfig(dir);
-
-    expect(config.expertsDir).toBe(join(dir, "content", "roles"));
-    expect(config.practicesDir).toBe(join(dir, "content", "resps"));
-  });
-
-  it("prefers v2 keys over deprecated v1 keys when both are present", () => {
-    const dir = makeTmpdir();
-    writeConfig(dir, { expertsDir: "experts", rolesDir: "roles" });
-
-    const config = new PraxisConfig(dir);
-
-    expect(config.expertsDir).toBe(join(dir, "experts"));
   });
 
   it("loads custom expertsDir from config", () => {

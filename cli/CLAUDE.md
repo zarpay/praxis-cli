@@ -68,9 +68,9 @@ Key files: `src/eval/judge.ts`, `src/prompts/` (one prompt per file), `src/eval/
 ### Configuration
 
 Config lives at `{root}/.praxis/config.json` with these fields:
-- `sources: string[]` — directories scanned for documents (default includes `experts`, `practices`, and the legacy `experts`/`practices` names)
-- `expertsDir: string` — where expert `.md` files live (default: `"experts"`; deprecated `rolesDir` accepted)
-- `practicesDir: string` — where practice `.md` files live (default: `"practices"`; deprecated `responsibilitiesDir` accepted)
+- `sources: string[]` — directories scanned for documents (default: `experts`, `practices`, `reference`, `context`)
+- `expertsDir: string` — where expert `.md` files live (default: `"experts"`)
+- `practicesDir: string` — where practice `.md` files live (default: `"practices"`)
 - `agentProfilesOutputDir: string | false` — where pure profiles are written (default: `"./agent-profiles"`)
 - `plugins: (string | PluginConfigEntry)[]` — enabled plugins with optional per-plugin config (default: `[]`). String entries are normalized to `{ name: theString }`. Object entries support `name`, `outputDir`, `claudeCodePluginName`.
 - `judges: { name, model, apiKeyEnvVar, baseUrl?, temperature?, provider?, options? }[]` — the configured judges; every judge evaluates every target, each with its own cache namespace keyed by its behavioral hash. `provider` selects the execution backend: a built-in registry name (default `"openrouter"`) or a `./relative` ESM module path whose default export is a provider factory (`src/eval/providers/types.ts`); `options` passes through to the provider verbatim (`src/eval/judge-hash.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.

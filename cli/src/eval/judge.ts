@@ -42,12 +42,6 @@ const FRONTMATTER_TYPES: readonly TargetType[] = [
   "constitution",
 ];
 
-/** Deprecated v1 `type:` values, accepted and mapped to their v2 names. */
-const LEGACY_TYPES: Record<string, TargetType> = {
-  role: "expert",
-  responsibility: "practice",
-};
-
 /**
  * AI-powered judge.
  *
@@ -272,22 +266,18 @@ export class Judge {
       if ((FRONTMATTER_TYPES as string[]).includes(type)) {
         return type as TargetType;
       }
-
-      if (type in LEGACY_TYPES) {
-        return LEGACY_TYPES[type];
-      }
     }
 
     return this.inferTypeFromPath();
   }
 
-  /** Infers target type from its filesystem path (legacy dir names included). */
+  /** Infers target type from its filesystem path. */
   private inferTypeFromPath(): TargetType {
-    if (this.targetPath.includes("/experts/") || this.targetPath.includes("/roles/")) {
+    if (this.targetPath.includes("/experts/")) {
       return "expert";
     }
 
-    if (this.targetPath.includes("/practices/") || this.targetPath.includes("/responsibilities/")) {
+    if (this.targetPath.includes("/practices/")) {
       return "practice";
     }
 

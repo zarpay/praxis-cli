@@ -44,4 +44,4 @@ Briefs with triangulated diagnosis, `harness suggest` + the generated drafting c
 - The `validation:` config section is removed; projects configure `judges: []` and top-level `specFilePattern`.
 - Pre-namespacing caches are not migrated; the first v2 run re-judges (a one-time cost the cache immediately amortizes).
 - Ledger backfill from cache hits on the first ledger-enabled run, marked `backfilled: true` (05's open question — resolved: yes).
-- **Pre-release task: strip the 1.4 compatibility aliases** still in the code (validate CLI verbs, `rolesDir`/`responsibilitiesDir`, `type: role|responsibility`, `responsibilities:` list key, `add role|responsibility`). They ship in the 1.4.x line; v2 drops them in one deliberate sweep before release.
+- ~~**Pre-release task: strip the 1.4 compatibility aliases**~~ Done (2026-08-31): validate CLI verbs, `rolesDir`/`responsibilitiesDir`, `type: role|responsibility`, `responsibilities:` list key, `add role|responsibility`, `constitution: true`, and the legacy default sources are all removed. v2 accepts only v2 spellings.

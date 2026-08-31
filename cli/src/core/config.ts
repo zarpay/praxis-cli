@@ -26,10 +26,7 @@ export const DEFAULT_JUDGE_TEMPERATURE = 0.1;
 const DEFAULT_CONFIG: NormalizedConfig = {
   agentProfilesOutputDir: "./agent-profiles",
   plugins: [],
-  // Legacy v1 directory names stay in the default scan list so projects
-  // that predate the expert/practice rename keep working; missing
-  // directories are skipped harmlessly everywhere.
-  sources: ["experts", "practices", "roles", "responsibilities", "reference", "context"],
+  sources: ["experts", "practices", "reference", "context"],
   ignore: [],
   expertsDir: "experts",
   practicesDir: "practices",
@@ -137,8 +134,8 @@ export class PraxisConfig {
       plugins: this.normalizePlugins(raw.plugins ?? []),
       sources: raw.sources ?? DEFAULT_CONFIG.sources,
       ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
-      expertsDir: raw.expertsDir ?? raw.rolesDir ?? DEFAULT_CONFIG.expertsDir,
-      practicesDir: raw.practicesDir ?? raw.responsibilitiesDir ?? DEFAULT_CONFIG.practicesDir,
+      expertsDir: raw.expertsDir ?? DEFAULT_CONFIG.expertsDir,
+      practicesDir: raw.practicesDir ?? DEFAULT_CONFIG.practicesDir,
       judges: this.normalizeJudges(raw),
       specFilePattern: raw.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN,
     };
