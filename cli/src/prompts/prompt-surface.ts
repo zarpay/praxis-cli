@@ -1,4 +1,4 @@
-import type { PromptFile } from "@/prompts/prompt-file.js";
+import type { PromptFile } from "@/prompts/types.js";
 
 import judgeTools from "@/prompts/judge-tools.js";
 import systemPrompt from "@/prompts/system-prompt.js";

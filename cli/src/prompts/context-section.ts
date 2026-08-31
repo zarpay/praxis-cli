@@ -1,4 +1,4 @@
-import type { PromptFile } from "@/prompts/prompt-file.js";
+import type { PromptFile } from "@/prompts/types.js";
 
 /**
  * The CONTEXT prompt section: assist-only reference files that inform

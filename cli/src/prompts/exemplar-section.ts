@@ -1,4 +1,4 @@
-import type { PromptFile } from "@/prompts/prompt-file.js";
+import type { PromptFile } from "@/prompts/types.js";
 
 /**
  * The EXEMPLARS prompt section: spec-blessed positive examples, shown

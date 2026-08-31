@@ -1,24 +1,8 @@
-import type { PromptFile } from "@/prompts/prompt-file.js";
+import type { ValidationQuestionInput } from "@/prompts/types.js";
 
 import { baseName, parentDir } from "@/core/paths.js";
 import contextSection from "@/prompts/context-section.js";
 import exemplarSection from "@/prompts/exemplar-section.js";
-
-/** Everything the user prompt is built from. */
-export interface ValidationQuestionInput {
-  /** The spec content the target is judged against. */
-  specContent: string;
-  /** The judgment input: one file's content, or an assembled cohort. */
-  targetContent: string;
-  /** Path of the file, or of the cohort's directory. */
-  targetPath: string;
-  /** Whether the target is one file or a pre-assembled cohort of files. */
-  kind: "file" | "cohort";
-  /** Spec-blessed positive examples, inlined and never judged. */
-  exemplars: readonly PromptFile[];
-  /** Assist-only reference files, inlined and never judged. */
-  context: readonly PromptFile[];
-}
 
 /**
  * The user prompt sent to the LLM for one judgment: specification,
