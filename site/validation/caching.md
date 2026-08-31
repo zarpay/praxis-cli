@@ -26,7 +26,6 @@ The file contains a `verdicts` map keyed by `<specHash>:<judgeHash>`: an 8-char 
     "a1b2c3d4:f83a92f1": {
       "judge": { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "hash": "f83a92f1" },
       "spec_path": "experts/README.md",
-      "target_type": "expert",
       "cached_at": "2026-08-31T14:30:45.123Z",
       "content_hash": "abcd1234",
       "context_files": [{ "path": "src/domain/types.ts", "hash": "f1d20738" }],

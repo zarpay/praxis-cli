@@ -24,7 +24,7 @@ describe("VerdictReporter", () => {
       version: "3.0",
       cached_at: "2026-08-31T12:00:00Z",
       content_hash: contentHash(DOC_CONTENT, SPEC_CONTENT),
-      document: { path: targetPath, type: "unknown", spec_path: join(dir, "README.md") },
+      document: { path: targetPath, spec_path: join(dir, "README.md") },
       result: { compliant: true, issues: [], reason: "All good", ...overrides },
     };
   }

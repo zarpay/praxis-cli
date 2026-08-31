@@ -102,7 +102,6 @@ export class CacheManager extends PraxisBase {
     contentHash: string;
     result: Verdict;
     metadata: {
-      targetType: string;
       specPath: string;
       /** Resolved exemplar provenance, recorded when the spec blesses any. */
       exemplarFiles?: AssistFileRecord[];
@@ -115,7 +114,6 @@ export class CacheManager extends PraxisBase {
     const entry: VerdictEntry = {
       judge: this.judgeIdentity(),
       spec_path: this.relSpecPath(metadata.specPath),
-      target_type: metadata.targetType,
       cached_at: new Date().toISOString(),
       content_hash: contentHash,
       result: {
@@ -363,7 +361,6 @@ export class CacheManager extends PraxisBase {
       content_hash: entry.content_hash,
       document: {
         path: targetPath,
-        type: entry.target_type,
         spec_path: entry.spec_path,
       },
       result: entry.result,

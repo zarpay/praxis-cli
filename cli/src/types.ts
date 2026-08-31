@@ -254,7 +254,6 @@ export interface CacheJudgeIdentity {
 export interface VerdictEntry {
   judge: CacheJudgeIdentity;
   spec_path: string;
-  target_type: string;
   cached_at: string;
   content_hash: string;
   /** Resolved exemplar files the judge saw, with content hashes (present when the spec blesses any). */
@@ -284,7 +283,6 @@ export interface CacheFileData {
   content_hash: string;
   document: {
     path: string;
-    type: string;
     spec_path: string;
   };
   result: Verdict;
@@ -383,20 +381,6 @@ export interface ChatCompletionResponse {
   }[];
   usage?: ChatCompletionUsage;
 }
-
-// ---------------------------------------------------------------------------
-// The judge (eval/judge.ts)
-// ---------------------------------------------------------------------------
-
-/** Known target types within the Praxis content structure. */
-export type TargetType =
-  | "expert"
-  | "practice"
-  | "reference"
-  | "convention"
-  | "constitution"
-  | "template"
-  | "unknown";
 
 // ---------------------------------------------------------------------------
 // The eval run (eval/eval-run.ts)

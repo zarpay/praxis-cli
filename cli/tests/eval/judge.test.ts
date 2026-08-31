@@ -67,45 +67,6 @@ describe("Judge", () => {
     });
   }
 
-  describe("document type detection", () => {
-    it("detects expert type from frontmatter", () => {
-      const validator = new Judge({
-        targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
-        useCache: false,
-      });
-
-      expect(validator.targetType).toBe("expert");
-    });
-
-    it("detects practice type from frontmatter", () => {
-      const validator = new Judge({
-        targetPath: join(tmpdir, "content", "practices", "test-practice.md"),
-        useCache: false,
-      });
-
-      expect(validator.targetType).toBe("practice");
-    });
-
-    it("detects template type from filename prefix", () => {
-      const validator = new Judge({
-        targetPath: join(tmpdir, "content", "context", "constitution", "_template.md"),
-        useCache: false,
-      });
-
-      expect(validator.targetType).toBe("template");
-    });
-
-    it("infers type from path when no type in frontmatter", () => {
-      const validator = new Judge({
-        targetPath: join(tmpdir, "content", "experts", "README.md"),
-        specPath: join(tmpdir, "content", "experts", "README.md"),
-        useCache: false,
-      });
-
-      expect(validator.targetType).toBe("expert");
-    });
-  });
-
   describe("validate()", () => {
     it("returns compliant result for a validation_pass tool call", async () => {
       useOpenRouterResponse(server, fixtures.pass);

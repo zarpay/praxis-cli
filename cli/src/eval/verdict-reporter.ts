@@ -83,7 +83,6 @@ export class VerdictReporter extends PraxisBase {
       { header: "Validation Report", width: DIVIDER_WIDTH },
       "",
       `  Document:  ${report.targetPath}`,
-      cacheData && `  Type:      ${cacheData.document.type}`,
       cacheData && `  Spec:      ${cacheData.document.spec_path}`,
       cacheData && `  Validated: ${this.formatDate(cacheData.cached_at)}`,
       "",

@@ -78,7 +78,6 @@ describe("CacheManager", () => {
       reason: "All good",
     };
     const metadata = {
-      targetType: "role",
       specPath: "roles/README.md",
     };
 
@@ -139,8 +138,8 @@ describe("CacheManager", () => {
         reason: "Fail spec B",
         severity: "error" as const,
       };
-      const metadata1 = { targetType: "reference", specPath: "specs/README.md" };
-      const metadata2 = { targetType: "reference", specPath: "other/README.md" };
+      const metadata1 = { specPath: "specs/README.md" };
+      const metadata2 = { specPath: "other/README.md" };
 
       manager.write({ targetPath, contentHash: "hash1", result: result1, metadata: metadata1 });
       manager.write({ targetPath, contentHash: "hash2", result: result2, metadata: metadata2 });
@@ -162,8 +161,8 @@ describe("CacheManager", () => {
 
     it("stores both spec entries in a single cache file", () => {
       const targetPath = join(projectRoot, "docs", "guide.md");
-      const metadata1 = { targetType: "reference", specPath: "specs/README.md" };
-      const metadata2 = { targetType: "reference", specPath: "other/README.md" };
+      const metadata1 = { specPath: "specs/README.md" };
+      const metadata2 = { specPath: "other/README.md" };
 
       manager.write({
         targetPath,
@@ -187,7 +186,7 @@ describe("CacheManager", () => {
         targetPath,
         contentHash: "hash1",
         result: { compliant: true, issues: [], reason: "ok" },
-        metadata: { targetType: "reference", specPath: "specs/README.md" },
+        metadata: { specPath: "specs/README.md" },
       });
 
       const cached = manager.read({
@@ -201,7 +200,7 @@ describe("CacheManager", () => {
 
     it("returns a cache hit on second run with same spec", () => {
       const targetPath = join(projectRoot, "docs", "guide.md");
-      const metadata = { targetType: "reference", specPath: "specs/README.md" };
+      const metadata = { specPath: "specs/README.md" };
 
       manager.write({
         targetPath,
@@ -239,13 +238,13 @@ describe("CacheManager", () => {
         targetPath: join(projectRoot, "roles", "a.md"),
         contentHash: "aaaa1111",
         result: { compliant: true, issues: [], reason: "ok" },
-        metadata: { targetType: "role", specPath: "roles/README.md" },
+        metadata: { specPath: "roles/README.md" },
       });
       manager.write({
         targetPath: join(projectRoot, "roles", "b.md"),
         contentHash: "bbbb2222",
         result: { compliant: true, issues: [], reason: "ok" },
-        metadata: { targetType: "role", specPath: "roles/README.md" },
+        metadata: { specPath: "roles/README.md" },
       });
 
       const stats = manager.stats();
@@ -265,7 +264,7 @@ describe("CacheManager", () => {
         targetPath: join(projectRoot, "roles", "deleted-role.md"),
         contentHash: "dead1234",
         result: { compliant: true, issues: [], reason: "ok" },
-        metadata: { targetType: "role", specPath: "roles/README.md" },
+        metadata: { specPath: "roles/README.md" },
       });
 
       const orphans = manager.orphanedCacheFiles(projectRoot, ["roles"]);
@@ -289,13 +288,13 @@ describe("CacheManager", () => {
         targetPath,
         contentHash: "hash1234",
         result: { compliant: true, issues: [], reason: "judge A verdict" },
-        metadata: { targetType: "expert", specPath: "roles/README.md" },
+        metadata: { specPath: "roles/README.md" },
       });
       managerB.write({
         targetPath,
         contentHash: "hash1234",
         result: { compliant: false, issues: ["x"], reason: "judge B verdict", severity: "error" },
-        metadata: { targetType: "expert", specPath: "roles/README.md" },
+        metadata: { specPath: "roles/README.md" },
       });
 
       // One artifact per target — both verdicts land in the same file.
@@ -311,7 +310,7 @@ describe("CacheManager", () => {
         targetPath,
         contentHash: "hash1234",
         result: { compliant: true, issues: [], reason: "judge A verdict" },
-        metadata: { targetType: "expert", specPath: "roles/README.md" },
+        metadata: { specPath: "roles/README.md" },
       });
 
       const fromB = managerB.read({
@@ -333,7 +332,7 @@ describe("CacheManager", () => {
       const managerA = new CacheManager({ cacheRoot, projectRoot, judge: judgeA });
       const managerB = new CacheManager({ cacheRoot, projectRoot, judge: judgeB });
       const targetPath = join(projectRoot, "roles", "shared.md");
-      const metadata = { targetType: "expert", specPath: "roles/README.md" };
+      const metadata = { specPath: "roles/README.md" };
 
       managerA.write({
         targetPath,
@@ -361,7 +360,7 @@ describe("CacheManager", () => {
       const managerA = new CacheManager({ cacheRoot, projectRoot, judge: judgeA });
       const managerB = new CacheManager({ cacheRoot, projectRoot, judge: judgeB });
       const targetPath = join(projectRoot, "roles", "shared.md");
-      const metadata = { targetType: "expert", specPath: "roles/README.md" };
+      const metadata = { specPath: "roles/README.md" };
 
       managerA.write({
         targetPath,
@@ -417,7 +416,7 @@ describe("CacheManager", () => {
         targetPath,
         contentHash: "newhash1",
         result: { compliant: true, issues: [], reason: "recovered" },
-        metadata: { targetType: "role", specPath: "roles/README.md" },
+        metadata: { specPath: "roles/README.md" },
       });
 
       const cached = manager.read({
@@ -437,7 +436,6 @@ describe("CacheManager", () => {
       reason: "All good",
     };
     const metadata = {
-      targetType: "role",
       specPath: "roles/README.md",
     };
 
@@ -451,7 +449,6 @@ describe("CacheManager", () => {
       expect(cached!.content_hash).toBe(hash);
       expect(cached!.cached_at).toBeTruthy();
       expect(cached!.document.path).toBe(targetPath);
-      expect(cached!.document.type).toBe("role");
       expect(cached!.document.spec_path).toBe("roles/README.md");
       expect(cached!.result).toEqual(result);
     });
@@ -503,8 +500,8 @@ describe("CacheManager", () => {
   describe("readAllRaw()", () => {
     it("returns all spec entries for a document with multiple validations", () => {
       const targetPath = join(projectRoot, "docs", "guide.md");
-      const metadata1 = { targetType: "reference", specPath: "specs/README.md" };
-      const metadata2 = { targetType: "reference", specPath: "other/README.md" };
+      const metadata1 = { specPath: "specs/README.md" };
+      const metadata2 = { specPath: "other/README.md" };
 
       manager.write({
         targetPath,
@@ -544,7 +541,7 @@ describe("CacheManager", () => {
         targetPath,
         contentHash: "hash1",
         result: { compliant: true, issues: [], reason: "ok" },
-        metadata: { targetType: "role", specPath: "roles/README.md" },
+        metadata: { specPath: "roles/README.md" },
       });
 
       const all = manager.readAllRaw({ targetPath });
@@ -555,7 +552,7 @@ describe("CacheManager", () => {
   });
 
   describe("text sanitization", () => {
-    const metadata = { targetType: "role", specPath: "roles/README.md" };
+    const metadata = { specPath: "roles/README.md" };
 
     it("strips control characters and double quotes from reason and issues", () => {
       const targetPath = join(projectRoot, "roles", "test-expert.md");

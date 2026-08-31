@@ -4,7 +4,6 @@ import type {
   ProviderRequest,
   ProviderResult,
   ProviderUsage,
-  TargetType,
   Verdict,
 } from "@/types.js";
 
@@ -18,8 +17,7 @@ import {
 } from "@/core/config.js";
 import { PraxisError, errors } from "@/core/errors.js";
 import { exists, readText } from "@/core/files.js";
-import { Frontmatter } from "@/core/frontmatter.js";
-import { baseName, joinPath, parentDir } from "@/core/paths.js";
+import { joinPath, parentDir } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
 import { CacheManager, contentHash } from "@/eval/cache-manager.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
@@ -32,15 +30,6 @@ import { resolveProvider } from "@/eval/providers/registry.js";
 import judgeTools from "@/prompts/judge-tools.js";
 import systemPrompt from "@/prompts/system-prompt.js";
 import validationQuestion from "@/prompts/validation-question.js";
-
-/** Target types that can be declared via the `type` frontmatter field. */
-const FRONTMATTER_TYPES: readonly TargetType[] = [
-  "expert",
-  "practice",
-  "reference",
-  "convention",
-  "constitution",
-];
 
 /**
  * AI-powered judge.
@@ -62,9 +51,6 @@ export class Judge {
   readonly targetContent: string;
   /** Spec content as read at construction time. */
   readonly specContent: string;
-  /** Detected type of the document (frontmatter or path-derived). */
-  readonly targetType: TargetType;
-
   private result: Verdict | null = null;
   private readonly cacheManager: CacheManager | null;
   private wasCacheHit = false;
@@ -108,7 +94,6 @@ export class Judge {
     this.targetPath = targetPath;
     this.targetContent = targetContent ?? readText(targetPath);
     this.kind = kind;
-    this.targetType = this.detectDocumentType();
     this.specFilePattern = specFilePattern;
     this.specPath = specPath ?? this.findSpec();
     this.specContent = readText(this.specPath);
@@ -177,7 +162,6 @@ export class Judge {
         contentHash: this.getContentHash(),
         result: this.result,
         metadata: {
-          targetType: this.targetType,
           specPath: this.specPath,
           exemplarFiles: assistFileRecords(this.assist.exemplars),
           contextFiles: assistFileRecords(this.assist.context),
@@ -244,48 +228,6 @@ export class Judge {
 
     this.lastUsageValue = result.usage;
     return result.verdict;
-  }
-
-  /**
-   * Detects the document type from frontmatter or path inference.
-   *
-   * Files starting with `_` are templates. Otherwise, the `type`
-   * frontmatter field wins when it names a known type; failing that,
-   * the type is inferred from the document's directory path.
-   */
-  private detectDocumentType(): TargetType {
-    if (baseName(this.targetPath).startsWith("_")) {
-      return "template";
-    }
-
-    const type = Frontmatter.fromContent(this.targetContent).value("type");
-
-    if (typeof type === "string") {
-      if ((FRONTMATTER_TYPES as string[]).includes(type)) {
-        return type as TargetType;
-      }
-    }
-
-    return this.inferTypeFromPath();
-  }
-
-  /** Infers target type from its filesystem path. */
-  private inferTypeFromPath(): TargetType {
-    if (this.targetPath.includes("/experts/")) {
-      return "expert";
-    }
-
-    if (this.targetPath.includes("/practices/")) {
-      return "practice";
-    }
-
-    if (this.targetPath.includes("/reference/")) return "reference";
-
-    if (this.targetPath.includes("/conventions/")) return "convention";
-
-    if (this.targetPath.includes("/constitution/")) return "constitution";
-
-    return "unknown";
   }
 
   /** Finds the spec file in the document's directory using the configured pattern. */
