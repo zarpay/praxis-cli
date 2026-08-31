@@ -45,15 +45,20 @@ The **Claude Code plugin** (`src/spec/plugins/claude-code.ts`) wraps the profile
 ### Eval Layer — Judge Pipeline
 
 ```
-Document .md + directory README.md (spec)
-  → Content hash computed (SHA256, 8-char prefix)
-  → Cache checked: .praxis/cache/validation/{type}/{name}.json
-  → On miss: LLM call via OpenRouter API (env var name from config.validation.apiKeyEnvVar)
-  → Response parsed (Yes/Maybe/No + issues)
-  → Result cached with content_hash for invalidation
+Spec discovered (specFilePattern match, frontmatter read)
+  → Units resolved: paths:/cohort: expand; excludes:/exemplars: shielded from judgment
+  → Assist inputs resolved: exemplars: + context: files (src/eval/judgment-input.ts)
+  → Content hash computed over the full judgment input: target + spec + assist (SHA256, 8-char prefix)
+  → Cache checked: one file per target at .praxis/cache/validation/<target-path>.json,
+      verdicts keyed <specHash>:<judgeHash> (format 3.0)
+  → On miss: one LLM call per configured judge via OpenRouter (tool_choice: required)
+  → Verdict from the tool call (pass/warn/fail + issues); cached with content_hash
+      and assist provenance (exemplar_files/context_files with per-file hashes)
 ```
 
-Key files: `src/eval/judge.ts`, `src/eval/cache-manager.ts`, `src/eval/batch-judge.ts`, `src/eval/report-formatter.ts`.
+Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never judged), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
+
+Key files: `src/eval/judge.ts`, `src/eval/judgment-input.ts`, `src/eval/cache-manager.ts`, `src/eval/batch-judge.ts`, `src/eval/verdict-reporter.ts`, `src/eval/judge-hash.ts`.
 
 ### Project Root Detection
 

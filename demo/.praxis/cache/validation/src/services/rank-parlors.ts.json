@@ -9,13 +9,19 @@
       },
       "spec_path": "src/services/README.md",
       "target_type": "unknown",
-      "cached_at": "2026-08-31T00:02:48.996Z",
-      "content_hash": "150eacde",
+      "cached_at": "2026-08-31T11:19:45.573Z",
+      "content_hash": "164ae3c9",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file conforms to every criterion in the Service Conventions specification. The module is verb-first kebab-case (rank-parlors.ts) and exports a single entry point, `run`, which takes the `Store` first and a single input object, returning `Result<RankedParlor[]>` from the domain types. Domain failures are returned as values (`{ ok: false, error }`) with a consumer-oriented message naming the field and the accepted form ('minReviews must be a whole number of 0 or more'). Input is validated at the top before any work begins. The service does one thing (ranks parlors) and performs no I/O except through the injected Store. The doc comment states the purpose in one sentence and enumerates the domain failure modes so callers can handle every error without reading the body."
-      }
+        "reason": "The file satisfies every criterion in the Service Conventions specification. Structure: it exports a single entry point `run(store, input)` with the Store first and a single input object, returning `Result<RankedParlor[]>` from the domain types; the module name `rank-parlors.ts` is verb-first kebab-case and describes the service. Behavior: domain failures are returned as `{ ok: false, error }` values (no exceptions), the error message names what was wrong and what would be accepted ('minReviews must be a whole number of 0 or more'), input validation occurs at the top before any work, the service does one thing, and all I/O goes through the injected Store (listParlors/listReviews only). Documentation: the doc comment states the purpose in one sentence and enumerates the domain failure modes so callers can handle every error without reading the body."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
     },
     "0311531a:4e6f3185": {
       "judge": {
@@ -25,13 +31,19 @@
       },
       "spec_path": "src/services/README.md",
       "target_type": "unknown",
-      "cached_at": "2026-08-31T00:04:24.715Z",
-      "content_hash": "150eacde",
+      "cached_at": "2026-08-31T11:20:18.549Z",
+      "content_hash": "164ae3c9",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file rank-parlors.ts fully satisfies all criteria in the specification: it exports the required run function with correct signature, follows verb-first kebab-case naming, implements domain failures as values with clear error messages, validates input before work, performs a single responsibility, uses only injected Store for I/O, and includes proper documentation with purpose statement and failure modes enumeration."
-      }
+        "reason": "The file satisfies all required criteria of the specification. It follows the exact structural pattern, has proper naming, handles errors as values with consumer-friendly messages, validates input first, maintains single responsibility, uses only injected Store for I/O, and includes complete documentation."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
     }
   }
 }

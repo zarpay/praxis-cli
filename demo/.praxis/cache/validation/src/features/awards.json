@@ -9,16 +9,26 @@
       },
       "spec_path": "src/features/README.md",
       "target_type": "unknown",
-      "cached_at": "2026-08-31T00:02:16.721Z",
-      "content_hash": "b05a69cf",
+      "cached_at": "2026-08-31T11:23:27.864Z",
+      "content_hash": "486559a7",
       "result": {
         "compliant": false,
         "severity": "warning",
         "issues": [
-          "The dedicated types file is named `award-types.ts`, but the spec's structure rule requires `<feature>-types.ts`; since the feature directory is `awards`, the file should be `awards-types.ts` to match the naming convention exactly."
+          "Structure criterion 'Types live in a dedicated <feature>-types.ts file': the feature directory is `awards`, so the pattern calls for `awards-types.ts`, but the file is named `award-types.ts` (singular). Rename to `awards-types.ts` (and update the import in index.ts) to match the `<feature>-types.ts` convention exactly."
         ],
-        "reason": "The awards feature set conforms to the Feature Module Conventions: a single entry point (index.ts) re-exports the full public API (run as pickWinners, PickWinnersInput, Award); logic lives in a verb-first kebab-case file (pick-winners.ts) with one exported `run`, Result-based error handling, and consumer-grade error messages; all files are reachable from index.ts (no orphans); the files serve one capability (yearly awards); and the feature name describes the capability rather than its implementation."
-      }
+        "reason": "The awards feature satisfies the core conventions: a single entry point (index.ts) re-exports the entire public API (run as pickWinners, PickWinnersInput, Award); logic lives in a verb-first kebab-case file (pick-winners.ts) exposing one `run` that returns Result over exceptions with consumer-grade error messages; all files are reachable from index.ts through the import graph; the feature serves one capability and its name describes that capability. The only deviation is a naming detail in the types file."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     },
     "e280f5fa:4e6f3185": {
       "judge": {
@@ -28,13 +38,23 @@
       },
       "spec_path": "src/features/README.md",
       "target_type": "unknown",
-      "cached_at": "2026-08-31T00:03:56.272Z",
-      "content_hash": "b05a69cf",
+      "cached_at": "2026-08-31T11:24:01.697Z",
+      "content_hash": "486559a7",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The awards feature module satisfies all specification criteria: it has exactly one entry point (index.ts) that re-exports the public API, types are in a dedicated award-types.ts file, logic files follow verb-first kebab-case naming and service conventions, all files are reachable from the entry point, the feature has a single cohesive capability (award selection), and the feature name describes the capability rather than implementation."
-      }
+        "reason": "The awards feature module satisfies all criteria in the specification: it has exactly one entry point (index.ts), dedicated types file (award-types.ts), verb-first kebab-case logic file (pick-winners.ts), no orphaned files, single cohesive capability, and follows all service conventions including Result type usage and consumer-grade error messages."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }
