@@ -3,9 +3,9 @@ import type { AssistFileRecord } from "@/eval/judgment-input.js";
 import fg from "fast-glob";
 import { createHash } from "node:crypto";
 
+import { PraxisBase } from "@/core/base.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, fileSize, readText, removeFile, writeText } from "@/core/files.js";
-import { Logger } from "@/core/logger.js";
 import { baseName, joinPath, parentDir, validationCacheDir } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 
@@ -101,10 +101,9 @@ export interface CacheJudgeIdentity {
  * prunable. A CacheManager is bound to one judge identity; readers
  * construct one per configured judge.
  */
-export class CacheManager {
+export class CacheManager extends PraxisBase {
   /** Directory all cache files live under (default: {root}/.praxis/cache/validation). */
   readonly cacheRoot: string;
-  private readonly logger = new Logger();
   private readonly projectRoot: string | null;
   private readonly judge: CacheJudgeIdentity | null;
 
@@ -120,6 +119,7 @@ export class CacheManager {
     /** The judge whose verdicts this manager reads and writes. */
     judge?: CacheJudgeIdentity;
   } = {}) {
+    super();
     this.projectRoot = projectRoot ?? null;
     this.cacheRoot = cacheRoot ?? this.defaultCacheRoot();
     this.judge = judge ?? null;

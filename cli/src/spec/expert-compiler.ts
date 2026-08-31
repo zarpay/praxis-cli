@@ -1,12 +1,13 @@
+import type { PraxisConfig } from "@/core/config.js";
+import type { Logger } from "@/core/logger.js";
 import type { AgentMetadata } from "@/spec/output-builder.js";
 import type { CompilerPlugin } from "@/spec/plugins/types.js";
 
 import fg from "fast-glob";
 
-import { PraxisConfig } from "@/core/config.js";
+import { PraxisProjectBase } from "@/core/base.js";
 import { exists, writeText } from "@/core/files.js";
 import { Frontmatter } from "@/core/frontmatter.js";
-import { Logger } from "@/core/logger.js";
 import { baseName, joinPath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { GlobExpander } from "@/spec/glob-expander.js";
@@ -24,28 +25,15 @@ import { resolvePlugins } from "@/spec/plugin-registry.js";
  * - Pure agent profiles to `agentProfilesDir` (if configured)
  * - Plugin-specific output for each enabled plugin (e.g. Claude Code)
  */
-export class ExpertCompiler {
-  private readonly root: string;
-  private readonly logger: Logger;
-  private readonly config: PraxisConfig;
+export class ExpertCompiler extends PraxisProjectBase {
   private readonly globExpander: GlobExpander;
   private readonly specFilePattern: string;
   private readonly plugins: CompilerPlugin[];
 
-  constructor({
-    root,
-    logger = new Logger(),
-    config,
-  }: {
-    root: string;
-    logger?: Logger;
-    config?: PraxisConfig;
-  }) {
-    this.root = root;
-    this.logger = logger;
-    this.config = config ?? new PraxisConfig(root);
+  constructor(options: { root: string; logger?: Logger; config?: PraxisConfig }) {
+    super(options);
     this.specFilePattern = this.config.specFilePattern;
-    this.globExpander = new GlobExpander(root, this.specFilePattern);
+    this.globExpander = new GlobExpander(this.root, this.specFilePattern);
     // Plugins are stateful (e.g. the Claude Code plugin writes its
     // manifest once per run), so they are instantiated once here rather
     // than per compiled role.

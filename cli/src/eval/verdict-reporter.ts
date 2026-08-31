@@ -3,9 +3,9 @@ import type { CacheFileData } from "@/eval/cache-manager.js";
 import chalk from "chalk";
 import fg from "fast-glob";
 
+import { PraxisBase } from "@/core/base.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, readText } from "@/core/files.js";
-import { Display } from "@/core/logger.js";
 import { joinPath, parentDir } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
 import { contentHash } from "@/eval/cache-manager.js";
@@ -39,8 +39,7 @@ const DIVIDER_WIDTH = 50;
  * target's current content hash to detect staleness — and render()
  * displays a report on the terminal.
  */
-export class VerdictReporter {
-  private readonly out = new Display();
+export class VerdictReporter extends PraxisBase {
   private readonly specFilePattern: string;
   /** Project root the spec's assist-input globs resolve against. */
   private readonly root?: string;
@@ -53,6 +52,7 @@ export class VerdictReporter {
     /** Required for accurate staleness on specs declaring exemplars:/context:. */
     root?: string;
   } = {}) {
+    super();
     this.specFilePattern = specFilePattern;
     this.root = root;
   }

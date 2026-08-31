@@ -3,8 +3,9 @@ import type { Command } from "commander";
 import chalk from "chalk";
 import { spawnSync } from "node:child_process";
 
+import { PraxisBase } from "@/core/base.js";
 import { readJson } from "@/core/files.js";
-import { Display, Logger } from "@/core/logger.js";
+import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 
 /** Horizontal rule used in the config header output. */
@@ -57,11 +58,11 @@ function makeCommand(): ConfigCommand {
  * Bound to one config file path at construction; show() prints it,
  * edit() opens it in the user's preferred editor.
  */
-export class ConfigCommand {
-  private readonly out = new Display();
+export class ConfigCommand extends PraxisBase {
   private readonly configPath: string;
 
   constructor({ configPath }: { configPath: string }) {
+    super();
     this.configPath = configPath;
   }
 

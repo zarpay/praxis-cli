@@ -1,5 +1,6 @@
 import type { Command } from "commander";
 
+import { PraxisBase } from "@/core/base.js";
 import { PraxisConfig } from "@/core/config.js";
 import {
   copyFile,
@@ -9,7 +10,7 @@ import {
   readText,
   writeText,
 } from "@/core/files.js";
-import { Display, Logger } from "@/core/logger.js";
+import { Logger } from "@/core/logger.js";
 import { SCAFFOLD_DIR, joinPath, relativePath, resolvePath } from "@/core/paths.js";
 
 /**
@@ -45,24 +46,22 @@ export function registerInitCommand(program: Command): void {
  * Files that already exist are skipped, never overwritten, which also
  * makes init idempotent.
  */
-export class InitCommand {
+export class InitCommand extends PraxisBase {
   private readonly targetDir: string;
   private readonly scaffoldDir: string;
-  private readonly out = new Display();
-  private readonly logger: Logger;
 
   constructor({
     targetDir,
     scaffoldDir = SCAFFOLD_DIR,
-    logger = new Logger(),
+    logger,
   }: {
     targetDir: string;
     scaffoldDir?: string;
     logger?: Logger;
   }) {
+    super({ logger });
     this.targetDir = targetDir;
     this.scaffoldDir = scaffoldDir;
-    this.logger = logger;
   }
 
   /** Runs the scaffold, logging each created file and a final summary. */

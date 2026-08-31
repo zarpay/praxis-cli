@@ -6,10 +6,10 @@ import type { Verdict } from "@/eval/cache-manager.js";
 
 import chalk from "chalk";
 
-import { PraxisConfig } from "@/core/config.js";
+import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
-import { Display, Logger } from "@/core/logger.js";
+import { Logger } from "@/core/logger.js";
 import { Paths, resolvePath } from "@/core/paths.js";
 import { BatchJudge } from "@/eval/batch-judge.js";
 import { CacheManager } from "@/eval/cache-manager.js";
@@ -205,15 +205,7 @@ function makeCommand(): EvalCommand {
  * exit-code decisions belong to the command wiring, and configuration
  * problems are thrown as PraxisError.
  */
-export class EvalCommand {
-  private readonly out = new Display();
-  private readonly root: string;
-  private readonly config: PraxisConfig;
-
-  constructor({ root, config }: { root: string; config?: PraxisConfig }) {
-    this.root = root;
-    this.config = config ?? new PraxisConfig(root);
-  }
+export class EvalCommand extends PraxisProjectBase {
 
   /**
    * The `eval run` entry point: judges the given targets, or performs

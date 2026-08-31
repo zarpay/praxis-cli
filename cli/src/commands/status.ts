@@ -1,11 +1,13 @@
 import type { Command } from "commander";
 
+import type { PraxisConfig } from "@/core/config.js";
+
 import fg from "fast-glob";
 
-import { PraxisConfig } from "@/core/config.js";
+import { PraxisProjectBase } from "@/core/base.js";
 import { exists } from "@/core/files.js";
 import { Frontmatter } from "@/core/frontmatter.js";
-import { Display, Logger } from "@/core/logger.js";
+import { Logger } from "@/core/logger.js";
 import { Paths, baseName, joinPath, relativePath, resolvePath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { BatchJudge } from "@/eval/batch-judge.js";
@@ -81,30 +83,16 @@ export function registerStatusCommand(program: Command): void {
  * between roles and responsibilities, and tallies cached validation
  * verdicts. display() renders the resulting report for the terminal.
  */
-export class StatusCommand {
-  private readonly root: string;
-  private readonly config: PraxisConfig;
-  private readonly out = new Display();
-  private readonly logger: Logger;
+export class StatusCommand extends PraxisProjectBase {
   private readonly specFilePattern: string;
   private readonly globExpander: GlobExpander;
   private readonly absoluteIgnore: string[];
 
-  constructor({
-    root,
-    config,
-    logger = new Logger(),
-  }: {
-    root: string;
-    config?: PraxisConfig;
-    logger?: Logger;
-  }) {
-    this.root = root;
-    this.config = config ?? new PraxisConfig(root);
-    this.logger = logger;
+  constructor(options: { root: string; config?: PraxisConfig; logger?: Logger }) {
+    super(options);
     this.specFilePattern = this.config.specFilePattern;
-    this.globExpander = new GlobExpander(root, this.specFilePattern);
-    this.absoluteIgnore = this.config.ignore.map((p) => resolvePath(root, p));
+    this.globExpander = new GlobExpander(this.root, this.specFilePattern);
+    this.absoluteIgnore = this.config.ignore.map((p) => resolvePath(this.root, p));
   }
 
   /** Whether a report contains any structural issue worth a non-zero exit. */

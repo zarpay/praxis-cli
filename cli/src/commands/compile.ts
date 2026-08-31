@@ -1,10 +1,11 @@
 import type { Command } from "commander";
 
+import type { PraxisConfig } from "@/core/config.js";
 import type { FSWatcher } from "@/core/files.js";
 
 import fg from "fast-glob";
 
-import { PraxisConfig } from "@/core/config.js";
+import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { watchDir } from "@/core/files.js";
 import { Frontmatter } from "@/core/frontmatter.js";
@@ -58,25 +59,16 @@ export function registerCompileCommand(program: Command): void {
  * A thin command layer over ExpertCompiler: adds alias lookup and the
  * watch loop, while ExpertCompiler owns the actual compilation.
  */
-export class CompileCommand {
-  private readonly root: string;
-  private readonly config: PraxisConfig;
-  private readonly logger: Logger;
+export class CompileCommand extends PraxisProjectBase {
   private readonly compiler: ExpertCompiler;
 
-  constructor({
-    root,
-    config,
-    logger = new Logger(),
-  }: {
-    root: string;
-    config?: PraxisConfig;
-    logger?: Logger;
-  }) {
-    this.root = root;
-    this.config = config ?? new PraxisConfig(root);
-    this.logger = logger;
-    this.compiler = new ExpertCompiler({ root, logger, config: this.config });
+  constructor(options: { root: string; config?: PraxisConfig; logger?: Logger }) {
+    super(options);
+    this.compiler = new ExpertCompiler({
+      root: this.root,
+      logger: this.logger,
+      config: this.config,
+    });
   }
 
   /** Compiles all role files in the project's roles directory. */

@@ -4,11 +4,11 @@ import type { Verdict } from "@/eval/cache-manager.js";
 import chalk from "chalk";
 import fg from "fast-glob";
 
+import { PraxisProjectBase } from "@/core/base.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
 import { Frontmatter } from "@/core/frontmatter.js";
-import { Display } from "@/core/logger.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { CacheManager } from "@/eval/cache-manager.js";
@@ -118,17 +118,13 @@ interface ValidationDomain {
  * against its directory's README spec, and collects results with
  * optional fail-fast behavior and cache statistics.
  */
-export class BatchJudge {
-  /** Project root all paths resolve against. */
-  readonly root: string;
+export class BatchJudge extends PraxisProjectBase {
   /** Source directories (relative to root) scanned for spec files. */
   readonly sources: string[];
   /** Whether validation stops at the first error result. */
   readonly failFast: boolean;
   /** Cache hit/miss counts accumulated across the run. */
   readonly cacheStats: { hits: number; misses: number };
-
-  private readonly out = new Display();
 
   private readonly useCache: boolean;
   private readonly judges: JudgeConfig[];
@@ -162,7 +158,7 @@ export class BatchJudge {
     judges: JudgeConfig[];
     specFilePattern?: string;
   }) {
-    this.root = root;
+    super({ root });
     this.sources = sources;
     this.failFast = failFast;
     this.useCache = useCache;

@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 
-import { PraxisConfig } from "@/core/config.js";
+import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { exists, readText, writeText } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
@@ -67,25 +67,20 @@ function runAdd(type: AddableType, name: string): void {
  * fills its placeholders, and writes the result into the content
  * directory the project config designates for that type.
  */
-export class AddCommand {
-  private readonly root: string;
-  private readonly config: PraxisConfig;
+export class AddCommand extends PraxisProjectBase {
   private readonly scaffoldDir: string;
-  private readonly logger: Logger;
 
   constructor({
     root,
     scaffoldDir = SCAFFOLD_DIR,
-    logger = new Logger(),
+    logger,
   }: {
     root: string;
     scaffoldDir?: string;
     logger?: Logger;
   }) {
-    this.root = root;
-    this.config = new PraxisConfig(root);
+    super({ root, logger });
     this.scaffoldDir = scaffoldDir;
-    this.logger = logger;
   }
 
   /**
