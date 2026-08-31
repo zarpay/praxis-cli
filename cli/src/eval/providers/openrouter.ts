@@ -1,27 +1,14 @@
-import type { Verdict } from "@/eval/cache-manager.js";
 import type {
+  ChatCompletionResponse,
   JudgeProvider,
   ProviderRequest,
   ProviderResult,
   ProviderUsage,
-} from "@/eval/providers/types.js";
+  ToolCall,
+  Verdict,
+} from "@/types.js";
 
 import { errors } from "@/core/errors.js";
-
-/** A tool call as OpenAI-compatible chat completions return it. */
-interface ToolCall {
-  id: string;
-  type: "function";
-  function: { name: string; arguments: string };
-}
-
-/** The response fields this provider reads. */
-interface ChatCompletionResponse {
-  choices: {
-    message: { role: string; content: string | null; tool_calls?: ToolCall[] };
-  }[];
-  usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number };
-}
 
 /**
  * The default judge provider: OpenAI-compatible chat completions with

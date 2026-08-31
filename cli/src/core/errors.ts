@@ -7,30 +7,7 @@
  * place and every raised error carries a machine-readable `code`.
  */
 
-/** Machine-readable code, one per factory method on `errors`. */
-export type PraxisErrorCode =
-  | "ROOT_NOT_FOUND"
-  | "INVALID_CONFIG_JSON"
-  | "UNKNOWN_PLUGIN"
-  | "UNKNOWN_DOCUMENT_TYPE"
-  | "FILE_ALREADY_EXISTS"
-  | "TEMPLATE_NOT_FOUND"
-  | "SPEC_NOT_FOUND"
-  | "MISSING_PROJECT_ROOT"
-  | "INVALID_COHORT"
-  | "EXPERT_NOT_FOUND"
-  | "DOCUMENT_NOT_FOUND"
-  | "INVALID_JUDGE_CONFIG"
-  | "UNKNOWN_JUDGE"
-  | "JUDGES_NOT_CONFIGURED"
-  | "API_KEY_NOT_SET"
-  | "JUDGE_API_ERROR"
-  | "UNKNOWN_JUDGE_PROVIDER"
-  | "JUDGE_PROVIDER_LOAD_FAILED"
-  | "INVALID_JUDGE_PROVIDER"
-  | "JUDGE_PROVIDER_FAILED"
-  | "NO_TOOL_CALL"
-  | "UNEXPECTED_TOOL_CALL";
+import type { PraxisErrorCode } from "@/types.js";
 
 /**
  * Error type for all failures Praxis itself detects.

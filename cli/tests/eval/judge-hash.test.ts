@@ -1,4 +1,4 @@
-import type { JudgeConfig } from "@/core/config.js";
+import type { JudgeConfig } from "@/types.js";
 
 import { describe, expect, it } from "vitest";
 

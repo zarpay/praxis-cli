@@ -1,35 +1,10 @@
+import type { AgentMetadata } from "@/types.js";
+
 /** Separator between items in Responsibilities, Context, and Reference sections. */
 const SEPARATOR = "\n---\n";
 
 /** Separator between items in the Constitution section. */
 const BLANK_SEPARATOR = "\n";
-
-/**
- * Metadata extracted from role frontmatter for agent compilation.
- *
- * Used by plugins to generate platform-specific output (e.g. Claude Code
- * frontmatter). The fields map to role frontmatter keys prefixed with `agent_`.
- */
-export interface AgentMetadata {
-  /** Agent name (lowercase, hyphenated). */
-  name: string;
-  /** Human-readable description of what the agent does. */
-  description: string;
-  /** Comma-separated list of allowed tools (e.g. "Read, Glob, Grep"). */
-  tools?: string;
-  /** Model to use (e.g. "opus"). */
-  model?: string;
-  /** Permission mode (e.g. "plan"). */
-  permissionMode?: string;
-  /** Glob patterns for files this profile validates (written as paths: in output). */
-  validates?: string[];
-  /** How validated targets group into evaluation units (written as cohort: in output). */
-  cohort?: string;
-  /** Glob patterns structurally excluded from judgment (written as excludes: in output). */
-  excludes?: string[];
-  /** Spec-blessed positive examples (written as exemplars: in output). */
-  exemplars?: string[];
-}
 
 /**
  * Renders the eval-targeting frontmatter lines a compiled profile carries.

@@ -1,5 +1,4 @@
-import type { JudgeConfig } from "@/core/config.js";
-import type { CacheJudgeIdentity } from "@/eval/cache-manager.js";
+import type { CacheJudgeIdentity, JudgeConfig } from "@/types.js";
 
 import { createHash } from "node:crypto";
 

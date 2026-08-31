@@ -1,3 +1,5 @@
+import type { PraxisBaseOptions, PraxisProjectBaseOptions } from "@/types.js";
+
 import { PraxisConfig } from "@/core/config.js";
 import { Display, Logger } from "@/core/logger.js";
 
@@ -15,7 +17,7 @@ export abstract class PraxisBase {
   /** Stderr logger for diagnostics. */
   protected readonly logger: Logger;
 
-  constructor({ logger, out }: { logger?: Logger; out?: Display } = {}) {
+  constructor({ logger, out }: PraxisBaseOptions = {}) {
     this.logger = logger ?? new Logger();
     this.out = out ?? new Display();
   }
@@ -35,15 +37,7 @@ export abstract class PraxisProjectBase extends PraxisBase {
 
   private resolvedConfig?: PraxisConfig;
 
-  constructor({
-    root,
-    config,
-    logger,
-  }: {
-    root: string;
-    config?: PraxisConfig;
-    logger?: Logger;
-  }) {
+  constructor({ root, config, logger }: PraxisProjectBaseOptions) {
     super({ logger });
     this.root = root;
     this.resolvedConfig = config;

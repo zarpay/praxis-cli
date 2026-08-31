@@ -1,4 +1,4 @@
-import type { CacheFileData } from "@/eval/cache-manager.js";
+import type { CacheFileData, ReportStatus, VerdictReport } from "@/types.js";
 
 import chalk from "chalk";
 import fg from "fast-glob";
@@ -10,23 +10,6 @@ import { joinPath, parentDir } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
 import { contentHash } from "@/eval/cache-manager.js";
 import { assistHashInput, resolveAssistInputs } from "@/eval/judgment-input.js";
-
-/** All possible report states. */
-export type ReportStatus = "not_validated" | "pass" | "warn" | "fail" | "stale";
-
-/** Structured report data for a single target. */
-export interface VerdictReport {
-  /** Path of the reported target. */
-  targetPath: string;
-  /** Overall status, with staleness taking priority over the cached verdict. */
-  status: ReportStatus;
-  /** The cached validation entry, or null if never validated. */
-  cacheData: CacheFileData | null;
-  /** Content hash of the target as it exists now, or null if uncomputable. */
-  currentHash: string | null;
-  /** Whether the target changed since the cached validation. */
-  isStale: boolean;
-}
 
 /** Divider line width for the rendered report. */
 const DIVIDER_WIDTH = 50;

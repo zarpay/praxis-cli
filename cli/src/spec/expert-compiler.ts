@@ -1,7 +1,4 @@
-import type { PraxisConfig } from "@/core/config.js";
-import type { Logger } from "@/core/logger.js";
-import type { AgentMetadata } from "@/spec/output-builder.js";
-import type { CompilerPlugin } from "@/spec/plugins/types.js";
+import type { AgentMetadata, CompilerPlugin, PraxisProjectBaseOptions } from "@/types.js";
 
 import fg from "fast-glob";
 
@@ -30,7 +27,7 @@ export class ExpertCompiler extends PraxisProjectBase {
   private readonly specFilePattern: string;
   private readonly plugins: CompilerPlugin[];
 
-  constructor(options: { root: string; logger?: Logger; config?: PraxisConfig }) {
+  constructor(options: PraxisProjectBaseOptions) {
     super(options);
     this.specFilePattern = this.config.specFilePattern;
     this.globExpander = new GlobExpander(this.root, this.specFilePattern);

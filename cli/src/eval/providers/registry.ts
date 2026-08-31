@@ -1,4 +1,4 @@
-import type { JudgeProvider, JudgeProviderFactory } from "@/eval/providers/types.js";
+import type { JudgeProvider, JudgeProviderFactory } from "@/types.js";
 
 import { errors } from "@/core/errors.js";
 import { fileUrl, resolvePath } from "@/core/paths.js";

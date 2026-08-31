@@ -1,6 +1,8 @@
 import type { ChalkInstance } from "chalk";
 import type { Writable } from "node:stream";
 
+import type { BadgeEntry, DisplayEntry, HeaderEntry } from "@/types.js";
+
 import chalk from "chalk";
 
 /**
@@ -86,44 +88,6 @@ export class Logger {
     return false;
   }
 }
-
-/** Chalk styles a Display entry may name. */
-export type LineColor = "green" | "yellow" | "red" | "blue" | "cyan" | "gray" | "dim" | "bold";
-
-/** A line of text, optionally styled as a whole. */
-export interface TextEntry {
-  text: string;
-  color?: LineColor;
-}
-
-/** A colored `[LABEL]` badge, optionally followed by a value and indented. */
-export interface BadgeEntry {
-  badge: string;
-  color: LineColor;
-  value?: string | number;
-  indent?: number;
-}
-
-/** A title between two divider lines. */
-export interface HeaderEntry {
-  header: string;
-  char?: string;
-  width?: number;
-}
-
-/**
- * One renderable entry: a plain string, a structured entry, or a falsy
- * value to skip — so conditional entries inline naturally
- * (`count > 0 && { badge: ... }`).
- */
-export type DisplayEntry =
-  | string
-  | TextEntry
-  | BadgeEntry
-  | HeaderEntry
-  | null
-  | false
-  | undefined;
 
 /**
  * Renders a command's user-facing output to stdout.

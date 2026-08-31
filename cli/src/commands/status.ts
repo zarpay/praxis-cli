@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 
-import type { PraxisConfig } from "@/core/config.js";
+import type { PraxisProjectBaseOptions, StatusReport } from "@/types.js";
 
 import fg from "fast-glob";
 
@@ -14,45 +14,6 @@ import { CacheManager } from "@/eval/cache-manager.js";
 import { EvalRun } from "@/eval/eval-run.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
 import { GlobExpander } from "@/spec/glob-expander.js";
-
-/** Structured report of project health. */
-export interface StatusReport {
-  /**
-   * Whether the spec-layer compiler is in use (the experts directory
-   * exists). Framework health only surfaces when it is (11): eval-only
-   * projects are never asked about a taxonomy they don't have.
-   */
-  compilerInUse: boolean;
-  /** Document counts by content type. */
-  counts: {
-    experts: number;
-    practices: number;
-    references: number;
-    context: number;
-  };
-  /**
-   * Cached verdict counts across all spec targets, one row per judge —
-   * judges are separate instruments and are never silently pooled.
-   * Empty when no judges are configured.
-   */
-  validation: {
-    judge: string;
-    pass: number;
-    warn: number;
-    fail: number;
-    notValidated: number;
-  }[];
-  /** Practice files no expert references. */
-  orphanedPractices: string[];
-  /** Expert references pointing at files that do not exist. */
-  danglingRefs: { expert: string; ref: string }[];
-  /** Expert files missing the `description` frontmatter field. */
-  expertsMissingDescription: string[];
-  /** Expert glob references that match no files. */
-  zeroMatchGlobs: { expert: string; pattern: string }[];
-  /** Practices whose `owner` matches no expert alias. */
-  unmatchedOwners: { practice: string; owner: string }[];
-}
 
 /**
  * Registers the `praxis status` command.
@@ -94,7 +55,7 @@ export class StatusCommand extends PraxisProjectBase {
   private readonly globExpander: GlobExpander;
   private readonly absoluteIgnore: string[];
 
-  constructor(options: { root: string; config?: PraxisConfig; logger?: Logger }) {
+  constructor(options: PraxisProjectBaseOptions) {
     super(options);
     this.specFilePattern = this.config.specFilePattern;
     this.globExpander = new GlobExpander(this.root, this.specFilePattern);

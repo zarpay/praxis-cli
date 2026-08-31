@@ -1,4 +1,4 @@
-import type { JudgeConfig } from "@/core/config.js";
+import type { JudgeConfig } from "@/types.js";
 
 import { randomUUID } from "node:crypto";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";

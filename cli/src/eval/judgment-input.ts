@@ -10,6 +10,8 @@
  * the staleness check in VerdictReporter — resolves identically.
  */
 
+import type { AssistFile, AssistFileRecord, AssistInputs } from "@/types.js";
+
 import fg from "fast-glob";
 import { createHash } from "node:crypto";
 
@@ -17,26 +19,6 @@ import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
 import { Frontmatter } from "@/core/frontmatter.js";
 import { relativePath } from "@/core/paths.js";
-
-/** One resolved assist file: project-root-relative path plus content. */
-export interface AssistFile {
-  path: string;
-  content: string;
-}
-
-/** A spec's resolved assist inputs, one list per frontmatter key. */
-export interface AssistInputs {
-  /** Spec-blessed positive examples — shielded from adverse judgment. */
-  exemplars: AssistFile[];
-  /** Assist-only context — informs the judgment, never receives a verdict. */
-  context: AssistFile[];
-}
-
-/** Provenance record for one assist file as stored in a cache entry. */
-export interface AssistFileRecord {
-  path: string;
-  hash: string;
-}
 
 /**
  * Resolves a spec's `exemplars:` and `context:` globs into file contents.

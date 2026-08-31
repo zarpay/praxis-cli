@@ -82,6 +82,7 @@ Plugins implement `CompilerPlugin` interface (`src/spec/plugins/types.ts`): `nam
 
 ## Code Conventions
 
+- **One types home:** every type and interface is declared in `src/types.ts`, organized by domain, and imported from `@/types.js` (ESLint-enforced: interface/type-alias declarations are banned elsewhere in src/). Modules declare behavior — classes, functions, constants — never shapes. Sole exception: `core/files.ts` re-exports node's `FSWatcher`, because `node:fs` is walled into that module.
 - **Path aliases:** `@/*` → `./src/*`, `@tests/*` → `./tests/*` (tsconfig.json and vitest.config.ts). Imports always use aliases, never relative paths (ESLint-enforced; sole exception: `../package.json`).
 - **Import order:** third-party types, internal types, third-party values, internal values — blank line between groups, alphabetical within (perfectionist, autofixable)
 - **Import extensions:** `.js` required for local imports (ESM)

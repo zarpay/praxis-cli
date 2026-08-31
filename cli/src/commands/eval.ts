@@ -1,9 +1,13 @@
 import type { Command } from "commander";
 
-import type { JudgeConfig } from "@/core/config.js";
-import type { DisplayEntry } from "@/core/logger.js";
-import type { Verdict } from "@/eval/cache-manager.js";
-import type { EvalSummary } from "@/eval/eval-run.js";
+import type {
+  AllOptions,
+  DisplayEntry,
+  DocumentOptions,
+  EvalSummary,
+  JudgeConfig,
+  Verdict,
+} from "@/types.js";
 
 import chalk from "chalk";
 
@@ -17,23 +21,6 @@ import { EvalRun } from "@/eval/eval-run.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
 import { Judge } from "@/eval/judge.js";
 import { VerdictReporter } from "@/eval/verdict-reporter.js";
-
-/** Options for a single-target `eval run`. */
-interface DocumentOptions {
-  spec?: string;
-  judge?: string;
-  verbose: boolean;
-  cache: boolean;
-}
-
-/** Options for a full `eval run`. */
-interface AllOptions {
-  type?: string;
-  judge?: string;
-  verbose: boolean;
-  failFast: boolean;
-  cache: boolean;
-}
 
 /**
  * Registers the `praxis eval` command group.

@@ -1,5 +1,12 @@
-import type { JudgeConfig } from "@/core/config.js";
-import type { Verdict } from "@/eval/cache-manager.js";
+import type {
+  CohortMode,
+  Verdict,
+  EvalSummary,
+  EvalUnit,
+  JudgeConfig,
+  TargetVerdict,
+  ValidationDomain,
+} from "@/types.js";
 
 import chalk from "chalk";
 import fg from "fast-glob";
@@ -15,100 +22,8 @@ import { CacheManager } from "@/eval/cache-manager.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
 import { Judge } from "@/eval/judge.js";
 
-/** Extended validation result that includes file path and type information. */
-export interface TargetVerdict extends Verdict {
-  /** Absolute path of the validated document. */
-  path: string;
-  /** Type label of the domain that validated it (spec directory, root-relative). */
-  type: string;
-  /** Basename of the validated document. */
-  filename: string;
-  /** Name of the judge that produced this verdict. */
-  judge: string;
-}
-
-/** Aggregated validation summary across all documents. */
-export interface EvalSummary {
-  /** All documents seen: source .md docs plus any paths:-targeted files. */
-  total: number;
-  /** Documents whose result was compliant. */
-  compliant: number;
-  /** Non-compliant results with warning severity. */
-  warnings: number;
-  /** Non-compliant results with error severity. */
-  errors: number;
-  /** Documents no result covers (no spec, or skipped by fail-fast). */
-  notValidated: number;
-  /** Per-type breakdown, keyed by validation domain type label. */
-  byType: Record<
-    string,
-    {
-      total: number;
-      compliant: number;
-      issues: number;
-    }
-  >;
-  /**
-   * Per-judge breakdown. Judges are instruments with different error
-   * rates; their series render separately, never silently pooled (07).
-   */
-  byJudge: Record<
-    string,
-    {
-      compliant: number;
-      warnings: number;
-      errors: number;
-    }
-  >;
-}
-
-/** How a spec groups its targets into evaluation units. */
-type CohortMode = "by_file" | "by_directory";
-
 /** The accepted `cohort:` frontmatter values. */
 const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
-
-/**
- * One evaluation unit: what receives a single verdict.
- *
- * Under `by_file` (the default) a unit is one file and `path` is that
- * file. Under `by_directory` a unit is a directory matched by the
- * spec's `paths:` patterns, `path` is the directory, and `files` are
- * every file it contains — judged together as one input.
- */
-interface EvalUnit {
-  path: string;
-  files: string[];
-}
-
-/** A validation domain: a spec file and the targets it validates. */
-interface ValidationDomain {
-  /** Directory containing the spec file. */
-  dir: string;
-  /** Absolute path to the spec file. */
-  specPath: string;
-  /** Type label derived from the spec's directory (root-relative path). */
-  type: string;
-  /** How targets group into evaluation units. */
-  cohort: CohortMode;
-  /**
-   * Structural exclusions from the spec's `excludes:` frontmatter,
-   * resolved to absolute glob patterns. Excluded files never become
-   * units and never enter cohort membership — the judge never sees
-   * them (03: prevention beats calibration).
-   */
-  excludes: string[];
-  /**
-   * Spec-blessed positive examples from `exemplars:`, resolved to
-   * absolute glob patterns. Shielded from adverse judgment the same way
-   * excludes are; the Judge inlines them into the prompt as positives.
-   */
-  exemplars: string[];
-  /** Explicit target files when the spec declares `paths:` (by_file). */
-  targetFiles?: string[];
-  /** Matched directories when the spec declares `cohort: by_directory`. */
-  targetDirs?: string[];
-}
 
 /**
  * One evaluation run: everything a single `praxis eval run` invocation

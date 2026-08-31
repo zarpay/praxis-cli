@@ -1,4 +1,12 @@
-import type { AssistFileRecord } from "@/eval/judgment-input.js";
+import type {
+  AssistFileRecord,
+  CacheFile,
+  CacheFileData,
+  CacheJudgeIdentity,
+  OrphanedCacheFile,
+  Verdict,
+  VerdictEntry,
+} from "@/types.js";
 
 import fg from "fast-glob";
 import { createHash } from "node:crypto";
@@ -11,79 +19,6 @@ import { isSpecFile } from "@/core/spec-pattern.js";
 
 /** Current cache format version. Pre-3.0 files are ignored (v2 is a breaking release). */
 const CACHE_VERSION = "3.0";
-
-/** Severity level for validation issues. */
-export type Severity = "warning" | "error";
-
-/** Result of a single judgment, as stored in cache. */
-export interface Verdict {
-  /** Whether the target satisfies its spec. */
-  compliant: boolean;
-  /** Specific deviations reported by the judge (empty when compliant). */
-  issues: string[];
-  /** The judge's overall explanation of the verdict. */
-  reason: string;
-  /** Present only when non-compliant: warning or error. */
-  severity?: Severity;
-}
-
-/**
- * Cache data shape returned by readRaw() and readAllRaw().
- *
- * A flattened per-verdict view for report consumers.
- */
-export interface CacheFileData {
-  version: string;
-  cached_at: string;
-  content_hash: string;
-  document: {
-    path: string;
-    type: string;
-    spec_path: string;
-  };
-  result: Verdict;
-}
-
-/**
- * One stored verdict inside a target's cache file, carrying enough
- * judge provenance to be read by a human in the committed JSON.
- */
-interface VerdictEntry {
-  judge: { name: string; model: string; hash: string };
-  spec_path: string;
-  target_type: string;
-  cached_at: string;
-  content_hash: string;
-  /** Resolved exemplar files the judge saw, with content hashes (present when the spec blesses any). */
-  exemplar_files?: AssistFileRecord[];
-  /** Resolved context files the judge saw, with content hashes (present when the spec declares any). */
-  context_files?: AssistFileRecord[];
-  result: Verdict;
-}
-
-/**
- * v3.0 cache file: one file per target, holding every verdict for it —
- * all specs, all judges — keyed by `<specHash>:<judgeHash>`.
- */
-interface CacheFile {
-  version: "3.0";
-  verdicts: Record<string, VerdictEntry>;
-}
-
-/** Information about an orphaned (stale) cache file. */
-export interface OrphanedCacheFile {
-  file: string;
-  reason: "document_missing";
-  docName: string;
-  type: string;
-}
-
-/** Identity of the judge whose verdicts a CacheManager reads and writes. */
-export interface CacheJudgeIdentity {
-  name: string;
-  model: string;
-  hash: string;
-}
 
 /**
  * Manages the file-based verdict cache.

@@ -1,4 +1,4 @@
-import type { JudgeConfig } from "@/core/config.js";
+import type { ChatCompletionUsage, JudgeConfig } from "@/types.js";
 
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -30,7 +30,7 @@ export type ValidationToolName = "validation_pass" | "validation_warn" | "valida
 export function validationToolCallResponse(
   toolName: ValidationToolName,
   args: { reason: string; issues?: string[] },
-  usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number },
+  usage?: ChatCompletionUsage,
 ): object {
   return {
     choices: [

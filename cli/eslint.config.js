@@ -216,6 +216,25 @@ export default tseslint.config(
     },
   },
   {
+    // Every type and interface lives in src/types.ts — the project's
+    // single, organized types home. Modules declare behavior only.
+    files: ["src/**/*.ts"],
+    ignores: ["src/types.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "TSInterfaceDeclaration",
+          message: "Declare interfaces in src/types.ts (import from @/types.js).",
+        },
+        {
+          selector: "TSTypeAliasDeclaration",
+          message: "Declare type aliases in src/types.ts (import from @/types.js).",
+        },
+      ],
+    },
+  },
+  {
     // All terminal output goes through the logger module: Display for
     // stdout reports, Logger for stderr diagnostics. Raw console calls
     // are allowed only inside that module.

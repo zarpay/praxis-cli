@@ -1,11 +1,11 @@
-import type { PromptFile } from "@/prompts/types.js";
+import type { AssistFile } from "@/types.js";
 
 /**
  * The CONTEXT prompt section: assist-only reference files that inform
  * the judgment and never receive a verdict (03). Empty string when the
  * spec declares none, so the section vanishes from the prompt entirely.
  */
-export default function contextSection(context: readonly PromptFile[]): string {
+export default function contextSection(context: readonly AssistFile[]): string {
   if (context.length === 0) return "";
 
   const blocks = context

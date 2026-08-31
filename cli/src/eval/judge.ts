@@ -1,7 +1,12 @@
-import type { JudgeConfig } from "@/core/config.js";
-import type { Verdict } from "@/eval/cache-manager.js";
-import type { AssistInputs } from "@/eval/judgment-input.js";
-import type { ProviderRequest, ProviderResult, ProviderUsage } from "@/eval/providers/types.js";
+import type {
+  AssistInputs,
+  JudgeConfig,
+  ProviderRequest,
+  ProviderResult,
+  ProviderUsage,
+  TargetType,
+  Verdict,
+} from "@/types.js";
 
 import fg from "fast-glob";
 
@@ -27,10 +32,6 @@ import { resolveProvider } from "@/eval/providers/registry.js";
 import judgeTools from "@/prompts/judge-tools.js";
 import systemPrompt from "@/prompts/system-prompt.js";
 import validationQuestion from "@/prompts/validation-question.js";
-
-/** Known target types within the Praxis content structure. */
-export type TargetType =
-  "expert" | "practice" | "reference" | "convention" | "constitution" | "template" | "unknown";
 
 /** Target types that can be declared via the `type` frontmatter field. */
 const FRONTMATTER_TYPES: readonly TargetType[] = [

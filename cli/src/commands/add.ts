@@ -1,13 +1,12 @@
 import type { Command } from "commander";
 
+import type { AddableType } from "@/types.js";
+
 import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { exists, readText, writeText } from "@/core/files.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, SCAFFOLD_DIR, joinPath, relativePath } from "@/core/paths.js";
-
-/** Content types `praxis add` can create. */
-export type AddableType = "expert" | "practice";
 
 /**
  * Registers the `praxis add` command group.

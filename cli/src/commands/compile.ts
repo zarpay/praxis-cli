@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 
-import type { PraxisConfig } from "@/core/config.js";
 import type { FSWatcher } from "@/core/files.js";
+import type { PraxisProjectBaseOptions } from "@/types.js";
 
 import fg from "fast-glob";
 
@@ -62,7 +62,7 @@ export function registerCompileCommand(program: Command): void {
 export class CompileCommand extends PraxisProjectBase {
   private readonly compiler: ExpertCompiler;
 
-  constructor(options: { root: string; config?: PraxisConfig; logger?: Logger }) {
+  constructor(options: PraxisProjectBaseOptions) {
     super(options);
     this.compiler = new ExpertCompiler({
       root: this.root,

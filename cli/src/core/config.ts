@@ -1,19 +1,14 @@
+import type {
+  JudgeConfig,
+  NormalizedConfig,
+  PluginConfigEntry,
+  RawConfig,
+  RawPluginEntry,
+} from "@/types.js";
+
 import { errors } from "@/core/errors.js";
 import { exists, readJson } from "@/core/files.js";
 import { configFile, resolvePath } from "@/core/paths.js";
-
-/** Normalized plugin configuration entry. */
-export interface PluginConfigEntry {
-  /** Plugin identifier (e.g. "claude-code"). */
-  name: string;
-  /** Full path to plugin output dir, resolved against project root. */
-  outputDir?: string;
-  /** Name used in the Claude Code plugin.json file. Default: "praxis". */
-  claudeCodePluginName?: string;
-}
-
-/** Raw plugin entry as it appears in config JSON. */
-export type RawPluginEntry = string | PluginConfigEntry;
 
 /** Default spec file pattern when none is configured. */
 export const DEFAULT_SPEC_FILE_PATTERN = "README.md";
@@ -26,61 +21,6 @@ export const DEFAULT_JUDGE_PROVIDER = "openrouter";
 
 /** Default sampling temperature when a judge declares none. */
 export const DEFAULT_JUDGE_TEMPERATURE = 0.1;
-
-/**
- * One configured judge: a named inference backend that evaluates
- * targets against specs. Every configured judge evaluates every
- * target — n judges are n instruments running the same protocol.
- */
-export interface JudgeConfig {
-  /** Unique judge name; identifies its verdicts in results and reports. */
-  name: string;
-  /** Model identifier the backend understands (e.g. an OpenRouter slug). */
-  model: string;
-  /** Name of the environment variable holding the backend's API key. */
-  apiKeyEnvVar: string;
-  /** OpenAI-compatible endpoint base; defaults to OpenRouter. */
-  baseUrl?: string;
-  /** Sampling temperature for judgments; defaults to 0.1. */
-  temperature?: number;
-  /**
-   * Provider that executes judgments: a built-in registry name, or a
-   * ./relative ESM module path resolved from the project root whose
-   * default export is a provider factory. Defaults to "openrouter".
-   */
-  provider?: string;
-  /** Free-form settings passed through to the provider verbatim. */
-  options?: Record<string, unknown>;
-}
-
-/** Config shape as it may appear on disk (all fields optional). */
-interface RawConfig {
-  agentProfilesOutputDir?: string | false;
-  plugins?: RawPluginEntry[];
-  sources?: string[];
-  ignore?: string[];
-  expertsDir?: string;
-  practicesDir?: string;
-  /** Deprecated v1 name for expertsDir; accepted and normalized. */
-  rolesDir?: string;
-  /** Deprecated v1 name for practicesDir; accepted and normalized. */
-  responsibilitiesDir?: string;
-  judges?: Partial<JudgeConfig>[];
-  /** Filename or glob pattern for spec files (default: "README.md"). */
-  specFilePattern?: string;
-}
-
-/** Config shape after defaults are applied. */
-interface NormalizedConfig {
-  agentProfilesOutputDir: string | false;
-  plugins: PluginConfigEntry[];
-  sources: string[];
-  ignore: string[];
-  expertsDir: string;
-  practicesDir: string;
-  judges: JudgeConfig[];
-  specFilePattern: string;
-}
 
 /** Defaults used when the config file is absent or fields are omitted. */
 const DEFAULT_CONFIG: NormalizedConfig = {

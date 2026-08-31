@@ -1,4 +1,4 @@
-import type { ProviderRequest } from "@/eval/providers/types.js";
+import type { ProviderRequest } from "@/types.js";
 
 import { HttpResponse, http } from "msw";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
