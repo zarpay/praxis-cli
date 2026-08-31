@@ -85,4 +85,5 @@ Plugins implement `CompilerPlugin` interface (`src/spec/plugins/types.ts`): `nam
 - **Test location:** `tests/` mirrors `src/` structure, uses `.test.ts` suffix
 - **Excluded from compilation:** Files named `_template.md` or `README.md`
 - **File/path operations:** import from `@/core/files.js` (I/O: readText, writeText, exists, ...) and `@/core/paths.js` (composition: joinPath, baseName, ...; well-known locations: configFile, SCAFFOLD_DIR, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced).
+- **Construct at invocation time, not import time:** module tops hold definitions, not work. `new Paths()` (and anything touching cwd or the filesystem) belongs in the command wiring helpers (`makeCommand()`), executed at action dispatch — never as a module-level instance or exported singleton (decided 2026-08-31: import-time cwd capture, test isolation, and `praxis init` running before `.praxis/` exists).
 - **Logging:** Logger class writes to stderr (keeps stdout clean for piping)
