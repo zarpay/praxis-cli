@@ -8,13 +8,13 @@ AI-powered evaluation: judges targets against their specs.
 
 ## Prerequisites
 
-Validation uses the OpenRouter API. Set the environment variable named in your config:
+Evaluation calls an OpenRouter-compatible API. Configure one or more judges in `.praxis/config.json` and set each judge's key variable:
 
 ```bash
 export OPENROUTER_API_KEY=your-key-here
 ```
 
-The variable name is configurable via `validation.apiKeyEnvVar` in `.praxis/config.json`.
+Each judge names its own variable via `apiKeyEnvVar` — see [Configuration — judges](/reference/config#judges). When multiple judges are configured, **every judge evaluates every target** and results are always reported per judge; `--judge <name>` runs just one.
 
 ## Subcommands
 
@@ -34,6 +34,7 @@ praxis eval run experts/code-reviewer.md --no-cache
 | Flag | Description |
 | --- | --- |
 | `--spec <path>` | Override the spec file used for validation |
+| `--judge <name>` | Run only the named judge (default: all configured judges) |
 | `--verbose` | Print the full AI reasoning after the result |
 | `--no-cache` | Skip the cache and always call the API |
 
@@ -58,9 +59,12 @@ praxis eval run --fail-fast
 | Flag | Description |
 | --- | --- |
 | `--type <type>` | Validate only documents matching this type |
+| `--judge <name>` | Run only the named judge (default: all configured judges) |
 | `--verbose` | Show full AI reasoning for each document |
 | `--no-cache` | Skip the cache for all documents |
 | `--fail-fast` | Stop at the first error instead of continuing |
+
+With multiple judges configured, progress lines carry a `[judge: <name>]` tag and the summary adds a `By judge:` breakdown — one row per judge, never pooled.
 
 **Output:**
 
@@ -130,12 +134,12 @@ Use `--verbose` to include the full AI reasoning from the cached result.
 
 ## How validation works
 
-1. The spec file (default: `README.md`) in the document's directory defines the validation criteria.
-2. Praxis sends the spec content and the document content to an LLM via OpenRouter.
-3. The LLM returns Yes / Maybe / No with specific issues.
-4. The result is written to the cache at `.praxis/cache/validation/`.
+1. The spec file (default: `README.md`) in the document's directory defines the validation criteria — plus any scoping frontmatter (`paths`, `cohort`, `excludes`, `exemplars`, `context`).
+2. Praxis sends the spec, the target, and any exemplar/context files to each configured judge via OpenRouter.
+3. The judge answers through a required tool call — pass, warn, or fail — with specific issues.
+4. The verdict is written to the cache at `.praxis/cache/validation/`, keyed by spec and judge.
 
-On subsequent runs, cached results are used for any document whose content (and spec content) has not changed.
+On subsequent runs, cached verdicts are used for any target whose judgment input (target, spec, exemplars, context) has not changed. See [Caching](/validation/caching).
 
 ## See also
 

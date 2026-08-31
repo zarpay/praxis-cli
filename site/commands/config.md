@@ -32,10 +32,13 @@ Example output:
   "practicesDir": "practices",
   "agentProfilesOutputDir": "./agent-profiles",
   "plugins": [],
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast"
-  }
+  "judges": [
+    {
+      "name": "default",
+      "model": "x-ai/grok-4.1-fast",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    }
+  ]
 }
 ```
 

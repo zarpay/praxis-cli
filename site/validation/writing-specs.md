@@ -85,9 +85,36 @@ Documents missing a **required** item receive a FAIL result. Documents missing a
 
 **State what's explicitly not allowed.** The LLM will flag violations of negative constraints just as reliably as missing required elements.
 
+## Scoping frontmatter
+
+Beyond `paths:` (and `cohort:` — see [Cross-Directory Validation](/validation/cross-directory)), a spec's frontmatter can shape exactly what the judge sees. These are structural decisions, executed before any evaluation — never prose instructions the judge has to notice and obey:
+
+```yaml
+---
+paths:
+  - "src/events/*.rb"
+excludes:
+  - "src/events/application_event.rb"
+exemplars:
+  - "src/events/referral_verified_event.rb"
+context:
+  - "src/services/**/*.rb"
+---
+```
+
+**`excludes:`** — files structurally out of scope. An excluded file never becomes an evaluation unit, never enters a cohort's membership, and is never seen by the judge. Prefer this over writing "except for X" in the spec body: an exclusion in prose is an instruction the judge can fail to apply; an exclusion in frontmatter is a file it never receives.
+
+**`exemplars:`** — spec-blessed positive examples. Exemplar files are shielded from adverse judgment (they receive no verdicts) and are inlined into the judge's prompt as labeled references for what compliance looks like.
+
+**`context:`** — assist-only material. Context files are inlined into the prompt so the judge sees what the standard is *about* (the domain types a service consumes, the store it calls), but they are never judged themselves and never produce verdicts.
+
+All three keys take glob patterns resolved against the project root. Because exemplars and context are part of what the judge sees, they join the cached verdict's content hash: editing an exemplar or a context file invalidates the affected verdicts just like editing the target or the spec does.
+
+`excludes:` and `exemplars:` also compile through from an expert's `validates:` targeting, the same way `paths:` and `cohort:` do.
+
 ## Spec file location
 
-By default, the spec file is `README.md` in the directory it governs. You can change the filename via `validation.specFilePattern` in config — useful if you use READMEs for human documentation and want a separate `SPEC.md` for lint rules.
+By default, the spec file is `README.md` in the directory it governs. You can change the filename via the top-level `specFilePattern` config key — useful if you use READMEs for human documentation and want a separate `SPEC.md` for lint rules.
 
 For cross-directory domains where one spec governs files across multiple directories, see [Cross-Directory Validation](/validation/cross-directory).
 

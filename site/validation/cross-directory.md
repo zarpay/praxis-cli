@@ -38,6 +38,8 @@ Every service directory must contain a single entry point, and no orphaned files
 
 Here each first-layer directory under `src/services/` is judged as a set — the shape for relational standards ("no orphans," "one entry point per namespace") that no single file can answer. Editing any member file invalidates that directory's cached verdict. An unknown `cohort` value fails with an error listing the accepted options.
 
+`paths` and `cohort` combine with the scoping keys `excludes:`, `exemplars:`, and `context:` — see [Writing Specs — Scoping frontmatter](/validation/writing-specs#scoping-frontmatter).
+
 ## Example: a cross-team documentation standard
 
 Suppose you have a technical writing standard that should apply to both `docs/` and `runbooks/`. Put the spec in a dedicated `specs/` directory:
@@ -93,15 +95,11 @@ Cross-directory specs are powerful but can make validation coverage harder to re
 
 ## Configurable spec filename
 
-If you use a naming convention other than `README.md` for your specs, set `specFilePattern` globally:
+If you use a naming convention other than `README.md` for your specs, set the top-level `specFilePattern` key:
 
 ```json
 {
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast",
-    "specFilePattern": "SPEC.md"
-  }
+  "specFilePattern": "SPEC.md"
 }
 ```
 

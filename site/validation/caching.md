@@ -4,51 +4,58 @@ Every validation result is cached locally. Unchanged documents are never re-vali
 
 ## How the cache works
 
-When `praxis eval run` validates a document, it:
+When `praxis eval run` judges a target, each configured judge:
 
-1. Computes a content hash: `SHA256(documentContent + specContent)`, first 8 characters
-2. Looks up `.praxis/cache/validation/{doc-relative-path}.json`
-3. If a cache entry exists for this (document, spec) pair and the hash matches — returns the cached result without any API call
-4. If there is no entry, or the hash doesn't match — calls the API and writes the result to cache
+1. Computes a content hash over the full judgment input — `SHA256(targetContent + specContent + assistInputs)`, first 8 characters, where assist inputs are the spec's resolved `exemplars:` and `context:` files
+2. Looks up `.praxis/cache/validation/{target-relative-path}.json`
+3. If the file holds an entry for this (spec, judge) pair and the hash matches — returns the cached verdict without any API call
+4. If there is no entry, or the hash doesn't match — calls the API and writes the verdict
 
-The hash covers both the document and the spec. If either one changes, the cached result is automatically invalidated and the document is re-validated on the next run.
+The hash covers everything the judge saw. If the target, the spec, an exemplar, or a context file changes, the cached verdict is automatically invalidated and the target is re-judged on the next run. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
 
 ## Cache file structure
 
-Each document has a single cache file at `.praxis/cache/validation/{source-dir}/{docname}.json`.
+Each target has exactly one cache file at `.praxis/cache/validation/{target-relative-path}.json` — its complete judgment state in one committed artifact.
 
-The file contains a `validations` map keyed by an 8-char hash of the spec's relative path. This allows a document that is validated by multiple specs to store all results independently in one file:
+The file contains a `verdicts` map keyed by `<specHash>:<judgeHash>`: an 8-char hash of the spec's relative path, plus the judge's behavioral hash (its config minus `name`/`apiKeyEnvVar`, plus the system prompt). One file can therefore hold verdicts from multiple specs and multiple judges side by side:
 
 ```json
 {
-  "version": "2.0",
-  "validations": {
-    "a1b2c3d4": {
+  "version": "3.0",
+  "verdicts": {
+    "a1b2c3d4:f83a92f1": {
+      "judge": { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "hash": "f83a92f1" },
       "spec_path": "experts/README.md",
-      "cached_at": "2025-05-27T14:30:45.123Z",
+      "target_type": "expert",
+      "cached_at": "2026-08-31T14:30:45.123Z",
       "content_hash": "abcd1234",
+      "context_files": [{ "path": "src/domain/types.ts", "hash": "f1d20738" }],
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Yes — the document meets all requirements."
+        "reason": "The document meets all requirements."
       }
     }
   }
 }
 ```
 
+When the spec declares `exemplars:` or `context:`, the entry records the resolved files with per-file content hashes (`exemplar_files` / `context_files`) — the exact inputs behind the verdict.
+
 ## Cache invalidation
 
 The cache invalidates automatically when:
 
-- The document content changes
+- The target content changes (any member, for cohort units)
 - The spec file content changes
+- An exemplar or context file the spec declares changes
+- The judge's behavioral settings change (model, temperature, baseUrl) — this invalidates all of that judge's entries at once
 
-There is no manual cache management needed in normal use.
+Renaming a judge does *not* invalidate anything: the name is excluded from the judge hash, so identity follows behavior, not the label. Rolling a config change back re-hits the old entries at zero cost. There is no manual cache management needed in normal use.
 
 ## Disabling the cache
 
-Pass `--no-cache` to any `validate` subcommand to skip cache reads and writes:
+Pass `--no-cache` to any `eval` subcommand to skip cache reads and writes:
 
 ```bash
 praxis eval run --no-cache
