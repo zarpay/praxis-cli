@@ -32,6 +32,38 @@
         "issues": [],
         "reason": "The test file fully complies with all specification criteria: proper subject framing with module name and 'when' clauses, exactly one assertion per test block using appropriate matchers, and testing only public API functionality with real implementations and fresh state."
       }
+    },
+    "dacac2eb:0ac6cb25": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ac6cb25"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:52:02.639Z",
+      "content_hash": "1aa34b7c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file fully conforms to the Test Conventions specification. The top-level describe names the module ('create-review'), every nested describe is a 'when' clause, and each it statement reads as a sentence with the describe context. Every it block contains exactly one expect, using toMatchObject for compound shapes. Tests exercise only the public `run` API and observable store state, with no spies, mocks, or module-scope reaching. Test data is built fresh via the validInput() factory and a fresh store per test via beforeEach, so suites have no shared state or ordering dependencies."
+      }
+    },
+    "dacac2eb:e216be4c": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e216be4c"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:53:20.469Z",
+      "content_hash": "1aa34b7c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with all specification criteria: proper subject framing with module name and when clauses, exactly one assertion per it block using toMatchObject for compound shapes, exclusive focus on public API functionality without implementation details, and fresh test data construction."
+      }
     }
   }
 }

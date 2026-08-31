@@ -32,6 +32,38 @@
         "issues": [],
         "reason": "The test file satisfies all criteria defined in the specification: proper subject framing with module name and when clauses, one assertion per block, and testing functionality rather than implementation using honest in-memory implementations and fresh test data."
       }
+    },
+    "dacac2eb:0ac6cb25": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ac6cb25"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:52:39.947Z",
+      "content_hash": "94c25420",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all three test conventions. Subject framing: the top-level describe names the module under test ('tasting-menu'), nested describes are when-clauses naming the situation, and each it states one observable outcome so describe + it reads as a sentence. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toEqual/toMatchObject. Functionality, not implementation: tests exercise only the exported buildMenu public API against a real in-memory store, assert on returned values only, use no spies or mocks, and build fresh state per test via beforeEach so suites are independent."
+      }
+    },
+    "dacac2eb:e216be4c": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e216be4c"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:53:40.856Z",
+      "content_hash": "94c25420",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification: proper subject framing with module name and 'when' clauses, exactly one assertion per test block, and focuses on functionality through the public API with fresh test data and no implementation-specific testing."
+      }
     }
   }
 }

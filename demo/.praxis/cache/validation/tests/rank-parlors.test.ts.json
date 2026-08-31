@@ -32,6 +32,38 @@
         "issues": [],
         "reason": "The test file fully satisfies all criteria in the specification: proper subject framing with module name and when clauses, one assertion per test block, and focus on functionality through the public API without implementation details."
       }
+    },
+    "dacac2eb:0ac6cb25": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ac6cb25"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:52:11.632Z",
+      "content_hash": "4e966d3a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file fully conforms to the test conventions specification. Subject framing: the top-level describe names the module ('rank-parlors'), every nested describe is a 'when' clause, and each it statement reads as a sentence when combined with its describes. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toMatchObject/toEqual. Functionality, not implementation: tests exercise only the exported run function (and the createReview service for setup), assert on returned values, use the honest in-memory store with no spies or mocks, and build data fresh in beforeEach setup with no cross-suite dependencies. The file also matches the tests/*.test.ts path pattern."
+      }
+    },
+    "dacac2eb:e216be4c": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e216be4c"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:53:28.990Z",
+      "content_hash": "4e966d3a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification: proper subject framing with module names and 'when' clauses, exactly one assertion per test block using appropriate matchers, and focus on functionality through the public API without implementation details or mocking."
+      }
     }
   }
 }

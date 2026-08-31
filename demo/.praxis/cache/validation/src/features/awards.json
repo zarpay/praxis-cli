@@ -55,6 +55,61 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:0ac6cb25": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ac6cb25"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:50:56.133Z",
+      "content_hash": "486559a7",
+      "result": {
+        "compliant": false,
+        "severity": "warning",
+        "issues": [
+          "Structure criterion: the spec requires types in a dedicated `<feature>-types.ts` file, i.e. named after the feature directory `awards` — the file is `award-types.ts` (singular). Rename to `awards-types.ts` (and update the import in index.ts) to match the `<feature>-types.ts` pattern exactly."
+        ],
+        "reason": "The awards feature set conforms to the Feature Module Conventions in nearly every respect: a single entry point (index.ts) re-exports the entire public API (run as pickWinners, PickWinnersInput, Award); logic lives in a verb-first kebab-case file (pick-winners.ts) exporting one `run` that returns Result over exceptions with consumer-grade error messages; all files are reachable from index.ts through the import graph (index → pick-winners → award-types); the feature serves one capability; and the name 'awards' describes the capability, not the implementation."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:e216be4c": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e216be4c"
+      },
+      "spec_path": "src/features/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:52:50.010Z",
+      "content_hash": "486559a7",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The awards feature directory fully complies with all specification requirements: it has exactly one entry point (index.ts), dedicated types file, properly named logic files, no orphaned files, cohesive single capability, and follows all service conventions including Result pattern and consumer-grade error messages."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

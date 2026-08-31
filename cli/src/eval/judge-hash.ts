@@ -4,7 +4,7 @@ import type { CacheJudgeIdentity } from "@/eval/cache-manager.js";
 import { createHash } from "node:crypto";
 
 import { DEFAULT_JUDGE_BASE_URL, DEFAULT_JUDGE_TEMPERATURE } from "@/core/config.js";
-import { SYSTEM_PROMPT } from "@/eval/prompts.js";
+import promptSurface from "@/eval/prompts/prompt-surface.js";
 
 /**
  * Judge identity hashing.
@@ -34,15 +34,16 @@ const NON_BEHAVIORAL_FIELDS = ["name", "apiKeyEnvVar"] as const;
  * Computes the 8-character identity hash for a judge.
  *
  * Defaults are materialized before hashing, so an omitted setting and
- * its explicit default produce the same identity. The system prompt
- * text joins the hash directly — a Praxis release that rewords it
- * changes the judge as much as a model swap, with no version constant
- * to forget bumping.
+ * its explicit default produce the same identity. The complete prompt
+ * surface (src/eval/prompts/prompt-surface.ts) joins the hash directly
+ * — a Praxis release that rewords any judge-facing prompt text changes
+ * the judge as much as a model swap, with no version constant to
+ * forget bumping.
  *
  * @param judge - The configured judge
- * @param systemPrompt - Overridable for tests; defaults to the real prompt
+ * @param prompts - Overridable for tests; defaults to the real prompt surface
  */
-export function judgeHash(judge: JudgeConfig, systemPrompt: string = SYSTEM_PROMPT): string {
+export function judgeHash(judge: JudgeConfig, prompts: string = promptSurface()): string {
   const behavioral: Record<string, unknown> = { ...judge };
 
   for (const field of NON_BEHAVIORAL_FIELDS) {
@@ -51,7 +52,7 @@ export function judgeHash(judge: JudgeConfig, systemPrompt: string = SYSTEM_PROM
 
   behavioral["baseUrl"] ??= DEFAULT_JUDGE_BASE_URL;
   behavioral["temperature"] ??= DEFAULT_JUDGE_TEMPERATURE;
-  behavioral["systemPrompt"] = systemPrompt;
+  behavioral["promptSurface"] = prompts;
 
   return createHash("sha256").update(canonicalize(behavioral)).digest("hex").slice(0, 8);
 }

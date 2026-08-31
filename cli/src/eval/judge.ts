@@ -21,7 +21,9 @@ import {
   assistHashInput,
   resolveAssistInputs,
 } from "@/eval/judgment-input.js";
-import { SYSTEM_PROMPT, JUDGE_TOOLS } from "@/eval/prompts.js";
+import judgeTools from "@/eval/prompts/judge-tools.js";
+import systemPrompt from "@/eval/prompts/system-prompt.js";
+import validationQuestion from "@/eval/prompts/validation-question.js";
 
 /** Known target types within the Praxis content structure. */
 export type TargetType =
@@ -212,10 +214,20 @@ export class Judge {
       body: JSON.stringify({
         model: judge.model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: this.buildValidationQuestion() },
+          { role: "system", content: systemPrompt() },
+          {
+            role: "user",
+            content: validationQuestion({
+              specContent: this.specContent,
+              targetContent: this.targetContent,
+              targetPath: this.targetPath,
+              kind: this.kind,
+              exemplars: this.assist.exemplars,
+              context: this.assist.context,
+            }),
+          },
         ],
-        tools: JUDGE_TOOLS,
+        tools: judgeTools(),
         tool_choice: "required",
         temperature: judge.temperature ?? DEFAULT_JUDGE_TEMPERATURE,
       }),
@@ -260,79 +272,6 @@ export class Judge {
       default:
         throw errors.unexpectedToolCall(toolCall.function.name);
     }
-  }
-
-  /**
-   * Renders the exemplars prompt section, or an empty string when the
-   * spec blesses none.
-   */
-  private buildExemplarSection(): string {
-    if (this.assist.exemplars.length === 0) return "";
-
-    const blocks = this.assist.exemplars
-      .map((e) => `===== EXEMPLAR: ${e.path} =====\n\n${e.content}`)
-      .join("\n\n");
-
-    return `## EXEMPLARS
-
-The following files are spec-blessed positive examples. They are not
-under judgment — use them as concrete references for what satisfying
-the specification looks like.
-
-${blocks}
-
-`;
-  }
-
-  /**
-   * Renders the context prompt section, or an empty string when the
-   * spec declares none. Context is assist-only (03): it informs the
-   * judgment and never receives a verdict.
-   */
-  private buildContextSection(): string {
-    if (this.assist.context.length === 0) return "";
-
-    const blocks = this.assist.context
-      .map((c) => `===== CONTEXT: ${c.path} =====\n\n${c.content}`)
-      .join("\n\n");
-
-    return `## CONTEXT
-
-The following files are reference context: what the specification's
-subject matter is about. They are not under judgment and must not be
-critiqued — use them only to inform your evaluation.
-
-${blocks}
-
-`;
-  }
-
-  /** Builds the user prompt sent to the LLM for validation. */
-  private buildValidationQuestion(): string {
-    const subject =
-      this.kind === "cohort"
-        ? `## FILES TO VALIDATE
-
-The following files form one unit (cohort). Judge them together as a
-set against the specification; each file is labeled with its path.
-
-Cohort: ${this.targetPath}`
-        : `## FILE TO VALIDATE
-
-File: ${baseName(this.targetPath)}
-Directory: ${parentDir(this.targetPath)}`;
-
-    return `## SPECIFICATION
-
-\`\`\`
-${this.specContent}
-\`\`\`
-
-${this.buildExemplarSection()}${this.buildContextSection()}${subject}
-
-\`\`\`
-${this.targetContent}
-\`\`\``;
   }
 
   /**

@@ -44,6 +44,50 @@
           "hash": "a1beb8f5"
         }
       ]
+    },
+    "0311531a:0ac6cb25": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ac6cb25"
+      },
+      "spec_path": "src/services/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:51:08.473Z",
+      "content_hash": "164ae3c9",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies every criterion in the Service Conventions specification. Structure: it exports a single `run` entry point taking the `Store` first and a single input object, returning `Result<RankedParlor[]>` from the domain types, and the module name `rank-parlors.ts` is verb-first kebab-case. Behavior: domain failures are returned as `{ ok: false, error }` values with no throws; the error message names the field and what would be accepted ('minReviews must be a whole number of 0 or more'); validation runs top-to-bottom before any work; the service does one thing; and all I/O goes through the injected Store (listParlors/listReviews) with no timers, fetch, or console. Documentation: the doc comment states the purpose in one sentence and enumerates the domain failure modes (minReviews negative or not a whole number), matching the actual validation logic."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:e216be4c": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e216be4c"
+      },
+      "spec_path": "src/services/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:53:03.388Z",
+      "content_hash": "164ae3c9",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria: exports a run function with correct signature, has verb-first kebab-case filename, handles domain failures as values with consumer-friendly error messages, validates input before processing, does one clear responsibility, uses only injected Store for data access, and includes proper documentation with purpose and failure modes."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
     }
   }
 }

@@ -1,0 +1,60 @@
+import type { AssistFile } from "@/eval/judgment-input.js";
+
+import { baseName, parentDir } from "@/core/paths.js";
+import contextSection from "@/eval/prompts/context-section.js";
+import exemplarSection from "@/eval/prompts/exemplar-section.js";
+
+/** Everything the user prompt is built from. */
+export interface ValidationQuestionInput {
+  /** The spec content the target is judged against. */
+  specContent: string;
+  /** The judgment input: one file's content, or an assembled cohort. */
+  targetContent: string;
+  /** Path of the file, or of the cohort's directory. */
+  targetPath: string;
+  /** Whether the target is one file or a pre-assembled cohort of files. */
+  kind: "file" | "cohort";
+  /** Spec-blessed positive examples, inlined and never judged. */
+  exemplars: readonly AssistFile[];
+  /** Assist-only reference files, inlined and never judged. */
+  context: readonly AssistFile[];
+}
+
+/**
+ * The user prompt sent to the LLM for one judgment: specification,
+ * optional exemplar/context sections, then the target under judgment —
+ * framed per file or per cohort.
+ */
+export default function validationQuestion({
+  specContent,
+  targetContent,
+  targetPath,
+  kind,
+  exemplars,
+  context,
+}: ValidationQuestionInput): string {
+  const subject =
+    kind === "cohort"
+      ? `## FILES TO VALIDATE
+
+The following files form one unit (cohort). Judge them together as a
+set against the specification; each file is labeled with its path.
+
+Cohort: ${targetPath}`
+      : `## FILE TO VALIDATE
+
+File: ${baseName(targetPath)}
+Directory: ${parentDir(targetPath)}`;
+
+  return `## SPECIFICATION
+
+\`\`\`
+${specContent}
+\`\`\`
+
+${exemplarSection(exemplars)}${contextSection(context)}${subject}
+
+\`\`\`
+${targetContent}
+\`\`\``;
+}

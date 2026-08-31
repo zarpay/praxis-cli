@@ -4,6 +4,8 @@ import type { CompilerPlugin, PluginOptions } from "@/spec/plugins/types.js";
 import { exists, readJson, writeJson, writeText } from "@/core/files.js";
 import { joinPath, resolvePath } from "@/core/paths.js";
 import { evalTargetingLines } from "@/spec/output-builder.js";
+import praxisResolveCommand from "@/spec/plugins/prompts/praxis-resolve-command.js";
+import praxisSkill from "@/spec/plugins/prompts/praxis-skill.js";
 
 /** Default plugin.json content used when no scaffold file exists. */
 const DEFAULT_PLUGIN_JSON = {
@@ -13,169 +15,7 @@ const DEFAULT_PLUGIN_JSON = {
   keywords: ["productivity"],
 };
 
-/** Content for the /praxis-resolve slash command. */
-const PRAXIS_RESOLVE_COMMAND = `---
-description: Iteratively resolve Praxis spec violations — review, fix, and verify until all targeted files are compliant.
----
 
-Work through Praxis spec violations one at a time: discover the full scope first, fix each file, verify it passes, move on.
-
-## Arguments
-
-\`$ARGUMENTS\` accepts any combination of:
-
-- **Empty** — resolve all specs, FAILs and WARNs (default)
-- **\`--no-warns\`** — resolve FAILs only, leave WARNs
-- **\`--warns-only\`** — resolve WARNs only, skip FAILs
-- **Type filter** — a \`--type\` label from the "By type:" summary (e.g. \`.claude/agents\`)
-- **File paths** — one or more specific files
-- **Combinations** — \`backend/app/events/account_secured_event.rb --no-warns\`
-
-**Default: resolve both FAILs and WARNs.** Warnings are real deviations from the spec.
-
----
-
-## Phase 1 — Discovery
-
-Run validation across the full scope **without** \`--fail-fast\` to see everything before touching anything:
-
-\`\`\`bash
-# All specs:
-praxis eval run
-
-# Scoped to a type:
-praxis eval run --type <type>
-
-# Specific files (force fresh evaluation):
-praxis eval run <path> --no-cache --verbose
-\`\`\`
-
-Build a numbered checklist of every item to resolve. Do not begin fixing until the full list is in front of you.
-
----
-
-## Phase 2 — Resolve loop
-
-Work through the checklist one item at a time.
-
-**For each item:**
-
-1. **Read the file** and understand the violation. Use \`praxis eval verdict <path> --verbose\` to see cached reasoning, or \`praxis eval run <path> --verbose\` if no cached entry yet.
-
-2. **Fix** — apply the minimum change that satisfies the reported issue. Do not refactor unrelated code.
-
-3. **Verify** — the edit auto-invalidates the cache entry. Run:
-   \`\`\`bash
-   praxis eval run <path>
-   \`\`\`
-   - \`✓ PASS\` or \`⚠ WARN\` (when only fixing FAILs) → check off, move to next
-   - Still failing → re-read the issue, fix again, verify again
-   - Confirmed false positive → note it explicitly, skip, move to next
-
-4. Mark the checklist item done before moving on.
-
----
-
-## Phase 3 — Final sweep
-
-After all items are addressed, run the full scope once more to confirm no regressions:
-
-\`\`\`bash
-praxis eval run
-\`\`\`
-
----
-
-## Summary
-
-Report:
-- Files resolved and the common violation patterns
-- Any WARNs left and why (if \`--no-warns\` was used)
-- False positives encountered — these may indicate the spec needs clarification
-`;
-
-/** Content for the praxis skill. */
-const PRAXIS_SKILL = `---
-description: Reference for the Praxis CLI — what it does, how to use it, and how the cache and specs work.
----
-
-# Praxis
-
-Praxis is a CLI tool with two complementary functions:
-
-**Conceptual linting** — spec files define what valid documents look like for a given set of files. \`praxis eval run\` runs each file through its spec via an LLM and caches the result. The cache is content-hash keyed: editing a file auto-invalidates its entry. Never delete the cache manually.
-
-**Knowledge compilation** — expert files in the configured \`expertsDir\` are compiled into self-contained SME agent profiles and written to the Claude Code agents directory.
-
----
-
-## Project structure
-
-\`\`\`
-.praxis/config.json        — sources, ignore patterns, model config, specFilePattern
-.praxis/cache/             — committed LLM validation results (keyed by content hash)
-docs/experts/              — expert definitions compiled into SME agent profiles
-.claude/agents/*.sme.md   — compiled agent profiles; also the spec files for validation
-\`\`\`
-
-Config is loaded from the nearest \`.praxis/\` directory walking up from cwd.
-
----
-
-## Key CLI commands
-
-\`\`\`bash
-# Project health: document counts, validation coverage, orphaned refs
-praxis status
-
-# Validate all targeted files (all specs)
-praxis eval run
-
-# Validate scoped to one spec's files (use the "By type:" label from validate all output)
-praxis eval run --type <type>
-
-# Stop on first error — useful for sequential fixing
-praxis eval run --fail-fast
-
-# Validate a single file against its spec
-praxis eval run <path>
-
-# Force re-evaluation without editing the file
-praxis eval run <path> --no-cache
-
-# Show full AI reasoning for a result
-praxis eval run <path> --verbose
-
-# Read cached result without an API call
-praxis eval verdict <path> --verbose
-
-# Recompile expert files into SME agent profiles
-praxis compile
-
-# Inspect or edit .praxis/config.json
-praxis config show
-praxis config edit
-\`\`\`
-
----
-
-## How specs work
-
-Spec files match \`specFilePattern\` (default: \`README.md\`, configured per project). In this project: \`*.sme.md\`.
-
-A spec file with \`paths:\` frontmatter targets those glob patterns — files of any extension. Without \`paths:\`, it validates sibling files in the same directory.
-
-The compiled SME profile IS the spec: the LLM reads the profile content as the specification when evaluating each targeted file.
-
----
-
-## Cache behaviour
-
-- Content-hash keyed: edit a file → its cache entry is automatically invalidated on next run
-- Both the document and the spec content are hashed — changing the spec invalidates all entries for files it covers
-- \`--no-cache\` forces re-evaluation without editing (use sparingly, mainly to check LLM non-determinism on borderline results)
-- Never delete \`.praxis/cache/\` — it accumulates valid results and saves API calls
-`;
 
 /**
  * Claude Code compiler plugin.
@@ -247,8 +87,11 @@ export class ClaudeCodePlugin implements CompilerPlugin {
    * documents without needing an OpenRouter API key.
    */
   private ensureCommands(): void {
-    writeText(joinPath(this.outputDir, "commands", "praxis-resolve.md"), PRAXIS_RESOLVE_COMMAND);
-    writeText(joinPath(this.outputDir, "skills", "praxis", "SKILL.md"), PRAXIS_SKILL);
+    writeText(
+      joinPath(this.outputDir, "commands", "praxis-resolve.md"),
+      praxisResolveCommand(),
+    );
+    writeText(joinPath(this.outputDir, "skills", "praxis", "SKILL.md"), praxisSkill());
   }
 
   /**

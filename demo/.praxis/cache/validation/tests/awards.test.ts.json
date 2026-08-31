@@ -32,6 +32,38 @@
         "issues": [],
         "reason": "The test file fully complies with all requirements in the specification: proper subject framing with module name and when clauses, one assertion per test block, and testing functionality rather than implementation details."
       }
+    },
+    "dacac2eb:0ac6cb25": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ac6cb25"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:51:25.011Z",
+      "content_hash": "e242314a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all three test conventions. Subject framing: the top-level describe names the unit by its module name ('awards'), nested describes are 'when' clauses, and each it states one observable outcome that reads as a sentence with its describe. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toMatchObject. Functionality, not implementation: tests exercise only public APIs (pickWinners and the create-review run function), use the honest in-memory store as an injected collaborator, contain no spies or mocking, and build fresh data in beforeEach setup so suites are independent."
+      }
+    },
+    "dacac2eb:e216be4c": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e216be4c"
+      },
+      "spec_path": "tests/README.md",
+      "target_type": "unknown",
+      "cached_at": "2026-08-31T13:53:12.036Z",
+      "content_hash": "e242314a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with all specification criteria: proper subject framing with module name and 'when' clauses, one assertion per test block using appropriate matchers, and focus on functionality through public API with fresh test data."
+      }
     }
   }
 }
