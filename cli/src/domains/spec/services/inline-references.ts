@@ -1,9 +1,9 @@
 import type { ExpandGlobsInput, InlineReferencesResult } from "@/domains/spec/types.js";
 
 import { exists } from "@/core/files.js";
+import { MarkdownFile } from "@/core/markdown-file.js";
 import { joinPath } from "@/core/paths.js";
 import expandGlobs from "@/domains/spec/services/expand-globs.js";
-import readMarkdownBody from "@/domains/spec/services/read-markdown-body.js";
 
 /**
  * Resolves declared patterns and reads the body of every file they name.
@@ -44,7 +44,7 @@ export default async function inlineReferences({
         continue;
       }
 
-      bodies.push(readMarkdownBody(fullPath));
+      bodies.push(MarkdownFile.at(fullPath).body);
     }
   }
 

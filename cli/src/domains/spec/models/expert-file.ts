@@ -3,9 +3,8 @@ import type { AgentMetadata } from "@/domains/spec/types.js";
 import type { CohortMode } from "@/types.js";
 
 import { errors } from "@/core/errors.js";
-import { readText } from "@/core/files.js";
 import { Fields } from "@/core/frontmatter-fields.js";
-import { Frontmatter } from "@/core/frontmatter.js";
+import { MarkdownFile } from "@/core/markdown-file.js";
 
 /** The accepted `cohort:` frontmatter values. */
 const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
@@ -95,14 +94,17 @@ export class ExpertFile {
 
   /** Reads and validates an expert from disk. */
   static at(path: string): ExpertFile {
-    return ExpertFile.fromContent(readText(path), path);
+    return ExpertFile.fromDocument(MarkdownFile.at(path), path);
   }
 
   /** Reads and validates an expert from already-loaded content. */
   static fromContent(content: string, path: string): ExpertFile {
-    const fm = Frontmatter.fromContent(content);
+    return ExpertFile.fromDocument(MarkdownFile.fromContent(content, path), path);
+  }
 
-    return new ExpertFile(new Fields(fm, path), path, fm.body().trim());
+  /** Validates a parsed document as an expert. */
+  private static fromDocument(document: MarkdownFile, path: string): ExpertFile {
+    return new ExpertFile(new Fields(document.frontmatter, path), path, document.body);
   }
 
   /** The expert's prose, frontmatter stripped — the compiled Role section. */

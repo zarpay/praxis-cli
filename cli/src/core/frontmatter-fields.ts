@@ -1,5 +1,7 @@
+import type { Frontmatter } from "@/core/frontmatter.js";
+
 import { errors } from "@/core/errors.js";
-import { Frontmatter } from "@/core/frontmatter.js";
+import { MarkdownFile } from "@/core/markdown-file.js";
 
 /**
  * Validated frontmatter reads, shared by every document model.
@@ -26,12 +28,12 @@ export class Fields {
 
   /** Reads a document from disk. */
   static fromFile(path: string, docPath: string): Fields {
-    return new Fields(Frontmatter.fromFile(path), docPath);
+    return new Fields(MarkdownFile.at(path).frontmatter, docPath);
   }
 
   /** Reads a document from already-loaded content. */
   static fromContent(content: string, docPath: string): Fields {
-    return new Fields(Frontmatter.fromContent(content), docPath);
+    return new Fields(MarkdownFile.fromContent(content).frontmatter, docPath);
   }
 
   /**

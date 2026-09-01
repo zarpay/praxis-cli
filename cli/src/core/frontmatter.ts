@@ -1,71 +1,70 @@
 import yaml from "js-yaml";
 
-import { readText } from "@/core/files.js";
-
-/** Delimiter used to fence YAML frontmatter in markdown files. */
-const DELIMITER = "---";
-
 /**
- * Parses YAML frontmatter from a markdown file.
+ * A document's frontmatter: the parsed YAML, with typed accessors.
  *
- * Extracts the YAML block between the opening and closing `---` delimiters
- * at the top of a file. Provides typed accessors for single values and
- * array values, with graceful handling of missing keys or absent frontmatter.
+ * Built by {@link MarkdownFile}, which owns the delimiter format and
+ * hands this the YAML between the fences. This class never sees a path
+ * or a filesystem — it is the metadata, not the document.
+ *
+ * The accessors come in pairs. `value`/`array` always return something
+ * (undefined, or an empty list); `optionalValue`/`optionalArray` return
+ * undefined for an absent key, which is what a caller writing into an
+ * optional field wants — an absent key stays absent rather than
+ * becoming `[]`.
+ *
+ * YAML is untyped, so the generics are unchecked trust, stated once
+ * here instead of as a cast at every call site. Validation is
+ * `core/frontmatter-fields.ts`, which raises on a wrong-shaped value.
  */
 export class Frontmatter {
-  private readonly content: string;
+  private readonly rawYaml: string;
   private cached: Record<string, unknown> | null = null;
 
-  private constructor(content: string) {
-    this.content = content;
+  private constructor(rawYaml: string) {
+    this.rawYaml = rawYaml;
   }
 
-  /** Creates a Frontmatter parser by reading the given file. */
-  static fromFile(filePath: string): Frontmatter {
-    return new Frontmatter(readText(filePath));
-  }
-
-  /**
-   * Creates a Frontmatter parser from already-loaded file content.
-   *
-   * Useful when the caller has read the file for other purposes and
-   * should not pay for (or depend on) a second filesystem read.
-   */
-  static fromContent(content: string): Frontmatter {
-    return new Frontmatter(content);
+  /** Wraps the YAML found between a document's fences. */
+  static fromYaml(rawYaml: string): Frontmatter {
+    return new Frontmatter(rawYaml);
   }
 
   /**
-   * Parses and returns the frontmatter as a key-value record.
+   * The frontmatter as a key-value record.
    *
-   * Returns an empty object if the file has no frontmatter.
-   * Results are cached after the first call.
+   * Empty when the document declares none. Parsed once and cached.
    */
   parse(): Record<string, unknown> {
-    this.cached ??= this.extractAndParse();
+    this.cached ??= this.load();
     return this.cached;
   }
 
   /**
-   * Returns a single frontmatter value by key.
+   * A single value, untyped.
    *
-   * @param key - The frontmatter field name
-   * @returns The value, or undefined if the key does not exist
+   * For callers that must inspect the raw shape — validating an enum,
+   * or distinguishing `false` from absent. Everyone else wants
+   * `optionalValue`.
    */
   value(key: string): unknown {
     return this.parse()[key];
   }
 
   /**
-   * Returns a frontmatter value as an array.
+   * A single value, or undefined when the key is absent.
    *
-   * If the value is already an array, returns it as-is.
-   * If it's a single value, wraps it in an array.
-   * If the key is missing, returns an empty array.
+   * @param key - The frontmatter field name
+   */
+  optionalValue<T = string>(key: string): T | undefined {
+    return this.parse()[key] as T | undefined;
+  }
+
+  /**
+   * A value as a list; an absent key is an empty list.
    *
-   * Defaults to `string[]`, the shape every caller wants; YAML is
-   * untyped, so this is the same unchecked trust the `as string[]` at
-   * each call site used to express, stated once here instead.
+   * A bare value is wrapped, so `context: docs/why.md` and its
+   * one-element list form are the same declaration.
    *
    * @param key - The frontmatter field name
    */
@@ -84,24 +83,7 @@ export class Frontmatter {
   }
 
   /**
-   * Returns a single frontmatter value, or undefined when the key is absent.
-   *
-   * The optional-field counterpart to `value()`: the same lookup, typed
-   * for the common case of assigning straight into an optional field
-   * without a cast at the call site.
-   *
-   * @param key - The frontmatter field name
-   */
-  optionalValue<T = string>(key: string): T | undefined {
-    return this.parse()[key] as T | undefined;
-  }
-
-  /**
-   * Returns a frontmatter value as an array, or undefined when the key
-   * is absent or holds nothing.
-   *
-   * The optional-field counterpart to `array()`: a caller writing into
-   * an optional field wants the key omitted rather than set to `[]`.
+   * A value as a list, or undefined when the key is absent or empty.
    *
    * @param key - The frontmatter field name
    */
@@ -112,67 +94,18 @@ export class Frontmatter {
   }
 
   /**
-   * Returns everything after the frontmatter block, unmodified.
+   * Parses the YAML with js-yaml's safe load.
    *
-   * A file with no frontmatter is all body. The delimiter scan lives
-   * here, with the parser that owns the format, rather than being
-   * reimplemented by every reader that wants the prose.
+   * Permits Date objects in the schema to match Ruby's YAML.safe_load
+   * behavior.
    */
-  body(): string {
-    if (!this.content.startsWith(`${DELIMITER}\n`)) {
-      return this.content;
-    }
-
-    const endIndex = this.content.indexOf(`\n${DELIMITER}`, DELIMITER.length);
-
-    if (endIndex === -1) {
-      return this.content;
-    }
-
-    return this.content.slice(endIndex + DELIMITER.length + 2);
-  }
-
-  /**
-   * Returns the raw YAML string between delimiters, without parsing.
-   *
-   * Useful for debugging or re-serialization. Returns an empty string
-   * if the file has no frontmatter.
-   */
-  rawYaml(): string {
-    return this.extractRawYaml();
-  }
-
-  /**
-   * Extracts the YAML string and parses it with js-yaml safe load.
-   *
-   * Permits Date objects in the YAML schema to match Ruby's YAML.safe_load behavior.
-   */
-  private extractAndParse(): Record<string, unknown> {
-    const yamlStr = this.extractRawYaml();
-
-    if (!yamlStr) {
+  private load(): Record<string, unknown> {
+    if (!this.rawYaml) {
       return {};
     }
 
-    const parsed = yaml.load(yamlStr, { schema: yaml.DEFAULT_SCHEMA });
+    const parsed = yaml.load(this.rawYaml, { schema: yaml.DEFAULT_SCHEMA });
+
     return (parsed as Record<string, unknown>) ?? {};
-  }
-
-  /**
-   * Finds and returns the raw YAML content between the opening
-   * and closing `---` delimiters.
-   */
-  private extractRawYaml(): string {
-    if (!this.content.startsWith(`${DELIMITER}\n`)) {
-      return "";
-    }
-
-    const endIndex = this.content.indexOf(`\n${DELIMITER}`, DELIMITER.length);
-
-    if (endIndex === -1) {
-      return "";
-    }
-
-    return this.content.slice(DELIMITER.length + 1, endIndex);
   }
 }

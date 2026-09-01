@@ -93,7 +93,7 @@ collect the events as data.
 
 ```
 Expert .md file (with YAML frontmatter)
-  → Frontmatter parsed (core/frontmatter.ts)
+  → Document parsed (core/markdown-file.ts → core/frontmatter.ts)
   → Referenced content resolved via globs (domains/spec/services/glob-expander.ts)
   → Sections assembled: Expert → Responsibilities → Constitution → Context → Reference
       (domains/spec/services/build-profile.ts)
