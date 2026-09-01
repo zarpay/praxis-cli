@@ -10,6 +10,7 @@
 import type { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 import type { Reviewer } from "@/domains/eval/models/reviewer.js";
 import type { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
+import type { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import type { CohortMode, ReviewerConfig } from "@/types.js";
 
 // ---------------------------------------------------------------------------
@@ -458,4 +459,50 @@ export interface WriteVerdictInput {
   exemplarFiles?: AssistFileRecord[];
   /** Resolved context provenance, recorded when the spec declares any. */
   contextFiles?: AssistFileRecord[];
+}
+
+/** The targets to review, and the project they live in. */
+export interface ReviewTargetsInput {
+  /** Absolute or cwd-relative target paths. */
+  targets: string[];
+  /** Project root. */
+  root: string;
+  /** The project's config: reviewers and spec pattern. */
+  config: PraxisConfig;
+  /** Spec override; honored only when exactly one target was named. */
+  spec?: string;
+  /** Narrow to one configured reviewer by name. */
+  reviewer?: string;
+  /** Whether to consult the verdict cache. */
+  useCache?: boolean;
+  /** Called with each verdict as it lands, for streamed output. */
+  onVerdict?: (event: { path: string; verdict: Verdict; reviewerName?: string }) => void;
+}
+
+/** What reviewing the named targets produced. */
+export interface ReviewTargetsResult {
+  /** Targets whose worst verdict was an error. */
+  errors: number;
+  /** Targets whose worst verdict was a warning. */
+  warnings: number;
+}
+
+/** One target to report cached verdicts for. */
+export interface ReportVerdictsInput {
+  /** The target to report on. */
+  targetPath: string;
+  /** Project root. */
+  root: string;
+  /** The project's config: reviewers and spec pattern. */
+  config: PraxisConfig;
+}
+
+/** Every reviewer's last recorded opinion of one target. */
+export interface ReportVerdictsResult {
+  /** The resolved absolute target path. */
+  targetPath: string;
+  /** Whether reviewers should be named in the output. */
+  named: boolean;
+  /** One report per configured reviewer, in config order. */
+  reports: { reviewer: string; report: VerdictReport }[];
 }

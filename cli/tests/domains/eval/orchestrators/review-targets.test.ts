@@ -2,7 +2,9 @@ import type { Verdict } from "@/domains/eval/types.js";
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import { EvalCommand, severityRank } from "@/commands/eval.js";
+import { severityRank } from "@/domains/eval/models/verdict.js";
+import reviewTargets from "@/domains/eval/orchestrators/review-targets.js";
+import selectReviewers from "@/domains/eval/services/select-reviewers.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import {
   createOpenRouterServer,
@@ -44,8 +46,8 @@ function verdict(fields: Partial<Verdict>): Verdict {
   return { compliant: true, severity: "error", issues: [], reason: "", ...fields };
 }
 
-/** An EvalCommand over a throwaway project with the given reviewers. */
-function command(reviewers: { name: string; model: string; apiKeyEnvVar: string }[]): EvalCommand {
+/** A throwaway project configured with the given reviewers. */
+function project(reviewers: { name: string; model: string; apiKeyEnvVar: string }[]): PraxisConfig {
   const { root, cleanup } = createValidatorTmpdir({
     sources: ["specs"],
     files: { "specs/README.md": "# Spec", "specs/doc.md": "# Doc" },
@@ -53,7 +55,7 @@ function command(reviewers: { name: string; model: string; apiKeyEnvVar: string 
   });
   cleanups.push(cleanup);
 
-  return new EvalCommand({ root, config: new PraxisConfig(root) });
+  return new PraxisConfig(root);
 }
 
 const KEYED = { name: "flash", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" };
@@ -85,55 +87,47 @@ describe("severityRank", () => {
 });
 
 describe("reviewer configuration", () => {
-  it("raises when the project configures no reviewers", async () => {
-    const run = command([]).all({ verbose: false, failFast: false, cache: false });
+  it("raises when the project configures no reviewers", () => {
+    const run = () => selectReviewers({ configured: project([]).reviewers });
 
-    await expect(run).rejects.toThrow(/reviewer/i);
+    expect(run).toThrow(/reviewer/i);
   });
 
-  it("raises when --reviewer names a reviewer that is not configured", async () => {
-    const run = command([KEYED]).all({
-      verbose: false,
-      failFast: false,
-      cache: false,
-      reviewer: "nope",
-    });
+  it("raises when --reviewer names a reviewer that is not configured", () => {
+    const run = () => selectReviewers({ configured: project([KEYED]).reviewers, only: "nope" });
 
-    await expect(run).rejects.toThrow(/nope/);
+    expect(run).toThrow(/nope/);
   });
 
-  it("names the configured reviewers when --reviewer does not match", async () => {
-    const run = command([KEYED]).all({
-      verbose: false,
-      failFast: false,
-      cache: false,
-      reviewer: "nope",
-    });
+  it("names the configured reviewers when --reviewer does not match", () => {
+    const run = () => selectReviewers({ configured: project([KEYED]).reviewers, only: "nope" });
 
-    await expect(run).rejects.toThrow(/flash/);
+    expect(run).toThrow(/flash/);
   });
 
-  it("raises when a reviewer's API key variable is unset", async () => {
+  it("raises when a reviewer's API key variable is unset", () => {
     const keyless = { name: "keyless", model: "m", apiKeyEnvVar: "MISSING_KEY_VAR" };
-    const run = command([keyless]).all({ verbose: false, failFast: false, cache: false });
+    const run = () => selectReviewers({ configured: project([keyless]).reviewers });
 
-    await expect(run).rejects.toThrow(/MISSING_KEY_VAR/);
+    expect(run).toThrow(/MISSING_KEY_VAR/);
   });
 
-  it("raises when a reviewer's API key variable is set but empty", async () => {
+  it("raises when a reviewer's API key variable is set but empty", () => {
     process.env["MISSING_KEY_VAR"] = "";
     const keyless = { name: "keyless", model: "m", apiKeyEnvVar: "MISSING_KEY_VAR" };
-    const run = command([keyless]).all({ verbose: false, failFast: false, cache: false });
+    const run = () => selectReviewers({ configured: project([keyless]).reviewers });
 
-    await expect(run).rejects.toThrow(/MISSING_KEY_VAR/);
+    expect(run).toThrow(/MISSING_KEY_VAR/);
   });
 });
 
 describe("run() target dispatch", () => {
-  const BASE = { verbose: false, failFast: false, cache: false };
-
   /** A project with one keyed reviewer and two documents to review. */
-  function reviewingProject(): { command: EvalCommand; abs: (rel: string) => string } {
+  function reviewingProject(): {
+    root: string;
+    config: PraxisConfig;
+    abs: (rel: string) => string;
+  } {
     const { root, abs, cleanup } = createValidatorTmpdir({
       sources: ["specs"],
       files: {
@@ -145,56 +139,78 @@ describe("run() target dispatch", () => {
     });
     cleanups.push(cleanup);
 
-    return { command: new EvalCommand({ root, config: new PraxisConfig(root) }), abs };
+    return { root, config: new PraxisConfig(root), abs };
   }
-
-  it("delegates to the full run when given no targets", async () => {
-    useVerdict("validation_pass");
-    const { command } = reviewingProject();
-    const summary = await command.run([], BASE);
-
-    // Only all() returns a full EvalSummary; the targeted path returns
-    // just the error/warning tally, so `total` is what tells them apart.
-    expect(summary).toHaveProperty("total");
-  });
-
-  it("returns only the tally when given targets", async () => {
-    useVerdict("validation_pass");
-    const { command, abs } = reviewingProject();
-    const summary = await command.run([abs("specs/doc.md")], BASE);
-
-    expect(summary).not.toHaveProperty("total");
-  });
 
   it("counts an error verdict for a named target", async () => {
     useVerdict("validation_fail");
-    const { command, abs } = reviewingProject();
-    const summary = await command.run([abs("specs/doc.md")], BASE);
+    const { root, config, abs } = reviewingProject();
 
-    expect(summary).toEqual({ errors: 1, warnings: 0 });
+    const result = await reviewTargets({
+      targets: [abs("specs/doc.md")],
+      root,
+      config,
+      useCache: false,
+    });
+
+    expect(result).toEqual({ errors: 1, warnings: 0 });
   });
 
   it("counts a warning separately from an error", async () => {
     useVerdict("validation_warn");
-    const { command, abs } = reviewingProject();
-    const summary = await command.run([abs("specs/doc.md")], BASE);
+    const { root, config, abs } = reviewingProject();
 
-    expect(summary).toEqual({ errors: 0, warnings: 1 });
+    const result = await reviewTargets({
+      targets: [abs("specs/doc.md")],
+      root,
+      config,
+      useCache: false,
+    });
+
+    expect(result).toEqual({ errors: 0, warnings: 1 });
   });
 
   it("reviews every named target, not just the first", async () => {
     useVerdict("validation_fail");
-    const { command, abs } = reviewingProject();
-    const summary = await command.run([abs("specs/doc.md"), abs("specs/other.md")], BASE);
+    const { root, config, abs } = reviewingProject();
 
-    expect(summary.errors).toBe(2);
+    const result = await reviewTargets({
+      targets: [abs("specs/doc.md"), abs("specs/other.md")],
+      root,
+      config,
+      useCache: false,
+    });
+
+    expect(result.errors).toBe(2);
   });
 
   it("counts nothing for a compliant target", async () => {
     useVerdict("validation_pass");
-    const { command, abs } = reviewingProject();
-    const summary = await command.run([abs("specs/doc.md")], BASE);
+    const { root, config, abs } = reviewingProject();
 
-    expect(summary).toEqual({ errors: 0, warnings: 0 });
+    const result = await reviewTargets({
+      targets: [abs("specs/doc.md")],
+      root,
+      config,
+      useCache: false,
+    });
+
+    expect(result).toEqual({ errors: 0, warnings: 0 });
+  });
+
+  it("reports each verdict as it lands", async () => {
+    useVerdict("validation_pass");
+    const { root, config, abs } = reviewingProject();
+    const seen: string[] = [];
+
+    await reviewTargets({
+      targets: [abs("specs/doc.md"), abs("specs/other.md")],
+      root,
+      config,
+      useCache: false,
+      onVerdict: ({ path }) => seen.push(path),
+    });
+
+    expect(seen).toHaveLength(2);
   });
 });
