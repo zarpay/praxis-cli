@@ -1,7 +1,6 @@
 import type { Command } from "commander";
 
 import { runAction } from "@/commands/action.js";
-import { Paths } from "@/domains/workspace/models/project-paths.js";
 import editConfig from "@/domains/workspace/orchestrators/edit-config.js";
 import showConfig from "@/domains/workspace/orchestrators/show-config.js";
 import { configEntries } from "@/domains/workspace/views/config.js";
@@ -19,15 +18,15 @@ export default function registerConfigCommand(program: Command): void {
     .command("show")
     .description("Print the current configuration")
     .action(() =>
-      runAction(() => {
-        const shown = showConfig({ configPath: new Paths().configFile });
+      runAction((ctx) => {
+        const { configPath, config: shown } = showConfig(ctx);
 
-        new Display().print(configEntries(shown.configPath, shown.config));
+        new Display().print(configEntries(configPath, shown));
       }),
     );
 
   config
     .command("edit")
     .description("Open the configuration in your default editor")
-    .action(() => runAction(() => editConfig({ configPath: new Paths().configFile })));
+    .action(() => runAction((ctx) => editConfig(ctx)));
 }

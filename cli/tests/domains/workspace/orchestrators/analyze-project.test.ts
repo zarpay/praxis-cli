@@ -1,23 +1,25 @@
+import type { CommandContext } from "@/domains/workspace/models/command-context.js";
+
 import { readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
 import countStatusIssues from "@/domains/workspace/services/count-status-issues.js";
+import { testContext } from "@tests/helpers/command-context.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 describe("analyzeProject", () => {
   let tmpdir: string;
   let cleanup: () => void;
-  let config: PraxisConfig;
+  let ctx: CommandContext;
 
   beforeEach(() => {
-    const ctx = createCompilerTmpdir();
-    tmpdir = ctx.tmpdir;
-    cleanup = ctx.cleanup;
-    config = new PraxisConfig(tmpdir);
+    const dir = createCompilerTmpdir();
+    tmpdir = dir.tmpdir;
+    cleanup = dir.cleanup;
+    ctx = testContext(tmpdir);
   });
 
   afterEach(() => {
@@ -25,7 +27,7 @@ describe("analyzeProject", () => {
   });
 
   it("counts roles, responsibilities, references, and context", async () => {
-    const report = await analyzeProject({ root: tmpdir, config });
+    const { report } = await analyzeProject(ctx);
 
     expect(report.counts.experts).toBeGreaterThanOrEqual(1);
     expect(report.counts.practices).toBeGreaterThanOrEqual(1);
@@ -34,7 +36,7 @@ describe("analyzeProject", () => {
   });
 
   it("excludes _template.md and README.md from counts", async () => {
-    const report = await analyzeProject({ root: tmpdir, config });
+    const { report } = await analyzeProject(ctx);
 
     // Roles dir has README.md + content files; reported count must be less than total .md files
     const allRoleFiles = readdirSync(join(tmpdir, "content", "experts")).filter((f) =>
@@ -49,7 +51,7 @@ describe("analyzeProject", () => {
       "---\nalias: BadRefs\ndescription: test\nrefs:\n  - content/reference/nonexistent.md\n---\n# Bad",
     );
 
-    const report = await analyzeProject({ root: tmpdir, config });
+    const { report } = await analyzeProject(ctx);
 
     expect(report.danglingRefs).toContainEqual({
       expert: "bad-refs.md",
@@ -63,7 +65,7 @@ describe("analyzeProject", () => {
       "---\ntitle: Orphan\ntype: practice\nowner: nobody\n---\n# Orphan",
     );
 
-    const report = await analyzeProject({ root: tmpdir, config });
+    const { report } = await analyzeProject(ctx);
 
     expect(report.orphanedPractices).toContain("orphan.md");
   });
@@ -74,7 +76,7 @@ describe("analyzeProject", () => {
       "---\nalias: NoDesc\n---\n# No Description",
     );
 
-    const report = await analyzeProject({ root: tmpdir, config });
+    const { report } = await analyzeProject(ctx);
 
     expect(report.expertsMissingDescription).toContain("no-desc.md");
   });
@@ -85,7 +87,7 @@ describe("analyzeProject", () => {
       "---\ntitle: Broken\n---\n# No Alias",
     );
 
-    const report = await analyzeProject({ root: tmpdir, config });
+    const { report } = await analyzeProject(ctx);
 
     // It is reported in the output, so it must also fail the exit code —
     // otherwise CI passes on a project the compiler cannot read.
@@ -98,7 +100,7 @@ describe("analyzeProject", () => {
       "---\ntitle: Broken\n---\n# No Alias",
     );
 
-    const report = await analyzeProject({ root: tmpdir, config });
+    const { report } = await analyzeProject(ctx);
     const broken = report.invalidExperts.find((e) => e.expert === "broken.md");
 
     expect(broken?.reason).toContain('missing required frontmatter field "alias"');
@@ -111,7 +113,7 @@ describe("analyzeProject", () => {
     );
     writeFileSync(join(tmpdir, "content", "experts", "fine.md"), "---\nalias: Fine\n---\n# Fine");
 
-    const report = await analyzeProject({ root: tmpdir, config });
+    const { report } = await analyzeProject(ctx);
 
     expect(report.invalidExperts.map((e) => e.expert)).toContain("broken.md");
     expect(report.expertsMissingDescription).toContain("fine.md");
@@ -123,7 +125,7 @@ describe("analyzeProject", () => {
       "---\nalias: BadGlob\ndescription: test\nrefs:\n  - content/reference/nope-*.md\n---\n# Bad",
     );
 
-    const report = await analyzeProject({ root: tmpdir, config });
+    const { report } = await analyzeProject(ctx);
 
     expect(report.zeroMatchGlobs).toContainEqual({
       expert: "bad-glob.md",
@@ -137,7 +139,7 @@ describe("analyzeProject", () => {
       "---\ntitle: Unmatched\ntype: practice\nowner: phantom-role\n---\n# Unmatched",
     );
 
-    const report = await analyzeProject({ root: tmpdir, config });
+    const { report } = await analyzeProject(ctx);
 
     expect(report.unmatchedOwners).toContainEqual({
       practice: "unmatched.md",
@@ -146,6 +148,10 @@ describe("analyzeProject", () => {
   });
 
   it("excludes files matching ignore patterns from source counts", async () => {
+    // Baseline first: a context reads the config file lazily, so this must
+    // be taken before the ignore pattern is written.
+    const { report: baseReport } = await analyzeProject(ctx);
+
     writeFileSync(
       join(tmpdir, ".praxis", "config.json"),
       JSON.stringify({
@@ -157,11 +163,9 @@ describe("analyzeProject", () => {
         ignore: ["content/experts/validates-expert.md"],
       }),
     );
-    const ignoringConfig = new PraxisConfig(tmpdir);
-    const report = await analyzeProject({ root: tmpdir, config: ignoringConfig });
+    // validates-expert.md is in the experts dir but should be excluded
+    const { report } = await analyzeProject(testContext(tmpdir));
 
-    // validates-role.md is in the roles dir but should be excluded
-    const baseReport = await analyzeProject({ root: tmpdir, config });
     expect(report.counts.experts).toBe(baseReport.counts.experts - 1);
   });
 
@@ -178,8 +182,7 @@ describe("analyzeProject", () => {
       specFilePattern: "*.sme.md",
     });
 
-    const nonMdConfig = new PraxisConfig(root);
-    const report = await analyzeProject({ root, config: nonMdConfig });
+    const { report } = await analyzeProject(testContext(root));
 
     // One validation row per configured reviewer (the legacy validation
     // section normalizes to one reviewer named "default"); both .rb files
@@ -192,7 +195,7 @@ describe("analyzeProject", () => {
   });
 
   it("reports clean for a healthy project", async () => {
-    const report = await analyzeProject({ root: tmpdir, config });
+    const { report } = await analyzeProject(ctx);
 
     // The default fixtures form a healthy project
     expect(report.danglingRefs).toEqual([]);
@@ -202,7 +205,7 @@ describe("analyzeProject", () => {
 
   describe("layer split", () => {
     it("marks the compiler in use when the experts directory exists", async () => {
-      const report = await analyzeProject({ root: tmpdir, config });
+      const { report } = await analyzeProject(ctx);
 
       expect(report.compilerInUse).toBe(true);
     });
@@ -219,7 +222,7 @@ describe("analyzeProject", () => {
         },
       });
 
-      const report = await analyzeProject({ root, config: new PraxisConfig(root) });
+      const { report } = await analyzeProject(testContext(root));
 
       expect(report.compilerInUse).toBe(false);
       expect(report.counts).toEqual({ experts: 0, practices: 0, references: 0, context: 0 });
@@ -240,7 +243,7 @@ describe("analyzeProject", () => {
         reviewers: [{ name: "test", model: "test-model", apiKeyEnvVar: "OPENROUTER_API_KEY" }],
       });
 
-      const report = await analyzeProject({ root, config: new PraxisConfig(root) });
+      const { report } = await analyzeProject(testContext(root));
 
       expect(report.validation).toHaveLength(1);
       expect(report.validation[0]).toMatchObject({ reviewer: "test", notValidated: 1 });

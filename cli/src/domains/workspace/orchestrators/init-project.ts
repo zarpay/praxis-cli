@@ -1,4 +1,5 @@
-import type { InitProjectInput, InitProjectResult } from "@/domains/workspace/types.js";
+import type { CommandContext } from "@/domains/workspace/models/command-context.js";
+import type { InitProjectOptions, InitProjectResult } from "@/domains/workspace/types.js";
 
 import {
   copyFile,
@@ -24,12 +25,12 @@ import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
  * re-running with `--spec-layer` adds the taxonomy to a project that
  * started eval-only.
  */
-export default function initProject({
-  targetDir,
-  scaffoldDir = SCAFFOLD_DIR,
-  specLayer = false,
-  onFileCreated,
-}: InitProjectInput): InitProjectResult {
+export default function initProject(
+  _ctx: CommandContext,
+  { directory, scaffoldDir = SCAFFOLD_DIR, specLayer = false, onFileCreated }: InitProjectOptions,
+): InitProjectResult {
+  const targetDir = resolvePath(directory);
+
   ensureDir(targetDir);
 
   // "eval" holds the minimal .praxis/ tree; "core" adds the spec-layer

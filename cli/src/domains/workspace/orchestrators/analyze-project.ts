@@ -1,8 +1,10 @@
-import type { AnalyzeProjectInput, StatusReport } from "@/domains/workspace/types.js";
+import type { CommandContext } from "@/domains/workspace/models/command-context.js";
+import type { AnalyzeProjectResult, StatusReport } from "@/domains/workspace/types.js";
 
 import { exists } from "@/core/files.js";
 import auditExperts from "@/domains/workspace/services/audit-experts.js";
 import countDocumentsByType from "@/domains/workspace/services/count-documents-by-type.js";
+import countStatusIssues from "@/domains/workspace/services/count-status-issues.js";
 import findOrphanedPractices from "@/domains/workspace/services/find-orphaned-practices.js";
 import findUnmatchedOwners from "@/domains/workspace/services/find-unmatched-owners.js";
 import listDocuments from "@/domains/workspace/services/list-documents.js";
@@ -19,10 +21,8 @@ import tallyValidation from "@/domains/workspace/services/tally-validation.js";
  * an eval-only project gets validation state and nothing else, because
  * it has no taxonomy to be asked about.
  */
-export default async function analyzeProject({
-  root,
-  config,
-}: AnalyzeProjectInput): Promise<StatusReport> {
+export default async function analyzeProject(ctx: CommandContext): Promise<AnalyzeProjectResult> {
+  const { root, config } = ctx;
   const scope = {
     root,
     specFilePattern: config.specFilePattern,
@@ -31,7 +31,7 @@ export default async function analyzeProject({
   const validation = tallyValidation({ root, config });
 
   if (!exists(config.expertsDir)) {
-    return evalOnlyReport(validation);
+    return withIssueCount(evalOnlyReport(validation));
   }
 
   const expertFiles = await listDocuments({ ...scope, dir: config.expertsDir, recursive: false });
@@ -47,7 +47,7 @@ export default async function analyzeProject({
     specFilePattern: config.specFilePattern,
   });
 
-  return {
+  return withIssueCount({
     compilerInUse: true,
     counts: {
       experts: expertFiles.length,
@@ -66,7 +66,15 @@ export default async function analyzeProject({
     invalidExperts: audit.invalidExperts,
     zeroMatchGlobs: audit.zeroMatchGlobs,
     unmatchedOwners: findUnmatchedOwners({ practiceFiles, aliases: audit.aliases }),
-  };
+  });
+}
+
+/**
+ * Pairs a report with the number of structural issues in it, so the
+ * command can map it to an exit code without reaching for a service.
+ */
+function withIssueCount(report: StatusReport): AnalyzeProjectResult {
+  return { report, issues: countStatusIssues(report) };
 }
 
 /** The report for a project with no spec layer: validation state only. */

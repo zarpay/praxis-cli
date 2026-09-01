@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
+import { CommandContext } from "@/domains/workspace/models/command-context.js";
 import initProject from "@/domains/workspace/orchestrators/init-project.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 
@@ -37,6 +38,10 @@ function walkDir(dir: string, base = dir): string[] {
 }
 
 describe("initProject", () => {
+  // initProject scaffolds a directory that has no project yet, so it never
+  // reads root or config off the context.
+  const ctx = new CommandContext();
+
   const dirs: string[] = [];
 
   afterEach(() => {
@@ -51,7 +56,7 @@ describe("initProject", () => {
     dirs.push(dir);
 
     expect(existsSync(dir)).toBe(false);
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
     expect(existsSync(dir)).toBe(true);
   });
 
@@ -59,7 +64,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
 
     const coreDir = join(SCAFFOLD_DIR, "core");
     for (const relPath of walkDir(coreDir)) {
@@ -72,7 +77,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
 
     const coreDir = join(SCAFFOLD_DIR, "core");
     for (const relPath of walkDir(coreDir)) {
@@ -86,7 +91,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
 
     const configPath = join(dir, ".praxis", "config.json");
     expect(existsSync(configPath)).toBe(true);
@@ -112,7 +117,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
 
     expect(walkDir(dir)).toEqual([join(".praxis", "config.json")]);
   });
@@ -121,7 +126,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
 
     const config = readJsonFile<{
       sources: string[];
@@ -140,7 +145,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
 
     // Default config has plugins: [], so no Claude Code files
     expect(existsSync(join(dir, "plugins", "praxis"))).toBe(false);
@@ -157,7 +162,7 @@ describe("initProject", () => {
       JSON.stringify({ agentProfilesOutputDir: "./agent-profiles", plugins: ["claude-code"] }),
     );
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
 
     // Default outputDir is plugins/praxis
     expect(existsSync(join(dir, "plugins", "praxis", ".claude-plugin", "plugin.json"))).toBe(true);
@@ -173,7 +178,7 @@ describe("initProject", () => {
       JSON.stringify({ plugins: ["claude-code"] }),
     );
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
 
     const pluginJson = readJsonFile<{ name: string }>(
       join(dir, "plugins", "praxis", ".claude-plugin", "plugin.json"),
@@ -202,7 +207,7 @@ describe("initProject", () => {
       }),
     );
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
 
     const pluginJsonPath = join(dir, "my-plugins", "custom", ".claude-plugin", "plugin.json");
     expect(existsSync(pluginJsonPath)).toBe(true);
@@ -220,7 +225,7 @@ describe("initProject", () => {
     const configPath = join(dir, ".praxis", "config.json");
     writeFileSync(configPath, '{ "sources": ["docs"] }');
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
 
     // Verify our custom content was preserved, not overwritten
     expect(readFileSync(configPath, "utf-8")).toBe('{ "sources": ["docs"] }');
@@ -230,13 +235,13 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
 
     // Modify one file to verify it's not overwritten
     const readmePath = join(dir, "README.md");
     writeFileSync(readmePath, "modified");
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
 
     const content = readFileSync(readmePath, "utf-8");
     expect(content).toBe("modified");
@@ -251,7 +256,7 @@ describe("initProject", () => {
     writeFileSync(join(dir, "src", "app.ts"), "console.log('hello');\n");
     writeFileSync(join(dir, "package.json"), '{ "name": "my-app" }\n');
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
 
     // Scaffold files exist
     expect(existsSync(join(dir, "experts", "README.md"))).toBe(true);
@@ -265,7 +270,7 @@ describe("initProject", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
 
     const expectedDirs = [
       "context/constitution",
@@ -291,7 +296,7 @@ describe("initProject", () => {
       JSON.stringify({ plugins: ["claude-code"] }),
     );
 
-    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR });
+    initProject(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
 
     expect(
       existsSync(join(dir, "plugins", "praxis", ".claude-plugin")),

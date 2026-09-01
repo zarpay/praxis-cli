@@ -1,10 +1,7 @@
 import type { Command } from "commander";
 
 import { runAction } from "@/commands/action.js";
-import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
-import { Paths } from "@/domains/workspace/models/project-paths.js";
 import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
-import countStatusIssues from "@/domains/workspace/services/count-status-issues.js";
 import { statusReport } from "@/domains/workspace/views/status.js";
 import { renderReport } from "@/views/report.js";
 
@@ -20,15 +17,12 @@ export default function registerStatusCommand(program: Command): void {
     .command("status")
     .description("Show project health dashboard")
     .action(() =>
-      runAction(async () => {
-        const root = new Paths().root;
-        const report = await analyzeProject({ root, config: new PraxisConfig(root) });
+      runAction(async (ctx) => {
+        const { report, issues } = await analyzeProject(ctx);
 
         renderReport(statusReport(report));
 
-        if (countStatusIssues(report) > 0) {
-          process.exitCode = 1;
-        }
+        return issues > 0 ? 1 : undefined;
       }),
     );
 }

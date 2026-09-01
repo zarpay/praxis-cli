@@ -1,3 +1,5 @@
+import type { CommandContext } from "@/domains/workspace/models/command-context.js";
+
 import { spawnSync } from "node:child_process";
 
 /**
@@ -9,9 +11,9 @@ import { spawnSync } from "node:child_process";
  *
  * @throws when the editor could not be started at all
  */
-export default function editConfig({ configPath }: { configPath: string }): void {
+export default function editConfig(ctx: CommandContext): void {
   const editor = process.env["VISUAL"] ?? process.env["EDITOR"] ?? "vi";
-  const result = spawnSync(editor, [configPath], { stdio: "inherit" });
+  const result = spawnSync(editor, [ctx.paths.configFile], { stdio: "inherit" });
 
   if (result.error) {
     throw result.error;

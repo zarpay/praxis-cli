@@ -1,10 +1,8 @@
 import type { Command } from "commander";
 
 import { runAction } from "@/commands/action.js";
-import { resolvePath } from "@/core/paths.js";
 import initProject from "@/domains/workspace/orchestrators/init-project.js";
 import { initReport } from "@/domains/workspace/views/status.js";
-import { Logger } from "@/views/logger.js";
 import { renderReport } from "@/views/report.js";
 
 /**
@@ -24,16 +22,14 @@ export default function registerInitCommand(program: Command): void {
       false,
     )
     .action((directory: string, options: { specLayer: boolean }) =>
-      runAction(() => {
-        const logger = new Logger();
-
-        const result = initProject({
-          targetDir: resolvePath(directory),
+      runAction((ctx) => {
+        const result = initProject(ctx, {
+          directory,
           specLayer: options.specLayer,
-          onFileCreated: (path) => logger.success(`Created ${path}`),
+          onFileCreated: (path) => ctx.logger.success(`Created ${path}`),
         });
 
-        renderReport(initReport(result), { logger });
+        renderReport(initReport(result), { logger: ctx.logger });
       }),
     );
 }

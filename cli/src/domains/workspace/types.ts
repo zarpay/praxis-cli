@@ -6,10 +6,38 @@
  */
 
 import type { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
+import type { Paths } from "@/domains/workspace/models/project-paths.js";
+import type { Logger } from "@/views/logger.js";
 
 // ---------------------------------------------------------------------------
 // Workspace (domains/workspace/)
 // ---------------------------------------------------------------------------
+
+/**
+ * Overrides for a CommandContext. Both default to a fresh instance, so a
+ * test can point a context at a tmpdir or collect its diagnostics.
+ */
+export interface CommandContextOptions {
+  paths?: Paths;
+  logger?: Logger;
+}
+
+/**
+ * A project's health report, with the number of structural issues in it.
+ *
+ * The count travels with the report so `praxis status` can set its exit
+ * code from the orchestrator's answer rather than recomputing it.
+ */
+export interface AnalyzeProjectResult {
+  report: StatusReport;
+  issues: number;
+}
+
+/** What `praxis config show` renders: the file's location and its raw contents. */
+export interface ShowConfigResult {
+  configPath: string;
+  config: unknown;
+}
 
 /** Content types `praxis add` can scaffold. */
 export type AddableType = "expert" | "practice";
@@ -170,17 +198,10 @@ export interface AuditExpertsInput {
 // Orchestrator payloads (domains/workspace/orchestrators/)
 // ---------------------------------------------------------------------------
 
-export interface AnalyzeProjectInput {
-  /** Project root to analyze. */
-  root: string;
-  /** The project's config. */
-  config: PraxisConfig;
-}
-
 /** What scaffolding a new project needs to know. */
-export interface InitProjectInput {
-  /** Directory to scaffold into; created when absent. */
-  targetDir: string;
+export interface InitProjectOptions {
+  /** Directory to scaffold into, as typed; resolved against cwd. */
+  directory: string;
   /** Scaffold source tree; defaults to the packaged one. */
   scaffoldDir?: string;
   /** Whether to add the spec-layer authoring taxonomy (11: opt-in). */

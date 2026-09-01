@@ -1,3 +1,5 @@
+import type { CommandContext } from "@/domains/workspace/models/command-context.js";
+
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -11,18 +13,21 @@ import { readJson } from "@/core/files.js";
 import editConfig from "@/domains/workspace/orchestrators/edit-config.js";
 import { configEntries } from "@/domains/workspace/views/config.js";
 import { Display } from "@/views/display.js";
+import { testContext } from "@tests/helpers/command-context.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 
 describe("the config command's parts", () => {
   let tmpdir: string;
   let cleanup: () => void;
   let configPath: string;
+  let ctx: CommandContext;
 
   beforeAll(() => {
-    const ctx = createCompilerTmpdir();
-    tmpdir = ctx.tmpdir;
-    cleanup = ctx.cleanup;
+    const dir = createCompilerTmpdir();
+    tmpdir = dir.tmpdir;
+    cleanup = dir.cleanup;
     configPath = join(tmpdir, ".praxis", "config.json");
+    ctx = testContext(tmpdir);
   });
 
   afterAll(() => cleanup());
@@ -65,18 +70,18 @@ describe("the config command's parts", () => {
 
     it("spawns the VISUAL editor with the config path", () => {
       process.env["VISUAL"] = "code";
-      editConfig({ configPath });
+      editConfig(ctx);
       expect(spawnSync).toHaveBeenCalledWith("code", [configPath], { stdio: "inherit" });
     });
 
     it("falls back to EDITOR when VISUAL is unset", () => {
       process.env["EDITOR"] = "nano";
-      editConfig({ configPath });
+      editConfig(ctx);
       expect(spawnSync).toHaveBeenCalledWith("nano", [configPath], { stdio: "inherit" });
     });
 
     it("falls back to vi when neither VISUAL nor EDITOR is set", () => {
-      editConfig({ configPath });
+      editConfig(ctx);
       expect(spawnSync).toHaveBeenCalledWith("vi", [configPath], { stdio: "inherit" });
     });
 
@@ -84,7 +89,7 @@ describe("the config command's parts", () => {
       vi.mocked(spawnSync).mockReturnValueOnce({
         error: new Error("editor not found"),
       } as ReturnType<typeof spawnSync>);
-      expect(() => editConfig({ configPath })).toThrow("editor not found");
+      expect(() => editConfig(ctx)).toThrow("editor not found");
     });
   });
 });

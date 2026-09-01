@@ -1,3 +1,6 @@
+import type { CommandContext } from "@/domains/workspace/models/command-context.js";
+import type { ShowConfigResult } from "@/domains/workspace/types.js";
+
 import { readJson } from "@/core/files.js";
 
 /**
@@ -9,9 +12,8 @@ import { readJson } from "@/core/files.js";
  *
  * @throws PraxisError when the file is absent or is not valid JSON
  */
-export default function showConfig({ configPath }: { configPath: string }): {
-  configPath: string;
-  config: unknown;
-} {
+export default function showConfig(ctx: CommandContext): ShowConfigResult {
+  const configPath = ctx.paths.configFile;
+
   return { configPath, config: readJson(configPath) };
 }
