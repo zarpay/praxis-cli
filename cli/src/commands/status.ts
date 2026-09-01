@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 
-import type { PraxisProjectBaseOptions, StatusReport } from "@/types.js";
+import type { BadgeEntry, PraxisProjectBaseOptions, StatusReport } from "@/types.js";
 
 import fg from "fast-glob";
 
@@ -244,69 +244,38 @@ export class StatusCommand extends PraxisProjectBase {
     return unmatched;
   }
 
-  /** Displays the status report: eval state always, framework health only when the compiler is in use. */
+  /**
+   * Displays the status report: eval state always, framework health
+   * only when the compiler is in use.
+   *
+   * Every decision about *what* to show lives in the pure functions
+   * below; this method only renders what they return.
+   */
   display(report: StatusReport): void {
     this.logger.info("Praxis Project Status");
 
     if (report.compilerInUse) {
-      this.out.print([
-        "",
-        `  Experts:            ${report.counts.experts}`,
-        `  Practices:          ${report.counts.practices}`,
-        `  References:         ${report.counts.references}`,
-        `  Context files:      ${report.counts.context}`,
-      ]);
+      this.out.print(["", ...countLines(report.counts)]);
     }
 
-    // Validation summary — one block per judge, never pooled
-    for (const v of report.validation) {
-      const totalDocs = v.pass + v.warn + v.fail + v.notValidated;
-
-      if (totalDocs === 0) continue;
-
+    // One block per judge, never pooled: judges are separate instruments.
+    for (const { judge, badges } of validationBlocks(report.validation)) {
       this.out.line();
-      this.logger.info(`Validation (judge: ${v.judge})`);
-      this.out.print([
-        { badge: "PASS", color: "green", value: v.pass, indent: 2 },
-        { badge: "WARN", color: "yellow", value: v.warn, indent: 2 },
-        { badge: "FAIL", color: "red", value: v.fail, indent: 2 },
-        { badge: "NOT VALIDATED", color: "gray", value: v.notValidated, indent: 2 },
-      ]);
+      this.logger.info(`Validation (judge: ${judge})`);
+      this.out.print(badges);
     }
 
     if (!report.compilerInUse) return;
 
-    const issueBlocks: [heading: string, items: string[]][] = [
-      [
-        "Dangling references (file not found):",
-        report.danglingRefs.map(({ expert, ref }) => `${expert} → ${ref}`),
-      ],
-      ["Orphaned practices (not referenced by any expert):", report.orphanedPractices],
-      ["Experts missing description:", report.expertsMissingDescription],
-      [
-        "Experts that failed to parse:",
-        report.invalidExperts.map(({ expert, reason }) => `${expert}: ${reason}`),
-      ],
-      [
-        "Glob patterns matching zero files:",
-        report.zeroMatchGlobs.map(({ expert, pattern }) => `${expert}: ${pattern}`),
-      ],
-      [
-        "Practices with unknown owners:",
-        report.unmatchedOwners.map(({ practice, owner }) => `${practice} (owner: ${owner})`),
-      ],
-    ];
+    const blocks = issueBlocks(report);
 
-    let issueCount = 0;
-
-    for (const [heading, items] of issueBlocks) {
-      if (items.length === 0) continue;
-
+    for (const { heading, items } of blocks) {
       this.out.line();
       this.logger.warn(heading);
       this.out.print(items.map((item) => `  ${item}`));
-      issueCount += items.length;
     }
+
+    const issueCount = blocks.reduce((total, block) => total + block.items.length, 0);
 
     this.out.line();
 
@@ -386,4 +355,71 @@ export class StatusCommand extends PraxisProjectBase {
       (f) => !isSpecFile(f, this.specFilePattern) && !baseName(f).startsWith("_"),
     );
   }
+}
+
+/** The document-count lines, label-aligned. */
+export function countLines(counts: StatusReport["counts"]): string[] {
+  return [
+    `  Experts:            ${counts.experts}`,
+    `  Practices:          ${counts.practices}`,
+    `  References:         ${counts.references}`,
+    `  Context files:      ${counts.context}`,
+  ];
+}
+
+/**
+ * One badge block per judge that has judged anything.
+ *
+ * A judge with no verdicts at all is dropped rather than rendered as
+ * four zeros, which reads as a broken judge instead of an unused one.
+ */
+export function validationBlocks(
+  validation: StatusReport["validation"],
+): { judge: string; badges: BadgeEntry[] }[] {
+  return validation
+    .filter((v) => v.pass + v.warn + v.fail + v.notValidated > 0)
+    .map((v) => ({
+      judge: v.judge,
+      badges: [
+        { badge: "PASS", color: "green", value: v.pass, indent: 2 },
+        { badge: "WARN", color: "yellow", value: v.warn, indent: 2 },
+        { badge: "FAIL", color: "red", value: v.fail, indent: 2 },
+        { badge: "NOT VALIDATED", color: "gray", value: v.notValidated, indent: 2 },
+      ],
+    }));
+}
+
+/**
+ * The framework-health findings a report carries, in display order.
+ *
+ * Blocks with nothing to report are dropped, so the caller renders
+ * every block it is given and the count of findings is the sum of their
+ * items.
+ */
+export function issueBlocks(report: StatusReport): { heading: string; items: string[] }[] {
+  const blocks = [
+    {
+      heading: "Dangling references (file not found):",
+      items: report.danglingRefs.map(({ expert, ref }) => `${expert} → ${ref}`),
+    },
+    {
+      heading: "Orphaned practices (not referenced by any expert):",
+      items: report.orphanedPractices,
+    },
+    { heading: "Experts missing description:", items: report.expertsMissingDescription },
+    {
+      heading: "Experts that failed to parse:",
+      items: report.invalidExperts.map(({ expert, reason }) => `${expert}: ${reason}`),
+    },
+    {
+      heading: "Glob patterns matching zero files:",
+      items: report.zeroMatchGlobs.map(({ expert, pattern }) => `${expert}: ${pattern}`),
+    },
+    {
+      heading: "Practices with unknown owners:",
+      items: report.unmatchedOwners.map(({ practice, owner }) => `${practice} (owner: ${owner})`),
+    },
+  ];
+
+  return blocks.filter((block) => block.items.length > 0);
 }

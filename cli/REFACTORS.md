@@ -120,17 +120,22 @@ Still open here: the three `fg.sync` calls themselves. Partly addressed already 
 
 ---
 
-## [ ] 5. `StatusCommand.display()` — 75 lines that are nearly already a table
+## [x] 5. `StatusCommand.display()` — 75 lines that are nearly already a table
 
-**Where:** `src/commands/status.ts:223`
+**Done.** `display()` is 34 lines and renders only what three pure functions
+return: `countLines()`, `validationBlocks()`, and `issueBlocks()`. Every decision
+about _what_ to show moved out of the method.
 
-The `issueBlocks` array at the bottom is already the right idea: declarative
-pairs, one loop. The top half (counts block, per-judge validation block) is still
-hand-rolled. Lift those into the same declarative shape and the method becomes a
-data structure plus one renderer.
+`issueBlocks()` now filters empty blocks itself and returns them in display order,
+so the caller renders everything it is handed. That removed the `issueCount`
+accumulator threaded through the loop — the count is the sum of the returned
+blocks' items, computed after the fact.
 
-**Testability:** lets you assert which blocks a report produces without capturing
-stdout.
+**Testability delivered:** 13 tests in `tests/commands/status-display.test.ts`
+assert which blocks a report produces, in what order, with what formatting —
+none of them build a project or capture stdout. Worth having: they pin the
+"judges are never pooled" invariant and the drop-empty-judges rule, which
+previously only showed up as terminal output nobody asserted on.
 
 ---
 
