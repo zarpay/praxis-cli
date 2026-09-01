@@ -7,7 +7,7 @@ paths:
 # Models
 
 A model is a **noun**, named for the thing it represents — `spec-file.ts`,
-`expert-file.ts`, `judge.ts`, `judgment-target.ts`. Never a verb. It is a class:
+`expert-file.ts`, `reviewer.ts`, `review-target.ts`. Never a verb. It is a class:
 the data plus the helpers on that data, and the one place a document kind's
 frontmatter keys are spelled.
 
@@ -23,12 +23,12 @@ frontmatter keys are spelled.
 - Callers that sweep a directory catch per file and report, so one malformed
   document never takes down a batch.
 
-## `judge` is a noun
+## `reviewer` is a noun
 
 The configured instrument, never the action. It is fixed by the public surface —
-`judges:` in `.praxis/config.json`, `--judge <name>`, and the `judge` field in
+`reviewers:` in `.praxis/config.json`, `--reviewer <name>`, and the `reviewer` field in
 every committed cache entry — so the verb had to give way instead.
 
 The verb is **evaluate**, matching the domain and `praxis eval run`:
-`evaluateTarget`, `provider.evaluate(request)`, `isTarget`. Write "the judge
-evaluates a target", never "judges" it.
+`evaluateTarget`, `provider.evaluate(request)`, `isTarget`. Write "the reviewer
+evaluates a target", never "reviewers" it.

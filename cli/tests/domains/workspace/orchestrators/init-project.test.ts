@@ -97,13 +97,13 @@ describe("initProject", () => {
       sources: string[];
       expertsDir: string;
       practicesDir: string;
-      judges: { name: string; model: string; apiKeyEnvVar: string }[];
+      reviewers: { name: string; model: string; apiKeyEnvVar: string }[];
     }>(configPath);
     expect(config.agentProfilesOutputDir).toBe("./agent-profiles");
     expect(config.plugins).toEqual([]);
     expect(config.sources).toEqual(["experts", "practices", "reference", "context"]);
     expect(config.expertsDir).toBe("experts");
-    expect(config.judges).toEqual([
+    expect(config.reviewers).toEqual([
       { name: "default", model: "x-ai/grok-4.1-fast", apiKeyEnvVar: "OPENROUTER_API_KEY" },
     ]);
   });
@@ -117,7 +117,7 @@ describe("initProject", () => {
     expect(walkDir(dir)).toEqual([join(".praxis", "config.json")]);
   });
 
-  it("default eval-layer config declares judges and empty sources", () => {
+  it("default eval-layer config declares reviewers and empty sources", () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
@@ -126,12 +126,12 @@ describe("initProject", () => {
     const config = readJsonFile<{
       sources: string[];
       specFilePattern: string;
-      judges: { name: string }[];
+      reviewers: { name: string }[];
       expertsDir?: string;
     }>(join(dir, ".praxis", "config.json"));
     expect(config.sources).toEqual([]);
     expect(config.specFilePattern).toBe("README.md");
-    expect(config.judges).toHaveLength(1);
+    expect(config.reviewers).toHaveLength(1);
     // No taxonomy keys: the spec layer is opt-in.
     expect(config.expertsDir).toBeUndefined();
   });

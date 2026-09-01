@@ -2,7 +2,7 @@ import type { AssistFile } from "@/domains/eval/types.js";
 
 /**
  * The EXEMPLARS prompt section: spec-blessed positive examples, shown
- * as labeled references and never evaluated (03). Empty string when the
+ * as labeled references and never reviewed (03). Empty string when the
  * spec blesses none, so the section vanishes from the prompt entirely.
  */
 export default function exemplarSection(exemplars: readonly AssistFile[]): string {
@@ -15,7 +15,7 @@ export default function exemplarSection(exemplars: readonly AssistFile[]): strin
   return `## EXEMPLARS
 
 The following files are spec-blessed positive examples. They are not
-under judgment — use them as concrete references for what satisfying
+under review — use them as concrete references for what satisfying
 the specification looks like.
 
 ${blocks}

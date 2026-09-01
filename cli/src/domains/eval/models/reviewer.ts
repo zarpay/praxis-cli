@@ -1,9 +1,9 @@
-import type { CacheJudgeIdentity } from "@/domains/eval/types.js";
-import type { JudgeConfig } from "@/types.js";
+import type { CacheReviewerIdentity } from "@/domains/eval/types.js";
+import type { ReviewerConfig } from "@/types.js";
 
 import { errors } from "@/core/errors.js";
 import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
-import judgeHash from "@/domains/eval/services/hash-judge.js";
+import reviewerHash from "@/domains/eval/services/hash-reviewer.js";
 import {
   DEFAULT_JUDGE_BASE_URL,
   DEFAULT_JUDGE_PROVIDER,
@@ -11,28 +11,28 @@ import {
 } from "@/domains/workspace/models/praxis-config.js";
 
 /**
- * A configured judge: who is evaluating, and with what settings.
+ * A configured reviewer: who is reviewing, and with what settings.
  *
  * Holds the configuration and the helpers on it — the resolved
  * defaults, the behavioral hash, the cache identity, the API key
- * lookup. It performs no judgment itself; `requestVerdict()` does that,
- * taking a Judge as its instrument.
+ * lookup. It performs no review itself; `requestVerdict()` does that,
+ * taking a Reviewer as its instrument.
  *
  * Defaults are materialized here so every reader sees the same values
- * the hash was computed over. `judgeHash` materializes the same
- * defaults independently (`services/judge-hash.ts`), which is what lets
+ * the hash was computed over. `reviewerHash` materializes the same
+ * defaults independently (`services/reviewer-hash.ts`), which is what lets
  * an omitted setting and its explicit default hash identically.
  */
-export class Judge {
-  /** The judge's name in config; not part of its behavioral identity. */
+export class Reviewer {
+  /** The reviewer's name in config; not part of its behavioral identity. */
   readonly name: string;
   /** Model identifier the provider backend understands. */
   readonly model: string;
-  /** Environment variable holding this judge's API key. */
+  /** Environment variable holding this reviewer's API key. */
   readonly apiKeyEnvVar: string;
   /** OpenAI-compatible endpoint base. */
   readonly baseUrl: string;
-  /** Sampling temperature for judgments. */
+  /** Sampling temperature for reviews. */
   readonly temperature: number;
   /** Registry name or `./relative` module path of the execution backend. */
   readonly provider: string;
@@ -40,9 +40,9 @@ export class Judge {
   readonly options: Record<string, unknown>;
 
   /** The configuration exactly as written, which the hash is taken over. */
-  readonly config: JudgeConfig;
+  readonly config: ReviewerConfig;
 
-  private constructor(config: JudgeConfig) {
+  private constructor(config: ReviewerConfig) {
     this.config = config;
     this.name = config.name;
     this.model = config.model;
@@ -53,29 +53,29 @@ export class Judge {
     this.options = config.options ?? {};
   }
 
-  /** Builds a judge from its configuration entry. */
-  static fromConfig(config: JudgeConfig): Judge {
-    return new Judge(config);
+  /** Builds a reviewer from its configuration entry. */
+  static fromConfig(config: ReviewerConfig): Reviewer {
+    return new Reviewer(config);
   }
 
   /**
-   * This judge's behavioral hash: the whole config minus `name` and
-   * `apiKeyEnvVar`, plus the judge-facing prompt surface.
+   * This reviewer's behavioral hash: the whole config minus `name` and
+   * `apiKeyEnvVar`, plus the reviewer-facing prompt surface.
    *
    * Changing it is an epoch change (05) — old verdicts miss, new ones
    * are written under the new key.
    */
   hash(): string {
-    return judgeHash(this.config);
+    return reviewerHash(this.config);
   }
 
-  /** The identity recorded alongside this judge's cached verdicts. */
-  cacheIdentity(): CacheJudgeIdentity {
+  /** The identity recorded alongside this reviewer's cached verdicts. */
+  cacheIdentity(): CacheReviewerIdentity {
     return cacheIdentity(this.config);
   }
 
   /**
-   * This judge's API key, read from the environment at call time.
+   * This reviewer's API key, read from the environment at call time.
    *
    * @throws PraxisError when the variable is unset or empty
    */

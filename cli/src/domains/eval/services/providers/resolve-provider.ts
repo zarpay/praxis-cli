@@ -1,16 +1,16 @@
-import type { JudgeProvider, JudgeProviderFactory } from "@/domains/eval/types.js";
+import type { ReviewProvider, ReviewProviderFactory } from "@/domains/eval/types.js";
 
 import { errors } from "@/core/errors.js";
 import { fileUrl, resolvePath } from "@/core/paths.js";
 import { OpenRouterProvider } from "@/domains/eval/services/providers/openrouter.js";
 
-/** Built-in providers, keyed by the name used in a judge's `provider`. */
-const BUILTIN_PROVIDERS: Record<string, JudgeProviderFactory> = {
+/** Built-in providers, keyed by the name used in a reviewer's `provider`. */
+const BUILTIN_PROVIDERS: Record<string, ReviewProviderFactory> = {
   openrouter: () => new OpenRouterProvider(),
 };
 
 /**
- * Resolves a judge's `provider` value to a provider instance.
+ * Resolves a reviewer's `provider` value to a provider instance.
  *
  * A `./` or `../`-prefixed spec is a local ESM module, resolved against
  * the project root and dynamically imported; its default export must be
@@ -21,7 +21,10 @@ const BUILTIN_PROVIDERS: Record<string, JudgeProviderFactory> = {
  * @throws PraxisError on unknown names, unloadable modules, or modules
  *   that do not implement the contract
  */
-export default async function resolveProvider(spec: string, root?: string): Promise<JudgeProvider> {
+export default async function resolveProvider(
+  spec: string,
+  root?: string,
+): Promise<ReviewProvider> {
   if (spec.startsWith("./") || spec.startsWith("../")) {
     return loadLocalProvider(spec, root);
   }
@@ -29,16 +32,16 @@ export default async function resolveProvider(spec: string, root?: string): Prom
   const factory = BUILTIN_PROVIDERS[spec];
 
   if (!factory) {
-    throw errors.unknownJudgeProvider(spec, Object.keys(BUILTIN_PROVIDERS));
+    throw errors.unknownReviewProvider(spec, Object.keys(BUILTIN_PROVIDERS));
   }
 
   return factory();
 }
 
 /** Imports a local provider module and validates it against the contract. */
-async function loadLocalProvider(spec: string, root?: string): Promise<JudgeProvider> {
+async function loadLocalProvider(spec: string, root?: string): Promise<ReviewProvider> {
   if (!root) {
-    throw errors.judgeProviderLoadFailed(spec, "no project root to resolve the path against");
+    throw errors.reviewProviderLoadFailed(spec, "no project root to resolve the path against");
   }
 
   let module: { default?: unknown };
@@ -46,21 +49,21 @@ async function loadLocalProvider(spec: string, root?: string): Promise<JudgeProv
   try {
     module = (await import(fileUrl(resolvePath(root, spec)))) as { default?: unknown };
   } catch (err) {
-    throw errors.judgeProviderLoadFailed(spec, (err as Error).message);
+    throw errors.reviewProviderLoadFailed(spec, (err as Error).message);
   }
 
   if (typeof module.default !== "function") {
-    throw errors.invalidJudgeProvider(spec, "default export is not a factory function");
+    throw errors.invalidReviewProvider(spec, "default export is not a factory function");
   }
 
-  const provider = (module.default as JudgeProviderFactory)();
+  const provider = (module.default as ReviewProviderFactory)();
 
   if (!provider || typeof provider.name !== "string") {
-    throw errors.invalidJudgeProvider(spec, "factory returned an object without a string name");
+    throw errors.invalidReviewProvider(spec, "factory returned an object without a string name");
   }
 
-  if (typeof provider.evaluate !== "function") {
-    throw errors.invalidJudgeProvider(spec, "factory returned an object without an evaluate()");
+  if (typeof provider.review !== "function") {
+    throw errors.invalidReviewProvider(spec, "factory returned an object without a review()");
   }
 
   return provider;

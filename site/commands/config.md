@@ -32,7 +32,7 @@ Example output:
   "practicesDir": "practices",
   "agentProfilesOutputDir": "./agent-profiles",
   "plugins": [],
-  "judges": [
+  "reviewers": [
     {
       "name": "default",
       "model": "x-ai/grok-4.1-fast",

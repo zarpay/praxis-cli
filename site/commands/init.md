@@ -18,7 +18,7 @@ By default, init scaffolds only the eval layer — the `.praxis/` tree:
 ```
 my-org/
 └── .praxis/
-    └── config.json              ← judges, sources, specFilePattern
+    └── config.json              ← reviewers, sources, specFilePattern
 ```
 
 Your specs are your existing files (READMEs and the like); point the
@@ -92,7 +92,7 @@ The eval-layer `.praxis/config.json` (default init):
 {
   "sources": [],
   "specFilePattern": "README.md",
-  "judges": [
+  "reviewers": [
     {
       "name": "default",
       "model": "x-ai/grok-4.1-fast",
@@ -111,7 +111,7 @@ With `--spec-layer`, the config also wires the authoring taxonomy:
   "practicesDir": "practices",
   "agentProfilesOutputDir": "./agent-profiles",
   "plugins": [],
-  "judges": [
+  "reviewers": [
     {
       "name": "default",
       "model": "x-ai/grok-4.1-fast",

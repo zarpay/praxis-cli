@@ -1,18 +1,18 @@
-import type { Judge } from "@/domains/eval/models/judge.js";
-import type { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
+import type { ReviewSubject } from "@/domains/eval/models/review-subject.js";
+import type { Reviewer } from "@/domains/eval/models/reviewer.js";
 import type { ProviderRequest, ProviderResult } from "@/domains/eval/types.js";
 
 import { PraxisError, errors } from "@/core/errors.js";
-import judgeTools from "@/domains/eval/prompts/judge-tools.js";
+import reviewTools from "@/domains/eval/prompts/review-tools.js";
 import systemPrompt from "@/domains/eval/prompts/system-prompt.js";
 import validationQuestion from "@/domains/eval/prompts/validation-question.js";
 import resolveProvider from "@/domains/eval/services/providers/resolve-provider.js";
 
 /**
- * Obtains one verdict for one target from one judge.
+ * Obtains one verdict for one target from one reviewer.
  *
  * Praxis owns the boundary: it resolves the API key, renders the
- * prompts, and materializes the judge's settings; the provider only
+ * prompts, and materializes the reviewer's settings; the provider only
  * executes the request. No caching and no state — every call reaches
  * the backend, and the usage comes back with the verdict rather than
  * being stashed for a later read.
@@ -22,11 +22,11 @@ import resolveProvider from "@/domains/eval/services/providers/resolve-provider.
  *   resolved, or (wrapped) when the provider itself fails
  */
 export default async function requestVerdict(
-  target: JudgmentTarget,
-  judge: Judge,
+  target: ReviewSubject,
+  reviewer: Reviewer,
   root?: string,
 ): Promise<ProviderResult> {
-  const provider = await resolveProvider(judge.provider, root);
+  const provider = await resolveProvider(reviewer.provider, root);
 
   const request: ProviderRequest = {
     systemPrompt: systemPrompt(),
@@ -38,19 +38,19 @@ export default async function requestVerdict(
       exemplars: target.assist.exemplars,
       context: target.assist.context,
     }),
-    tools: judgeTools(),
-    model: judge.model,
-    temperature: judge.temperature,
-    baseUrl: judge.baseUrl,
-    apiKey: judge.apiKey(),
-    options: judge.options,
+    tools: reviewTools(),
+    model: reviewer.model,
+    temperature: reviewer.temperature,
+    baseUrl: reviewer.baseUrl,
+    apiKey: reviewer.apiKey(),
+    options: reviewer.options,
   };
 
   try {
-    return await provider.evaluate(request);
+    return await provider.review(request);
   } catch (err) {
     if (err instanceof PraxisError) throw err;
 
-    throw errors.judgeProviderFailed(provider.name, (err as Error).message);
+    throw errors.reviewProviderFailed(provider.name, (err as Error).message);
   }
 }

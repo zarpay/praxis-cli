@@ -1,6 +1,6 @@
 import type {
   ChatCompletionResponse,
-  JudgeProvider,
+  ReviewProvider,
   ProviderRequest,
   ProviderResult,
   ProviderUsage,
@@ -11,16 +11,16 @@ import type {
 import { errors } from "@/core/errors.js";
 
 /**
- * The default judge provider: OpenAI-compatible chat completions with
+ * The default reviewer provider: OpenAI-compatible chat completions with
  * required tool calling, via OpenRouter or any endpoint speaking the
- * same protocol (per-judge `baseUrl`).
+ * same protocol (per-reviewer `baseUrl`).
  *
  * Request `options` are spread first, so they can add backend fields
  * (e.g. OpenRouter routing or reasoning settings) but never clobber
  * the protocol fields praxis owns: model, messages, tools,
  * tool_choice, temperature.
  */
-export class OpenRouterProvider implements JudgeProvider {
+export class OpenRouterProvider implements ReviewProvider {
   readonly name = "openrouter";
 
   /**
@@ -32,7 +32,7 @@ export class OpenRouterProvider implements JudgeProvider {
    * @throws PraxisError on non-OK responses, missing tool calls, or a
    *   tool outside the three validation tools
    */
-  async evaluate(request: ProviderRequest): Promise<ProviderResult> {
+  async review(request: ProviderRequest): Promise<ProviderResult> {
     const response = await fetch(`${request.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -55,7 +55,7 @@ export class OpenRouterProvider implements JudgeProvider {
 
     if (!response.ok) {
       const body = await response.text();
-      throw errors.judgeApiError(this.name, response.status, body);
+      throw errors.reviewerApiError(this.name, response.status, body);
     }
 
     const data = (await response.json()) as ChatCompletionResponse;

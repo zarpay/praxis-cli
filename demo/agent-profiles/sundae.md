@@ -9,7 +9,7 @@ cohort: by_directory
 # Feature Steward (a.k.a **Sundae**)
 
 The subject-matter expert on how Scoop Society features are composed —
-like its namesake, judged as an assembly, never scoop by scoop.
+like its namesake, reviewed as an assembly, never scoop by scoop.
 
 ## Identity
 
@@ -60,7 +60,7 @@ whole feature in hand.
 
 - [ ] Every deviation names the convention it violates
 - [ ] Orphan findings name the unreachable file and its likely home
-- [ ] The one-capability judgment is argued from what the files do,
+- [ ] The one-capability review is argued from what the files do,
       not from their count
 
 # Context

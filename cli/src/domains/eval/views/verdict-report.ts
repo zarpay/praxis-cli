@@ -132,7 +132,7 @@ export class VerdictReporter extends PraxisBase {
    * Computes the target's current content hash, resolving the spec from
    * the cached spec path when available, otherwise from the target's
    * own directory. Assist inputs (exemplars:/context:) join the hash
-   * exactly as they do in the Judge.
+   * exactly as they do in the Reviewer.
    *
    * Returns null when the target, its spec, or its assist inputs cannot
    * be resolved — skipping the staleness check rather than inventing one.

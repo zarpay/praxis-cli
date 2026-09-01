@@ -49,9 +49,9 @@ export class StatusDisplay extends PraxisBase {
       this.out.print(["", ...countLines(report.counts)]);
     }
 
-    for (const { judge, badges } of validationBlocks(report.validation)) {
+    for (const { reviewer, badges } of validationBlocks(report.validation)) {
       this.out.line();
-      this.logger.info(`Validation (judge: ${judge})`);
+      this.logger.info(`Validation (reviewer: ${reviewer})`);
       this.out.print(badges);
     }
 

@@ -9,7 +9,7 @@ import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,
-  TEST_JUDGE,
+  TEST_REVIEWER,
   createOpenRouterServer,
   useOpenRouterResponse,
   validationToolCallResponse,
@@ -59,32 +59,32 @@ describe("runEval", () => {
     delete process.env["OPENROUTER_API_KEY"];
   });
 
-  describe("judges", () => {
-    it("judges with every judge it is given", async () => {
+  describe("reviewers", () => {
+    it("reviewers with every reviewer it is given", async () => {
       useCompliantFixture();
       const run = await runEval({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
-        judges: config.judges,
+        reviewers: config.reviewers,
       });
-      const judgeNames = [...new Set(run.verdicts.map((r) => r.judge))];
+      const reviewerNames = [...new Set(run.verdicts.map((r) => r.reviewer))];
 
-      expect(judgeNames).toEqual(config.judges.map((j) => j.name));
+      expect(reviewerNames).toEqual(config.reviewers.map((j) => j.name));
     });
 
-    it("judges with only the evaluates it is given", async () => {
+    it("reviewers with only the reviews it is given", async () => {
       useCompliantFixture();
-      const only = config.judges.slice(0, 1);
+      const only = config.reviewers.slice(0, 1);
       const run = await runEval({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
-        judges: only,
+        reviewers: only,
       });
-      const judgeNames = [...new Set(run.verdicts.map((r) => r.judge))];
+      const reviewerNames = [...new Set(run.verdicts.map((r) => r.reviewer))];
 
-      expect(judgeNames).toEqual(only.map((j) => j.name));
+      expect(reviewerNames).toEqual(only.map((j) => j.name));
     });
   });
 
@@ -96,7 +96,7 @@ describe("runEval", () => {
         root: tmpdir,
         sources: config.sources,
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
       });
 
       const results = run.verdicts;
@@ -107,14 +107,14 @@ describe("runEval", () => {
   });
 
   describe("type filter", () => {
-    it("judges only documents of the specified type", async () => {
+    it("reviewers only documents of the specified type", async () => {
       useCompliantFixture();
 
       const run = await runEval({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         type: "experts",
       });
 
@@ -127,7 +127,7 @@ describe("runEval", () => {
         root: tmpdir,
         sources: config.sources,
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         type: "bogus",
       });
 
@@ -144,7 +144,7 @@ describe("runEval", () => {
         sources: config.sources,
         failFast: true,
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
       });
 
       expect(run.stoppedEarly).toBe(true);
@@ -168,7 +168,7 @@ describe("runEval", () => {
         root,
         sources: ["roles"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "SPEC.md",
       });
 
@@ -198,7 +198,7 @@ describe("runEval", () => {
         root,
         sources: ["specs", "docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
       });
 
       const results = run.verdicts;
@@ -225,7 +225,7 @@ describe("runEval", () => {
         root,
         sources: ["specs", "docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
       });
 
       const results = run.verdicts;
@@ -253,7 +253,7 @@ describe("runEval", () => {
         root,
         sources: ["roles"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
       });
 
       const results = run.verdicts;
@@ -285,7 +285,7 @@ describe("runEval", () => {
         sources: ["docs"],
         absoluteIgnore: [join(root, "docs/smes/**")],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -315,7 +315,7 @@ describe("runEval", () => {
         sources: ["docs"],
         absoluteIgnore: [join(root, "docs/smes/**")],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -370,7 +370,7 @@ describe("runEval", () => {
         sources: ["docs"],
         absoluteIgnore: [join(root, "docs/ignored/**")],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.praxis.md",
       });
 
@@ -400,7 +400,7 @@ describe("runEval", () => {
       });
     }
 
-    it("evaluates each matched directory as one evaluation unit", async () => {
+    it("reviews each matched directory as one review unit", async () => {
       useCompliantFixture();
       const { root, cleanup } = cohortProject();
 
@@ -408,7 +408,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -419,7 +419,7 @@ describe("runEval", () => {
       cleanup();
     });
 
-    it("sends every member file in a single judgment request", async () => {
+    it("sends every member file in a single review request", async () => {
       const bodies: string[] = [];
       server.use(
         http.post(OPENROUTER_URL, async ({ request }) => {
@@ -435,7 +435,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -461,7 +461,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -479,7 +479,7 @@ describe("runEval", () => {
         return runEval({
           root,
           sources: ["docs"],
-          judges: [TEST_JUDGE],
+          reviewers: [TEST_REVIEWER],
           specFilePattern: "*.sme.md",
         });
       }
@@ -515,7 +515,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -540,7 +540,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -578,7 +578,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -605,7 +605,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
       });
 
       const results = run.verdicts;
@@ -649,7 +649,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -686,7 +686,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -728,7 +728,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -739,7 +739,7 @@ describe("runEval", () => {
       cleanup();
     });
 
-    it("inlines exemplars into the judgment request as labeled positives", async () => {
+    it("inlines exemplars into the review request as labeled positives", async () => {
       const bodies: string[] = [];
       server.use(
         http.post(OPENROUTER_URL, async ({ request }) => {
@@ -755,7 +755,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -800,7 +800,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -813,7 +813,7 @@ describe("runEval", () => {
   });
 
   describe("context frontmatter", () => {
-    it("inlines context files into every unit's judgment request, never evaluating them", async () => {
+    it("inlines context files into every unit's review request, never reviewing them", async () => {
       const bodies: string[] = [];
       server.use(
         http.post(OPENROUTER_URL, async ({ request }) => {
@@ -847,7 +847,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -868,7 +868,7 @@ describe("runEval", () => {
     });
   });
 
-  describe("multiple judges", () => {
+  describe("multiple reviewers", () => {
     const flash = { name: "flash", model: "flash-model", apiKeyEnvVar: "OPENROUTER_API_KEY" };
     const strict = { name: "strict", model: "strict-model", apiKeyEnvVar: "OPENROUTER_API_KEY" };
 
@@ -900,7 +900,7 @@ describe("runEval", () => {
       );
     }
 
-    it("every judge evaluates every unit", async () => {
+    it("every reviewer reviews every unit", async () => {
       useCompliantFixture();
       const { root, cleanup } = twoJudgeProject();
 
@@ -908,31 +908,31 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [flash, strict],
+        reviewers: [flash, strict],
       });
 
       const results = run.verdicts;
 
-      expect(results.map((r) => r.judge).sort()).toEqual(["flash", "strict"]);
+      expect(results.map((r) => r.reviewer).sort()).toEqual(["flash", "strict"]);
 
       cleanup();
     });
 
-    it("keeps each judge's verdicts in its own cache namespace", async () => {
+    it("keeps each reviewer's verdicts in its own cache namespace", async () => {
       useCompliantFixture();
       const { root, cleanup } = twoJudgeProject();
 
-      const first = await runEval({ root, sources: ["docs"], judges: [flash, strict] });
+      const first = await runEval({ root, sources: ["docs"], reviewers: [flash, strict] });
       expect(first.cacheStats).toEqual({ hits: 0, misses: 2 });
 
-      const second = await runEval({ root, sources: ["docs"], judges: [flash, strict] });
+      const second = await runEval({ root, sources: ["docs"], reviewers: [flash, strict] });
       expect(second.cacheStats).toEqual({ hits: 2, misses: 0 });
 
-      // A judge with different behavioral settings gets no hits from the others.
+      // A reviewer with different behavioral settings gets no hits from the others.
       const third = await runEval({
         root,
         sources: ["docs"],
-        judges: [{ ...flash, name: "hot", temperature: 0.9 }],
+        reviewers: [{ ...flash, name: "hot", temperature: 0.9 }],
       });
 
       expect(third.cacheStats).toEqual({ hits: 0, misses: 1 });
@@ -940,16 +940,16 @@ describe("runEval", () => {
       cleanup();
     });
 
-    it("a renamed judge keeps its cache hits — the name is not identity", async () => {
+    it("a renamed reviewer keeps its cache hits — the name is not identity", async () => {
       useCompliantFixture();
       const { root, cleanup } = twoJudgeProject();
 
-      await runEval({ root, sources: ["docs"], judges: [flash] });
+      await runEval({ root, sources: ["docs"], reviewers: [flash] });
 
       const renamed = await runEval({
         root,
         sources: ["docs"],
-        judges: [{ ...flash, name: "renamed" }],
+        reviewers: [{ ...flash, name: "renamed" }],
       });
 
       expect(renamed.cacheStats).toEqual({ hits: 1, misses: 0 });
@@ -957,7 +957,7 @@ describe("runEval", () => {
       cleanup();
     });
 
-    it("summarizes per judge, never pooling silently", async () => {
+    it("summarizes per reviewer, never pooling silently", async () => {
       useSplitVerdicts();
       const { root, cleanup } = twoJudgeProject();
 
@@ -965,7 +965,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [flash, strict],
+        reviewers: [flash, strict],
       });
 
       const summary = run.summary;
@@ -999,7 +999,7 @@ describe("runEval", () => {
         root,
         sources: ["docs"],
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
         specFilePattern: "*.sme.md",
       });
 
@@ -1021,7 +1021,7 @@ describe("runEval", () => {
         root: tmpdir,
         sources: config.sources,
         useCache: false,
-        judges: [TEST_JUDGE],
+        reviewers: [TEST_REVIEWER],
       });
       const summary = run.summary;
 

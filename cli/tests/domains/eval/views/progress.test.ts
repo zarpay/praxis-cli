@@ -20,7 +20,7 @@ function verdict(fields: Partial<Verdict>): Verdict {
 }
 
 describe("unitHeading", () => {
-  it("shows the counter and filename for a plain single-judge unit", () => {
+  it("shows the counter and filename for a plain single-reviewer unit", () => {
     const heading = plain(unitHeading({ index: 2, total: 7, path: "/p/src/awards.ts" }));
 
     expect(heading).toBe("[2/7] awards.ts");
@@ -34,18 +34,20 @@ describe("unitHeading", () => {
     expect(heading).toBe("[1/3] loyalty (cohort · 4 files)");
   });
 
-  it("names the judge when more than one is running", () => {
-    const heading = plain(unitHeading({ index: 1, total: 1, path: "/p/a.ts", judgeName: "flash" }));
-
-    expect(heading).toBe("[1/1] a.ts [judge: flash]");
-  });
-
-  it("carries both labels at once, cohort before judge", () => {
+  it("names the reviewer when more than one is running", () => {
     const heading = plain(
-      unitHeading({ index: 5, total: 5, path: "/p/dir", cohortSize: 2, judgeName: "v32" }),
+      unitHeading({ index: 1, total: 1, path: "/p/a.ts", reviewerName: "flash" }),
     );
 
-    expect(heading).toBe("[5/5] dir (cohort · 2 files) [judge: v32]");
+    expect(heading).toBe("[1/1] a.ts [reviewer: flash]");
+  });
+
+  it("carries both labels at once, cohort before reviewer", () => {
+    const heading = plain(
+      unitHeading({ index: 5, total: 5, path: "/p/dir", cohortSize: 2, reviewerName: "v32" }),
+    );
+
+    expect(heading).toBe("[5/5] dir (cohort · 2 files) [reviewer: v32]");
   });
 
   it("omits the cohort label for a one-file cohort size of zero", () => {

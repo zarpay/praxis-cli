@@ -5,9 +5,9 @@
  * assessment. Using tool calls instead of text parsing eliminates
  * fragile regex extraction and guarantees structured, typed results.
  * The descriptions are prompt text: they draw the pass/warn/fail
- * boundary, so they are part of the judge's behavioral surface.
+ * boundary, so they are part of the reviewer's behavioral surface.
  */
-export default function judgeTools() {
+export default function reviewTools() {
   return [
     {
       type: "function",

@@ -20,9 +20,9 @@ function report(fields: Partial<StatusReport> = {}): StatusReport {
   };
 }
 
-/** A judge tally, defaulting every bucket to zero. */
+/** A reviewer tally, defaulting every bucket to zero. */
 function tally(fields: Partial<StatusReport["validation"][number]>) {
-  return { judge: "flash", pass: 0, warn: 0, fail: 0, notValidated: 0, ...fields };
+  return { reviewer: "flash", pass: 0, warn: 0, fail: 0, notValidated: 0, ...fields };
 }
 
 describe("countLines", () => {
@@ -39,29 +39,32 @@ describe("countLines", () => {
 });
 
 describe("validationBlocks", () => {
-  it("returns one block per judge that has evaluated something", () => {
-    const blocks = validationBlocks([tally({ judge: "flash", pass: 2 }), tally({ judge: "v32" })]);
-    const judges = blocks.map((block) => block.judge);
+  it("returns one block per reviewer that has reviewed something", () => {
+    const blocks = validationBlocks([
+      tally({ reviewer: "flash", pass: 2 }),
+      tally({ reviewer: "v32" }),
+    ]);
+    const reviewers = blocks.map((block) => block.reviewer);
 
-    expect(judges).toEqual(["flash"]);
+    expect(reviewers).toEqual(["flash"]);
   });
 
-  it("keeps a judge whose only verdicts are failures", () => {
-    const blocks = validationBlocks([tally({ judge: "flash", fail: 1 })]);
+  it("keeps a reviewer whose only verdicts are failures", () => {
+    const blocks = validationBlocks([tally({ reviewer: "flash", fail: 1 })]);
 
     expect(blocks).toHaveLength(1);
   });
 
-  it("keeps a judge with nothing but unvalidated targets", () => {
-    const blocks = validationBlocks([tally({ judge: "flash", notValidated: 4 })]);
+  it("keeps a reviewer with nothing but unvalidated targets", () => {
+    const blocks = validationBlocks([tally({ reviewer: "flash", notValidated: 4 })]);
 
     expect(blocks).toHaveLength(1);
   });
 
-  it("labels the nameless reader when no judge is configured", () => {
-    const blocks = validationBlocks([tally({ judge: null, notValidated: 3 })]);
+  it("labels the nameless reader when no reviewer is configured", () => {
+    const blocks = validationBlocks([tally({ reviewer: null, notValidated: 3 })]);
 
-    expect(blocks[0].judge).toBe("none configured");
+    expect(blocks[0].reviewer).toBe("none configured");
   });
 
   it("carries the four buckets as badges in a fixed order", () => {
@@ -76,10 +79,10 @@ describe("validationBlocks", () => {
     ]);
   });
 
-  it("never pools judges into one block", () => {
+  it("never pools reviewers into one block", () => {
     const blocks = validationBlocks([
-      tally({ judge: "flash", pass: 1 }),
-      tally({ judge: "v32", pass: 1 }),
+      tally({ reviewer: "flash", pass: 1 }),
+      tally({ reviewer: "v32", pass: 1 }),
     ]);
 
     expect(blocks).toHaveLength(2);

@@ -1,5 +1,5 @@
 import type {
-  JudgeConfig,
+  ReviewerConfig,
   NormalizedConfig,
   PluginConfigEntry,
   RawConfig,
@@ -14,13 +14,13 @@ import { configFile } from "@/domains/workspace/models/project-paths.js";
 /** Default spec file pattern when none is configured. */
 export const DEFAULT_SPEC_FILE_PATTERN = "README.md";
 
-/** Default inference endpoint when a judge declares no baseUrl. */
+/** Default inference endpoint when a reviewer declares no baseUrl. */
 export const DEFAULT_JUDGE_BASE_URL = "https://openrouter.ai/api/v1";
 
-/** Provider used when a judge declares none. */
+/** Provider used when a reviewer declares none. */
 export const DEFAULT_JUDGE_PROVIDER = "openrouter";
 
-/** Default sampling temperature when a judge declares none. */
+/** Default sampling temperature when a reviewer declares none. */
 export const DEFAULT_JUDGE_TEMPERATURE = 0.0;
 
 /** Defaults used when the config file is absent or fields are omitted. */
@@ -31,7 +31,7 @@ const DEFAULT_CONFIG: NormalizedConfig = {
   ignore: [],
   expertsDir: "experts",
   practicesDir: "practices",
-  judges: [],
+  reviewers: [],
   specFilePattern: DEFAULT_SPEC_FILE_PATTERN,
 };
 
@@ -101,9 +101,9 @@ export class PraxisConfig {
     return resolvePath(this.root, this.data.practicesDir);
   }
 
-  /** The configured judges; empty when none are configured. */
-  get judges(): JudgeConfig[] {
-    return this.data.judges;
+  /** The configured reviewers; empty when none are configured. */
+  get reviewers(): ReviewerConfig[] {
+    return this.data.reviewers;
   }
 
   /** The spec file pattern (default: "README.md"). */
@@ -137,34 +137,34 @@ export class PraxisConfig {
       ignore: raw.ignore ?? DEFAULT_CONFIG.ignore,
       expertsDir: raw.expertsDir ?? DEFAULT_CONFIG.expertsDir,
       practicesDir: raw.practicesDir ?? DEFAULT_CONFIG.practicesDir,
-      judges: this.normalizeJudges(raw),
+      reviewers: this.normalizeReviewers(raw),
       specFilePattern: raw.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN,
     };
   }
 
   /**
-   * Validates and normalizes the judges array.
+   * Validates and normalizes the reviewers array.
    *
    * @throws PraxisError on duplicate names or missing required fields
    */
-  private normalizeJudges(raw: RawConfig): JudgeConfig[] {
-    if (!raw.judges) {
+  private normalizeReviewers(raw: RawConfig): ReviewerConfig[] {
+    if (!raw.reviewers) {
       return [];
     }
 
     const seen = new Set<string>();
 
-    return raw.judges.map((entry) => {
+    return raw.reviewers.map((entry) => {
       const name = entry.name ?? "(unnamed)";
 
       for (const field of ["name", "model", "apiKeyEnvVar"] as const) {
         if (!entry[field]) {
-          throw errors.judgeMissingField(name, field);
+          throw errors.reviewerMissingField(name, field);
         }
       }
 
       if (seen.has(name)) {
-        throw errors.duplicateJudgeName(name);
+        throw errors.duplicateReviewerName(name);
       }
 
       seen.add(name);

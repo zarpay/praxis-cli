@@ -87,7 +87,7 @@ Documents missing a **required** item receive a FAIL result. Documents missing a
 
 ## Scoping frontmatter
 
-Beyond `paths:` (and `cohort:` — see [Cross-Directory Validation](/validation/cross-directory)), a spec's frontmatter can shape exactly what the judge sees. These are structural decisions, executed before any evaluation — never prose instructions the judge has to notice and obey:
+Beyond `paths:` (and `cohort:` — see [Cross-Directory Validation](/validation/cross-directory)), a spec's frontmatter can shape exactly what the reviewer sees. These are structural decisions, executed before any evaluation — never prose instructions the reviewer has to notice and obey:
 
 ```yaml
 ---
@@ -102,13 +102,13 @@ context:
 ---
 ```
 
-**`excludes:`** — files structurally out of scope. An excluded file never becomes an evaluation unit, never enters a cohort's membership, and is never seen by the judge. Prefer this over writing "except for X" in the spec body: an exclusion in prose is an instruction the judge can fail to apply; an exclusion in frontmatter is a file it never receives.
+**`excludes:`** — files structurally out of scope. An excluded file never becomes an evaluation unit, never enters a cohort's membership, and is never seen by the reviewer. Prefer this over writing "except for X" in the spec body: an exclusion in prose is an instruction the reviewer can fail to apply; an exclusion in frontmatter is a file it never receives.
 
-**`exemplars:`** — spec-blessed positive examples. Exemplar files are shielded from adverse judgment (they receive no verdicts) and are inlined into the judge's prompt as labeled references for what compliance looks like.
+**`exemplars:`** — spec-blessed positive examples. Exemplar files are shielded from adverse review (they receive no verdicts) and are inlined into the reviewer's prompt as labeled references for what compliance looks like.
 
-**`context:`** — assist-only material. Context files are inlined into the prompt so the judge sees what the standard is *about* (the domain types a service consumes, the store it calls), but they are never evaluated themselves and never produce verdicts.
+**`context:`** — assist-only material. Context files are inlined into the prompt so the reviewer sees what the standard is *about* (the domain types a service consumes, the store it calls), but they are never evaluated themselves and never produce verdicts.
 
-All three keys take glob patterns resolved against the project root. Because exemplars and context are part of what the judge sees, they join the cached verdict's content hash: editing an exemplar or a context file invalidates the affected verdicts just like editing the target or the spec does.
+All three keys take glob patterns resolved against the project root. Because exemplars and context are part of what the reviewer sees, they join the cached verdict's content hash: editing an exemplar or a context file invalidates the affected verdicts just like editing the target or the spec does.
 
 `excludes:` and `exemplars:` also compile through from an expert's `validates:` targeting, the same way `paths:` and `cohort:` do.
 

@@ -5,10 +5,10 @@ import chalk from "chalk";
 import { baseName } from "@/core/paths.js";
 
 /**
- * The progress line printed before a unit is evaluated.
+ * The progress line printed before a unit is reviewed.
  *
- * `cohortSize` is set only for cohort units and `judgeName` only when
- * more than one judge is running, so a single-judge run of plain files
+ * `cohortSize` is set only for cohort units and `reviewerName` only when
+ * more than one reviewer is running, so a single-reviewer run of plain files
  * gets the bare counter and filename.
  */
 export function unitHeading({
@@ -16,19 +16,19 @@ export function unitHeading({
   total,
   path,
   cohortSize,
-  judgeName,
+  reviewerName,
 }: {
   index: number;
   total: number;
   path: string;
   cohortSize?: number;
-  judgeName?: string;
+  reviewerName?: string;
 }): string {
   const counter = chalk.dim(`[${index}/${total}]`);
   const cohortLabel = cohortSize ? ` ${chalk.dim(`(cohort · ${cohortSize} files)`)}` : "";
-  const judgeLabel = judgeName ? ` ${chalk.cyan(`[judge: ${judgeName}]`)}` : "";
+  const reviewerLabel = reviewerName ? ` ${chalk.cyan(`[reviewer: ${reviewerName}]`)}` : "";
 
-  return `${counter} ${chalk.bold(baseName(path))}${cohortLabel}${judgeLabel}`;
+  return `${counter} ${chalk.bold(baseName(path))}${cohortLabel}${reviewerLabel}`;
 }
 
 /** The colored ✓/⚠/✗ progress mark for a verdict. */

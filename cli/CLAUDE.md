@@ -65,13 +65,13 @@ the two ends of it.
 
 | Layer            | What belongs here                                                                                                                                                                                              |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `models/`        | Data structures and the helpers on that data. **Validate on construction** — a model that exists is a valid document. No I/O beyond reading its own file. `SpecFile`, `ExpertFile`, `Judge`, `JudgmentTarget`. |
-| `services/`      | **One file, one default-exported function**, one input → one output. Operates on primitives and models and returns its work; no workflow. `expandGlobs`, `auditExperts`, `discoverDomains`, `judgeTarget`.     |
+| `models/`        | Data structures and the helpers on that data. **Validate on construction** — a model that exists is a valid document. No I/O beyond reading its own file. `SpecFile`, `ExpertFile`, `Reviewer`, `ReviewSubject`. |
+| `services/`      | **One file, one default-exported function**, one input → one output. Operates on primitives and models and returns its work; no workflow. `expandGlobs`, `auditExperts`, `discoverDomains`, `requestVerdict`.     |
 | `orchestrators/` | **One file, one default-exported function.** Coordinates several services into a workflow, and is the primary interface for a command. `runEval`, `compileExperts`, `analyzeProject`.                          |
 | `views/`         | Rendering only — pure functions returning `DisplayEntry[]` or strings, never performing work. `unitHeading`, `issueBlocks`, `evalTargetingLines`.                                                              |
 
 A domain's `prompts/` holds the LLM- or agent-facing text it owns: the eval domain
-has the six judge prompts, the spec domain the two Claude Code plugin templates.
+has the six reviewer prompts, the spec domain the two Claude Code plugin templates.
 
 **Services and orchestrators are functions, not classes.** One file, one
 default-exported function, taking a single input payload and returning a single
@@ -82,11 +82,11 @@ same one-per-file rule the prompts already follow.
 Classes remain for four things, and only these:
 
 - **Models** — data plus helpers on that data, validated on construction.
-- **Extension-point contracts** — `CompilerPlugin`, `JudgeProvider`. A third
+- **Extension-point contracts** — `CompilerPlugin`, `ReviewProvider`. A third
   party implements these against a documented interface.
-- **`CacheManager`** — a repository over the verdict store, bound to one judge
+- **`CacheManager`** — a repository over the verdict store, bound to one reviewer
   identity, with six operations. As functions, every call would re-thread
-  `{ cacheRoot, projectRoot, judge }`.
+  `{ cacheRoot, projectRoot, reviewer }`.
 - Anything else genuinely better expressed as a smart data object.
 
 **Orchestrators never print.** They take an optional `onProgress` callback and
@@ -110,23 +110,23 @@ Expert .md file (with YAML frontmatter)
 
 The **Claude Code plugin** (`domains/spec/services/plugins/claude-code.ts`) wraps the profile with YAML frontmatter (name, description, tools, model, permissionMode), writes to `{outputDir}/agents/{alias}.md` (default `plugins/praxis/agents/`), and creates/updates `.claude-plugin/plugin.json` in the output directory.
 
-### Eval Layer — Judge Pipeline
+### Eval Layer — Reviewer Pipeline
 
 ```
 Spec discovered (specFilePattern match, frontmatter read)
-  → Units resolved: paths:/cohort: expand; excludes:/exemplars: shielded from judgment
-  → Assist inputs resolved: exemplars: + context: files (domains/eval/services/judgment-input.ts)
-  → Content hash computed over the full judgment input: target + spec + assist (SHA256, 8-char prefix)
+  → Units resolved: paths:/cohort: expand; excludes:/exemplars: shielded from review
+  → Assist inputs resolved: exemplars: + context: files (domains/eval/services/review-input.ts)
+  → Content hash computed over the full review input: target + spec + assist (SHA256, 8-char prefix)
   → Cache checked: one file per target at .praxis/cache/validation/<target-path>.json,
-      verdicts keyed <specHash>:<judgeHash> (format 3.0)
-  → On miss: one call per configured judge via its provider (default: OpenRouter, tool_choice: required)
+      verdicts keyed <specHash>:<reviewerHash> (format 3.0)
+  → On miss: one call per configured reviewer via its provider (default: OpenRouter, tool_choice: required)
   → Verdict from the tool call (pass/warn/fail + issues); cached with content_hash
       and assist provenance (exemplar_files/context_files with per-file hashes)
 ```
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
-Key files: `domains/eval/services/judge-target.ts`, `domains/eval/models/` (Judge, JudgmentTarget, SpecFile), `domains/eval/services/` (judgment-input, verdict-cache, judge-hash, discover-domains, resolve-units), `domains/eval/orchestrators/run-eval.ts`, `domains/eval/views/`, `domains/eval/prompts/`.
+Key files: `domains/eval/services/request-verdict.ts`, `domains/eval/models/` (Reviewer, ReviewSubject, SpecFile), `domains/eval/services/` (resolve-assist-inputs, verdict-cache, hash-reviewer, discover-domains, resolve-units), `domains/eval/orchestrators/run-eval.ts`, `domains/eval/views/`, `domains/eval/prompts/`.
 
 ### Project Root Detection
 
@@ -141,7 +141,7 @@ Config lives at `{root}/.praxis/config.json` with these fields:
 - `practicesDir: string` — where practice `.md` files live (default: `"practices"`)
 - `agentProfilesOutputDir: string | false` — where pure profiles are written (default: `"./agent-profiles"`)
 - `plugins: (string | PluginConfigEntry)[]` — enabled plugins with optional per-plugin config (default: `[]`). String entries are normalized to `{ name: theString }`. Object entries support `name`, `outputDir`, `claudeCodePluginName`.
-- `judges: { name, model, apiKeyEnvVar, baseUrl?, temperature?, provider?, options? }[]` — the configured judges; every judge evaluates every target, each with its own cache namespace keyed by its behavioral hash. `provider` selects the execution backend: a built-in registry name (default `"openrouter"`) or a `./relative` ESM module path whose default export is a provider factory (`domains/eval/types.ts`); `options` passes through to the provider verbatim (`domains/eval/services/judge-hash.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
+- `reviewers: { name, model, apiKeyEnvVar, baseUrl?, temperature?, provider?, options? }[]` — the configured reviewers; every reviewer evaluates every target, each with its own cache namespace keyed by its behavioral hash. `provider` selects the execution backend: a built-in registry name (default `"openrouter"`) or a `./relative` ESM module path whose default export is a provider factory (`domains/eval/types.ts`); `options` passes through to the provider verbatim (`domains/eval/services/hash-reviewer.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
 - `specFilePattern?: string` — top-level; filename or glob for spec files (default `README.md`).
 
 ### Plugin System
@@ -150,7 +150,7 @@ Plugins implement the `CompilerPlugin` interface (`domains/spec/types.ts`): `nam
 
 ## Code Conventions
 
-- **Types live in a `types.ts`:** a domain's own (`domains/<name>/types.ts`) for its vocabulary, or `src/types.ts` for shapes more than one domain needs — `JudgeConfig` (normalized by `domains/workspace/models/praxis-config.ts`) and `CohortMode` (declared by an expert, honored by a spec) are there for that reason. ESLint bans interface/type-alias declarations anywhere else in `src/`. Modules declare behavior — classes, functions, constants — never shapes. Sole exception: `core/files.ts` re-exports node's `FSWatcher`, because `node:fs` is walled into that module.
+- **Types live in a `types.ts`:** a domain's own (`domains/<name>/types.ts`) for its vocabulary, or `src/types.ts` for shapes more than one domain needs — `ReviewerConfig` (normalized by `domains/workspace/models/praxis-config.ts`) and `CohortMode` (declared by an expert, honored by a spec) are there for that reason. ESLint bans interface/type-alias declarations anywhere else in `src/`. Modules declare behavior — classes, functions, constants — never shapes. Sole exception: `core/files.ts` re-exports node's `FSWatcher`, because `node:fs` is walled into that module.
 - **Path aliases:** `@/*` → `./src/*`, `@tests/*` → `./tests/*` (tsconfig.json and vitest.config.ts). Imports always use aliases, never relative paths (ESLint-enforced; sole exception: `../package.json`).
 - **Import order:** third-party types, internal types, third-party values, internal values — blank line between groups, alphabetical within (perfectionist, autofixable)
 - **Import extensions:** `.js` required for local imports (ESM)
@@ -162,6 +162,6 @@ Plugins implement the `CompilerPlugin` interface (`domains/spec/types.ts`): `nam
 - **Excluded from compilation:** Files named `_template.md` or `README.md`
 - **File/path operations:** import from `@/core/files.js` (I/O: readText, writeText, exists, ...) and `@/core/paths.js` (composition: joinPath, baseName, ...; well-known locations: configFile, SCAFFOLD_DIR, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced). Where a _Praxis project_ keeps its files is `domains/workspace/models/project-paths.ts`, not core.
 - **Construct at invocation time, not import time:** module tops hold definitions, not work. `new Paths()` (and anything touching cwd or the filesystem) belongs in the command wiring helpers (`makeCommand()`), executed at action dispatch — never as a module-level instance or exported singleton (decided 2026-08-31: import-time cwd capture, test isolation, and `praxis init` running before `.praxis/` exists).
-- **Prompts:** every LLM/agent-facing prompt lives in its domain's `prompts/`, one prompt per file, as that file's default-export function — typed parameters wherever the prompt templates, with the parameter interfaces in the domain's `types.ts`. No prompt text inline anywhere else. The judge hash covers the complete judge-facing surface via `domains/eval/prompts/prompt-surface.ts`; rewording any of it is a judge-identity change (new epoch), by design.
+- **Prompts:** every LLM/agent-facing prompt lives in its domain's `prompts/`, one prompt per file, as that file's default-export function — typed parameters wherever the prompt templates, with the parameter interfaces in the domain's `types.ts`. No prompt text inline anywhere else. The reviewer hash covers the complete reviewer-facing surface via `domains/eval/prompts/prompt-surface.ts`; rewording any of it is a reviewer-identity change (new epoch), by design.
 - **Base classes:** classes extend `PraxisBase` (`@/core/base.js`) for the shared plumbing — protected `out` (Display) and `logger` (Logger), injectable — or `PraxisProjectBase` when bound to a project, which adds protected `root` and a `config` that resolves lazily from it on first access. Don't re-declare these fields.
 - **Terminal output:** all output goes through the view kit — `@/views/display.js` for stdout and `@/views/logger.js` for stderr. `Display.print([...])` renders a whole stdout block as one payload of entries (plain strings; `{ text, color }`; `{ badge, color, value, indent? }`; `{ header, char?, width? }`; falsy entries skipped so conditionals inline), with `line()` for single lines; `Logger` writes stderr diagnostics. Raw `console.*` is banned outside those two modules (ESLint `no-console`). Reusable rendering — badge rows, aligned stat blocks, tables — lives in `@/views/badges.js`, `@/views/stats.js`, `@/views/table.js` rather than being hand-built at the call site.

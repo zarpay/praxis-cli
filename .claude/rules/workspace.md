@@ -6,7 +6,7 @@ paths:
 
 # Workspace
 
-**Workspace knows what a Praxis project is** — where `.praxis/` lives, what `config.json` means, what documents are in the tree, and whether the project is healthy. If a thing is Praxis-specific but not about authoring or judging, it belongs here rather than in core.
+**Workspace knows what a Praxis project is** — where `.praxis/` lives, what `config.json` means, what documents are in the tree, and whether the project is healthy. If a thing is Praxis-specific but not about authoring or reviewing, it belongs here rather than in core.
 
 Workspace is the **only domain the others may reach into**. `spec` and `eval` import its models and types — `PraxisConfig`, `Paths`, `DocumentFile` — and stay isolated from each other. That reach-in is scoped to `models/` and `types.ts`:
 

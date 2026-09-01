@@ -57,32 +57,32 @@ describe("errors", () => {
     expect(err.message).toBe("Template not found: /scaffold/core/roles/_template.md");
   });
 
-  it("duplicateJudgeName", () => {
-    const err = errors.duplicateJudgeName("flash");
-    expect(err.code).toBe("INVALID_JUDGE_CONFIG");
+  it("duplicateReviewerName", () => {
+    const err = errors.duplicateReviewerName("flash");
+    expect(err.code).toBe("INVALID_REVIEWER_CONFIG");
     expect(err.message).toBe(
-      'Duplicate judge name "flash" in .praxis/config.json — judge names must be unique',
+      'Duplicate reviewer name "flash" in .praxis/config.json — reviewer names must be unique',
     );
   });
 
-  it("judgeMissingField", () => {
-    const err = errors.judgeMissingField("flash", "apiKeyEnvVar");
-    expect(err.code).toBe("INVALID_JUDGE_CONFIG");
+  it("reviewerMissingField", () => {
+    const err = errors.reviewerMissingField("flash", "apiKeyEnvVar");
+    expect(err.code).toBe("INVALID_REVIEWER_CONFIG");
     expect(err.message).toBe(
-      'Judge "flash" is missing "apiKeyEnvVar" — every judge needs "name", "model", and "apiKeyEnvVar"',
+      'Reviewer "flash" is missing "apiKeyEnvVar" — every reviewer needs "name", "model", and "apiKeyEnvVar"',
     );
   });
 
-  it("unknownJudge", () => {
-    const err = errors.unknownJudge("bogus", ["flash", "local"]);
-    expect(err.code).toBe("UNKNOWN_JUDGE");
-    expect(err.message).toBe('No judge named "bogus" — configured judges: flash, local');
+  it("unknownReviewer", () => {
+    const err = errors.unknownReviewer("bogus", ["flash", "local"]);
+    expect(err.code).toBe("UNKNOWN_REVIEWER");
+    expect(err.message).toBe('No reviewer named "bogus" — configured reviewers: flash, local');
   });
 
-  it("missingJudges", () => {
-    const err = errors.missingJudges();
-    expect(err.code).toBe("JUDGES_NOT_CONFIGURED");
-    expect(err.message).toContain('"judges": [');
+  it("missingReviewers", () => {
+    const err = errors.missingReviewers();
+    expect(err.code).toBe("REVIEWERS_NOT_CONFIGURED");
+    expect(err.message).toContain('"reviewers": [');
   });
 
   it("unknownDocumentType", () => {
@@ -109,45 +109,47 @@ describe("errors", () => {
     expect(err.message).toBe("OPENROUTER_API_KEY environment variable not set");
   });
 
-  it("judgeApiError", () => {
-    const err = errors.judgeApiError("openrouter", 502, "upstream unavailable");
-    expect(err.code).toBe("JUDGE_API_ERROR");
-    expect(err.message).toBe('Judge provider "openrouter" API error (502): upstream unavailable');
+  it("reviewerApiError", () => {
+    const err = errors.reviewerApiError("openrouter", 502, "upstream unavailable");
+    expect(err.code).toBe("REVIEWER_API_ERROR");
+    expect(err.message).toBe(
+      'Reviewer provider "openrouter" API error (502): upstream unavailable',
+    );
   });
 
-  it("unknownJudgeProvider", () => {
-    const err = errors.unknownJudgeProvider("bogus", ["openrouter"]);
-    expect(err.code).toBe("UNKNOWN_JUDGE_PROVIDER");
+  it("unknownReviewProvider", () => {
+    const err = errors.unknownReviewProvider("bogus", ["openrouter"]);
+    expect(err.code).toBe("UNKNOWN_REVIEW_PROVIDER");
     expect(err.message).toBe(
-      'Unknown judge provider: "bogus". Built-in providers: openrouter. ' +
+      'Unknown reviewer provider: "bogus". Built-in providers: openrouter. ' +
         "A custom provider must be a ./relative module path.",
     );
   });
 
-  it("judgeProviderLoadFailed", () => {
-    const err = errors.judgeProviderLoadFailed("./providers/echo.js", "Cannot find module");
-    expect(err.code).toBe("JUDGE_PROVIDER_LOAD_FAILED");
+  it("reviewProviderLoadFailed", () => {
+    const err = errors.reviewProviderLoadFailed("./providers/echo.js", "Cannot find module");
+    expect(err.code).toBe("REVIEW_PROVIDER_LOAD_FAILED");
     expect(err.message).toBe(
-      'Failed to load judge provider "./providers/echo.js": Cannot find module',
+      'Failed to load reviewer provider "./providers/echo.js": Cannot find module',
     );
   });
 
-  it("invalidJudgeProvider", () => {
-    const err = errors.invalidJudgeProvider(
+  it("invalidReviewProvider", () => {
+    const err = errors.invalidReviewProvider(
       "./providers/echo.js",
       "default export is not a function",
     );
-    expect(err.code).toBe("INVALID_JUDGE_PROVIDER");
+    expect(err.code).toBe("INVALID_REVIEW_PROVIDER");
     expect(err.message).toBe(
-      'Invalid judge provider "./providers/echo.js": default export is not a function — ' +
-        "a provider module's default export must be a factory returning { name, judge() }",
+      'Invalid reviewer provider "./providers/echo.js": default export is not a function — ' +
+        "a provider module's default export must be a factory returning { name, reviewer() }",
     );
   });
 
-  it("judgeProviderFailed", () => {
-    const err = errors.judgeProviderFailed("echo", "socket hang up");
-    expect(err.code).toBe("JUDGE_PROVIDER_FAILED");
-    expect(err.message).toBe('Judge provider "echo" failed: socket hang up');
+  it("reviewProviderFailed", () => {
+    const err = errors.reviewProviderFailed("echo", "socket hang up");
+    expect(err.code).toBe("REVIEW_PROVIDER_FAILED");
+    expect(err.message).toBe('Reviewer provider "echo" failed: socket hang up');
   });
 
   it("noToolCall", () => {

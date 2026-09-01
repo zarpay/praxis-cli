@@ -34,9 +34,9 @@ export interface AgentMetadata {
   permissionMode?: string;
   /** Glob patterns for files this profile validates (written as paths: in output). */
   validates: string[];
-  /** How validated targets group into evaluation units (written as cohort: in output). */
+  /** How validated targets group into review units (written as cohort: in output). */
   cohort?: string;
-  /** Glob patterns structurally excluded from judgment (written as excludes: in output). */
+  /** Glob patterns structurally excluded from review (written as excludes: in output). */
   excludes: string[];
   /** Spec-blessed positive examples (written as exemplars: in output). */
   exemplars: string[];

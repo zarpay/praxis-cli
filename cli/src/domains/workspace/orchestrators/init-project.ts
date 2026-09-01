@@ -136,7 +136,7 @@ function nextSteps(specLayer: boolean): string[] {
   return [
     "  1. Edit .praxis/config.json: point sources at the directories your specs live in",
     "  2. Write a spec (README.md) in a directory whose files it should govern",
-    "  3. Set your judge's API key and run `praxis eval run`",
+    "  3. Set your reviewer's API key and run `praxis eval run`",
     "  4. Re-run `praxis init --spec-layer` later to add the authoring taxonomy",
   ];
 }

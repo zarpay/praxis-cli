@@ -95,46 +95,46 @@ export const errors = {
     );
   },
 
-  /** Two judges in config share a name. */
-  duplicateJudgeName(name: string): PraxisError {
+  /** Two reviewers in config share a name. */
+  duplicateReviewerName(name: string): PraxisError {
     return new PraxisError(
-      "INVALID_JUDGE_CONFIG",
-      `Duplicate judge name "${name}" in .praxis/config.json — judge names must be unique`,
+      "INVALID_REVIEWER_CONFIG",
+      `Duplicate reviewer name "${name}" in .praxis/config.json — reviewer names must be unique`,
     );
   },
 
-  /** A configured judge omits one of its required fields. */
-  judgeMissingField(name: string, field: string): PraxisError {
+  /** A configured reviewer omits one of its required fields. */
+  reviewerMissingField(name: string, field: string): PraxisError {
     return new PraxisError(
-      "INVALID_JUDGE_CONFIG",
-      `Judge "${name}" is missing "${field}" — every judge needs "name", "model", and "apiKeyEnvVar"`,
+      "INVALID_REVIEWER_CONFIG",
+      `Reviewer "${name}" is missing "${field}" — every reviewer needs "name", "model", and "apiKeyEnvVar"`,
     );
   },
 
-  /** A --judge filter named a judge that is not configured. */
-  unknownJudge(name: string, configured: string[]): PraxisError {
+  /** A --reviewer filter named a reviewer that is not configured. */
+  unknownReviewer(name: string, configured: string[]): PraxisError {
     return new PraxisError(
-      "UNKNOWN_JUDGE",
-      `No judge named "${name}" — configured judges: ${configured.join(", ")}`,
+      "UNKNOWN_REVIEWER",
+      `No reviewer named "${name}" — configured reviewers: ${configured.join(", ")}`,
     );
   },
 
-  /** No judges are configured (and no legacy validation section exists). */
-  missingJudges(): PraxisError {
+  /** No reviewers are configured (and no legacy validation section exists). */
+  missingReviewers(): PraxisError {
     return new PraxisError(
-      "JUDGES_NOT_CONFIGURED",
+      "REVIEWERS_NOT_CONFIGURED",
       [
-        "No judges configured in .praxis/config.json",
+        "No reviewers configured in .praxis/config.json",
         "",
-        'Add a "judges" array to your config:',
-        '  "judges": [',
+        'Add a "reviewers" array to your config:',
+        '  "reviewers": [',
         '    { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "apiKeyEnvVar": "OPENROUTER_API_KEY" }',
         "  ]",
       ].join("\n"),
     );
   },
 
-  /** A spec declares root-relative scoping globs but the Judge was built without a project root. */
+  /** A spec declares root-relative scoping globs but the Reviewer was built without a project root. */
   missingProjectRoot(key: string, specPath: string): PraxisError {
     return new PraxisError(
       "MISSING_PROJECT_ROOT",
@@ -188,45 +188,45 @@ export const errors = {
     return new PraxisError("API_KEY_NOT_SET", `${envVarName} environment variable not set`);
   },
 
-  /** The judge provider's backend responded with a non-OK HTTP status. */
-  judgeApiError(provider: string, status: number, body: string): PraxisError {
+  /** The reviewer provider's backend responded with a non-OK HTTP status. */
+  reviewerApiError(provider: string, status: number, body: string): PraxisError {
     return new PraxisError(
-      "JUDGE_API_ERROR",
-      `Judge provider "${provider}" API error (${status}): ${body}`,
+      "REVIEWER_API_ERROR",
+      `Reviewer provider "${provider}" API error (${status}): ${body}`,
     );
   },
 
-  /** A judge named a provider that is neither built in nor a ./relative module path. */
-  unknownJudgeProvider(name: string, available: string[]): PraxisError {
+  /** A reviewer named a provider that is neither built in nor a ./relative module path. */
+  unknownReviewProvider(name: string, available: string[]): PraxisError {
     return new PraxisError(
-      "UNKNOWN_JUDGE_PROVIDER",
-      `Unknown judge provider: "${name}". Built-in providers: ${available.join(", ")}. ` +
+      "UNKNOWN_REVIEW_PROVIDER",
+      `Unknown reviewer provider: "${name}". Built-in providers: ${available.join(", ")}. ` +
         "A custom provider must be a ./relative module path.",
     );
   },
 
   /** A local provider module could not be imported. */
-  judgeProviderLoadFailed(path: string, cause: string): PraxisError {
+  reviewProviderLoadFailed(path: string, cause: string): PraxisError {
     return new PraxisError(
-      "JUDGE_PROVIDER_LOAD_FAILED",
-      `Failed to load judge provider "${path}": ${cause}`,
+      "REVIEW_PROVIDER_LOAD_FAILED",
+      `Failed to load reviewer provider "${path}": ${cause}`,
     );
   },
 
   /** A loaded provider module does not implement the provider contract. */
-  invalidJudgeProvider(spec: string, problem: string): PraxisError {
+  invalidReviewProvider(spec: string, problem: string): PraxisError {
     return new PraxisError(
-      "INVALID_JUDGE_PROVIDER",
-      `Invalid judge provider "${spec}": ${problem} — ` +
-        "a provider module's default export must be a factory returning { name, judge() }",
+      "INVALID_REVIEW_PROVIDER",
+      `Invalid reviewer provider "${spec}": ${problem} — ` +
+        "a provider module's default export must be a factory returning { name, reviewer() }",
     );
   },
 
-  /** A provider's judge() threw something other than a PraxisError. */
-  judgeProviderFailed(provider: string, message: string): PraxisError {
+  /** A provider's reviewer() threw something other than a PraxisError. */
+  reviewProviderFailed(provider: string, message: string): PraxisError {
     return new PraxisError(
-      "JUDGE_PROVIDER_FAILED",
-      `Judge provider "${provider}" failed: ${message}`,
+      "REVIEW_PROVIDER_FAILED",
+      `Reviewer provider "${provider}" failed: ${message}`,
     );
   },
 

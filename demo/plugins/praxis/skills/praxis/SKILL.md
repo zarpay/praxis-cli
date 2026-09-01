@@ -43,7 +43,7 @@ praxis eval run --fail-fast
 # Validate a single file against its spec
 praxis eval run <path>
 
-# Force re-evaluation without editing the file
+# Force re-review without editing the file
 praxis eval run <path> --no-cache
 
 # Show full AI reasoning for a result
@@ -68,7 +68,7 @@ Spec files match `specFilePattern` (default: `README.md`, configured per project
 
 A spec file with `paths:` frontmatter targets those glob patterns — files of any extension. Without `paths:`, it validates sibling files in the same directory.
 
-The compiled SME profile IS the spec: the LLM reads the profile content as the specification when evaluating each targeted file.
+The compiled SME profile IS the spec: the LLM reads the profile content as the specification when reviewing each targeted file.
 
 ---
 
@@ -76,5 +76,5 @@ The compiled SME profile IS the spec: the LLM reads the profile content as the s
 
 - Content-hash keyed: edit a file → its cache entry is automatically invalidated on next run
 - Both the document and the spec content are hashed — changing the spec invalidates all entries for files it covers
-- `--no-cache` forces re-evaluation without editing (use sparingly, mainly to check LLM non-determinism on borderline results)
+- `--no-cache` forces re-review without editing (use sparingly, mainly to check LLM non-determinism on borderline results)
 - Never delete `.praxis/cache/` — it accumulates valid results and saves API calls

@@ -2,7 +2,7 @@ import type { AssistFile } from "@/domains/eval/types.js";
 
 /**
  * The CONTEXT prompt section: assist-only reference files that inform
- * the judgment and never receive a verdict (03). Empty string when the
+ * the review and never receive a verdict (03). Empty string when the
  * spec declares none, so the section vanishes from the prompt entirely.
  */
 export default function contextSection(context: readonly AssistFile[]): string {
@@ -13,8 +13,8 @@ export default function contextSection(context: readonly AssistFile[]): string {
   return `## CONTEXT
 
 The following files are reference context: what the specification's
-subject matter is about. They are not under judgment and must not be
-critiqued — use them only to inform your evaluation.
+subject matter is about. They are not under review and must not be
+critiqued — use them only to inform your review.
 
 ${blocks}
 

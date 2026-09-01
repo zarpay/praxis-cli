@@ -7,31 +7,31 @@ import type {
   TargetVerdict,
   ValidationDomain,
 } from "@/domains/eval/types.js";
-import type { JudgeConfig } from "@/types.js";
+import type { ReviewerConfig } from "@/types.js";
 
 import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
 import { baseName, relativePath } from "@/core/paths.js";
-import { Judge } from "@/domains/eval/models/judge.js";
-import { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
+import { ReviewSubject } from "@/domains/eval/models/review-subject.js";
+import { Reviewer } from "@/domains/eval/models/reviewer.js";
 import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
 import discoverDomains from "@/domains/eval/services/discover-domains.js";
-import evaluateTarget from "@/domains/eval/services/evaluate-target.js";
 import listSourceDocuments from "@/domains/eval/services/list-source-documents.js";
 import resolveUnits from "@/domains/eval/services/resolve-units.js";
+import reviewTarget from "@/domains/eval/services/review-target.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
- * One `praxis eval run`: judge every target every judge covers.
+ * One `praxis eval run`: reviewer every target every reviewer covers.
  *
- * Discovers the specs, resolves them into units, and evaluates each unit
- * with each judge — **judge-major**, so one instrument's output stays
+ * Discovers the specs, resolves them into units, and reviews each unit
+ * with each reviewer — **reviewer-major**, so one instrument's output stays
  * contiguous in the terminal rather than interleaving.
  *
  * Everything the caller needs comes back in the result; progress
  * arrives through `onProgress` as it happens, so the orchestrator never
- * touches an output stream. A evaluating failure is recorded as an error
+ * touches an output stream. A reviewing failure is recorded as an error
  * verdict rather than raised: one unreachable target must not abandon
  * the rest of a run that costs real money.
  *
@@ -42,7 +42,7 @@ export default async function runEval({
   sources,
   specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
   absoluteIgnore = [],
-  judges,
+  reviewers,
   useCache = true,
   failFast = false,
   type,
@@ -51,10 +51,10 @@ export default async function runEval({
   const scope = { root, sources, specFilePattern, absoluteIgnore };
   const domains = selectDomains(discoverDomains(scope), type);
 
-  // Each judge gets its own cache bound to its identity: verdicts share
-  // one file per target, keyed by (spec, judge) so they never collide.
-  const caches = judges.map((judge) =>
-    useCache ? new CacheManager({ projectRoot: root, judge: cacheIdentity(judge) }) : null,
+  // Each reviewer gets its own cache bound to its identity: verdicts share
+  // one file per target, keyed by (spec, reviewer) so they never collide.
+  const caches = reviewers.map((reviewer) =>
+    useCache ? new CacheManager({ projectRoot: root, reviewer: cacheIdentity(reviewer) }) : null,
   );
 
   const queue = domains.flatMap((domain) =>
@@ -63,11 +63,11 @@ export default async function runEval({
 
   const verdicts: TargetVerdict[] = [];
   const cacheStats = { hits: 0, misses: 0 };
-  const total = queue.length * judges.length;
+  const total = queue.length * reviewers.length;
   let index = 0;
   let stoppedEarly = false;
 
-  for (const [judgeIndex, judgeConfig] of judges.entries()) {
+  for (const [reviewerIndex, reviewerConfig] of reviewers.entries()) {
     for (const { unit, domain } of queue) {
       if (stoppedEarly) break;
 
@@ -78,15 +78,15 @@ export default async function runEval({
         total,
         path: unit.path,
         cohortSize: isCohort(unit) ? unit.files.length : undefined,
-        judgeName: judges.length > 1 ? judgeConfig.name : undefined,
+        reviewerName: reviewers.length > 1 ? reviewerConfig.name : undefined,
       });
 
-      const verdict = await evaluateUnit({
+      const verdict = await reviewUnit({
         unit,
         specPath: domain.specPath,
         type: domain.type,
-        judgeConfig,
-        cache: caches[judgeIndex] ?? null,
+        reviewerConfig,
+        cache: caches[reviewerIndex] ?? null,
         root,
         specFilePattern,
         cacheStats,
@@ -109,7 +109,7 @@ export default async function runEval({
   };
 }
 
-/** Whether a unit judges a set of files rather than the one at its path. */
+/** Whether a unit reviewers a set of files rather than the one at its path. */
 function isCohort(unit: EvalUnit): boolean {
   return unit.files.length > 1 || unit.files[0] !== unit.path;
 }
@@ -131,12 +131,12 @@ function selectDomains(domains: ValidationDomain[], type?: string): ValidationDo
   return matching;
 }
 
-/** Judges one unit with one judge, turning any failure into an error verdict. */
-async function evaluateUnit({
+/** Reviewers one unit with one reviewer, turning any failure into an error verdict. */
+async function reviewUnit({
   unit,
   specPath,
   type,
-  judgeConfig,
+  reviewerConfig,
   cache,
   root,
   specFilePattern,
@@ -146,7 +146,7 @@ async function evaluateUnit({
   unit: EvalUnit;
   specPath: string;
   type: string;
-  judgeConfig: JudgeConfig;
+  reviewerConfig: ReviewerConfig;
   cache: CacheManager | null;
   root: string;
   specFilePattern: string;
@@ -157,12 +157,12 @@ async function evaluateUnit({
     path: unit.path,
     type,
     filename: baseName(unit.path),
-    judge: judgeConfig.name,
+    reviewer: reviewerConfig.name,
   };
 
   try {
     const cohort = isCohort(unit);
-    const target = JudgmentTarget.resolve({
+    const target = ReviewSubject.resolve({
       targetPath: unit.path,
       targetContent: cohort ? assembleCohort(unit, root) : undefined,
       kind: cohort ? "cohort" : "file",
@@ -171,9 +171,9 @@ async function evaluateUnit({
       root,
     });
 
-    const { verdict, cacheHit } = await evaluateTarget({
+    const { verdict, cacheHit } = await reviewTarget({
       target,
-      judge: Judge.fromConfig(judgeConfig),
+      reviewer: Reviewer.fromConfig(reviewerConfig),
       cache,
       root,
     });
@@ -200,7 +200,7 @@ async function evaluateUnit({
 }
 
 /**
- * Assembles a cohort's members into one judgment input, each labeled
+ * Assembles a cohort's members into one review input, each labeled
  * with its project-relative path so critiques can locate their file.
  */
 function assembleCohort(unit: EvalUnit, root: string): string {
@@ -213,7 +213,7 @@ function assembleCohort(unit: EvalUnit, root: string): string {
  * Aggregates a run's verdicts.
  *
  * `total` covers every document seen: all .md documents in the source
- * directories plus any file evaluated via spec `paths:` targeting, which
+ * directories plus any file reviewed via spec `paths:` targeting, which
  * may live outside the sources and have any extension. `notValidated`
  * is the count of those no verdict covers — a document with no spec, or
  * a target fail-fast never reached.
@@ -229,22 +229,22 @@ function summarize(verdicts: TargetVerdict[], sourceDocs: Set<string>): EvalSumm
     if (verdict.compliant) byType[verdict.type].compliant++;
     else byType[verdict.type].issues++;
 
-    byJudge[verdict.judge] ??= { compliant: 0, warnings: 0, errors: 0 };
+    byJudge[verdict.reviewer] ??= { compliant: 0, warnings: 0, errors: 0 };
 
-    if (verdict.compliant) byJudge[verdict.judge].compliant++;
-    else if (verdict.severity === "warning") byJudge[verdict.judge].warnings++;
-    else byJudge[verdict.judge].errors++;
+    if (verdict.compliant) byJudge[verdict.reviewer].compliant++;
+    else if (verdict.severity === "warning") byJudge[verdict.reviewer].warnings++;
+    else byJudge[verdict.reviewer].errors++;
   }
 
-  const judgedPaths = new Set(verdicts.map((v) => v.path));
-  const allDocs = new Set([...sourceDocs, ...judgedPaths]);
+  const reviewedPaths = new Set(verdicts.map((v) => v.path));
+  const allDocs = new Set([...sourceDocs, ...reviewedPaths]);
 
   return {
     total: allDocs.size,
     compliant: verdicts.filter((v) => v.compliant).length,
     warnings: verdicts.filter((v) => !v.compliant && v.severity === "warning").length,
     errors: verdicts.filter((v) => !v.compliant && v.severity === "error").length,
-    notValidated: allDocs.size - judgedPaths.size,
+    notValidated: allDocs.size - reviewedPaths.size,
     byType,
     byJudge,
   };

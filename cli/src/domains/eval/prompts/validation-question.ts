@@ -5,8 +5,8 @@ import contextSection from "@/domains/eval/prompts/context-section.js";
 import exemplarSection from "@/domains/eval/prompts/exemplar-section.js";
 
 /**
- * The user prompt sent to the LLM for one judgment: specification,
- * optional exemplar/context sections, then the target under judgment —
+ * The user prompt sent to the LLM for one review: specification,
+ * optional exemplar/context sections, then the target under review —
  * framed per file or per cohort.
  */
 export default function validationQuestion({
@@ -21,7 +21,7 @@ export default function validationQuestion({
     kind === "cohort"
       ? `## FILES TO VALIDATE
 
-The following files form one unit (cohort). Judge them together as a
+The following files form one unit (cohort). Reviewer them together as a
 set against the specification; each file is labeled with its path.
 
 Cohort: ${targetPath}`

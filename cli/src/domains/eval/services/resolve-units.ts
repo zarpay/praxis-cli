@@ -6,11 +6,11 @@ import isTarget from "@/domains/eval/services/is-target.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
- * The evaluation units a domain should judge.
+ * The review units a domain should reviewer.
  *
  * `cohort: by_directory` yields one unit per matched directory holding
  * every member file — an empty directory yields no unit, because there
- * is nothing to evaluate. `by_file` yields one unit per target file, from
+ * is nothing to review. `by_file` yields one unit per target file, from
  * `paths:` when declared, otherwise the spec's sibling .md files.
  */
 export default function resolveUnits({

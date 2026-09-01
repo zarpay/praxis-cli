@@ -16,8 +16,8 @@ export type AddableType = "expert" | "practice";
 
 /** Options every eval invocation shares. */
 export interface EvalInvocationOptions {
-  /** Run only this judge (default: all configured judges). */
-  judge?: string;
+  /** Run only this reviewer (default: all configured reviewers). */
+  reviewer?: string;
   verbose: boolean;
   cache: boolean;
 }
@@ -49,13 +49,13 @@ export interface StatusReport {
     context: number;
   };
   /**
-   * Cached verdict counts across all spec targets, one row per judge —
-   * judges are separate instruments and are never silently pooled.
-   * Empty when no judges are configured.
+   * Cached verdict counts across all spec targets, one row per reviewer —
+   * reviewers are separate instruments and are never silently pooled.
+   * Empty when no reviewers are configured.
    */
   validation: {
-    /** The judge's name, or null for the un-namespaced legacy cache. */
-    judge: string | null;
+    /** The reviewer's name, or null for the un-namespaced legacy cache. */
+    reviewer: string | null;
     pass: number;
     warn: number;
     fail: number;
@@ -152,7 +152,7 @@ export interface FindUnmatchedOwnersInput {
 export interface TallyValidationInput {
   /** Project root the cache and targets resolve against. */
   root: string;
-  /** The project's config: judges, sources, spec pattern, ignores. */
+  /** The project's config: reviewers, sources, spec pattern, ignores. */
   config: PraxisConfig;
 }
 

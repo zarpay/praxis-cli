@@ -2,7 +2,7 @@ import { matchesFilename } from "@/core/files.js";
 import { baseName } from "@/core/paths.js";
 
 /**
- * Whether a path is a target of evaluation.
+ * Whether a path is a target of review.
  *
  * Two rules apply to every scan the eval layer makes, which is why they
  * live in one place: a spec file is direction, never a target of it,

@@ -1,12 +1,12 @@
-import type { JudgeConfig } from "@/types.js";
+import type { ReviewerConfig } from "@/types.js";
 
 import { randomUUID } from "node:crypto";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
-/** The judge written into helper configs; matches TEST_JUDGE in openrouter-msw. */
-const DEFAULT_JUDGES: JudgeConfig[] = [
+/** The reviewer written into helper configs; matches TEST_REVIEWER in openrouter-msw. */
+const DEFAULT_JUDGES: ReviewerConfig[] = [
   { name: "test", model: "test-model", apiKeyEnvVar: "OPENROUTER_API_KEY" },
 ];
 
@@ -15,15 +15,15 @@ const DEFAULT_JUDGES: JudgeConfig[] = [
  *
  * Accepts a flat map of relative paths to file contents — parent directories are
  * created automatically, so deeply nested files don't require explicit `mkdirSync`
- * calls. A `.praxis/config.json` is written with the given sources, judges
- * (default: one OpenRouter test judge), and spec file pattern.
+ * calls. A `.praxis/config.json` is written with the given sources, reviewers
+ * (default: one OpenRouter test reviewer), and spec file pattern.
  *
  * @returns `root` (absolute path), `abs` (path resolver), and `cleanup` (rm -rf).
  */
 export function createValidatorTmpdir(options: {
   sources: string[];
   files: Record<string, string>;
-  judges?: JudgeConfig[];
+  reviewers?: ReviewerConfig[];
   specFilePattern?: string;
 }): {
   root: string;
@@ -45,7 +45,7 @@ export function createValidatorTmpdir(options: {
     abs(".praxis/config.json"),
     JSON.stringify({
       sources: options.sources,
-      judges: options.judges ?? DEFAULT_JUDGES,
+      reviewers: options.reviewers ?? DEFAULT_JUDGES,
       ...(options.specFilePattern !== undefined && { specFilePattern: options.specFilePattern }),
     }),
   );

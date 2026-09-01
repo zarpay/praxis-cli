@@ -1,11 +1,11 @@
 import type { ChatCompletionUsage } from "@/domains/eval/types.js";
-import type { JudgeConfig } from "@/types.js";
+import type { ReviewerConfig } from "@/types.js";
 
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
-/** A baseline judge for tests that need one and don't care which. */
-export const TEST_JUDGE: JudgeConfig = {
+/** A baseline reviewer for tests that need one and don't care which. */
+export const TEST_REVIEWER: ReviewerConfig = {
   name: "test",
   model: "test-model",
   apiKeyEnvVar: "OPENROUTER_API_KEY",

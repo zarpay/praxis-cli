@@ -18,7 +18,7 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
       "claudeCodePluginName": "praxis"
     }
   ],
-  "judges": [
+  "reviewers": [
     { "name": "default", "model": "x-ai/grok-4.1-fast", "apiKeyEnvVar": "OPENROUTER_API_KEY" }
   ],
   "specFilePattern": "README.md"
@@ -134,42 +134,42 @@ Uses all defaults for that plugin.
 
 ---
 
-## `judges`
+## `reviewers`
 
 **Type:** `array`
 **Default:** `[]` (evaluation requires at least one)
 
-The judges — named inference backends that evaluate targets against specs. **Every configured judge evaluates every target**, and every report shows results per judge, never pooled. Run a single judge with `praxis eval run --judge <name>`.
+The reviewers — named inference backends that evaluate targets against specs. **Every configured reviewer evaluates every target**, and every report shows results per reviewer, never pooled. Run a single reviewer with `praxis eval run --reviewer <name>`.
 
 ```json
 {
-  "judges": [
+  "reviewers": [
     { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "apiKeyEnvVar": "OPENROUTER_API_KEY" },
     { "name": "local", "model": "org-model", "baseUrl": "https://inference.internal/v1", "apiKeyEnvVar": "INTERNAL_KEY" }
   ]
 }
 ```
 
-### Per-judge fields
+### Per-reviewer fields
 
 | Field | Required | Description |
 | --- | --- | --- |
-| `name` | yes | Unique label identifying the judge's verdicts in results and reports |
+| `name` | yes | Unique label identifying the reviewer's verdicts in results and reports |
 | `model` | yes | Model identifier the backend understands (e.g. an [OpenRouter slug](https://openrouter.ai/models)) |
 | `apiKeyEnvVar` | yes | Environment variable holding the backend's API key |
 | `baseUrl` | no | OpenAI-compatible endpoint base; defaults to OpenRouter |
-| `temperature` | no | Sampling temperature for judgments; defaults to `0` |
+| `temperature` | no | Sampling temperature for reviews; defaults to `0` |
 
-Each target's cache file holds every judge's verdicts, keyed by a hash of the judge's *behavioral* settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the evaluating prompt. Renaming a judge or rotating a key keeps its cached verdicts; changing the model, endpoint, or temperature invalidates them.
+Each target's cache file holds every reviewer's verdicts, keyed by a hash of the reviewer's *behavioral* settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the evaluating prompt. Renaming a reviewer or rotating a key keeps its cached verdicts; changing the model, endpoint, or temperature invalidates them.
 
 ::: warning Breaking change in v2
 ### Providers
 
-Each judge runs through a **provider** — the backend that executes the judgment and returns a normalized verdict plus usage (tokens and, where reported, cost). `provider` defaults to `"openrouter"`, which speaks to OpenRouter or any OpenAI-compatible endpoint (`baseUrl`). A judge can instead point at a local ESM module, resolved from the project root:
+Each reviewer runs through a **provider** — the backend that executes the review and returns a normalized verdict plus usage (tokens and, where reported, cost). `provider` defaults to `"openrouter"`, which speaks to OpenRouter or any OpenAI-compatible endpoint (`baseUrl`). A reviewer can instead point at a local ESM module, resolved from the project root:
 
 ```json
 {
-  "judges": [
+  "reviewers": [
     { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "apiKeyEnvVar": "OPENROUTER_API_KEY" },
     {
       "name": "internal",
@@ -200,9 +200,9 @@ export default function internalProvider() {
 }
 ```
 
-`options` is passed to the provider verbatim. For the built-in OpenRouter provider it is spread into the request body first, so it can add backend fields (routing, reasoning settings) but never overrides `model`, `temperature`, or the tool-calling protocol. Both `provider` and `options` are part of the judge's behavioral identity: changing them re-evaluates that judge's targets. A local provider module is code your project runs — treat it with the same trust as an npm script.
+`options` is passed to the provider verbatim. For the built-in OpenRouter provider it is spread into the request body first, so it can add backend fields (routing, reasoning settings) but never overrides `model`, `temperature`, or the tool-calling protocol. Both `provider` and `options` are part of the reviewer's behavioral identity: changing them re-evaluates that reviewer's targets. A local provider module is code your project runs — treat it with the same trust as an npm script.
 
-The v1 `validation` section is removed. Configure `judges` instead, and move `specFilePattern` to the top level.
+The v1 `validation` section is removed. Configure `reviewers` instead, and move `specFilePattern` to the top level.
 :::
 
 ## `specFilePattern`
@@ -240,7 +240,7 @@ normalized:
 | `rolesDir` / `responsibilitiesDir` config keys | `expertsDir` / `practicesDir` |
 | `type: role` / `type: responsibility` frontmatter | `type: expert` / `type: practice` |
 | `responsibilities:` list in an expert file | `practices:` |
-| `validation:` config section | `judges:` + top-level `specFilePattern` |
+| `validation:` config section | `reviewers:` + top-level `specFilePattern` |
 | `constitution: true` | an explicit glob, e.g. `constitution: "context/constitution/*.md"` |
 | `praxis validate document\|all\|ci\|report` | `praxis eval run\|ci\|verdict` |
 | `praxis add role\|responsibility` | `praxis add expert\|practice` |

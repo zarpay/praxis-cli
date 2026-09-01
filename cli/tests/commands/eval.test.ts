@@ -31,7 +31,7 @@ afterEach(() => {
   delete process.env["MISSING_KEY_VAR"];
 });
 
-/** Every judgment in the test comes back with the given verdict. */
+/** Every review in the test comes back with the given verdict. */
 function useVerdict(tool: "validation_pass" | "validation_warn" | "validation_fail"): void {
   useOpenRouterResponse(
     server,
@@ -44,12 +44,12 @@ function verdict(fields: Partial<Verdict>): Verdict {
   return { compliant: true, severity: "error", issues: [], reason: "", ...fields };
 }
 
-/** An EvalCommand over a throwaway project with the given judges. */
-function command(judges: { name: string; model: string; apiKeyEnvVar: string }[]): EvalCommand {
+/** An EvalCommand over a throwaway project with the given reviewers. */
+function command(reviewers: { name: string; model: string; apiKeyEnvVar: string }[]): EvalCommand {
   const { root, cleanup } = createValidatorTmpdir({
     sources: ["specs"],
     files: { "specs/README.md": "# Spec", "specs/doc.md": "# Doc" },
-    judges,
+    reviewers,
   });
   cleanups.push(cleanup);
 
@@ -84,43 +84,43 @@ describe("severityRank", () => {
   });
 });
 
-describe("judge configuration", () => {
-  it("raises when the project configures no judges", async () => {
+describe("reviewer configuration", () => {
+  it("raises when the project configures no reviewers", async () => {
     const run = command([]).all({ verbose: false, failFast: false, cache: false });
 
-    await expect(run).rejects.toThrow(/judge/i);
+    await expect(run).rejects.toThrow(/reviewer/i);
   });
 
-  it("raises when --judge names a judge that is not configured", async () => {
+  it("raises when --reviewer names a reviewer that is not configured", async () => {
     const run = command([KEYED]).all({
       verbose: false,
       failFast: false,
       cache: false,
-      judge: "nope",
+      reviewer: "nope",
     });
 
     await expect(run).rejects.toThrow(/nope/);
   });
 
-  it("names the configured judges when --judge does not match", async () => {
+  it("names the configured reviewers when --reviewer does not match", async () => {
     const run = command([KEYED]).all({
       verbose: false,
       failFast: false,
       cache: false,
-      judge: "nope",
+      reviewer: "nope",
     });
 
     await expect(run).rejects.toThrow(/flash/);
   });
 
-  it("raises when a judge's API key variable is unset", async () => {
+  it("raises when a reviewer's API key variable is unset", async () => {
     const keyless = { name: "keyless", model: "m", apiKeyEnvVar: "MISSING_KEY_VAR" };
     const run = command([keyless]).all({ verbose: false, failFast: false, cache: false });
 
     await expect(run).rejects.toThrow(/MISSING_KEY_VAR/);
   });
 
-  it("raises when a judge's API key variable is set but empty", async () => {
+  it("raises when a reviewer's API key variable is set but empty", async () => {
     process.env["MISSING_KEY_VAR"] = "";
     const keyless = { name: "keyless", model: "m", apiKeyEnvVar: "MISSING_KEY_VAR" };
     const run = command([keyless]).all({ verbose: false, failFast: false, cache: false });
@@ -132,8 +132,8 @@ describe("judge configuration", () => {
 describe("run() target dispatch", () => {
   const BASE = { verbose: false, failFast: false, cache: false };
 
-  /** A project with one keyed judge and two documents to evaluate. */
-  function judgingProject(): { command: EvalCommand; abs: (rel: string) => string } {
+  /** A project with one keyed reviewer and two documents to review. */
+  function reviewingProject(): { command: EvalCommand; abs: (rel: string) => string } {
     const { root, abs, cleanup } = createValidatorTmpdir({
       sources: ["specs"],
       files: {
@@ -141,7 +141,7 @@ describe("run() target dispatch", () => {
         "specs/doc.md": "# Doc",
         "specs/other.md": "# Other",
       },
-      judges: [KEYED],
+      reviewers: [KEYED],
     });
     cleanups.push(cleanup);
 
@@ -150,7 +150,7 @@ describe("run() target dispatch", () => {
 
   it("delegates to the full run when given no targets", async () => {
     useVerdict("validation_pass");
-    const { command } = judgingProject();
+    const { command } = reviewingProject();
     const summary = await command.run([], BASE);
 
     // Only all() returns a full EvalSummary; the targeted path returns
@@ -160,7 +160,7 @@ describe("run() target dispatch", () => {
 
   it("returns only the tally when given targets", async () => {
     useVerdict("validation_pass");
-    const { command, abs } = judgingProject();
+    const { command, abs } = reviewingProject();
     const summary = await command.run([abs("specs/doc.md")], BASE);
 
     expect(summary).not.toHaveProperty("total");
@@ -168,7 +168,7 @@ describe("run() target dispatch", () => {
 
   it("counts an error verdict for a named target", async () => {
     useVerdict("validation_fail");
-    const { command, abs } = judgingProject();
+    const { command, abs } = reviewingProject();
     const summary = await command.run([abs("specs/doc.md")], BASE);
 
     expect(summary).toEqual({ errors: 1, warnings: 0 });
@@ -176,15 +176,15 @@ describe("run() target dispatch", () => {
 
   it("counts a warning separately from an error", async () => {
     useVerdict("validation_warn");
-    const { command, abs } = judgingProject();
+    const { command, abs } = reviewingProject();
     const summary = await command.run([abs("specs/doc.md")], BASE);
 
     expect(summary).toEqual({ errors: 0, warnings: 1 });
   });
 
-  it("evaluates every named target, not just the first", async () => {
+  it("reviews every named target, not just the first", async () => {
     useVerdict("validation_fail");
-    const { command, abs } = judgingProject();
+    const { command, abs } = reviewingProject();
     const summary = await command.run([abs("specs/doc.md"), abs("specs/other.md")], BASE);
 
     expect(summary.errors).toBe(2);
@@ -192,7 +192,7 @@ describe("run() target dispatch", () => {
 
   it("counts nothing for a compliant target", async () => {
     useVerdict("validation_pass");
-    const { command, abs } = judgingProject();
+    const { command, abs } = reviewingProject();
     const summary = await command.run([abs("specs/doc.md")], BASE);
 
     expect(summary).toEqual({ errors: 0, warnings: 0 });

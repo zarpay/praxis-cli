@@ -39,7 +39,7 @@ Every expert must have a `## Scope` section that contains both:
 - A `### Not Responsible For` subsection
 ```
 
-When `praxis eval run` runs, it sends this spec and the document content to each configured judge and asks whether the document conforms. The judge answers through a required tool call — pass, warn, or fail — with specific issues.
+When `praxis eval run` runs, it sends this spec and the document content to each configured reviewer and asks whether the document conforms. The reviewer answers through a required tool call — pass, warn, or fail — with specific issues.
 
 ## Configurable spec file name
 

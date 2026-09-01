@@ -1,23 +1,23 @@
 /**
- * The eval domain's vocabulary: what a judgment is made of, what comes
+ * The eval domain's vocabulary: what a review is made of, what comes
  * back, and how it is cached and reported.
  *
  * Shapes more than one domain needs live in src/types.ts instead —
- * JudgeConfig among them, because core/config.ts normalizes it, and
+ * ReviewerConfig among them, because core/config.ts normalizes it, and
  * CohortMode, which an expert declares and a spec honors.
  */
 
-import type { Judge } from "@/domains/eval/models/judge.js";
-import type { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
+import type { ReviewSubject } from "@/domains/eval/models/review-subject.js";
+import type { Reviewer } from "@/domains/eval/models/reviewer.js";
 import type { CacheManager } from "@/domains/eval/services/verdict-cache.js";
-import type { CohortMode, JudgeConfig } from "@/types.js";
+import type { CohortMode, ReviewerConfig } from "@/types.js";
 
 // ---------------------------------------------------------------------------
 // Prompt inputs (domains/eval/prompts/)
 // ---------------------------------------------------------------------------
 
 /**
- * A file inlined into the judgment input beyond the target itself:
+ * A file inlined into the review input beyond the target itself:
  * its display path and content. Exemplars and context files are both
  * this shape (03).
  */
@@ -26,31 +26,31 @@ export interface AssistFile {
   content: string;
 }
 
-/** Everything the judge's user prompt is built from. */
+/** Everything the reviewer's user prompt is built from. */
 export interface ValidationQuestionInput {
-  /** The spec content the target is evaluated against. */
+  /** The spec content the target is reviewed against. */
   specContent: string;
-  /** The judgment input: one file's content, or an assembled cohort. */
+  /** The review input: one file's content, or an assembled cohort. */
   targetContent: string;
   /** Path of the file, or of the cohort's directory. */
   targetPath: string;
   /** Whether the target is one file or a pre-assembled cohort of files. */
   kind: "file" | "cohort";
-  /** Spec-blessed positive examples, inlined and never evaluated. */
+  /** Spec-blessed positive examples, inlined and never reviewed. */
   exemplars: readonly AssistFile[];
-  /** Assist-only reference files, inlined and never evaluated. */
+  /** Assist-only reference files, inlined and never reviewed. */
   context: readonly AssistFile[];
 }
 
 // ---------------------------------------------------------------------------
-// Judgment input (eval/judgment-input.ts)
+// Review input (eval/review-input.ts)
 // ---------------------------------------------------------------------------
 
 /** A spec's resolved assist inputs, one list per frontmatter key. */
 export interface AssistInputs {
-  /** Spec-blessed positive examples — shielded from adverse judgment. */
+  /** Spec-blessed positive examples — shielded from adverse review. */
   exemplars: AssistFile[];
-  /** Assist-only context — informs the judgment, never receives a verdict. */
+  /** Assist-only context — informs the review, never receives a verdict. */
   context: AssistFile[];
 }
 
@@ -67,20 +67,20 @@ export interface AssistFileRecord {
 /** Severity level for validation issues. */
 export type Severity = "warning" | "error";
 
-/** Result of a single judgment, as stored in cache. */
+/** Result of a single review, as stored in cache. */
 export interface Verdict {
   /** Whether the target satisfies its spec. */
   compliant: boolean;
-  /** Specific deviations reported by the judge (empty when compliant). */
+  /** Specific deviations reported by the reviewer (empty when compliant). */
   issues: string[];
-  /** The judge's overall explanation of the verdict. */
+  /** The reviewer's overall explanation of the verdict. */
   reason: string;
   /** Present only when non-compliant: warning or error. */
   severity?: Severity;
 }
 
-/** Identity of the judge whose verdicts a CacheManager reads and writes. */
-export interface CacheJudgeIdentity {
+/** Identity of the reviewer whose verdicts a CacheManager reads and writes. */
+export interface CacheReviewerIdentity {
   name: string;
   model: string;
   hash: string;
@@ -88,26 +88,26 @@ export interface CacheJudgeIdentity {
 
 /**
  * One stored verdict inside a target's cache file, carrying enough
- * judge provenance to be read by a human in the committed JSON.
+ * reviewer provenance to be read by a human in the committed JSON.
  */
 export interface VerdictEntry {
-  judge: CacheJudgeIdentity;
+  reviewer: CacheReviewerIdentity;
   spec_path: string;
   cached_at: string;
   content_hash: string;
-  /** Resolved exemplar files the judge saw, with content hashes (present when the spec blesses any). */
+  /** Resolved exemplar files the reviewer saw, with content hashes (present when the spec blesses any). */
   exemplar_files?: AssistFileRecord[];
-  /** Resolved context files the judge saw, with content hashes (present when the spec declares any). */
+  /** Resolved context files the reviewer saw, with content hashes (present when the spec declares any). */
   context_files?: AssistFileRecord[];
   result: Verdict;
 }
 
 /**
- * v3.0 cache file: one file per target, holding every verdict for it —
- * all specs, all judges — keyed by `<specHash>:<judgeHash>`.
+ * v4.0 cache file: one file per target, holding every verdict for it —
+ * all specs, all reviewers — keyed by `<specHash>:<reviewerHash>`.
  */
 export interface CacheFile {
-  version: "3.0";
+  version: "4.0";
   verdicts: Record<string, VerdictEntry>;
 }
 
@@ -136,7 +136,7 @@ export interface OrphanedCacheFile {
 }
 
 // ---------------------------------------------------------------------------
-// Judge providers (eval/providers/)
+// Reviewer providers (eval/providers/)
 // ---------------------------------------------------------------------------
 
 /** Normalized usage accounting for one provider call. */
@@ -170,13 +170,13 @@ export interface ProviderRequest {
   temperature: number;
   /** Endpoint base URL, default already applied. */
   baseUrl: string;
-  /** The resolved API key from the judge's apiKeyEnvVar. */
+  /** The resolved API key from the reviewer's apiKeyEnvVar. */
   apiKey: string;
-  /** The judge's free-form `options`, with provider-defined semantics. */
+  /** The reviewer's free-form `options`, with provider-defined semantics. */
   options: Record<string, unknown>;
 }
 
-/** What a provider returns for one judgment. */
+/** What a provider returns for one review. */
 export interface ProviderResult {
   /** The normalized verdict praxis caches and reports. */
   verdict: Verdict;
@@ -185,23 +185,23 @@ export interface ProviderResult {
 }
 
 /**
- * The backend a judge runs on: named, stateless, one request at a time.
+ * The backend a reviewer runs on: named, stateless, one request at a time.
  *
- * `judge` is a noun in this codebase — the configured instrument. The
- * action is `evaluate`, which is what a provider does for it.
+ * `reviewer` is a noun in this codebase — the configured instrument. The
+ * action is `review`, which is what a provider does for it.
  */
-export interface JudgeProvider {
+export interface ReviewProvider {
   /** Identifier used in error context (e.g. "openrouter", or a module path). */
   readonly name: string;
   /** Obtains one verdict for a fully-prepared request. */
-  evaluate(request: ProviderRequest): Promise<ProviderResult>;
+  review(request: ProviderRequest): Promise<ProviderResult>;
 }
 
 /**
  * What a local provider module's default export must be. Factories are
  * invoked per resolution and must return stateless providers.
  */
-export type JudgeProviderFactory = () => JudgeProvider;
+export type ReviewProviderFactory = () => ReviewProvider;
 
 /** A tool call as OpenAI-compatible chat completions return it. */
 export interface ToolCall {
@@ -231,12 +231,12 @@ export interface ChatCompletionResponse {
 // ---------------------------------------------------------------------------
 
 /**
- * One evaluation unit: what receives a single verdict.
+ * One review unit: what receives a single verdict.
  *
  * Under `by_file` (the default) a unit is one file and `path` is that
  * file. Under `by_directory` a unit is a directory matched by the
  * spec's `paths:` patterns, `path` is the directory, and `files` are
- * every file it contains — evaluated together as one input.
+ * every file it contains — reviewed together as one input.
  */
 export interface EvalUnit {
   path: string;
@@ -251,19 +251,19 @@ export interface ValidationDomain {
   specPath: string;
   /** Type label derived from the spec's directory (root-relative path). */
   type: string;
-  /** How targets group into evaluation units. */
+  /** How targets group into review units. */
   cohort: CohortMode;
   /**
    * Structural exclusions from the spec's `excludes:` frontmatter,
    * resolved to absolute glob patterns. Excluded files never become
-   * units and never enter cohort membership — the judge never sees
+   * units and never enter cohort membership — the reviewer never sees
    * them (03: prevention beats calibration).
    */
   excludes: string[];
   /**
    * Spec-blessed positive examples from `exemplars:`, resolved to
-   * absolute glob patterns. Shielded from adverse judgment the same way
-   * excludes are; the Judge inlines them into the prompt as positives.
+   * absolute glob patterns. Shielded from adverse review the same way
+   * excludes are; the Reviewer inlines them into the prompt as positives.
    */
   exemplars: string[];
   /** Explicit target files when the spec declares `paths:` (by_file). */
@@ -280,8 +280,8 @@ export interface TargetVerdict extends Verdict {
   type: string;
   /** Basename of the validated document. */
   filename: string;
-  /** Name of the judge that produced this verdict. */
-  judge: string;
+  /** Name of the reviewer that produced this verdict. */
+  reviewer: string;
 }
 
 /** Aggregated validation summary across all documents. */
@@ -306,7 +306,7 @@ export interface EvalSummary {
     }
   >;
   /**
-   * Per-judge breakdown. Judges are instruments with different error
+   * Per-reviewer breakdown. Reviewers are instruments with different error
    * rates; their series render separately, never silently pooled (07).
    */
   byJudge: Record<
@@ -366,20 +366,20 @@ export interface ResolveAssistInputsInput {
   root?: string;
 }
 
-/** One target to evaluate, with the judge and cache to do it. */
-export interface EvaluateTargetInput {
-  /** What is being evaluated, already resolved. */
-  target: JudgmentTarget;
-  /** The instrument doing the evaluating. */
-  judge: Judge;
-  /** Judge-namespaced cache, or null to always call the provider. */
+/** One target to review, with the reviewer and cache to do it. */
+export interface ReviewTargetInput {
+  /** What is being reviewed, already resolved. */
+  target: ReviewSubject;
+  /** The instrument doing the reviewing. */
+  reviewer: Reviewer;
+  /** Reviewer-namespaced cache, or null to always call the provider. */
   cache: CacheManager | null;
   /** Project root, for resolving a `./relative` provider. */
   root?: string;
 }
 
 /** A verdict, and how it was obtained. */
-export interface EvaluateTargetResult {
+export interface ReviewTargetResult {
   verdict: Verdict;
   /** Whether it came from cache rather than a provider call. */
   cacheHit: boolean;
@@ -391,15 +391,15 @@ export interface EvaluateTargetResult {
 // Orchestrator payloads (domains/eval/orchestrators/)
 // ---------------------------------------------------------------------------
 
-/** What a run needs to know to evaluate a project. */
+/** What a run needs to know to review a project. */
 export interface RunEvalInput extends DiscoveryScope {
-  /** The judges to run; every judge evaluates every unit. */
-  judges: JudgeConfig[];
+  /** The reviewers to run; every reviewer reviews every unit. */
+  reviewers: ReviewerConfig[];
   /** Whether to consult the verdict cache. */
   useCache?: boolean;
   /** Whether to stop at the first error verdict. */
   failFast?: boolean;
-  /** Judge only the domains of this type; omitted judges everything. */
+  /** Reviewer only the domains of this type; omitted reviewers everything. */
   type?: string;
   /** Called as the run progresses, for streamed output. */
   onProgress?: (event: EvalProgress) => void;
@@ -409,26 +409,26 @@ export interface RunEvalInput extends DiscoveryScope {
 export type EvalProgress =
   | {
       kind: "unit-start";
-      /** 1-based position across the whole run, judges included. */
+      /** 1-based position across the whole run, reviewers included. */
       index: number;
       total: number;
       path: string;
       /** Member count when the unit is a cohort, undefined for a file. */
       cohortSize?: number;
-      /** The judge's name, only when more than one judge is running. */
-      judgeName?: string;
+      /** The reviewer's name, only when more than one reviewer is running. */
+      reviewerName?: string;
     }
   | { kind: "verdict"; verdict: Verdict }
   | { kind: "unit-error"; message: string };
 
 /** Everything a completed run produced. */
 export interface RunEvalResult {
-  /** One verdict per (unit, judge), in the order they were evaluated. */
+  /** One verdict per (unit, reviewer), in the order they were reviewed. */
   verdicts: TargetVerdict[];
   /** Aggregated counts across the whole run. */
   summary: EvalSummary;
   /** Cache hits and misses accumulated over the run. */
   cacheStats: { hits: number; misses: number };
-  /** Whether fail-fast stopped the run before every unit was evaluated. */
+  /** Whether fail-fast stopped the run before every unit was reviewed. */
   stoppedEarly: boolean;
 }

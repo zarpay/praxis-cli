@@ -2,7 +2,7 @@ import type {
   AssistFileRecord,
   CacheFile,
   CacheFileData,
-  CacheJudgeIdentity,
+  CacheReviewerIdentity,
   OrphanedCacheFile,
   Verdict,
   VerdictEntry,
@@ -23,47 +23,54 @@ import {
 import { baseName, joinPath, parentDir } from "@/core/paths.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
-/** Current cache format version. Pre-3.0 files are ignored (v2 is a breaking release). */
-const CACHE_VERSION = "3.0";
+/**
+ * Current cache format version.
+ *
+ * 4.0 renamed each entry's `judge` field to `reviewer`. Older files are
+ * ignored rather than migrated — a 3.0 entry has no `reviewer` to match
+ * against, so reading one would silently miss every time. Discarding
+ * them costs one re-review and cannot be got wrong.
+ */
+const CACHE_VERSION = "4.0";
 
 /**
  * Manages the file-based verdict cache.
  *
  * One JSON file per target under `.praxis/cache/validation/`, mirroring
  * the target's project path. Each file holds every verdict for that
- * target — all specs, all judges — keyed by `<specHash>:<judgeHash>`,
- * so a target's complete judgment state lives in one committed artifact
- * and cross-judge comparison is a single read.
+ * target — all specs, all reviewers — keyed by `<specHash>:<reviewerHash>`,
+ * so a target's complete review state lives in one committed artifact
+ * and cross-reviewer comparison is a single read.
  *
- * The judge hash in the key is what makes the cache's invalidation
- * behavior the epoch structure (05): a behavioral judge change misses
+ * The reviewer hash in the key is what makes the cache's invalidation
+ * behavior the epoch structure (05): a behavioral reviewer change misses
  * every old key and writes new ones; rolling the config back re-hits
- * the old keys at zero cost; keys belonging to no configured judge are
- * prunable. A CacheManager is bound to one judge identity; readers
- * construct one per configured judge.
+ * the old keys at zero cost; keys belonging to no configured reviewer are
+ * prunable. A CacheManager is bound to one reviewer identity; readers
+ * construct one per configured reviewer.
  */
 export class CacheManager extends PraxisBase {
   /** Directory all cache files live under (default: {root}/.praxis/cache/validation). */
   readonly cacheRoot: string;
   private readonly projectRoot: string | null;
-  private readonly judge: CacheJudgeIdentity | null;
+  private readonly reviewer: CacheReviewerIdentity | null;
 
   constructor({
     cacheRoot,
     projectRoot,
-    judge,
+    reviewer,
   }: {
     /** Base cache directory; defaults to {projectRoot}/.praxis/cache/validation. */
     cacheRoot?: string;
     /** Project root for relative cache paths and default locations. */
     projectRoot?: string;
-    /** The judge whose verdicts this manager reads and writes. */
-    judge?: CacheJudgeIdentity;
+    /** The reviewer whose verdicts this manager reads and writes. */
+    reviewer?: CacheReviewerIdentity;
   } = {}) {
     super();
     this.projectRoot = projectRoot ?? null;
     this.cacheRoot = cacheRoot ?? this.defaultCacheRoot();
-    this.judge = judge ?? null;
+    this.reviewer = reviewer ?? null;
   }
 
   /**
@@ -72,7 +79,7 @@ export class CacheManager extends PraxisBase {
    * When a projectRoot is set, strips it from absolute target paths
    * to produce a root-relative cache path. Otherwise uses the path as-is.
    *
-   * @param targetPath - Path to the evaluated target
+   * @param targetPath - Path to the reviewed target
    */
   cachePathFor(targetPath: string): string {
     const relativePath = this.relativeToRoot(targetPath);
@@ -86,7 +93,7 @@ export class CacheManager extends PraxisBase {
    * Writes a verdict to the cache.
    *
    * Reads the target's existing cache file (if any) and upserts this
-   * judge's entry for the spec; other specs' and judges' entries are
+   * reviewer's entry for the spec; other specs' and reviewers' entries are
    * preserved. Verifies JSON integrity before writing. Silently fails
    * on I/O errors.
    */
@@ -127,7 +134,7 @@ export class CacheManager extends PraxisBase {
   }
 
   /**
-   * Reads this judge's cached verdict for a (target, spec) pair.
+   * Reads this reviewer's cached verdict for a (target, spec) pair.
    *
    * Returns null if the cache file doesn't exist, the entry is absent,
    * or the content hash doesn't match.
@@ -142,7 +149,7 @@ export class CacheManager extends PraxisBase {
     specPath: string;
   }): Verdict | null {
     const cachePath = this.cachePathFor(targetPath);
-    // The evaluating path discards a corrupt file so the next write starts
+    // The reviewing path discards a corrupt file so the next write starts
     // clean; the report-only readers below deliberately leave it alone.
     const fileData = this.parseFile(cachePath, (err) => {
       this.removeQuietly(cachePath);
@@ -159,10 +166,10 @@ export class CacheManager extends PraxisBase {
   }
 
   /**
-   * Reads one of this judge's cached verdicts without hash validation.
+   * Reads one of this reviewer's cached verdicts without hash validation.
    *
    * When `specPath` is provided, returns the entry for that spec.
-   * When omitted, returns this judge's first entry (useful for
+   * When omitted, returns this reviewer's first entry (useful for
    * single-spec targets). Returns null if no matching entry exists.
    * Does not delete corrupt files (purely read-only).
    */
@@ -185,7 +192,7 @@ export class CacheManager extends PraxisBase {
   }
 
   /**
-   * Reads all of this judge's cached verdicts for a target across specs.
+   * Reads all of this reviewer's cached verdicts for a target across specs.
    *
    * Returns an empty array if no cache file exists or it is unreadable.
    */
@@ -227,7 +234,7 @@ export class CacheManager extends PraxisBase {
    * Stale hashes are no longer orphans — they get overwritten in-place.
    *
    * Known limitation: only deleted documents are detected. Entries whose
-   * spec or judge was removed (while the target still exists) are not
+   * spec or reviewer was removed (while the target still exists) are not
    * reported. Not yet surfaced by any CLI command; kept for cache tooling.
    *
    * @param root - Project root directory
@@ -277,22 +284,22 @@ export class CacheManager extends PraxisBase {
     return joinPath(this.projectRoot ?? process.cwd(), ".praxis", "cache", "validation");
   }
 
-  /** Reads a target's v3.0 entries belonging to this manager's judge. */
+  /** Reads a target's current-version entries belonging to this manager's reviewer. */
   private readEntries(targetPath: string): VerdictEntry[] {
     const fileData = this.parseFile(this.cachePathFor(targetPath));
 
     if (!fileData) return [];
 
-    const judgeHash = this.judgeIdentity().hash;
+    const reviewerHash = this.reviewerIdentity().hash;
 
-    return Object.values(fileData.verdicts).filter((entry) => entry.judge.hash === judgeHash);
+    return Object.values(fileData.verdicts).filter((entry) => entry.reviewer.hash === reviewerHash);
   }
 
   /**
-   * Loads a target's cache file as a v3.0 structure.
+   * Loads a target's cache file as a current-version structure.
    *
-   * Files that are absent, corrupt, or in a pre-3.0 format start fresh
-   * — v2 is a breaking release and old verdicts are simply re-evaluated.
+   * Files that are absent, corrupt, or in an older format start fresh
+   * — v2 is a breaking release and old verdicts are simply re-reviewed.
    */
   private loadFile(cachePath: string): CacheFile {
     return this.parseFile(cachePath) ?? { version: CACHE_VERSION, verdicts: {} };
@@ -301,8 +308,8 @@ export class CacheManager extends PraxisBase {
   /**
    * Parses a target's cache file, or null when there is nothing usable.
    *
-   * Absent, pre-3.0, and corrupt files all yield null: v2 is a breaking
-   * release, and an unreadable verdict is simply re-evaluated. `onCorrupt`
+   * Absent, outdated and corrupt files all yield null: v2 is a breaking
+   * release, and an unreadable verdict is simply re-reviewed. `onCorrupt`
    * fires only for a file that exists and fails to parse — the one case
    * a caller may want to act on — so the decision to delete stays with
    * the caller rather than being buried here.
@@ -320,7 +327,7 @@ export class CacheManager extends PraxisBase {
     }
   }
 
-  /** Builds the entry this manager's judge stores for one judgment. */
+  /** Builds the entry this manager's reviewer stores for one review. */
   private buildEntry(
     contentHash: string,
     result: Verdict,
@@ -331,7 +338,7 @@ export class CacheManager extends PraxisBase {
     },
   ): VerdictEntry {
     const entry: VerdictEntry = {
-      judge: this.judgeIdentity(),
+      reviewer: this.reviewerIdentity(),
       spec_path: this.relativeToRoot(metadata.specPath),
       cached_at: new Date().toISOString(),
       content_hash: contentHash,
@@ -385,23 +392,23 @@ export class CacheManager extends PraxisBase {
   }
 
   /**
-   * The entry key for a (spec, judge) pair: `<specHash>:<judgeHash>`.
+   * The entry key for a (spec, reviewer) pair: `<specHash>:<reviewerHash>`.
    *
    * Both dimensions of verdict identity live in the key, so one file
-   * holds a target's complete judgment state.
+   * holds a target's complete review state.
    */
   private verdictKey(specPath: string): string {
-    return `${this.specHash(specPath)}:${this.judgeIdentity().hash}`;
+    return `${this.specHash(specPath)}:${this.reviewerIdentity().hash}`;
   }
 
   /** Recomputes an entry's key from its stored fields. */
   private verdictKeyOf(entry: VerdictEntry): string {
-    return `${this.specHash(entry.spec_path)}:${entry.judge.hash}`;
+    return `${this.specHash(entry.spec_path)}:${entry.reviewer.hash}`;
   }
 
-  /** This manager's judge identity, with a placeholder when unbound (tests). */
-  private judgeIdentity(): CacheJudgeIdentity {
-    return this.judge ?? { name: "unbound", model: "unbound", hash: "00000000" };
+  /** This manager's reviewer identity, with a placeholder when unbound (tests). */
+  private reviewerIdentity(): CacheReviewerIdentity {
+    return this.reviewer ?? { name: "unbound", model: "unbound", hash: "00000000" };
   }
 
   /**

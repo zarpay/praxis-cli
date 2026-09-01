@@ -49,7 +49,7 @@ export class ExpertFile {
   readonly agentModel: string | undefined;
   /** Permission mode the compiled agent runs under (`agent_permission_mode:`). */
   readonly agentPermissionMode: string | undefined;
-  /** Targets this expert judges; compiled out as the spec's `paths:`. */
+  /** Targets this expert reviewers; compiled out as the spec's `paths:`. */
   readonly validates: string[];
   /** How compiled targets group into units; undeclared stays unwritten. */
   readonly cohort: CohortMode | undefined;

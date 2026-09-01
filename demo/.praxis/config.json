@@ -10,7 +10,7 @@
   "plugins": [
     "claude-code"
   ],
-  "judges": [
+  "reviewers": [
     {
       "name": "flash",
       "model": "deepseek/deepseek-v4-flash-0731",

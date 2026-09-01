@@ -10,10 +10,10 @@ import { SpecFile } from "@/domains/eval/models/spec-file.js";
 /**
  * Resolves a spec's `exemplars:` and `context:` globs into file contents.
  *
- * The assist inputs a judge sees beyond the target itself (03): exemplars are
+ * The assist inputs a reviewer sees beyond the target itself (03): exemplars are
  * spec-blessed positives, context is what the standard is about. Both reach the
  * prompt, so both join the content hash — a verdict keyed only on target + spec
- * would survive edits to inputs the judge actually saw.
+ * would survive edits to inputs the reviewer actually saw.
  *
  * Results are sorted, so the hash is stable across machines.
  *

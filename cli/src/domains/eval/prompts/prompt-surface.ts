@@ -1,6 +1,6 @@
 import type { AssistFile } from "@/domains/eval/types.js";
 
-import judgeTools from "@/domains/eval/prompts/judge-tools.js";
+import reviewTools from "@/domains/eval/prompts/review-tools.js";
 import systemPrompt from "@/domains/eval/prompts/system-prompt.js";
 import validationQuestion from "@/domains/eval/prompts/validation-question.js";
 
@@ -17,20 +17,20 @@ const SENTINEL_INPUT = {
 } as const;
 
 /**
- * The judge's complete prompt surface as one deterministic string:
+ * The reviewer's complete prompt surface as one deterministic string:
  * system prompt, tool definitions, and every question template rendered
  * with sentinel inputs (both subject variants, both assist sections).
  *
- * This is the prompt component of the judge hash (judge-hash.ts).
- * Rewording ANY judge-facing prompt text — a tool description as much
- * as the system prompt — changes the judge's behavior, so it must
- * change the judge's identity (05): no version constant to forget
+ * This is the prompt component of the reviewer hash (reviewer-hash.ts).
+ * Rewording ANY reviewer-facing prompt text — a tool description as much
+ * as the system prompt — changes the reviewer's behavior, so it must
+ * change the reviewer's identity (05): no version constant to forget
  * bumping, no prompt edit that silently serves stale verdicts.
  */
 export default function promptSurface(): string {
   return [
     systemPrompt(),
-    JSON.stringify(judgeTools()),
+    JSON.stringify(reviewTools()),
     validationQuestion({ ...SENTINEL_INPUT, kind: "file" }),
     validationQuestion({ ...SENTINEL_INPUT, kind: "cohort" }),
   ].join("\n«»\n");

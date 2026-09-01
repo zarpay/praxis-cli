@@ -3,7 +3,7 @@ import type { Command } from "commander";
 import type { EvalSummary, Verdict } from "@/domains/eval/types.js";
 import type { DiscoveryScope, EvalProgress } from "@/domains/eval/types.js";
 import type { AllOptions, DocumentOptions } from "@/domains/workspace/types.js";
-import type { DisplayEntry, JudgeConfig } from "@/types.js";
+import type { DisplayEntry, ReviewerConfig } from "@/types.js";
 
 import chalk from "chalk";
 
@@ -12,11 +12,11 @@ import { PraxisProjectBase } from "@/commands/base.js";
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
 import { joinPath, resolvePath } from "@/core/paths.js";
-import { Judge } from "@/domains/eval/models/judge.js";
-import { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
+import { ReviewSubject } from "@/domains/eval/models/review-subject.js";
+import { Reviewer } from "@/domains/eval/models/reviewer.js";
 import runEval from "@/domains/eval/orchestrators/run-eval.js";
 import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
-import evaluateTarget from "@/domains/eval/services/evaluate-target.js";
+import reviewTarget from "@/domains/eval/services/review-target.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 import { unitHeading, verdictMark } from "@/domains/eval/views/progress.js";
 import { VerdictReporter } from "@/domains/eval/views/verdict-report.js";
@@ -25,20 +25,20 @@ import { Paths } from "@/domains/workspace/models/project-paths.js";
 /**
  * Registers the `praxis eval` command group.
  *
- * Provides subcommands for evaluating targets against their specs via
- * the OpenRouter API. Family rule: `eval run` writes (invokes judges);
+ * Provides subcommands for reviewing targets against their specs via
+ * the OpenRouter API. Family rule: `eval run` writes (invokes reviewers);
  * every other subcommand reads existing results. The wiring here only
  * parses arguments, constructs EvalCommand, and maps results to exit
  * codes; all behavior lives on the class.
  */
 export function registerEvalCommand(program: Command): void {
-  const evalCmd = program.command("eval").description("Judge targets against their specs");
+  const evalCmd = program.command("eval").description("Reviewer targets against their specs");
 
   evalCmd
     .command("run [targets...]")
-    .description("Judge targets against their specs (no targets = full run)")
-    .option("--type <type>", "only judge targets of this type (full run only)")
-    .option("--judge <name>", "run only the named judge (default: all configured judges)")
+    .description("Reviewer targets against their specs (no targets = full run)")
+    .option("--type <type>", "only reviewer targets of this type (full run only)")
+    .option("--reviewer <name>", "run only the named reviewer (default: all configured reviewers)")
     .option("--spec <path>", "path to spec file (single target only)")
     .option("--verbose", "show full AI reasoning", false)
     .option("--fail-fast", "stop on first error (full run only)", false)
@@ -52,7 +52,7 @@ export function registerEvalCommand(program: Command): void {
 
   evalCmd
     .command("ci")
-    .description("Run a full evaluation in CI mode")
+    .description("Run a full review in CI mode")
     .option("--strict", "fail on warnings too", false)
     .action((options: { strict: boolean }) =>
       runAction(async () => {
@@ -84,7 +84,7 @@ function makeCommand(): EvalCommand {
 }
 
 /**
- * Judges targets against their specs and reports results.
+ * Reviewers targets against their specs and reports results.
  *
  * One method per operation (run, document, all, ci, report). Methods
  * print their results to stdout and return the underlying data;
@@ -93,7 +93,7 @@ function makeCommand(): EvalCommand {
  */
 export class EvalCommand extends PraxisProjectBase {
   /**
-   * The `eval run` entry point: evaluates the given targets, or performs
+   * The `eval run` entry point: reviews the given targets, or performs
    * a full run over every spec-covered target when none are given.
    *
    * @returns An aggregated summary (the caller maps it to an exit code)
@@ -112,7 +112,7 @@ export class EvalCommand extends PraxisProjectBase {
     for (const target of targets) {
       const result = await this.document(target, {
         spec: targets.length === 1 ? options.spec : undefined,
-        judge: options.judge,
+        reviewer: options.reviewer,
         verbose: options.verbose,
         cache: options.cache,
       });
@@ -125,36 +125,36 @@ export class EvalCommand extends PraxisProjectBase {
   }
 
   /**
-   * Judges a single target against its spec — once per configured judge.
+   * Reviewers a single target against its spec — once per configured reviewer.
    *
-   * @returns The worst verdict across judges (the caller maps it to an
+   * @returns The worst verdict across reviewers (the caller maps it to an
    *   exit code): any error wins over any warning wins over pass
-   * @throws PraxisError when no judges are configured or a key is missing
+   * @throws PraxisError when no reviewers are configured or a key is missing
    */
   async document(path: string, options: DocumentOptions): Promise<Verdict> {
-    const judges = this.requireJudges(options.judge);
+    const reviewers = this.requireReviewers(options.reviewer);
 
     this.out.line(`Validating ${path}...`);
 
     let worst: Verdict | null = null;
 
-    const target = JudgmentTarget.resolve({
+    const target = ReviewSubject.resolve({
       targetPath: path,
       specPath: options.spec,
       specFilePattern: this.config.specFilePattern,
       root: this.root,
     });
 
-    for (const judgeConfig of judges) {
-      const { verdict: result } = await evaluateTarget({
+    for (const reviewerConfig of reviewers) {
+      const { verdict: result } = await reviewTarget({
         target,
-        judge: Judge.fromConfig(judgeConfig),
-        cache: this.cacheManagerFor(judgeConfig, options.cache) ?? null,
+        reviewer: Reviewer.fromConfig(reviewerConfig),
+        cache: this.cacheManagerFor(reviewerConfig, options.cache) ?? null,
         root: this.root,
       });
 
       const label =
-        judges.length > 1 ? `${path} ${chalk.cyan(`[judge: ${judgeConfig.name}]`)}` : path;
+        reviewers.length > 1 ? `${path} ${chalk.cyan(`[reviewer: ${reviewerConfig.name}]`)}` : path;
       this.displayResult(label, result, options.verbose);
 
       if (!worst || severityRank(result) > severityRank(worst)) {
@@ -162,7 +162,7 @@ export class EvalCommand extends PraxisProjectBase {
       }
     }
 
-    // requireJudges guarantees at least one judge, hence one verdict.
+    // requireReviewers guarantees at least one reviewer, hence one verdict.
     return worst!;
   }
 
@@ -174,7 +174,7 @@ export class EvalCommand extends PraxisProjectBase {
    * @throws PraxisError when validation config or the API key is missing
    */
   async all(options: AllOptions): Promise<EvalSummary> {
-    const judges = this.requireJudges(options.judge);
+    const reviewers = this.requireReviewers(options.reviewer);
 
     this.out.line(
       options.type ? `Validating all ${options.type} documents...` : "Validating all documents...",
@@ -182,7 +182,7 @@ export class EvalCommand extends PraxisProjectBase {
 
     const run = await runEval({
       ...this.evalScope(),
-      judges,
+      reviewers,
       type: options.type,
       failFast: options.failFast,
       useCache: options.cache,
@@ -219,13 +219,13 @@ export class EvalCommand extends PraxisProjectBase {
    * @throws PraxisError when validation config or the API key is missing
    */
   async ci(): Promise<EvalSummary> {
-    const judges = this.requireJudges();
+    const reviewers = this.requireReviewers();
 
     this.out.line("Running CI validation...");
 
     const run = await runEval({
       ...this.evalScope(),
-      judges,
+      reviewers,
       onProgress: (event) => this.renderProgress(event),
     });
 
@@ -246,12 +246,12 @@ export class EvalCommand extends PraxisProjectBase {
       throw errors.documentNotFound(path);
     }
 
-    // Reading needs no API keys, but it does need the configured judges
+    // Reading needs no API keys, but it does need the configured reviewers
     // to know which cache namespaces to read.
-    const judges = this.config.judges;
+    const reviewers = this.config.reviewers;
 
-    if (judges.length === 0) {
-      throw errors.missingJudges();
+    if (reviewers.length === 0) {
+      throw errors.missingReviewers();
     }
 
     const reporter = new VerdictReporter({
@@ -259,11 +259,14 @@ export class EvalCommand extends PraxisProjectBase {
       root: this.root,
     });
 
-    for (const judge of judges) {
-      const manager = new CacheManager({ projectRoot: this.root, judge: cacheIdentity(judge) });
+    for (const reviewer of reviewers) {
+      const manager = new CacheManager({
+        projectRoot: this.root,
+        reviewer: cacheIdentity(reviewer),
+      });
 
-      if (judges.length > 1) {
-        this.out.print(["", { text: `Judge: ${judge.name}`, color: "cyan" }]);
+      if (reviewers.length > 1) {
+        this.out.print(["", { text: `Reviewer: ${reviewer.name}`, color: "cyan" }]);
       }
 
       const cacheData = manager.readRaw({ targetPath: absolutePath });
@@ -298,44 +301,44 @@ export class EvalCommand extends PraxisProjectBase {
   }
 
   /**
-   * Returns the configured judges after checking every judge's API key
+   * Returns the configured reviewers after checking every reviewer's API key
    * environment variable is set.
    *
-   * @throws PraxisError with setup guidance when no judges are
-   *   configured or any judge's key is missing
+   * @throws PraxisError with setup guidance when no reviewers are
+   *   configured or any reviewer's key is missing
    */
-  private requireJudges(only?: string): JudgeConfig[] {
-    const configured = this.config.judges;
+  private requireReviewers(only?: string): ReviewerConfig[] {
+    const configured = this.config.reviewers;
 
     if (configured.length === 0) {
-      throw errors.missingJudges();
+      throw errors.missingReviewers();
     }
 
-    const judges = only ? configured.filter((judge) => judge.name === only) : configured;
+    const reviewers = only ? configured.filter((reviewer) => reviewer.name === only) : configured;
 
-    if (judges.length === 0) {
-      throw errors.unknownJudge(
+    if (reviewers.length === 0) {
+      throw errors.unknownReviewer(
         only!,
-        configured.map((judge) => judge.name),
+        configured.map((reviewer) => reviewer.name),
       );
     }
 
-    for (const judge of judges) {
-      const key = process.env[judge.apiKeyEnvVar];
+    for (const reviewer of reviewers) {
+      const key = process.env[reviewer.apiKeyEnvVar];
 
       if (!key || key.length === 0) {
-        throw errors.missingApiKey(judge.apiKeyEnvVar);
+        throw errors.missingApiKey(reviewer.apiKeyEnvVar);
       }
     }
 
-    return judges;
+    return reviewers;
   }
 
-  /** A judge-namespaced CacheManager, or undefined when caching is disabled. */
-  private cacheManagerFor(judge: JudgeConfig, useCache: boolean): CacheManager | undefined {
+  /** A reviewer-namespaced CacheManager, or undefined when caching is disabled. */
+  private cacheManagerFor(reviewer: ReviewerConfig, useCache: boolean): CacheManager | undefined {
     if (!useCache) return undefined;
 
-    return new CacheManager({ projectRoot: this.root, judge: cacheIdentity(judge) });
+    return new CacheManager({ projectRoot: this.root, reviewer: cacheIdentity(reviewer) });
   }
 
   /** Prints a single validation result with colored status. */
@@ -358,9 +361,9 @@ export class EvalCommand extends PraxisProjectBase {
 
   /** Prints the aggregated validation summary. */
   private displaySummary(summary: EvalSummary): void {
-    // Judges are separate instruments — with more than one, their
+    // Reviewers are separate instruments — with more than one, their
     // series render separately and are never pooled into one number.
-    const judgeNames = Object.keys(summary.byJudge);
+    const reviewerNames = Object.keys(summary.byJudge);
 
     this.out.print([
       "",
@@ -379,11 +382,11 @@ export class EvalCommand extends PraxisProjectBase {
       ...Object.entries(summary.byType).map(
         ([type, stats]) => `  ${type}: ${stats.compliant}/${stats.total} compliant`,
       ),
-      ...(judgeNames.length > 1
+      ...(reviewerNames.length > 1
         ? [
             "",
-            "By judge:",
-            ...judgeNames.map((name) => {
+            "By reviewer:",
+            ...reviewerNames.map((name) => {
               const stats = summary.byJudge[name];
               return `  ${name}: ${chalk.green(String(stats.compliant))} pass, ${chalk.yellow(String(stats.warnings))} warn, ${chalk.red(String(stats.errors))} fail`;
             }),

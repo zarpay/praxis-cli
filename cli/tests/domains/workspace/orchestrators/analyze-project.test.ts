@@ -181,11 +181,11 @@ describe("analyzeProject", () => {
     const nonMdConfig = new PraxisConfig(root);
     const report = await analyzeProject({ root, config: nonMdConfig });
 
-    // One validation row per configured judge (the legacy validation
-    // section normalizes to one judge named "default"); both .rb files
+    // One validation row per configured reviewer (the legacy validation
+    // section normalizes to one reviewer named "default"); both .rb files
     // appear as not-validated in its cache coverage.
     expect(report.validation).toEqual([
-      { judge: "test", pass: 0, warn: 0, fail: 0, notValidated: 2 },
+      { reviewer: "test", pass: 0, warn: 0, fail: 0, notValidated: 2 },
     ]);
 
     cleanup();
@@ -237,13 +237,13 @@ describe("analyzeProject", () => {
           "docs/README.md": "# Spec",
           "docs/guide.md": "# Guide",
         },
-        judges: [{ name: "test", model: "test-model", apiKeyEnvVar: "OPENROUTER_API_KEY" }],
+        reviewers: [{ name: "test", model: "test-model", apiKeyEnvVar: "OPENROUTER_API_KEY" }],
       });
 
       const report = await analyzeProject({ root, config: new PraxisConfig(root) });
 
       expect(report.validation).toHaveLength(1);
-      expect(report.validation[0]).toMatchObject({ judge: "test", notValidated: 1 });
+      expect(report.validation[0]).toMatchObject({ reviewer: "test", notValidated: 1 });
 
       cleanup();
     });

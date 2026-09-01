@@ -14,7 +14,7 @@ A view is **rendering only**, named for what it renders: `progress.ts`,
 - A view formats what it is given. It never performs work, reads files, decides
   what to do, or reaches for config — hand it the data already resolved.
 - Deciding *what* to show is still view logic and belongs here (`issueBlocks`
-  drops empty blocks, `validationBlocks` drops judges with no verdicts). Deciding
+  drops empty blocks, `validationBlocks` drops reviewers with no verdicts). Deciding
   what to *do* is not.
 - `src/views/` is the shared kit — `display.ts` and `logger.ts` are the only
   modules allowed to call `console` (ESLint-enforced), and reusable rendering

@@ -32,5 +32,5 @@ whole feature in hand.
 
 - [ ] Every deviation names the convention it violates
 - [ ] Orphan findings name the unreachable file and its likely home
-- [ ] The one-capability judgment is argued from what the files do,
+- [ ] The one-capability review is argued from what the files do,
       not from their count

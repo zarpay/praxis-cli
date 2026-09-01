@@ -20,8 +20,8 @@ afterAll(() => server.close());
 /** A fully-prepared request; tests vary one field at a time. */
 function request(overrides: Partial<ProviderRequest> = {}): ProviderRequest {
   return {
-    systemPrompt: "You judge things.",
-    userPrompt: "Judge this.",
+    systemPrompt: "You reviewer things.",
+    userPrompt: "Reviewer this.",
     tools: [{ type: "function", function: { name: "validation_pass" } }],
     model: "test-model",
     temperature: 0.1,
@@ -50,7 +50,7 @@ describe("OpenRouterProvider", () => {
         validationToolCallResponse("validation_pass", { reason: "All good." }),
       );
 
-      const result = await new OpenRouterProvider().evaluate(request());
+      const result = await new OpenRouterProvider().review(request());
 
       expect(result.verdict).toEqual({ compliant: true, issues: [], reason: "All good." });
     });
@@ -61,7 +61,7 @@ describe("OpenRouterProvider", () => {
         validationToolCallResponse("validation_warn", { reason: "Meh.", issues: ["Minor gap"] }),
       );
 
-      const result = await new OpenRouterProvider().evaluate(request());
+      const result = await new OpenRouterProvider().review(request());
 
       expect(result.verdict).toEqual({
         compliant: false,
@@ -77,7 +77,7 @@ describe("OpenRouterProvider", () => {
         validationToolCallResponse("validation_fail", { reason: "Bad.", issues: ["Broken"] }),
       );
 
-      const result = await new OpenRouterProvider().evaluate(request());
+      const result = await new OpenRouterProvider().review(request());
 
       expect(result.verdict).toEqual({
         compliant: false,
@@ -90,9 +90,9 @@ describe("OpenRouterProvider", () => {
     it("throws when the model returns no tool call", async () => {
       useOpenRouterResponse(server, { choices: [{ message: { role: "assistant" } }] });
 
-      const judgment = new OpenRouterProvider().evaluate(request());
+      const review = new OpenRouterProvider().review(request());
 
-      await expect(judgment).rejects.toThrow("did not return a tool call");
+      await expect(review).rejects.toThrow("did not return a tool call");
     });
 
     it("throws on an unexpected tool call", async () => {
@@ -101,17 +101,17 @@ describe("OpenRouterProvider", () => {
         validationToolCallResponse("validation_bogus" as never, { reason: "?" }),
       );
 
-      const judgment = new OpenRouterProvider().evaluate(request());
+      const review = new OpenRouterProvider().review(request());
 
-      await expect(judgment).rejects.toThrow("Unexpected validation tool call");
+      await expect(review).rejects.toThrow("Unexpected validation tool call");
     });
 
     it("reports API failures with the provider's name", async () => {
       useOpenRouterResponse(server, { error: "upstream unavailable" }, 502);
 
-      const judgment = new OpenRouterProvider().evaluate(request());
+      const review = new OpenRouterProvider().review(request());
 
-      await expect(judgment).rejects.toThrow('Judge provider "openrouter" API error (502)');
+      await expect(review).rejects.toThrow('Reviewer provider "openrouter" API error (502)');
     });
   });
 
@@ -120,7 +120,7 @@ describe("OpenRouterProvider", () => {
       const bodies: Record<string, unknown>[] = [];
       captureBody(bodies);
 
-      await new OpenRouterProvider().evaluate(request());
+      await new OpenRouterProvider().review(request());
 
       expect(bodies[0]["usage"]).toEqual({ include: true });
     });
@@ -136,9 +136,7 @@ describe("OpenRouterProvider", () => {
         }),
       );
 
-      await new OpenRouterProvider().evaluate(
-        request({ baseUrl: "https://inference.internal/v1" }),
-      );
+      await new OpenRouterProvider().review(request({ baseUrl: "https://inference.internal/v1" }));
 
       expect(bodies[0]["usage"]).toBeUndefined();
     });
@@ -147,9 +145,7 @@ describe("OpenRouterProvider", () => {
       const bodies: Record<string, unknown>[] = [];
       captureBody(bodies);
 
-      await new OpenRouterProvider().evaluate(
-        request({ options: { reasoning: { effort: "low" } } }),
-      );
+      await new OpenRouterProvider().review(request({ options: { reasoning: { effort: "low" } } }));
 
       expect(bodies[0]["reasoning"]).toEqual({ effort: "low" });
     });
@@ -159,7 +155,7 @@ describe("OpenRouterProvider", () => {
       captureBody(bodies);
 
       const clobbering = { model: "evil-model", tool_choice: "none", temperature: 2 };
-      await new OpenRouterProvider().evaluate(request({ options: clobbering }));
+      await new OpenRouterProvider().review(request({ options: clobbering }));
 
       expect(bodies[0]["model"]).toBe("test-model");
       expect(bodies[0]["tool_choice"]).toBe("required");
@@ -178,7 +174,7 @@ describe("OpenRouterProvider", () => {
         ),
       );
 
-      const result = await new OpenRouterProvider().evaluate(request());
+      const result = await new OpenRouterProvider().review(request());
 
       expect(result.usage).toEqual({ promptTokens: 812, completionTokens: 41, costUsd: 0.00042 });
     });
@@ -193,7 +189,7 @@ describe("OpenRouterProvider", () => {
         ),
       );
 
-      const result = await new OpenRouterProvider().evaluate(request());
+      const result = await new OpenRouterProvider().review(request());
 
       expect(result.usage).toEqual({ promptTokens: 812, completionTokens: 41, costUsd: null });
     });
@@ -204,7 +200,7 @@ describe("OpenRouterProvider", () => {
         validationToolCallResponse("validation_pass", { reason: "Fine." }),
       );
 
-      const result = await new OpenRouterProvider().evaluate(request());
+      const result = await new OpenRouterProvider().review(request());
 
       expect(result.usage).toBeNull();
     });

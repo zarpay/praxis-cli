@@ -12,21 +12,21 @@ import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs.j
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
- * Everything a judge is shown about one target: the target itself, the
- * spec it is evaluated against, and the spec's assist inputs.
+ * Everything a reviewer is shown about one target: the target itself, the
+ * spec it is reviewed against, and the spec's assist inputs.
  *
  * Assembled once and read many times — the content hash, the prompt,
  * and the cache provenance all derive from the same resolved state, so
- * a verdict can never be keyed on inputs the judge did not see.
+ * a verdict can never be keyed on inputs the reviewer did not see.
  *
  * A cohort arrives here already assembled (`targetContent` supplied);
  * a plain file is read from disk. `kind` distinguishes them for the
  * prompt, which frames a set differently from a single file.
  */
-export class JudgmentTarget {
-  /** Path of the target under judgment. */
+export class ReviewSubject {
+  /** Path of the target under review. */
   readonly targetPath: string;
-  /** Path of the spec the target is evaluated against. */
+  /** Path of the spec the target is reviewed against. */
   readonly specPath: string;
   /** Target content as read (or assembled) at construction time. */
   readonly targetContent: string;
@@ -54,7 +54,7 @@ export class JudgmentTarget {
   }
 
   /**
-   * Resolves a target and its spec into a judgment input.
+   * Resolves a target and its spec into a review input.
    *
    * @throws PraxisError when no spec can be found for the target, or
    *   the spec declares assist globs and no root resolves them
@@ -75,11 +75,11 @@ export class JudgmentTarget {
     specFilePattern?: string;
     /** Project root; required when the spec declares scoping globs. */
     root?: string;
-  }): JudgmentTarget {
+  }): ReviewSubject {
     const resolvedSpec = specPath ?? findSpec(targetPath, specFilePattern);
     const specContent = readText(resolvedSpec);
 
-    return new JudgmentTarget({
+    return new ReviewSubject({
       targetPath,
       specPath: resolvedSpec,
       targetContent: targetContent ?? readText(targetPath),
@@ -90,10 +90,10 @@ export class JudgmentTarget {
   }
 
   /**
-   * The cache-invalidation hash over the full judgment input.
+   * The cache-invalidation hash over the full review input.
    *
    * Target, spec and assist all participate, so editing any input the
-   * judge saw invalidates the verdict keyed on it.
+   * reviewer saw invalidates the verdict keyed on it.
    */
   contentHash(): string {
     return contentHash(this.targetContent, this.specContent, assistHashInput(this.assist));

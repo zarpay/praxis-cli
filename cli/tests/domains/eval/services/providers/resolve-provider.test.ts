@@ -11,7 +11,7 @@ import resolveProvider from "@/domains/eval/services/providers/resolve-provider.
 const ECHO_PROVIDER_SOURCE = `export default function echoProvider() {
   return {
     name: "echo",
-    async evaluate(request) {
+    async review(request) {
       return {
         verdict: { compliant: true, issues: [], reason: "echo: " + request.model },
         usage: null,
@@ -49,7 +49,7 @@ describe("resolveProvider", () => {
     const resolution = resolveProvider("bogus");
 
     await expect(resolution).rejects.toThrow(
-      'Unknown judge provider: "bogus". Built-in providers: openrouter',
+      'Unknown reviewer provider: "bogus". Built-in providers: openrouter',
     );
   });
 
@@ -57,7 +57,7 @@ describe("resolveProvider", () => {
     const root = makeProjectWithModule(ECHO_PROVIDER_SOURCE);
 
     const provider = await resolveProvider("./praxis-providers/echo.mjs", root);
-    const result = await provider.evaluate({
+    const result = await provider.review({
       systemPrompt: "s",
       userPrompt: "u",
       tools: [],
@@ -75,7 +75,7 @@ describe("resolveProvider", () => {
   it("rejects a relative path when no project root is available", async () => {
     const resolution = resolveProvider("./praxis-providers/echo.mjs");
 
-    await expect(resolution).rejects.toThrow("Failed to load judge provider");
+    await expect(resolution).rejects.toThrow("Failed to load reviewer provider");
   });
 
   it("rejects a module that cannot be imported", async () => {
@@ -84,7 +84,7 @@ describe("resolveProvider", () => {
     const resolution = resolveProvider("./praxis-providers/missing.mjs", root);
 
     await expect(resolution).rejects.toThrow(
-      'Failed to load judge provider "./praxis-providers/missing.mjs"',
+      'Failed to load reviewer provider "./praxis-providers/missing.mjs"',
     );
   });
 
@@ -101,6 +101,6 @@ describe("resolveProvider", () => {
 
     const resolution = resolveProvider("./praxis-providers/echo.mjs", root);
 
-    await expect(resolution).rejects.toThrow("factory returned an object without an evaluate()");
+    await expect(resolution).rejects.toThrow("factory returned an object without a review()");
   });
 });

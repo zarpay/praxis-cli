@@ -8,7 +8,7 @@ import { relativePath } from "@/core/paths.js";
 const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
 
 /**
- * A spec document — the README the eval layer judges targets against.
+ * A spec document — the README the eval layer reviewers targets against.
  *
  * Names the frontmatter keys the eval layer honors, in one place,
  * instead of leaving them as string literals scattered across
@@ -26,15 +26,15 @@ const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
 export class SpecFile {
   /** Absolute path to the spec file. */
   readonly path: string;
-  /** Glob patterns naming the targets this spec judges (`paths:`). */
+  /** Glob patterns naming the targets this spec reviewers (`paths:`). */
   readonly paths: string[];
   /** How this spec's targets group into units; `by_file` when undeclared. */
   readonly cohort: CohortMode;
-  /** Patterns structurally excluded from judgment, as written. */
+  /** Patterns structurally excluded from review, as written. */
   readonly excludes: string[];
   /** Spec-blessed positive examples, as written. */
   readonly exemplars: string[];
-  /** Assist-only material inlined into the judgment, as written. */
+  /** Assist-only material inlined into the review, as written. */
   readonly context: string[];
 
   private constructor(fields: Frontmatter, path: string) {
@@ -62,7 +62,7 @@ export class SpecFile {
   }
 
   /**
-   * Patterns for one assist key — inputs that reach the judge as
+   * Patterns for one assist key — inputs that reach the reviewer as
    * inlined material rather than as targets.
    *
    * @param key - `exemplars` (shielded positives) or `context`

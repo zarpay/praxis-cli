@@ -13,7 +13,7 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-con
  * A spec's `paths:` expand against the project root into an explicit
  * target list; without them a spec governs its own directory's
  * siblings. Under `cohort: by_directory` the patterns match directories
- * instead of files, because the unit of judgment is the set.
+ * instead of files, because the unit of review is the set.
  *
  * @throws PraxisError when a spec's frontmatter is malformed
  */
@@ -52,8 +52,8 @@ function domainFor(
   const dir = parentDir(specPath);
   const excludes = spec.excludes.map((p) => joinPath(root, p));
   const exemplars = spec.exemplars.map((p) => joinPath(root, p));
-  // Exemplars are shielded from adverse judgment exactly like excludes;
-  // they reach the judge only as inlined positives.
+  // Exemplars are shielded from adverse review exactly like excludes;
+  // they reach the reviewer only as inlined positives.
   const ignore = [...absoluteIgnore, ...excludes, ...exemplars];
 
   const domain: ValidationDomain = {

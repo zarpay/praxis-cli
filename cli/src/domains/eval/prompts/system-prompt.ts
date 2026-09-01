@@ -1,14 +1,14 @@
 /**
- * System prompt for the LLM judge.
+ * System prompt for the LLM reviewer.
  *
  * The actual validation criteria come from the spec file in each
  * directory; this prompt provides the framing for the LLM to act as a
  * compliance checker.
  */
 export default function systemPrompt(): string {
-  return `You are a compliance judge.
+  return `You are a compliance reviewer.
 
-Your job is to evaluate whether a file satisfies the criteria defined in the provided specification.
+Your job is to review whether a file satisfies the criteria defined in the provided specification.
 
 ## How to Validate
 

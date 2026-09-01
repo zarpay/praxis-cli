@@ -4,27 +4,27 @@ Every validation result is cached locally. Unchanged documents are never re-vali
 
 ## How the cache works
 
-When `praxis eval run` judges a target, each configured judge:
+When `praxis eval run` reviewers a target, each configured reviewer:
 
-1. Computes a content hash over the full judgment input — `SHA256(targetContent + specContent + assistInputs)`, first 8 characters, where assist inputs are the spec's resolved `exemplars:` and `context:` files
+1. Computes a content hash over the full review input — `SHA256(targetContent + specContent + assistInputs)`, first 8 characters, where assist inputs are the spec's resolved `exemplars:` and `context:` files
 2. Looks up `.praxis/cache/validation/{target-relative-path}.json`
-3. If the file holds an entry for this (spec, judge) pair and the hash matches — returns the cached verdict without any API call
+3. If the file holds an entry for this (spec, reviewer) pair and the hash matches — returns the cached verdict without any API call
 4. If there is no entry, or the hash doesn't match — calls the API and writes the verdict
 
-The hash covers everything the judge saw. If the target, the spec, an exemplar, or a context file changes, the cached verdict is automatically invalidated and the target is re-evaluated on the next run. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
+The hash covers everything the reviewer saw. If the target, the spec, an exemplar, or a context file changes, the cached verdict is automatically invalidated and the target is re-evaluated on the next run. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
 
 ## Cache file structure
 
-Each target has exactly one cache file at `.praxis/cache/validation/{target-relative-path}.json` — its complete judgment state in one committed artifact.
+Each target has exactly one cache file at `.praxis/cache/validation/{target-relative-path}.json` — its complete review state in one committed artifact.
 
-The file contains a `verdicts` map keyed by `<specHash>:<judgeHash>`: an 8-char hash of the spec's relative path, plus the judge's behavioral hash (its config minus `name`/`apiKeyEnvVar`, plus the system prompt). One file can therefore hold verdicts from multiple specs and multiple judges side by side:
+The file contains a `verdicts` map keyed by `<specHash>:<reviewerHash>`: an 8-char hash of the spec's relative path, plus the reviewer's behavioral hash (its config minus `name`/`apiKeyEnvVar`, plus the system prompt). One file can therefore hold verdicts from multiple specs and multiple reviewers side by side:
 
 ```json
 {
   "version": "3.0",
   "verdicts": {
     "a1b2c3d4:f83a92f1": {
-      "judge": { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "hash": "f83a92f1" },
+      "reviewer": { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "hash": "f83a92f1" },
       "spec_path": "experts/README.md",
       "cached_at": "2026-08-31T14:30:45.123Z",
       "content_hash": "abcd1234",
@@ -48,9 +48,9 @@ The cache invalidates automatically when:
 - The target content changes (any member, for cohort units)
 - The spec file content changes
 - An exemplar or context file the spec declares changes
-- The judge's behavioral settings change (model, temperature, baseUrl) — this invalidates all of that judge's entries at once
+- The reviewer's behavioral settings change (model, temperature, baseUrl) — this invalidates all of that reviewer's entries at once
 
-Renaming a judge does *not* invalidate anything: the name is excluded from the judge hash, so identity follows behavior, not the label. Rolling a config change back re-hits the old entries at zero cost. There is no manual cache management needed in normal use.
+Renaming a reviewer does *not* invalidate anything: the name is excluded from the reviewer hash, so identity follows behavior, not the label. Rolling a config change back re-hits the old entries at zero cost. There is no manual cache management needed in normal use.
 
 ## Disabling the cache
 

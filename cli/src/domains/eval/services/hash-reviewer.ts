@@ -1,4 +1,4 @@
-import type { JudgeConfig } from "@/types.js";
+import type { ReviewerConfig } from "@/types.js";
 
 import { createHash } from "node:crypto";
 
@@ -10,23 +10,23 @@ import {
 } from "@/domains/workspace/models/praxis-config.js";
 
 /**
- * Judge identity hashing.
+ * Reviewer identity hashing.
  *
- * The judge hash answers one question: would this judge produce the
+ * The reviewer hash answers one question: would this reviewer produce the
  * same verdicts? It keys the cache namespace, so it is also the epoch
  * boundary (02, 05) — every input added here is a category of config
  * edit that becomes a hard break in longitudinal data.
  *
  * The contract is exclusion-based so it survives config-shape changes:
- * the entire judge object is hashed canonically, minus the declared
- * non-behavioral fields. A future setting added to JudgeConfig joins
+ * the entire reviewer object is hashed canonically, minus the declared
+ * non-behavioral fields. A future setting added to ReviewerConfig joins
  * the hash automatically — the fail-safe direction, since the worst
- * case is a spurious re-judgment, never a stale verdict served across
+ * case is a spurious re-review, never a stale verdict served across
  * a real behavior change.
  */
 
 /**
- * Fields that never affect judgments and are excluded from the hash:
+ * Fields that never affect reviews and are excluded from the hash:
  * `name` is a human label (renames must not invalidate verdicts) and
  * `apiKeyEnvVar` is a credential pointer (key rotation must not break
  * epochs). Everything else is behavioral by default.
@@ -34,20 +34,23 @@ import {
 const NON_BEHAVIORAL_FIELDS = ["name", "apiKeyEnvVar"] as const;
 
 /**
- * Computes the 8-character identity hash for a judge.
+ * Computes the 8-character identity hash for a reviewer.
  *
  * Defaults are materialized before hashing, so an omitted setting and
  * its explicit default produce the same identity. The complete prompt
  * surface (src/eval/prompts/prompt-surface.ts) joins the hash directly
- * — a Praxis release that rewords any judge-facing prompt text changes
- * the judge as much as a model swap, with no version constant to
+ * — a Praxis release that rewords any reviewer-facing prompt text changes
+ * the reviewer as much as a model swap, with no version constant to
  * forget bumping.
  *
- * @param judge - The configured judge
+ * @param reviewer - The configured reviewer
  * @param prompts - Overridable for tests; defaults to the real prompt surface
  */
-export default function judgeHash(judge: JudgeConfig, prompts: string = promptSurface()): string {
-  const behavioral: Record<string, unknown> = { ...judge };
+export default function reviewerHash(
+  reviewer: ReviewerConfig,
+  prompts: string = promptSurface(),
+): string {
+  const behavioral: Record<string, unknown> = { ...reviewer };
 
   for (const field of NON_BEHAVIORAL_FIELDS) {
     delete behavioral[field];

@@ -1,22 +1,22 @@
 # praxis eval
 
-AI-powered evaluation: judges targets against their specs.
+AI-powered evaluation: reviewers targets against their specs.
 
 ## Prerequisites
 
-Each judge runs through its configured provider — OpenRouter by default, or a custom provider module (see [Configuration — providers](/reference/config#providers)). Configure one or more judges in `.praxis/config.json` and set each judge's key variable:
+Each reviewer runs through its configured provider — OpenRouter by default, or a custom provider module (see [Configuration — providers](/reference/config#providers)). Configure one or more reviewers in `.praxis/config.json` and set each reviewer's key variable:
 
 ```bash
 export OPENROUTER_API_KEY=your-key-here
 ```
 
-Each judge names its own variable via `apiKeyEnvVar` — see [Configuration — judges](/reference/config#judges). When multiple judges are configured, **every judge evaluates every target** and results are always reported per judge; `--judge <name>` runs just one.
+Each reviewer names its own variable via `apiKeyEnvVar` — see [Configuration — reviewers](/reference/config#reviewers). When multiple reviewers are configured, **every reviewer evaluates every target** and results are always reported per reviewer; `--reviewer <name>` runs just one.
 
 ## Subcommands
 
 ### `praxis eval run <targets...>`
 
-Judges one or more targets against their specs.
+Reviewers one or more targets against their specs.
 
 ```bash
 praxis eval run experts/code-reviewer.md
@@ -30,7 +30,7 @@ praxis eval run experts/code-reviewer.md --no-cache
 | Flag | Description |
 | --- | --- |
 | `--spec <path>` | Override the spec file used for validation |
-| `--judge <name>` | Run only the named judge (default: all configured judges) |
+| `--reviewer <name>` | Run only the named reviewer (default: all configured reviewers) |
 | `--verbose` | Print the full AI reasoning after the result |
 | `--no-cache` | Skip the cache and always call the API |
 
@@ -40,7 +40,7 @@ praxis eval run experts/code-reviewer.md --no-cache
 
 ### `praxis eval run` (no targets — full run)
 
-Judges every spec-covered target across all configured sources.
+Reviewers every spec-covered target across all configured sources.
 
 ```bash
 praxis eval run
@@ -55,12 +55,12 @@ praxis eval run --fail-fast
 | Flag | Description |
 | --- | --- |
 | `--type <type>` | Validate only documents matching this type |
-| `--judge <name>` | Run only the named judge (default: all configured judges) |
+| `--reviewer <name>` | Run only the named reviewer (default: all configured reviewers) |
 | `--verbose` | Show full AI reasoning for each document |
 | `--no-cache` | Skip the cache for all documents |
 | `--fail-fast` | Stop at the first error instead of continuing |
 
-With multiple judges configured, progress lines carry a `[judge: <name>]` tag and the summary adds a `By judge:` breakdown — one row per judge, never pooled.
+With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` tag and the summary adds a `By reviewer:` breakdown — one row per reviewer, never pooled.
 
 **Output:**
 
@@ -131,11 +131,11 @@ Use `--verbose` to include the full AI reasoning from the cached result.
 ## How validation works
 
 1. The spec file (default: `README.md`) in the document's directory defines the validation criteria — plus any scoping frontmatter (`paths`, `cohort`, `excludes`, `exemplars`, `context`).
-2. Praxis sends the spec, the target, and any exemplar/context files to each configured judge via its provider (OpenRouter by default).
-3. The judge answers through a required tool call — pass, warn, or fail — with specific issues.
-4. The verdict is written to the cache at `.praxis/cache/validation/`, keyed by spec and judge.
+2. Praxis sends the spec, the target, and any exemplar/context files to each configured reviewer via its provider (OpenRouter by default).
+3. The reviewer answers through a required tool call — pass, warn, or fail — with specific issues.
+4. The verdict is written to the cache at `.praxis/cache/validation/`, keyed by spec and reviewer.
 
-On subsequent runs, cached verdicts are used for any target whose judgment input (target, spec, exemplars, context) has not changed. See [Caching](/validation/caching).
+On subsequent runs, cached verdicts are used for any target whose review input (target, spec, exemplars, context) has not changed. See [Caching](/validation/caching).
 
 ## See also
 

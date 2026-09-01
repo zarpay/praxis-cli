@@ -154,7 +154,7 @@ describe("compileExperts", () => {
         [
           "---",
           "alias: Grouper",
-          "description: judges services by directory",
+          "description: reviewers services by directory",
           "validates:",
           '  - "src/services/*"',
           "cohort: by_directory",
@@ -176,7 +176,7 @@ describe("compileExperts", () => {
         [
           "---",
           "alias: Grouper",
-          "description: judges services by directory",
+          "description: reviewers services by directory",
           "validates:",
           '  - "src/services/*"',
           "cohort: by_directory",
@@ -201,7 +201,7 @@ describe("compileExperts", () => {
         [
           "---",
           "alias: Excluder",
-          "description: judges events, minus the base class",
+          "description: reviewers events, minus the base class",
           "validates:",
           '  - "src/events/*.rb"',
           "excludes:",
@@ -238,7 +238,7 @@ describe("compileExperts", () => {
         [
           "---",
           "alias: Blesser",
-          "description: judges events with a golden example",
+          "description: reviewers events with a golden example",
           "validates:",
           '  - "src/events/*.rb"',
           "exemplars:",

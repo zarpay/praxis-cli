@@ -54,7 +54,7 @@ export function createCompilerTmpdir(): {
       practicesDir: "content/practices",
       agentProfilesOutputDir: "./agent-profiles",
       plugins: ["claude-code"],
-      judges: [{ name: "test", model: "test-model", apiKeyEnvVar: "OPENROUTER_API_KEY" }],
+      reviewers: [{ name: "test", model: "test-model", apiKeyEnvVar: "OPENROUTER_API_KEY" }],
     }),
   );
 

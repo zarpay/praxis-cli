@@ -15,7 +15,7 @@ Core is not a domain and has no `models/`, `services/`, `orchestrators/`, `views
 - `files.ts` also holds the filename matching that goes with reading files —
   `hasGlobChars` and `matchesFilename(name, pattern)` — as pattern math, not
   Praxis vocabulary. "Is this a spec file?" is a question a domain asks by
-  passing its configured pattern; "is this judgeable?" is eval's own rule and
+  passing its configured pattern; "is this reviewable?" is eval's own rule and
   lives in eval.
 - `markdown-file.ts` owns the document format. `MarkdownFile.at(path)` gives you `.body` and `.frontmatter`, and nothing else scans for `---`. A document *has* frontmatter; `Frontmatter` is the metadata alone, never touching a path.
 - **Frontmatter accessors validate.** `requiredString`, `optionalString`, `stringList` and `enumValue` raise on a wrong-shaped value, naming the document and the key. `parse()` is the unvalidated escape hatch.

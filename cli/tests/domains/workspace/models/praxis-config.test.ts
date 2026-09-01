@@ -174,11 +174,11 @@ describe("PraxisConfig", () => {
     expect(() => new PraxisConfig(dir)).toThrow(/Invalid JSON in .*config\.json/);
   });
 
-  describe("judges", () => {
-    it("loads the judges array with per-judge settings", () => {
+  describe("reviewers", () => {
+    it("loads the reviewers array with per-reviewer settings", () => {
       const dir = makeTmpdir();
       writeConfig(dir, {
-        judges: [
+        reviewers: [
           { name: "flash", model: "deepseek/deepseek-v4-flash-0731", apiKeyEnvVar: "OR_KEY" },
           {
             name: "local",
@@ -192,7 +192,7 @@ describe("PraxisConfig", () => {
 
       const config = new PraxisConfig(dir);
 
-      expect(config.judges).toEqual([
+      expect(config.reviewers).toEqual([
         { name: "flash", model: "deepseek/deepseek-v4-flash-0731", apiKeyEnvVar: "OR_KEY" },
         {
           name: "local",
@@ -212,20 +212,20 @@ describe("PraxisConfig", () => {
 
       const config = new PraxisConfig(dir);
 
-      expect(config.judges).toEqual([]);
+      expect(config.reviewers).toEqual([]);
     });
 
-    it("returns an empty judges array when nothing is configured", () => {
+    it("returns an empty reviewers array when nothing is configured", () => {
       const dir = makeTmpdir();
       const config = new PraxisConfig(dir);
 
-      expect(config.judges).toEqual([]);
+      expect(config.reviewers).toEqual([]);
     });
 
-    it("passes provider and options through to the judge config", () => {
+    it("passes provider and options through to the reviewer config", () => {
       const dir = makeTmpdir();
       writeConfig(dir, {
-        judges: [
+        reviewers: [
           {
             name: "local",
             model: "echo-model",
@@ -238,39 +238,39 @@ describe("PraxisConfig", () => {
 
       const config = new PraxisConfig(dir);
 
-      expect(config.judges[0].provider).toBe("./praxis-providers/echo.js");
-      expect(config.judges[0].options).toEqual({ region: "us-east-1" });
+      expect(config.reviewers[0].provider).toBe("./praxis-providers/echo.js");
+      expect(config.reviewers[0].options).toEqual({ region: "us-east-1" });
     });
 
     it("leaves provider and options absent when unconfigured", () => {
       const dir = makeTmpdir();
       writeConfig(dir, {
-        judges: [{ name: "flash", model: "model-a", apiKeyEnvVar: "OR_KEY" }],
+        reviewers: [{ name: "flash", model: "model-a", apiKeyEnvVar: "OR_KEY" }],
       });
 
       const config = new PraxisConfig(dir);
 
-      expect(config.judges[0].provider).toBeUndefined();
-      expect(config.judges[0].options).toBeUndefined();
+      expect(config.reviewers[0].provider).toBeUndefined();
+      expect(config.reviewers[0].options).toBeUndefined();
     });
 
-    it("rejects duplicate judge names", () => {
+    it("rejects duplicate reviewer names", () => {
       const dir = makeTmpdir();
       writeConfig(dir, {
-        judges: [
+        reviewers: [
           { name: "flash", model: "model-a", apiKeyEnvVar: "OR_KEY" },
           { name: "flash", model: "model-b", apiKeyEnvVar: "OR_KEY" },
         ],
       });
 
-      expect(() => new PraxisConfig(dir)).toThrow('Duplicate judge name "flash"');
+      expect(() => new PraxisConfig(dir)).toThrow('Duplicate reviewer name "flash"');
     });
 
-    it("rejects a judge missing a required field", () => {
+    it("rejects a reviewer missing a required field", () => {
       const dir = makeTmpdir();
-      writeConfig(dir, { judges: [{ name: "flash", model: "model-a" }] });
+      writeConfig(dir, { reviewers: [{ name: "flash", model: "model-a" }] });
 
-      expect(() => new PraxisConfig(dir)).toThrow('Judge "flash" is missing "apiKeyEnvVar"');
+      expect(() => new PraxisConfig(dir)).toThrow('Reviewer "flash" is missing "apiKeyEnvVar"');
     });
   });
 

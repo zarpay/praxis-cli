@@ -36,7 +36,7 @@ praxis eval run
 # Scoped to a type:
 praxis eval run --type <type>
 
-# Specific files (force fresh evaluation):
+# Specific files (force fresh review):
 praxis eval run <path> --no-cache --verbose
 \`\`\`
 

@@ -70,15 +70,15 @@ export type PraxisErrorCode =
   | "INVALID_FRONTMATTER_FIELD"
   | "EXPERT_NOT_FOUND"
   | "DOCUMENT_NOT_FOUND"
-  | "INVALID_JUDGE_CONFIG"
-  | "UNKNOWN_JUDGE"
-  | "JUDGES_NOT_CONFIGURED"
+  | "INVALID_REVIEWER_CONFIG"
+  | "UNKNOWN_REVIEWER"
+  | "REVIEWERS_NOT_CONFIGURED"
   | "API_KEY_NOT_SET"
-  | "JUDGE_API_ERROR"
-  | "UNKNOWN_JUDGE_PROVIDER"
-  | "JUDGE_PROVIDER_LOAD_FAILED"
-  | "INVALID_JUDGE_PROVIDER"
-  | "JUDGE_PROVIDER_FAILED"
+  | "REVIEWER_API_ERROR"
+  | "UNKNOWN_REVIEW_PROVIDER"
+  | "REVIEW_PROVIDER_LOAD_FAILED"
+  | "INVALID_REVIEW_PROVIDER"
+  | "REVIEW_PROVIDER_FAILED"
   | "NO_TOOL_CALL"
   | "UNEXPECTED_TOOL_CALL";
 
@@ -100,12 +100,12 @@ export interface PluginConfigEntry {
 export type RawPluginEntry = string | PluginConfigEntry;
 
 /**
- * One configured judge: a named inference backend that evaluates
- * targets against specs. Every configured judge evaluates every
- * target — n judges are n instruments running the same protocol.
+ * One configured reviewer: a named inference backend that reviews
+ * targets against specs. Every configured reviewer reviews every
+ * target — n reviewers are n instruments running the same protocol.
  */
-export interface JudgeConfig {
-  /** Unique judge name; identifies its verdicts in results and reports. */
+export interface ReviewerConfig {
+  /** Unique reviewer name; identifies its verdicts in results and reports. */
   name: string;
   /** Model identifier the backend understands (e.g. an OpenRouter slug). */
   model: string;
@@ -113,10 +113,10 @@ export interface JudgeConfig {
   apiKeyEnvVar: string;
   /** OpenAI-compatible endpoint base; defaults to OpenRouter. */
   baseUrl?: string;
-  /** Sampling temperature for judgments; defaults to 0. */
+  /** Sampling temperature for reviews; defaults to 0. */
   temperature?: number;
   /**
-   * Provider that executes judgments: a built-in registry name, or a
+   * Provider that executes reviews: a built-in registry name, or a
    * ./relative ESM module path resolved from the project root whose
    * default export is a provider factory. Defaults to "openrouter".
    */
@@ -133,7 +133,7 @@ export interface RawConfig {
   ignore?: string[];
   expertsDir?: string;
   practicesDir?: string;
-  judges?: Partial<JudgeConfig>[];
+  reviewers?: Partial<ReviewerConfig>[];
   /** Filename or glob pattern for spec files (default: "README.md"). */
   specFilePattern?: string;
 }
@@ -146,7 +146,7 @@ export interface NormalizedConfig {
   ignore: string[];
   expertsDir: string;
   practicesDir: string;
-  judges: JudgeConfig[];
+  reviewers: ReviewerConfig[];
   specFilePattern: string;
 }
 
@@ -168,5 +168,5 @@ export interface PraxisProjectBaseOptions extends PraxisBaseOptions {
   config?: PraxisConfig;
 }
 
-/** How a spec groups its targets into evaluation units. */
+/** How a spec groups its targets into review units. */
 export type CohortMode = "by_file" | "by_directory";
