@@ -77,7 +77,7 @@ describe("MarkdownFile", () => {
 
   describe("frontmatter", () => {
     it("exposes the parsed metadata", () => {
-      const alias = sample().frontmatter.optionalValue("alias");
+      const alias = sample().frontmatter.optionalString("alias");
 
       expect(alias).toBe("Sample");
     });
@@ -89,15 +89,24 @@ describe("MarkdownFile", () => {
     });
   });
 
-  describe("path", () => {
-    it("remembers where it was read from", () => {
+  describe("name", () => {
+    it("defaults to the path it was read from", () => {
       const path = join(FIXTURES_DIR, "sample-expert.md");
 
-      expect(MarkdownFile.at(path).path).toBe(path);
+      expect(MarkdownFile.at(path).name).toBe(path);
     });
 
-    it("is null for a document built from content", () => {
-      expect(MarkdownFile.fromContent("# Body").path).toBeNull();
+    it("takes a caller-supplied name instead", () => {
+      const document = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md"), "experts/sample.md");
+
+      expect(document.name).toBe("experts/sample.md");
+    });
+
+    it("names the document in the errors its frontmatter raises", () => {
+      const document = MarkdownFile.fromContent("---\ntitle: X\n---\n#", "specs/api.md");
+      const read = () => document.frontmatter.requiredString("alias");
+
+      expect(read).toThrow(/specs\/api\.md/);
     });
   });
 });

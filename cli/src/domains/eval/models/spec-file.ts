@@ -1,6 +1,7 @@
+import type { Frontmatter } from "@/core/frontmatter.js";
 import type { CohortMode } from "@/types.js";
 
-import { Fields } from "@/core/frontmatter-fields.js";
+import { MarkdownFile } from "@/core/markdown-file.js";
 import { relativePath } from "@/core/paths.js";
 
 /** The accepted `cohort:` frontmatter values. */
@@ -36,7 +37,7 @@ export class SpecFile {
   /** Assist-only material inlined into the judgment, as written. */
   readonly context: string[];
 
-  private constructor(fields: Fields, path: string) {
+  private constructor(fields: Frontmatter, path: string) {
     this.path = path;
     this.paths = fields.stringList("paths");
     this.cohort = fields.enumValue("cohort", COHORT_MODES) ?? "by_file";
@@ -47,7 +48,7 @@ export class SpecFile {
 
   /** Reads and validates a spec from disk. */
   static at(path: string, root?: string): SpecFile {
-    return new SpecFile(Fields.fromFile(path, display(path, root)), path);
+    return new SpecFile(MarkdownFile.at(path, display(path, root)).frontmatter, path);
   }
 
   /**
@@ -57,7 +58,7 @@ export class SpecFile {
    * pay for a second filesystem read.
    */
   static fromContent(content: string, path: string, root?: string): SpecFile {
-    return new SpecFile(Fields.fromContent(content, display(path, root)), path);
+    return new SpecFile(MarkdownFile.fromContent(content, display(path, root)).frontmatter, path);
   }
 
   /**

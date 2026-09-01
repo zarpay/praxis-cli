@@ -27,7 +27,7 @@ src/
   index.ts        CLI entry
   types.ts        shapes more than one domain needs, and nothing else
   core/           kernel primitives: base, config, errors, files, frontmatter,
-                  frontmatter-fields, paths, spec-pattern
+                  markdown-file, paths, spec-pattern
   views/          the render kit: display, logger, badges, stats, table
   domains/        one directory per area, each owning its work end to end
     spec/         authoring → agent profiles

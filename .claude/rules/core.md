@@ -7,9 +7,8 @@ paths:
 # Core
 
 The kernel: primitives every domain uses — `base`, `config`, `errors`, `files`,
-`frontmatter`, `frontmatter-fields`, `markdown-file`, `paths`, `spec-pattern`. It depends on no
-domain and no command (ESLint-enforced), which is what lets everything depend on
-it.
+`frontmatter`, `markdown-file`, `paths`, `spec-pattern`. It depends on no domain
+and no command (ESLint-enforced), which is what lets everything depend on it.
 
 - `files.ts` and `paths.ts` are the only modules allowed to import `node:fs` and
   `node:path`. Everything else goes through their helpers.
@@ -20,5 +19,9 @@ it.
   `.body` and `.frontmatter`, and nothing else scans for `---`. A document *has*
   frontmatter; `Frontmatter` is the metadata alone, built from the YAML between
   the fences and never touching a path or the filesystem.
+- **Frontmatter accessors validate.** `requiredString`, `optionalString`,
+  `stringList` and `enumValue` raise on a wrong-shaped value, naming the document
+  and the key. Models call them once each in their constructor, so a model that
+  exists is a valid document. `parse()` is the unvalidated escape hatch.
 - Add something here only when more than one domain needs it. A primitive one
   domain uses is that domain's service.

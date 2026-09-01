@@ -1,9 +1,9 @@
+import type { Frontmatter } from "@/core/frontmatter.js";
 import type { RefKey } from "@/domains/spec/types.js";
 import type { AgentMetadata } from "@/domains/spec/types.js";
 import type { CohortMode } from "@/types.js";
 
 import { errors } from "@/core/errors.js";
-import { Fields } from "@/core/frontmatter-fields.js";
 import { MarkdownFile } from "@/core/markdown-file.js";
 
 /** The accepted `cohort:` frontmatter values. */
@@ -61,7 +61,7 @@ export class ExpertFile {
   private readonly references: Record<RefKey, string[]>;
   private readonly bodyText: string;
 
-  private constructor(fields: Fields, path: string, body: string) {
+  private constructor(fields: Frontmatter, path: string, body: string) {
     this.path = path;
     this.bodyText = body;
     this.alias = fields.requiredString("alias");
@@ -104,7 +104,7 @@ export class ExpertFile {
 
   /** Validates a parsed document as an expert. */
   private static fromDocument(document: MarkdownFile, path: string): ExpertFile {
-    return new ExpertFile(new Fields(document.frontmatter, path), path, document.body);
+    return new ExpertFile(document.frontmatter, path, document.body);
   }
 
   /** The expert's prose, frontmatter stripped — the compiled Role section. */

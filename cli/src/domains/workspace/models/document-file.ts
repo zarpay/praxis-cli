@@ -1,4 +1,6 @@
-import { Fields } from "@/core/frontmatter-fields.js";
+import type { Frontmatter } from "@/core/frontmatter.js";
+
+import { MarkdownFile } from "@/core/markdown-file.js";
 
 /**
  * Any Praxis markdown document, read for the two fields that classify
@@ -23,7 +25,7 @@ export class DocumentFile {
   /** The alias of the expert accountable for this document. */
   readonly owner: string | undefined;
 
-  private constructor(fields: Fields, path: string) {
+  private constructor(fields: Frontmatter, path: string) {
     this.path = path;
     this.type = fields.optionalString("type");
     this.owner = fields.optionalString("owner");
@@ -31,11 +33,11 @@ export class DocumentFile {
 
   /** Reads a document from disk. */
   static at(path: string): DocumentFile {
-    return new DocumentFile(Fields.fromFile(path, path), path);
+    return new DocumentFile(MarkdownFile.at(path).frontmatter, path);
   }
 
   /** Reads a document from already-loaded content. */
   static fromContent(content: string, path: string): DocumentFile {
-    return new DocumentFile(Fields.fromContent(content, path), path);
+    return new DocumentFile(MarkdownFile.fromContent(content, path).frontmatter, path);
   }
 }

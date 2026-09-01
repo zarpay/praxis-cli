@@ -17,22 +17,28 @@ const DELIMITER = "---";
  * `.frontmatter` when you want what it declares about itself.
  */
 export class MarkdownFile {
-  /** Path the document was read from, or null when built from content. */
-  readonly path: string | null;
-
   /** The file's full text, frontmatter included. */
   readonly content: string;
 
+  /**
+   * How this document is named when one of its values is wrong.
+   *
+   * Defaults to the path it was read from. A caller with a nicer name —
+   * a spec reporting itself project-relative rather than absolute —
+   * passes its own.
+   */
+  readonly name: string;
+
   private cachedFrontmatter: Frontmatter | null = null;
 
-  private constructor(content: string, path: string | null) {
+  private constructor(content: string, name: string) {
     this.content = content;
-    this.path = path;
+    this.name = name;
   }
 
   /** Reads a document from disk. */
-  static at(path: string): MarkdownFile {
-    return new MarkdownFile(readText(path), path);
+  static at(path: string, name: string = path): MarkdownFile {
+    return new MarkdownFile(readText(path), name);
   }
 
   /**
@@ -41,17 +47,18 @@ export class MarkdownFile {
    * For callers that read the file for other purposes and should not
    * pay for a second filesystem read.
    */
-  static fromContent(content: string, path: string | null = null): MarkdownFile {
-    return new MarkdownFile(content, path);
+  static fromContent(content: string, name = "<content>"): MarkdownFile {
+    return new MarkdownFile(content, name);
   }
 
   /**
-   * What the document declares about itself.
+   * What the document declares about itself, read through accessors
+   * that validate.
    *
    * Parsed once and reused — most readers ask for several keys.
    */
   get frontmatter(): Frontmatter {
-    this.cachedFrontmatter ??= Frontmatter.fromYaml(this.rawYaml);
+    this.cachedFrontmatter ??= Frontmatter.fromYaml(this.rawYaml, this.name);
     return this.cachedFrontmatter;
   }
 

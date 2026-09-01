@@ -1,3 +1,5 @@
+import type { Frontmatter } from "@/core/frontmatter.js";
+
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -5,130 +7,112 @@ import { MarkdownFile } from "@/core/markdown-file.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "..", "fixtures");
 
+/** The sample document's frontmatter. */
+function sample(): Frontmatter {
+  return MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
+}
+
+/** Frontmatter from YAML lines, named for error messages. */
+function frontmatter(lines: string[], name = "doc.md"): Frontmatter {
+  return MarkdownFile.fromContent(["---", ...lines, "---", "# Body"].join("\n"), name).frontmatter;
+}
+
 describe("Frontmatter", () => {
   describe("parse()", () => {
-    it("extracts YAML between --- delimiters", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-      const result = fm.parse();
+    it("returns the declared keys", () => {
+      const parsed = sample().parse();
 
-      expect(result).toBeTypeOf("object");
-      expect(result["title"]).toBe("Sample Expert");
+      expect(parsed["title"]).toBe("Sample Expert");
     });
 
-    it("returns empty object for files without frontmatter", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "no-frontmatter.md")).frontmatter;
+    it("returns an empty object for a document with no frontmatter", () => {
+      const parsed = MarkdownFile.at(join(FIXTURES_DIR, "no-frontmatter.md")).frontmatter.parse();
 
-      expect(fm.parse()).toEqual({});
+      expect(parsed).toEqual({});
     });
   });
 
-  describe("value()", () => {
-    it("returns single values like alias", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-
-      expect(fm.value("alias")).toBe("Sample");
+  describe("requiredString()", () => {
+    it("returns the value when present", () => {
+      expect(sample().requiredString("alias")).toBe("Sample");
     });
 
-    it("returns single values like title", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
+    it("raises when the key is absent, naming the document", () => {
+      const read = () => frontmatter(["title: X"], "experts/broken.md").requiredString("alias");
 
-      expect(fm.value("title")).toBe("Sample Expert");
+      expect(read).toThrow(/experts\/broken\.md is missing required frontmatter field "alias"/);
     });
 
-    it("returns undefined for missing keys", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
+    it("raises when the value is not a string", () => {
+      const read = () => frontmatter(["alias:", "  - A"]).requiredString("alias");
 
-      expect(fm.value("nonexistent")).toBeUndefined();
+      expect(read).toThrow(/expected a string, got \["A"\]/);
     });
   });
 
-  describe("array()", () => {
-    it("returns array for constitution glob patterns", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-
-      expect(fm.parse()["constitution"]).toEqual(["content/context/constitution/*.md"]);
+  describe("optionalString()", () => {
+    it("returns the value when present", () => {
+      expect(sample().optionalString("title")).toBe("Sample Expert");
     });
 
-    it("returns array values for context", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-
-      expect(fm.array("context")).toEqual(["content/context/conventions/documentation.md"]);
+    it("returns undefined for an absent key", () => {
+      expect(sample().optionalString("nonexistent")).toBeUndefined();
     });
 
-    it("returns array values for practices", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
+    it("raises when the key is present but malformed", () => {
+      const read = () => frontmatter(["owner:", "  - A"]).optionalString("owner");
 
-      expect(fm.array("practices")).toEqual(["content/practices/sample-practice.md"]);
-    });
-
-    it("returns empty array for missing keys", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-
-      expect(fm.array("nonexistent")).toEqual([]);
-    });
-
-    it("wraps single values in an array", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-
-      expect(fm.array("manager")).toEqual(["test@example.com"]);
+      expect(read).toThrow(/Invalid "owner"/);
     });
   });
 
-  describe("array() typing", () => {
-    it("returns string[] without a cast at the call site", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-      const practices = fm.array("practices");
-      const joined = practices.join(",");
+  describe("stringList()", () => {
+    it("returns a declared list", () => {
+      expect(sample().stringList("context")).toEqual([
+        "content/context/conventions/documentation.md",
+      ]);
+    });
 
-      expect(joined).toBe("content/practices/sample-practice.md");
+    it("wraps a bare value, so both spellings are one declaration", () => {
+      expect(sample().stringList("manager")).toEqual(["test@example.com"]);
+    });
+
+    it("returns an empty list for an absent key", () => {
+      expect(sample().stringList("nonexistent")).toEqual([]);
+    });
+
+    it("returns an empty list for an empty list", () => {
+      expect(frontmatter(["excludes: []"]).stringList("excludes")).toEqual([]);
+    });
+
+    it("raises when an entry is not a string", () => {
+      const read = () => frontmatter(["paths:", "  - 42"]).stringList("paths");
+
+      expect(read).toThrow(/Invalid "paths".*expected a string, got 42/s);
     });
   });
 
-  describe("optionalValue()", () => {
-    it("returns the value when the key is present", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-      const alias = fm.optionalValue("alias");
+  describe("enumValue()", () => {
+    const MODES = ["by_file", "by_directory"] as const;
 
-      expect(alias).toBe("Sample");
+    it("returns a value inside the set", () => {
+      expect(frontmatter(["cohort: by_directory"]).enumValue("cohort", MODES)).toBe("by_directory");
     });
 
-    it("returns undefined for missing keys", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-      const missing = fm.optionalValue("nonexistent");
-
-      expect(missing).toBeUndefined();
-    });
-  });
-
-  describe("optionalArray()", () => {
-    it("returns the values when the key is present", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-      const context = fm.optionalArray("context");
-
-      expect(context).toEqual(["content/context/conventions/documentation.md"]);
+    it("returns undefined for an absent key", () => {
+      expect(frontmatter(["paths: src/*"]).enumValue("cohort", MODES)).toBeUndefined();
     });
 
-    it("wraps single values in an array", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-      const manager = fm.optionalArray("manager");
+    it("raises outside the set, listing what is accepted", () => {
+      const read = () => frontmatter(["cohort: by_magic"]).enumValue("cohort", MODES);
 
-      expect(manager).toEqual(["test@example.com"]);
+      expect(read).toThrow(/expected "by_file" or "by_directory", got "by_magic"/);
     });
 
-    it("returns undefined for missing keys, not an empty array", () => {
-      const fm = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
-      const missing = fm.optionalArray("nonexistent");
+    it("shows a non-string value as JSON", () => {
+      const read = () => frontmatter(["cohort:", "  - by_file"]).enumValue("cohort", MODES);
 
-      expect(missing).toBeUndefined();
-    });
-
-    it("returns undefined when the key holds an empty list", () => {
-      const fm = MarkdownFile.fromContent(
-        ["---", "excludes: []", "---", "# Body"].join("\n"),
-      ).frontmatter;
-      const excludes = fm.optionalArray("excludes");
-
-      expect(excludes).toBeUndefined();
+      expect(read).toThrow(/\["by_file"\]/);
     });
   });
 });
