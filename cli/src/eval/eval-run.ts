@@ -1,3 +1,4 @@
+import type { PraxisConfig } from "@/core/config.js";
 import type {
   CohortMode,
   Verdict,
@@ -89,6 +90,33 @@ export class EvalRun extends PraxisProjectBase {
     this.cacheStats = { hits: 0, misses: 0 };
     this.specFilePattern = specFilePattern;
     this.absoluteIgnore = ignore.map((p) => joinPath(root, p));
+  }
+
+  /**
+   * Builds a run from a project's config.
+   *
+   * Every caller projects the same five fields off config and varies
+   * only the run-scoped choices — which judges, whether to stop at the
+   * first error, whether to consult the cache — so the projection lives
+   * here rather than being restated at each call site.
+   *
+   * Omitted overrides fall back to the constructor's defaults: all
+   * configured judges, no fail-fast, cache enabled.
+   */
+  static forProject(
+    root: string,
+    config: PraxisConfig,
+    overrides: { judges?: JudgeConfig[]; failFast?: boolean; useCache?: boolean } = {},
+  ): EvalRun {
+    return new EvalRun({
+      root,
+      sources: config.sources,
+      ignore: config.ignore,
+      specFilePattern: config.specFilePattern,
+      judges: overrides.judges ?? config.judges,
+      failFast: overrides.failFast,
+      useCache: overrides.useCache,
+    });
   }
 
   /** Whether validation was stopped early due to fail-fast. */

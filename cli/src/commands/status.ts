@@ -296,13 +296,7 @@ export class StatusCommand extends PraxisProjectBase {
    * file's cached verdict without making API calls.
    */
   private tallyValidation(): StatusReport["validation"] {
-    const evalRun = new EvalRun({
-      root: this.root,
-      sources: this.config.sources,
-      ignore: this.config.ignore,
-      judges: this.config.judges,
-      specFilePattern: this.specFilePattern,
-    });
+    const evalRun = EvalRun.forProject(this.root, this.config);
     const targets = evalRun.listTargetFiles();
 
     // One cache namespace per judge; the legacy un-namespaced cache

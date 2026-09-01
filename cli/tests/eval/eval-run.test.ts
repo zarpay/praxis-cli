@@ -57,6 +57,45 @@ describe("EvalRun", () => {
     delete process.env["OPENROUTER_API_KEY"];
   });
 
+  describe("forProject()", () => {
+    it("projects sources off the config", () => {
+      const run = EvalRun.forProject(tmpdir, config);
+
+      expect(run.sources).toEqual(config.sources);
+    });
+
+    it("defaults to no fail-fast when no override is given", () => {
+      const run = EvalRun.forProject(tmpdir, config);
+
+      expect(run.failFast).toBe(false);
+    });
+
+    it("applies the fail-fast override", () => {
+      const run = EvalRun.forProject(tmpdir, config, { failFast: true });
+
+      expect(run.failFast).toBe(true);
+    });
+
+    it("judges with the configured judges when none are overridden", async () => {
+      useCompliantFixture();
+      const run = EvalRun.forProject(tmpdir, config, { useCache: false });
+      const results = await run.validateAll();
+      const judgeNames = [...new Set(results.map((r) => r.judge))];
+
+      expect(judgeNames).toEqual(config.judges.map((j) => j.name));
+    });
+
+    it("judges with only the overridden judges", async () => {
+      useCompliantFixture();
+      const only = config.judges.slice(0, 1);
+      const run = EvalRun.forProject(tmpdir, config, { judges: only, useCache: false });
+      const results = await run.validateAll();
+      const judgeNames = [...new Set(results.map((r) => r.judge))];
+
+      expect(judgeNames).toEqual(only.map((j) => j.name));
+    });
+  });
+
   describe("validateAll()", () => {
     it("validates documents across all types", async () => {
       useCompliantFixture();

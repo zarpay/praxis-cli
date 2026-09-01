@@ -173,14 +173,10 @@ export class EvalCommand extends PraxisProjectBase {
   async all(options: AllOptions): Promise<EvalSummary> {
     const judges = this.requireJudges(options.judge);
 
-    const run = new EvalRun({
-      root: this.root,
-      sources: this.config.sources,
-      ignore: this.config.ignore,
+    const run = EvalRun.forProject(this.root, this.config, {
+      judges,
       failFast: options.failFast,
       useCache: options.cache,
-      judges,
-      specFilePattern: this.config.specFilePattern,
     });
 
     if (options.type) {
@@ -224,13 +220,7 @@ export class EvalCommand extends PraxisProjectBase {
   async ci(): Promise<EvalSummary> {
     const judges = this.requireJudges();
 
-    const run = new EvalRun({
-      root: this.root,
-      sources: this.config.sources,
-      ignore: this.config.ignore,
-      judges,
-      specFilePattern: this.config.specFilePattern,
-    });
+    const run = EvalRun.forProject(this.root, this.config, { judges });
 
     this.out.line("Running CI validation...");
     await run.validateAll();
