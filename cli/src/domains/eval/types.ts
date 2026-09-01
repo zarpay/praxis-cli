@@ -9,7 +9,7 @@
 
 import type { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 import type { Reviewer } from "@/domains/eval/models/reviewer.js";
-import type { CacheManager } from "@/domains/eval/services/verdict-cache.js";
+import type { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
 import type { CohortMode, ReviewerConfig } from "@/types.js";
 
 // ---------------------------------------------------------------------------
@@ -79,7 +79,7 @@ export interface Verdict {
   severity?: Severity;
 }
 
-/** Identity of the reviewer whose verdicts a CacheManager reads and writes. */
+/** Identity of the reviewer whose verdicts a VerdictCache addresses. */
 export interface CacheReviewerIdentity {
   name: string;
   model: string;
@@ -100,15 +100,6 @@ export interface VerdictEntry {
   /** Resolved context files the reviewer saw, with content hashes (present when the spec declares any). */
   context_files?: AssistFileRecord[];
   result: Verdict;
-}
-
-/**
- * v4.0 cache file: one file per target, holding every verdict for it —
- * all specs, all reviewers — keyed by `<specHash>:<reviewerHash>`.
- */
-export interface CacheFile {
-  version: "4.0";
-  verdicts: Record<string, VerdictEntry>;
 }
 
 /**
@@ -365,7 +356,7 @@ export interface ReviewTargetInput {
   /** The instrument doing the reviewing. */
   reviewer: Reviewer;
   /** Reviewer-namespaced cache, or null to always call the provider. */
-  cache: CacheManager | null;
+  cache: VerdictCache | null;
   /** Project root, for resolving a `./relative` provider. */
   root?: string;
 }
@@ -423,4 +414,48 @@ export interface RunEvalResult {
   cacheStats: { hits: number; misses: number };
   /** Whether fail-fast stopped the run before every unit was reviewed. */
   stoppedEarly: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Verdict cache payloads (domains/eval/services/)
+// ---------------------------------------------------------------------------
+
+/** A cached verdict to look up. */
+export interface ReadVerdictInput {
+  /** Where this reviewer's verdicts live. */
+  cache: VerdictCache;
+  /** The target whose verdict is wanted. */
+  targetPath: string;
+  /** The spec it was reviewed against. */
+  specPath: string;
+  /** Hash of the full review input; a mismatch is a miss. */
+  contentHash: string;
+}
+
+/** A stored verdict to read back for reporting. */
+export interface ReadVerdictEntryInput {
+  /** Where this reviewer's verdicts live. */
+  cache: VerdictCache;
+  /** The target whose entry is wanted. */
+  targetPath: string;
+  /** The spec to read; omitted takes this reviewer's first entry. */
+  specPath?: string;
+}
+
+/** A verdict to store, with the provenance of what produced it. */
+export interface WriteVerdictInput {
+  /** Where this reviewer's verdicts live. */
+  cache: VerdictCache;
+  /** The target that was reviewed. */
+  targetPath: string;
+  /** The spec it was reviewed against. */
+  specPath: string;
+  /** Hash of the full review input this verdict is keyed on. */
+  contentHash: string;
+  /** The verdict itself. */
+  result: Verdict;
+  /** Resolved exemplar provenance, recorded when the spec blesses any. */
+  exemplarFiles?: AssistFileRecord[];
+  /** Resolved context provenance, recorded when the spec declares any. */
+  contextFiles?: AssistFileRecord[];
 }

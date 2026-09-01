@@ -14,12 +14,12 @@ import { readText } from "@/core/files.js";
 import { baseName, relativePath } from "@/core/paths.js";
 import { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 import { Reviewer } from "@/domains/eval/models/reviewer.js";
+import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
 import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
 import discoverDomains from "@/domains/eval/services/discover-domains.js";
 import listSourceDocuments from "@/domains/eval/services/list-source-documents.js";
 import resolveUnits from "@/domains/eval/services/resolve-units.js";
 import reviewTarget from "@/domains/eval/services/review-target.js";
-import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
@@ -54,7 +54,7 @@ export default async function runEval({
   // Each reviewer gets its own cache bound to its identity: verdicts share
   // one file per target, keyed by (spec, reviewer) so they never collide.
   const caches = reviewers.map((reviewer) =>
-    useCache ? new CacheManager({ projectRoot: root, reviewer: cacheIdentity(reviewer) }) : null,
+    useCache ? new VerdictCache({ projectRoot: root, reviewer: cacheIdentity(reviewer) }) : null,
   );
 
   const queue = domains.flatMap((domain) =>
@@ -147,7 +147,7 @@ async function reviewUnit({
   specPath: string;
   type: string;
   reviewerConfig: ReviewerConfig;
-  cache: CacheManager | null;
+  cache: VerdictCache | null;
   root: string;
   specFilePattern: string;
   cacheStats: { hits: number; misses: number };

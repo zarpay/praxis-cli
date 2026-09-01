@@ -14,10 +14,11 @@ import { exists } from "@/core/files.js";
 import { joinPath, resolvePath } from "@/core/paths.js";
 import { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 import { Reviewer } from "@/domains/eval/models/reviewer.js";
+import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
 import runEval from "@/domains/eval/orchestrators/run-eval.js";
 import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
+import readVerdictEntry from "@/domains/eval/services/read-verdict-entry.js";
 import reviewTarget from "@/domains/eval/services/review-target.js";
-import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 import { unitHeading, verdictMark } from "@/domains/eval/views/progress.js";
 import { VerdictReporter } from "@/domains/eval/views/verdict-report.js";
 import { Paths } from "@/domains/workspace/models/project-paths.js";
@@ -260,7 +261,7 @@ export class EvalCommand extends PraxisProjectBase {
     });
 
     for (const reviewer of reviewers) {
-      const manager = new CacheManager({
+      const cache = new VerdictCache({
         projectRoot: this.root,
         reviewer: cacheIdentity(reviewer),
       });
@@ -269,7 +270,7 @@ export class EvalCommand extends PraxisProjectBase {
         this.out.print(["", { text: `Reviewer: ${reviewer.name}`, color: "cyan" }]);
       }
 
-      const cacheData = manager.readRaw({ targetPath: absolutePath });
+      const cacheData = readVerdictEntry({ cache, targetPath: absolutePath });
       reporter.render(reporter.build(absolutePath, cacheData), options.verbose);
     }
   }
@@ -334,11 +335,11 @@ export class EvalCommand extends PraxisProjectBase {
     return reviewers;
   }
 
-  /** A reviewer-namespaced CacheManager, or undefined when caching is disabled. */
-  private cacheManagerFor(reviewer: ReviewerConfig, useCache: boolean): CacheManager | undefined {
+  /** A reviewer-namespaced VerdictCache, or undefined when caching is disabled. */
+  private cacheManagerFor(reviewer: ReviewerConfig, useCache: boolean): VerdictCache | undefined {
     if (!useCache) return undefined;
 
-    return new CacheManager({ projectRoot: this.root, reviewer: cacheIdentity(reviewer) });
+    return new VerdictCache({ projectRoot: this.root, reviewer: cacheIdentity(reviewer) });
   }
 
   /** Prints a single validation result with colored status. */

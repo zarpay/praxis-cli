@@ -4,28 +4,31 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
 import contentHash from "@/domains/eval/services/hash-content.js";
-import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
+import readVerdictEntry from "@/domains/eval/services/read-verdict-entry.js";
+import readVerdict from "@/domains/eval/services/read-verdict.js";
+import writeVerdict from "@/domains/eval/services/write-verdict.js";
 
-describe("CacheManager", () => {
+describe("the verdict cache", () => {
   describe("default cache root", () => {
     it("defaults to .praxis/cache/validation under the project root", () => {
-      const manager = new CacheManager({ projectRoot: "/project" });
+      const cache = new VerdictCache({ projectRoot: "/project" });
 
-      expect(manager.cacheRoot).toBe("/project/.praxis/cache/validation");
+      expect(cache.root).toBe("/project/.praxis/cache/validation");
     });
   });
 
   let projectRoot: string;
   let cacheRoot: string;
-  let manager: CacheManager;
+  let cache: VerdictCache;
   let cleanup: () => void;
 
   beforeEach(() => {
     projectRoot = join(tmpdir(), `praxis-cache-test-${randomUUID()}`);
     mkdirSync(projectRoot, { recursive: true });
     cacheRoot = join(projectRoot, ".praxis", "cache", "validation");
-    manager = new CacheManager({ cacheRoot, projectRoot });
+    cache = new VerdictCache({ cacheRoot, projectRoot });
 
     cleanup = () => {
       rmSync(projectRoot, { recursive: true, force: true });
@@ -61,19 +64,19 @@ describe("CacheManager", () => {
 
   describe("cachePathFor()", () => {
     it("strips projectRoot from absolute document paths", () => {
-      const path = manager.cachePathFor(join(projectRoot, "roles", "my-role.md"));
+      const path = cache.pathFor(join(projectRoot, "roles", "my-role.md"));
 
       expect(path).toBe(join(cacheRoot, "roles", "my-role.json"));
     });
 
     it("handles nested source directories", () => {
-      const path = manager.cachePathFor(join(projectRoot, "content", "experts", "test.md"));
+      const path = cache.pathFor(join(projectRoot, "content", "experts", "test.md"));
 
       expect(path).toBe(join(cacheRoot, "content", "experts", "test.json"));
     });
 
     it("uses relative paths as-is when no projectRoot match", () => {
-      const path = manager.cachePathFor("roles/my-role.md");
+      const path = cache.pathFor("roles/my-role.md");
 
       expect(path).toBe(join(cacheRoot, "roles", "my-role.json"));
     });
@@ -86,24 +89,28 @@ describe("CacheManager", () => {
       issues: [] as string[],
       reason: "All good",
     };
-    const metadata = {
-      specPath: "roles/README.md",
-    };
+    const specPath = "roles/README.md";
 
     it("writes and reads back a cached result", () => {
       const targetPath = join(projectRoot, "roles", "test-expert.md");
-      manager.write({ targetPath, contentHash: hash, result, metadata });
-      const cached = manager.read({ targetPath, contentHash: hash, specPath: metadata.specPath });
+      writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+      const cached = readVerdict({
+        cache,
+        targetPath,
+        contentHash: hash,
+        specPath,
+      });
 
       expect(cached).toEqual(result);
     });
 
     it("returns null for non-existent cache entries", () => {
       const targetPath = join(projectRoot, "roles", "test-expert.md");
-      const cached = manager.read({
+      const cached = readVerdict({
+        cache,
         targetPath,
         contentHash: "nonexist",
-        specPath: metadata.specPath,
+        specPath,
       });
 
       expect(cached).toBeNull();
@@ -111,11 +118,12 @@ describe("CacheManager", () => {
 
     it("returns null when hash does not match", () => {
       const targetPath = join(projectRoot, "roles", "test-expert.md");
-      manager.write({ targetPath, contentHash: hash, result, metadata });
-      const cached = manager.read({
+      writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+      const cached = readVerdict({
+        cache,
         targetPath,
         contentHash: "different",
-        specPath: metadata.specPath,
+        specPath,
       });
 
       expect(cached).toBeNull();
@@ -130,8 +138,13 @@ describe("CacheManager", () => {
         severity: "error" as const,
       };
 
-      manager.write({ targetPath, contentHash: hash, result: failResult, metadata });
-      const cached = manager.read({ targetPath, contentHash: hash, specPath: metadata.specPath });
+      writeVerdict({ cache, targetPath, contentHash: hash, result: failResult, specPath });
+      const cached = readVerdict({
+        cache,
+        targetPath,
+        contentHash: hash,
+        specPath,
+      });
 
       expect(cached?.severity).toBe("error");
     });
@@ -147,21 +160,35 @@ describe("CacheManager", () => {
         reason: "Fail spec B",
         severity: "error" as const,
       };
-      const metadata1 = { specPath: "specs/README.md" };
-      const metadata2 = { specPath: "other/README.md" };
+      const specPath1 = "specs/README.md";
+      const specPath2 = "other/README.md";
 
-      manager.write({ targetPath, contentHash: "hash1", result: result1, metadata: metadata1 });
-      manager.write({ targetPath, contentHash: "hash2", result: result2, metadata: metadata2 });
-
-      const cached1 = manager.read({
+      writeVerdict({
+        cache,
         targetPath,
         contentHash: "hash1",
-        specPath: metadata1.specPath,
+        result: result1,
+        specPath: specPath1,
       });
-      const cached2 = manager.read({
+      writeVerdict({
+        cache,
         targetPath,
         contentHash: "hash2",
-        specPath: metadata2.specPath,
+        result: result2,
+        specPath: specPath2,
+      });
+
+      const cached1 = readVerdict({
+        cache,
+        targetPath,
+        contentHash: "hash1",
+        specPath: specPath1,
+      });
+      const cached2 = readVerdict({
+        cache,
+        targetPath,
+        contentHash: "hash2",
+        specPath: specPath2,
       });
 
       expect(cached1).toEqual(result1);
@@ -170,35 +197,39 @@ describe("CacheManager", () => {
 
     it("stores both spec entries in a single cache file", () => {
       const targetPath = join(projectRoot, "docs", "guide.md");
-      const metadata1 = { specPath: "specs/README.md" };
-      const metadata2 = { specPath: "other/README.md" };
+      const specPath1 = "specs/README.md";
+      const specPath2 = "other/README.md";
 
-      manager.write({
+      writeVerdict({
+        cache,
         targetPath,
         contentHash: "hash1",
         result: { compliant: true, issues: [], reason: "ok" },
-        metadata: metadata1,
+        specPath: specPath1,
       });
-      manager.write({
+      writeVerdict({
+        cache,
         targetPath,
         contentHash: "hash2",
         result: { compliant: true, issues: [], reason: "ok" },
-        metadata: metadata2,
+        specPath: specPath2,
       });
 
-      expect(existsSync(manager.cachePathFor(targetPath))).toBe(true);
+      expect(existsSync(cache.pathFor(targetPath))).toBe(true);
     });
 
     it("returns null when specPath does not match any cached entry", () => {
       const targetPath = join(projectRoot, "docs", "guide.md");
-      manager.write({
+      writeVerdict({
+        cache,
         targetPath,
         contentHash: "hash1",
         result: { compliant: true, issues: [], reason: "ok" },
-        metadata: { specPath: "specs/README.md" },
+        specPath: "specs/README.md",
       });
 
-      const cached = manager.read({
+      const cached = readVerdict({
+        cache,
         targetPath,
         contentHash: "hash1",
         specPath: "completely/different/README.md",
@@ -209,24 +240,27 @@ describe("CacheManager", () => {
 
     it("returns a cache hit on second run with same spec", () => {
       const targetPath = join(projectRoot, "docs", "guide.md");
-      const metadata = { specPath: "specs/README.md" };
+      const specPath = "specs/README.md";
 
-      manager.write({
+      writeVerdict({
+        cache,
         targetPath,
         contentHash: "stablehash",
         result: { compliant: true, issues: [], reason: "ok" },
-        metadata,
+        specPath,
       });
 
-      const first = manager.read({
+      const first = readVerdict({
+        cache,
         targetPath,
         contentHash: "stablehash",
-        specPath: metadata.specPath,
+        specPath,
       });
-      const second = manager.read({
+      const second = readVerdict({
+        cache,
         targetPath,
         contentHash: "stablehash",
-        specPath: metadata.specPath,
+        specPath,
       });
 
       expect(first).toEqual(second);
@@ -239,17 +273,19 @@ describe("CacheManager", () => {
     const reviewerB = { name: "b", model: "model-b", hash: "bbbb2222" };
 
     it("stores every reviewer's verdicts in the target's single cache file", () => {
-      const managerA = new CacheManager({ cacheRoot, projectRoot, reviewer: reviewerA });
-      const managerB = new CacheManager({ cacheRoot, projectRoot, reviewer: reviewerB });
+      const cacheA = new VerdictCache({ cacheRoot, projectRoot, reviewer: reviewerA });
+      const cacheB = new VerdictCache({ cacheRoot, projectRoot, reviewer: reviewerB });
       const targetPath = join(projectRoot, "roles", "shared.md");
 
-      managerA.write({
+      writeVerdict({
+        cache: cacheA,
         targetPath,
         contentHash: "hash1234",
         result: { compliant: true, issues: [], reason: "reviewer A verdict" },
-        metadata: { specPath: "roles/README.md" },
+        specPath: "roles/README.md",
       });
-      managerB.write({
+      writeVerdict({
+        cache: cacheB,
         targetPath,
         contentHash: "hash1234",
         result: {
@@ -258,31 +294,34 @@ describe("CacheManager", () => {
           reason: "reviewer B verdict",
           severity: "error",
         },
-        metadata: { specPath: "roles/README.md" },
+        specPath: "roles/README.md",
       });
 
       // One artifact per target — both verdicts land in the same file.
-      expect(managerA.cachePathFor(targetPath)).toBe(managerB.cachePathFor(targetPath));
+      expect(cacheA.pathFor(targetPath)).toBe(cacheB.pathFor(targetPath));
     });
 
     it("isolates verdicts between reviewers", () => {
-      const managerA = new CacheManager({ cacheRoot, projectRoot, reviewer: reviewerA });
-      const managerB = new CacheManager({ cacheRoot, projectRoot, reviewer: reviewerB });
+      const cacheA = new VerdictCache({ cacheRoot, projectRoot, reviewer: reviewerA });
+      const cacheB = new VerdictCache({ cacheRoot, projectRoot, reviewer: reviewerB });
       const targetPath = join(projectRoot, "roles", "shared.md");
 
-      managerA.write({
+      writeVerdict({
+        cache: cacheA,
         targetPath,
         contentHash: "hash1234",
         result: { compliant: true, issues: [], reason: "reviewer A verdict" },
-        metadata: { specPath: "roles/README.md" },
+        specPath: "roles/README.md",
       });
 
-      const fromB = managerB.read({
+      const fromB = readVerdict({
+        cache: cacheB,
         targetPath,
         contentHash: "hash1234",
         specPath: "roles/README.md",
       });
-      const fromA = managerA.read({
+      const fromA = readVerdict({
+        cache: cacheA,
         targetPath,
         contentHash: "hash1234",
         specPath: "roles/README.md",
@@ -293,59 +332,66 @@ describe("CacheManager", () => {
     });
 
     it("one reviewer's write preserves the other reviewer's verdict", () => {
-      const managerA = new CacheManager({ cacheRoot, projectRoot, reviewer: reviewerA });
-      const managerB = new CacheManager({ cacheRoot, projectRoot, reviewer: reviewerB });
+      const cacheA = new VerdictCache({ cacheRoot, projectRoot, reviewer: reviewerA });
+      const cacheB = new VerdictCache({ cacheRoot, projectRoot, reviewer: reviewerB });
       const targetPath = join(projectRoot, "roles", "shared.md");
-      const metadata = { specPath: "roles/README.md" };
+      const specPath = "roles/README.md";
 
-      managerA.write({
+      writeVerdict({
+        cache: cacheA,
         targetPath,
         contentHash: "hash1234",
         result: { compliant: true, issues: [], reason: "reviewer A verdict" },
-        metadata,
+        specPath,
       });
-      managerB.write({
+      writeVerdict({
+        cache: cacheB,
         targetPath,
         contentHash: "hash1234",
         result: { compliant: true, issues: [], reason: "reviewer B verdict" },
-        metadata,
+        specPath,
       });
 
-      const fromA = managerA.read({
+      const fromA = readVerdict({
+        cache: cacheA,
         targetPath,
         contentHash: "hash1234",
-        specPath: metadata.specPath,
+        specPath,
       });
 
       expect(fromA?.reason).toBe("reviewer A verdict");
     });
 
     it("readRaw returns only the bound reviewer's entries", () => {
-      const managerA = new CacheManager({ cacheRoot, projectRoot, reviewer: reviewerA });
-      const managerB = new CacheManager({ cacheRoot, projectRoot, reviewer: reviewerB });
+      const cacheA = new VerdictCache({ cacheRoot, projectRoot, reviewer: reviewerA });
+      const cacheB = new VerdictCache({ cacheRoot, projectRoot, reviewer: reviewerB });
       const targetPath = join(projectRoot, "roles", "shared.md");
-      const metadata = { specPath: "roles/README.md" };
+      const specPath = "roles/README.md";
 
-      managerA.write({
+      writeVerdict({
+        cache: cacheA,
         targetPath,
         contentHash: "hash1234",
         result: { compliant: true, issues: [], reason: "reviewer A verdict" },
-        metadata,
+        specPath,
       });
 
-      expect(managerB.readRaw({ targetPath })).toBeNull();
-      expect(managerA.readRaw({ targetPath })?.result.reason).toBe("reviewer A verdict");
+      expect(readVerdictEntry({ cache: cacheB, targetPath })).toBeNull();
+      expect(readVerdictEntry({ cache: cacheA, targetPath })?.result.reason).toBe(
+        "reviewer A verdict",
+      );
     });
   });
 
   describe("corrupt and unknown cache files", () => {
     it("read() deletes a corrupt cache file and returns null", () => {
       const targetPath = join(projectRoot, "roles", "corrupt.md");
-      const cachePath = manager.cachePathFor(targetPath);
+      const cachePath = cache.pathFor(targetPath);
       mkdirSync(dirname(cachePath), { recursive: true });
       writeFileSync(cachePath, "not valid json{{{");
 
-      const cached = manager.read({
+      const cached = readVerdict({
+        cache,
         targetPath,
         contentHash: "anyhash1",
         specPath: "roles/README.md",
@@ -357,11 +403,12 @@ describe("CacheManager", () => {
 
     it("read() returns null for an unrecognized cache version", () => {
       const targetPath = join(projectRoot, "roles", "future.md");
-      const cachePath = manager.cachePathFor(targetPath);
+      const cachePath = cache.pathFor(targetPath);
       mkdirSync(dirname(cachePath), { recursive: true });
       writeFileSync(cachePath, JSON.stringify({ version: "99.0", something: "else" }));
 
-      const cached = manager.read({
+      const cached = readVerdict({
+        cache,
         targetPath,
         contentHash: "anyhash1",
         specPath: "roles/README.md",
@@ -372,18 +419,20 @@ describe("CacheManager", () => {
 
     it("write() replaces a corrupt cache file with a fresh v2.0 file", () => {
       const targetPath = join(projectRoot, "roles", "corrupt.md");
-      const cachePath = manager.cachePathFor(targetPath);
+      const cachePath = cache.pathFor(targetPath);
       mkdirSync(dirname(cachePath), { recursive: true });
       writeFileSync(cachePath, "not valid json{{{");
 
-      manager.write({
+      writeVerdict({
+        cache,
         targetPath,
         contentHash: "newhash1",
         result: { compliant: true, issues: [], reason: "recovered" },
-        metadata: { specPath: "roles/README.md" },
+        specPath: "roles/README.md",
       });
 
-      const cached = manager.read({
+      const cached = readVerdict({
+        cache,
         targetPath,
         contentHash: "newhash1",
         specPath: "roles/README.md",
@@ -399,14 +448,12 @@ describe("CacheManager", () => {
       issues: [] as string[],
       reason: "All good",
     };
-    const metadata = {
-      specPath: "roles/README.md",
-    };
+    const specPath = "roles/README.md";
 
     it("returns full cache data without hash validation", () => {
       const targetPath = join(projectRoot, "roles", "test-expert.md");
-      manager.write({ targetPath, contentHash: hash, result, metadata });
-      const cached = manager.readRaw({ targetPath, specPath: metadata.specPath });
+      writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+      const cached = readVerdictEntry({ cache, targetPath, specPath: specPath });
 
       expect(cached).not.toBeNull();
       expect(cached!.version).toBe("4.0");
@@ -419,8 +466,8 @@ describe("CacheManager", () => {
 
     it("returns first entry when specPath is omitted", () => {
       const targetPath = join(projectRoot, "roles", "test-expert.md");
-      manager.write({ targetPath, contentHash: hash, result, metadata });
-      const cached = manager.readRaw({ targetPath });
+      writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+      const cached = readVerdictEntry({ cache, targetPath });
 
       expect(cached).not.toBeNull();
       expect(cached!.result).toEqual(result);
@@ -428,41 +475,42 @@ describe("CacheManager", () => {
 
     it("returns null when no cache file exists", () => {
       const targetPath = join(projectRoot, "roles", "nonexistent.md");
-      const cached = manager.readRaw({ targetPath });
+      const cached = readVerdictEntry({ cache, targetPath });
 
       expect(cached).toBeNull();
     });
 
     it("returns data even when hash would not match read()", () => {
       const targetPath = join(projectRoot, "roles", "test-expert.md");
-      manager.write({ targetPath, contentHash: hash, result, metadata });
+      writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
 
-      const readResult = manager.read({
+      const readResult = readVerdict({
+        cache,
         targetPath,
         contentHash: "different",
-        specPath: metadata.specPath,
+        specPath,
       });
       expect(readResult).toBeNull();
 
-      const rawResult = manager.readRaw({ targetPath, specPath: metadata.specPath });
+      const rawResult = readVerdictEntry({ cache, targetPath, specPath: specPath });
       expect(rawResult).not.toBeNull();
       expect(rawResult!.content_hash).toBe(hash);
     });
 
     it("does not delete corrupt cache files", () => {
       const targetPath = join(projectRoot, "roles", "corrupt.md");
-      const cachePath = manager.cachePathFor(targetPath);
+      const cachePath = cache.pathFor(targetPath);
       mkdirSync(dirname(cachePath), { recursive: true });
       writeFileSync(cachePath, "not valid json{{{");
 
-      const cached = manager.readRaw({ targetPath });
+      const cached = readVerdictEntry({ cache, targetPath });
       expect(cached).toBeNull();
       expect(existsSync(cachePath)).toBe(true);
     });
   });
 
   describe("text sanitization", () => {
-    const metadata = { specPath: "roles/README.md" };
+    const specPath = "roles/README.md";
 
     it("strips control characters and double quotes from reason and issues", () => {
       const targetPath = join(projectRoot, "roles", "test-expert.md");
@@ -474,8 +522,13 @@ describe("CacheManager", () => {
         severity: "error" as const,
       };
 
-      manager.write({ targetPath, contentHash: hash, result, metadata });
-      const cached = manager.read({ targetPath, contentHash: hash, specPath: metadata.specPath });
+      writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+      const cached = readVerdict({
+        cache,
+        targetPath,
+        contentHash: hash,
+        specPath,
+      });
 
       expect(cached).not.toBeNull();
       expect(cached!.reason).not.toContain("\x00");
@@ -495,8 +548,13 @@ describe("CacheManager", () => {
         reason: "Yes\n\tAll good\nNo issues",
       };
 
-      manager.write({ targetPath, contentHash: hash, result, metadata });
-      const cached = manager.read({ targetPath, contentHash: hash, specPath: metadata.specPath });
+      writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+      const cached = readVerdict({
+        cache,
+        targetPath,
+        contentHash: hash,
+        specPath,
+      });
 
       expect(cached!.reason).toContain("\n");
       expect(cached!.reason).toContain("\t");

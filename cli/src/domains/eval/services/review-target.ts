@@ -1,6 +1,8 @@
 import type { ReviewTargetInput, ReviewTargetResult } from "@/domains/eval/types.js";
 
+import readVerdict from "@/domains/eval/services/read-verdict.js";
 import requestVerdict from "@/domains/eval/services/request-verdict.js";
+import writeVerdict from "@/domains/eval/services/write-verdict.js";
 
 /**
  * A verdict for one target, from cache when the inputs are unchanged.
@@ -22,10 +24,11 @@ export default async function reviewTarget({
   const contentHash = target.contentHash();
 
   if (cache) {
-    const cached = cache.read({
+    const cached = readVerdict({
+      cache,
       targetPath: target.targetPath,
-      contentHash,
       specPath: target.specPath,
+      contentHash,
     });
 
     if (cached) {
@@ -35,12 +38,16 @@ export default async function reviewTarget({
 
   const { verdict, usage } = await requestVerdict(target, reviewer, root);
 
-  cache?.write({
-    targetPath: target.targetPath,
-    contentHash,
-    result: verdict,
-    metadata: { specPath: target.specPath, ...target.assistProvenance() },
-  });
+  if (cache) {
+    writeVerdict({
+      cache,
+      targetPath: target.targetPath,
+      specPath: target.specPath,
+      contentHash,
+      result: verdict,
+      ...target.assistProvenance(),
+    });
+  }
 
   return { verdict, cacheHit: false, usage };
 }

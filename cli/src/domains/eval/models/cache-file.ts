@@ -1,4 +1,4 @@
-import type { CacheFile, CacheReviewerIdentity, VerdictEntry } from "@/domains/eval/types.js";
+import type { CacheReviewerIdentity, VerdictEntry } from "@/domains/eval/types.js";
 
 import { createHash } from "node:crypto";
 
@@ -28,7 +28,7 @@ export const CACHE_VERSION = "4.0";
  * format is a cache, so an unreadable one costs a re-review, never a
  * failed run.
  */
-export class VerdictCacheFile {
+export class CacheFile {
   private readonly verdicts: Record<string, VerdictEntry>;
 
   private constructor(verdicts: Record<string, VerdictEntry>) {
@@ -36,8 +36,8 @@ export class VerdictCacheFile {
   }
 
   /** An empty file, as a fresh target starts. */
-  static empty(): VerdictCacheFile {
-    return new VerdictCacheFile({});
+  static empty(): CacheFile {
+    return new CacheFile({});
   }
 
   /**
@@ -46,10 +46,10 @@ export class VerdictCacheFile {
    * @throws SyntaxError when the text is not JSON at all — the caller
    *   decides whether that warrants discarding the file
    */
-  static parse(json: string): VerdictCacheFile | null {
-    const data = JSON.parse(json) as CacheFile;
+  static parse(json: string): CacheFile | null {
+    const data = JSON.parse(json) as { version: string; verdicts: Record<string, VerdictEntry> };
 
-    return data.version === CACHE_VERSION ? new VerdictCacheFile(data.verdicts) : null;
+    return data.version === CACHE_VERSION ? new CacheFile(data.verdicts) : null;
   }
 
   /** The entry key for a (spec, reviewer) pair. */
@@ -59,7 +59,7 @@ export class VerdictCacheFile {
 
   /** Recomputes an entry's key from the fields it stored. */
   static keyOf(entry: VerdictEntry): string {
-    return VerdictCacheFile.keyFor(entry.spec_path, entry.reviewer.hash);
+    return CacheFile.keyFor(entry.spec_path, entry.reviewer.hash);
   }
 
   /** The entry at a key, or undefined. */
