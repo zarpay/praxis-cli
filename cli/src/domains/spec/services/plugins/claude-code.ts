@@ -1,10 +1,10 @@
-import type { AgentMetadata, CompilerPlugin, PluginOptions } from "@/types.js";
+import type { AgentMetadata, CompilerPlugin, PluginOptions } from "@/domains/spec/types.js";
 
 import { exists, readJson, writeJson, writeText } from "@/core/files.js";
 import { joinPath, resolvePath } from "@/core/paths.js";
-import praxisResolveCommand from "@/prompts/praxis-resolve-command.js";
-import praxisSkill from "@/prompts/praxis-skill.js";
-import { evalTargetingLines } from "@/spec/output-builder.js";
+import praxisResolveCommand from "@/domains/spec/prompts/praxis-resolve-command.js";
+import praxisSkill from "@/domains/spec/prompts/praxis-skill.js";
+import { evalTargetingLines } from "@/domains/spec/services/build-profile.js";
 
 /** Default plugin.json content used when no scaffold file exists. */
 const DEFAULT_PLUGIN_JSON = {

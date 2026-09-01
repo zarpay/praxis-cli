@@ -1,9 +1,9 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { Markdown } from "@/spec/markdown.js";
+import { Markdown } from "@/domains/spec/services/markdown.js";
 
-const FIXTURES_DIR = join(import.meta.dirname, "..", "fixtures");
+const FIXTURES_DIR = join(import.meta.dirname, "..", "..", "..", "fixtures");
 
 describe("Markdown", () => {
   describe("body()", () => {

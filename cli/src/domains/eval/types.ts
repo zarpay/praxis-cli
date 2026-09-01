@@ -3,8 +3,11 @@
  * back, and how it is cached and reported.
  *
  * Shapes more than one domain needs live in src/types.ts instead —
- * JudgeConfig among them, because core/config.ts normalizes it.
+ * JudgeConfig among them, because core/config.ts normalizes it, and
+ * CohortMode, which an expert declares and a spec honors.
  */
+
+import type { CohortMode } from "@/types.js";
 
 // ---------------------------------------------------------------------------
 // Prompt inputs (domains/eval/prompts/)
@@ -218,9 +221,6 @@ export interface ChatCompletionResponse {
 // ---------------------------------------------------------------------------
 // The eval run (eval/eval-run.ts)
 // ---------------------------------------------------------------------------
-
-/** How a spec groups its targets into evaluation units. */
-export type CohortMode = "by_file" | "by_directory";
 
 /**
  * One evaluation unit: what receives a single verdict.

@@ -1,9 +1,9 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { GlobExpander } from "@/spec/glob-expander.js";
+import { GlobExpander } from "@/domains/spec/services/glob-expander.js";
 
-const FIXTURES_DIR = join(import.meta.dirname, "..", "fixtures");
+const FIXTURES_DIR = join(import.meta.dirname, "..", "..", "..", "fixtures");
 
 describe("GlobExpander", () => {
   const expander = new GlobExpander(FIXTURES_DIR);

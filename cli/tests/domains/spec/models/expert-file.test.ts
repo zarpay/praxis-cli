@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ExpertFile } from "@/models/expert-file.js";
+import { ExpertFile } from "@/domains/spec/models/expert-file.js";
 
 /** Builds an expert from frontmatter lines, without touching the filesystem. */
 function expert(lines: string[], path = "/project/experts/steward.md"): ExpertFile {

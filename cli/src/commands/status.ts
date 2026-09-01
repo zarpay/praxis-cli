@@ -12,9 +12,9 @@ import { isSpecFile } from "@/core/spec-pattern.js";
 import { EvalRun } from "@/domains/eval/orchestrators/eval-run.js";
 import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
+import { ExpertFile } from "@/domains/spec/models/expert-file.js";
+import { GlobExpander } from "@/domains/spec/services/glob-expander.js";
 import { DocumentFile } from "@/models/document-file.js";
-import { ExpertFile } from "@/models/expert-file.js";
-import { GlobExpander } from "@/spec/glob-expander.js";
 import { verdictTally } from "@/views/badges.js";
 import { statLines } from "@/views/stats.js";
 

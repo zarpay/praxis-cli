@@ -10,8 +10,8 @@ import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { watchDir } from "@/core/files.js";
 import { Paths, resolvePath } from "@/core/paths.js";
-import { ExpertFile } from "@/models/expert-file.js";
-import { ExpertCompiler } from "@/spec/expert-compiler.js";
+import { ExpertFile } from "@/domains/spec/models/expert-file.js";
+import { ExpertCompiler } from "@/domains/spec/orchestrators/expert-compiler.js";
 import { Logger } from "@/views/logger.js";
 
 /**

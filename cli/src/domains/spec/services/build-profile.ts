@@ -1,4 +1,4 @@
-import type { AgentMetadata } from "@/types.js";
+import type { AgentMetadata } from "@/domains/spec/types.js";
 
 /** Separator between items in Responsibilities, Context, and Reference sections. */
 const SEPARATOR = "\n---\n";
