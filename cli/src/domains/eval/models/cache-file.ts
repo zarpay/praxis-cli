@@ -54,12 +54,21 @@ export class CacheFile {
 
   /** The entry key for a (spec, reviewer) pair. */
   static keyFor(specPath: string, reviewerHash: string): string {
-    return `${specHash(specPath)}:${reviewerHash}`;
+    return `${this.specHash(specPath)}:${reviewerHash}`;
   }
 
   /** Recomputes an entry's key from the fields it stored. */
   static keyOf(entry: VerdictEntry): string {
     return CacheFile.keyFor(entry.spec_path, entry.reviewer.hash);
+  }
+
+  /**
+   * An 8-char hash of the spec's project-relative path.
+   *
+   * Relative, so a cache file committed on one machine hits on another.
+   */
+  private static specHash(specPath: string): string {
+    return createHash("sha256").update(specPath).digest("hex").slice(0, 8);
   }
 
   /** The entry at a key, or undefined. */
@@ -90,13 +99,4 @@ export class CacheFile {
 
     return json;
   }
-}
-
-/**
- * An 8-char hash of the spec's project-relative path.
- *
- * Relative, so a cache file committed on one machine hits on another.
- */
-function specHash(specPath: string): string {
-  return createHash("sha256").update(specPath).digest("hex").slice(0, 8);
 }
