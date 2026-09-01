@@ -1,3 +1,5 @@
+import type { JudgeConfig } from "@/types.js";
+
 import { HttpResponse, http } from "msw";
 import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -5,7 +7,9 @@ import { tmpdir as osTmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import { Judge } from "@/domains/eval/services/judge-target.js";
+import { Judge } from "@/domains/eval/models/judge.js";
+import { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
+import { evaluateTarget } from "@/domains/eval/services/judge-target.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
@@ -17,7 +21,7 @@ import {
 } from "@tests/helpers/openrouter-msw.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
-/** Canned tool-call responses used across the validate() tests. */
+/** Canned tool-call responses used across the judging tests. */
 const fixtures = {
   pass: validationToolCallResponse("validation_pass", {
     reason: "The file satisfies all criteria defined in the specification.",
@@ -42,7 +46,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-describe("Judge", () => {
+describe("judgeTarget", () => {
   let tmpdir: string;
   let cleanup: () => void;
 
@@ -58,88 +62,89 @@ describe("Judge", () => {
     delete process.env["OPENROUTER_API_KEY"];
   });
 
-  /** Builds a judge invocation for the standard fixture expert. */
-  function makeValidator(): Judge {
-    return new Judge({
-      targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
-      useCache: false,
-      config: TEST_JUDGE,
+  /** Evaluates one target with one judge, cache off unless given. */
+  function evaluate({
+    targetPath,
+    specPath,
+    specFilePattern,
+    root,
+    config = TEST_JUDGE,
+    cache = null,
+  }: {
+    targetPath?: string;
+    specPath?: string;
+    specFilePattern?: string;
+    root?: string;
+    config?: JudgeConfig;
+    cache?: CacheManager | null;
+  } = {}) {
+    const target = JudgmentTarget.resolve({
+      targetPath: targetPath ?? join(tmpdir, "content", "experts", "test-expert.md"),
+      specPath,
+      specFilePattern,
+      root,
     });
+
+    return evaluateTarget({ target, judge: Judge.fromConfig(config), cache, root });
   }
 
-  describe("validate()", () => {
+  describe("verdicts", () => {
     it("returns compliant result for a validation_pass tool call", async () => {
       useOpenRouterResponse(server, fixtures.pass);
 
-      const result = await makeValidator().validate();
+      const { verdict } = await evaluate();
 
-      expect(result.compliant).toBe(true);
-      expect(result.issues).toEqual([]);
+      expect(verdict.compliant).toBe(true);
+      expect(verdict.issues).toEqual([]);
     });
 
     it("returns warning result for a validation_warn tool call", async () => {
       useOpenRouterResponse(server, fixtures.warn);
 
-      const result = await makeValidator().validate();
+      const { verdict } = await evaluate();
 
-      expect(result.compliant).toBe(false);
-      expect(result.severity).toBe("warning");
-      expect(result.issues.length).toBeGreaterThan(0);
+      expect(verdict.compliant).toBe(false);
+      expect(verdict.severity).toBe("warning");
+      expect(verdict.issues.length).toBeGreaterThan(0);
     });
 
     it("returns error result for a validation_fail tool call", async () => {
       useOpenRouterResponse(server, fixtures.fail);
 
-      const result = await makeValidator().validate();
+      const { verdict } = await evaluate();
 
-      expect(result.compliant).toBe(false);
-      expect(result.severity).toBe("error");
-      expect(result.issues.length).toBeGreaterThan(0);
+      expect(verdict.compliant).toBe(false);
+      expect(verdict.severity).toBe("error");
+      expect(verdict.issues.length).toBeGreaterThan(0);
     });
 
     it("returns structured issues from the tool call response", async () => {
       useOpenRouterResponse(server, fixtures.fail);
 
-      const result = await makeValidator().validate();
+      const { verdict } = await evaluate();
 
-      expect(result.issues).toContain("Missing required `owner` field in frontmatter");
-      expect(result.issues).toContain("Missing Objective section");
-      expect(result.issues).toContain("Missing Criteria section");
-    });
-
-    it("throws when no judge is configured", async () => {
-      const validator = new Judge({
-        targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
-        useCache: false,
-      });
-
-      await expect(validator.validate()).rejects.toThrow("No judges configured");
+      expect(verdict.issues).toContain("Missing required `owner` field in frontmatter");
+      expect(verdict.issues).toContain("Missing Objective section");
+      expect(verdict.issues).toContain("Missing Criteria section");
     });
 
     it("throws when the API key environment variable is not set", async () => {
-      const validator = new Judge({
-        targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
-        useCache: false,
+      const judgment = evaluate({
         config: { name: "unset", model: "m", apiKeyEnvVar: "UNSET_KEY_VAR" },
       });
 
-      await expect(validator.validate()).rejects.toThrow(
-        "UNSET_KEY_VAR environment variable not set",
-      );
+      await expect(judgment).rejects.toThrow("UNSET_KEY_VAR environment variable not set");
     });
 
     it("uses custom apiKeyEnvVar", async () => {
       useOpenRouterResponse(server, fixtures.pass);
       process.env["CUSTOM_API_KEY"] = "test-key";
 
-      const validator = new Judge({
-        targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
-        useCache: false,
+      const { verdict } = await evaluate({
         config: { name: "custom", model: "m", apiKeyEnvVar: "CUSTOM_API_KEY" },
       });
 
-      const result = await validator.validate();
-      expect(result.compliant).toBe(true);
+      expect(verdict.compliant).toBe(true);
 
       delete process.env["CUSTOM_API_KEY"];
     });
@@ -149,7 +154,7 @@ describe("Judge", () => {
         http.post(OPENROUTER_URL, () => HttpResponse.text("upstream unavailable", { status: 502 })),
       );
 
-      await expect(makeValidator().validate()).rejects.toThrow(
+      await expect(evaluate()).rejects.toThrow(
         'Judge provider "openrouter" API error (502): upstream unavailable',
       );
     });
@@ -159,7 +164,7 @@ describe("Judge", () => {
         choices: [{ message: { role: "assistant", content: "Looks fine to me." } }],
       });
 
-      await expect(makeValidator().validate()).rejects.toThrow("did not return a tool call");
+      await expect(evaluate()).rejects.toThrow("did not return a tool call");
     });
 
     it("throws when the model calls an unknown tool", async () => {
@@ -184,9 +189,7 @@ describe("Judge", () => {
         ],
       });
 
-      await expect(makeValidator().validate()).rejects.toThrow(
-        "Unexpected validation tool call: validation_bogus",
-      );
+      await expect(evaluate()).rejects.toThrow("Unexpected validation tool call: validation_bogus");
     });
   });
 
@@ -200,9 +203,7 @@ describe("Judge", () => {
         }),
       );
 
-      const judge = new Judge({
-        targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
-        useCache: false,
+      await evaluate({
         config: {
           name: "local",
           model: "org-model",
@@ -210,7 +211,6 @@ describe("Judge", () => {
           baseUrl: "https://inference.internal/v1",
         },
       });
-      await judge.validate();
 
       expect(hit).toBe(true);
     });
@@ -224,18 +224,11 @@ describe("Judge", () => {
           return HttpResponse.json(fixtures.pass);
         }),
       );
-      const targetPath = join(tmpdir, "content", "experts", "test-expert.md");
 
-      await new Judge({
-        targetPath,
-        useCache: false,
+      await evaluate({
         config: { name: "hot", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY", temperature: 0.9 },
-      }).validate();
-      await new Judge({
-        targetPath,
-        useCache: false,
-        config: { name: "cool", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" },
-      }).validate();
+      });
+      await evaluate({ config: { name: "cool", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" } });
 
       expect(temperatures).toEqual([0.9, 0]);
     });
@@ -248,13 +241,12 @@ describe("Judge", () => {
       writeFileSync(join(dir, "SPEC.md"), "# Spec\nRequired fields: name");
       writeFileSync(join(dir, "doc.md"), "---\ntype: role\n---\n# Doc");
 
-      const validator = new Judge({
+      const target = JudgmentTarget.resolve({
         targetPath: join(dir, "doc.md"),
         specFilePattern: "SPEC.md",
-        useCache: false,
       });
 
-      expect(validator.specPath).toBe(join(dir, "SPEC.md"));
+      expect(target.specPath).toBe(join(dir, "SPEC.md"));
 
       rmSync(dir, { recursive: true, force: true });
     });
@@ -265,13 +257,12 @@ describe("Judge", () => {
       writeFileSync(join(dir, "README.roles.md"), "# Roles Spec");
       writeFileSync(join(dir, "doc.md"), "---\ntype: role\n---\n# Doc");
 
-      const validator = new Judge({
+      const target = JudgmentTarget.resolve({
         targetPath: join(dir, "doc.md"),
         specFilePattern: "README.*.md",
-        useCache: false,
       });
 
-      expect(validator.specPath).toBe(join(dir, "README.roles.md"));
+      expect(target.specPath).toBe(join(dir, "README.roles.md"));
 
       rmSync(dir, { recursive: true, force: true });
     });
@@ -281,14 +272,10 @@ describe("Judge", () => {
       mkdirSync(dir, { recursive: true });
       writeFileSync(join(dir, "doc.md"), "---\ntype: role\n---\n# Doc");
 
-      expect(
-        () =>
-          new Judge({
-            targetPath: join(dir, "doc.md"),
-            specFilePattern: "SPEC.md",
-            useCache: false,
-          }),
-      ).toThrow("No SPEC.md found");
+      const resolve = () =>
+        JudgmentTarget.resolve({ targetPath: join(dir, "doc.md"), specFilePattern: "SPEC.md" });
+
+      expect(resolve).toThrow("No SPEC.md found");
 
       rmSync(dir, { recursive: true, force: true });
     });
@@ -296,12 +283,10 @@ describe("Judge", () => {
 
   describe("content hash", () => {
     it("returns 8-character hex string", () => {
-      const validator = new Judge({
+      const target = JudgmentTarget.resolve({
         targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
-        useCache: false,
       });
-
-      const hash = validator.getContentHash();
+      const hash = target.contentHash();
 
       expect(hash).toHaveLength(8);
       expect(hash).toMatch(/^[a-f0-9]{8}$/);
@@ -338,14 +323,11 @@ describe("Judge", () => {
       );
       const { root, abs, cleanup } = exemplarProject();
 
-      const judge = new Judge({
+      await evaluate({
         targetPath: abs("src/events/signup_event.rb"),
         specPath: abs("docs/events.sme.md"),
         root,
-        useCache: false,
-        config: TEST_JUDGE,
       });
-      await judge.validate();
 
       expect(bodies[0]).toContain("EXEMPLAR: src/events/referral_event.rb");
       expect(bodies[0]).toContain("REFERRAL_EXEMPLAR_CONTENT");
@@ -357,27 +339,21 @@ describe("Judge", () => {
       useOpenRouterResponse(server, fixtures.pass);
       const { root, abs, cleanup } = exemplarProject();
 
-      function makeJudge(): Judge {
-        return new Judge({
+      const judged = () =>
+        evaluate({
           targetPath: abs("src/events/signup_event.rb"),
           specPath: abs("docs/events.sme.md"),
           root,
-          cacheManager: new CacheManager({ projectRoot: root }),
-          config: TEST_JUDGE,
+          cache: new CacheManager({ projectRoot: root }),
         });
-      }
 
-      await makeJudge().validate();
+      await judged();
 
-      const second = makeJudge();
-      await second.validate();
-      expect(second.cacheHit).toBe(true);
+      expect((await judged()).cacheHit).toBe(true);
 
       writeFileSync(abs("src/events/referral_event.rb"), "REFERRAL_EXEMPLAR_EDITED");
 
-      const third = makeJudge();
-      await third.validate();
-      expect(third.cacheHit).toBe(false);
+      expect((await judged()).cacheHit).toBe(false);
 
       cleanup();
     });
@@ -385,15 +361,13 @@ describe("Judge", () => {
     it("throws when a spec declares exemplars and no project root is given", () => {
       const { abs, cleanup } = exemplarProject();
 
-      expect(
-        () =>
-          new Judge({
-            targetPath: abs("src/events/signup_event.rb"),
-            specPath: abs("docs/events.sme.md"),
-            useCache: false,
-            config: TEST_JUDGE,
-          }),
-      ).toThrow(/project root/);
+      const resolve = () =>
+        JudgmentTarget.resolve({
+          targetPath: abs("src/events/signup_event.rb"),
+          specPath: abs("docs/events.sme.md"),
+        });
+
+      expect(resolve).toThrow(/project root/);
 
       cleanup();
     });
@@ -419,14 +393,13 @@ describe("Judge", () => {
       });
     }
 
-    /** Builds a cache-bound Judge for the context project. */
-    function makeJudge(root: string, abs: (p: string) => string): Judge {
-      return new Judge({
+    /** Evaluates the context project's target against a cache. */
+    function judgeContext(root: string, abs: (p: string) => string) {
+      return evaluate({
         targetPath: abs("src/events/signup_event.rb"),
         specPath: abs("docs/events.sme.md"),
         root,
-        cacheManager: new CacheManager({ projectRoot: root }),
-        config: TEST_JUDGE,
+        cache: new CacheManager({ projectRoot: root }),
       });
     }
 
@@ -440,14 +413,11 @@ describe("Judge", () => {
       );
       const { root, abs, cleanup } = contextProject();
 
-      const judge = new Judge({
+      await evaluate({
         targetPath: abs("src/events/signup_event.rb"),
         specPath: abs("docs/events.sme.md"),
         root,
-        useCache: false,
-        config: TEST_JUDGE,
       });
-      await judge.validate();
 
       expect(bodies[0]).toContain("CONTEXT: src/services/store.ts");
       expect(bodies[0]).toContain("STORE_CONTEXT_CONTENT");
@@ -459,17 +429,13 @@ describe("Judge", () => {
       useOpenRouterResponse(server, fixtures.pass);
       const { root, abs, cleanup } = contextProject();
 
-      await makeJudge(root, abs).validate();
+      await judgeContext(root, abs);
 
-      const second = makeJudge(root, abs);
-      await second.validate();
-      expect(second.cacheHit).toBe(true);
+      expect((await judgeContext(root, abs)).cacheHit).toBe(true);
 
       writeFileSync(abs("src/services/store.ts"), "STORE_CONTEXT_EDITED");
 
-      const third = makeJudge(root, abs);
-      await third.validate();
-      expect(third.cacheHit).toBe(false);
+      expect((await judgeContext(root, abs)).cacheHit).toBe(false);
 
       cleanup();
     });
@@ -478,7 +444,7 @@ describe("Judge", () => {
       useOpenRouterResponse(server, fixtures.pass);
       const { root, abs, cleanup } = contextProject();
 
-      await makeJudge(root, abs).validate();
+      await judgeContext(root, abs);
 
       const cacheFile = abs(".praxis/cache/validation/src/events/signup_event.rb.json");
       const parsed = JSON.parse(readFileSync(cacheFile, "utf-8")) as {
@@ -530,59 +496,53 @@ describe("Judge", () => {
     }
     `;
 
+    const echoJudge = { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" };
+
     it("judges through a local provider module with no HTTP call", async () => {
       // onUnhandledRequest: "error" makes any network attempt fail loudly.
       const { root, abs, cleanup } = providerProject(ECHO_PROVIDER);
 
-      const judge = new Judge({
+      const { verdict } = await evaluate({
         targetPath: abs("docs/guide.md"),
         root,
-        useCache: false,
-        config: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
+        config: echoJudge,
       });
-      const result = await judge.validate();
 
-      expect(result).toEqual({ compliant: true, issues: [], reason: "echoed" });
+      expect(verdict).toEqual({ compliant: true, issues: [], reason: "echoed" });
 
       cleanup();
     });
 
-    it("exposes the provider's usage after a real call", async () => {
+    it("returns the provider's usage after a real call", async () => {
       const { root, abs, cleanup } = providerProject(ECHO_PROVIDER);
 
-      const judge = new Judge({
+      const { usage } = await evaluate({
         targetPath: abs("docs/guide.md"),
         root,
-        useCache: false,
-        config: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
+        config: echoJudge,
       });
-      await judge.validate();
 
-      expect(judge.lastUsage).toEqual({ promptTokens: 7, completionTokens: 3, costUsd: 0.0001 });
+      expect(usage).toEqual({ promptTokens: 7, completionTokens: 3, costUsd: 0.0001 });
 
       cleanup();
     });
 
-    it("reports null usage for a cache hit", async () => {
+    it("reports null usage for a cache hit — nothing was spent", async () => {
       const { root, abs, cleanup } = providerProject(ECHO_PROVIDER);
-      const judgeConfig = { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" };
 
-      function makeJudge(): Judge {
-        return new Judge({
+      const judged = () =>
+        evaluate({
           targetPath: abs("docs/guide.md"),
           root,
-          cacheManager: new CacheManager({ projectRoot: root }),
-          config: judgeConfig,
+          config: echoJudge,
+          cache: new CacheManager({ projectRoot: root }),
         });
-      }
 
-      await makeJudge().validate();
-
-      const second = makeJudge();
-      await second.validate();
+      await judged();
+      const second = await judged();
 
       expect(second.cacheHit).toBe(true);
-      expect(second.lastUsage).toBeNull();
+      expect(second.usage).toBeNull();
 
       cleanup();
     });
@@ -590,13 +550,11 @@ describe("Judge", () => {
     it("wraps a provider's own failure with the provider's name", async () => {
       const { root, abs, cleanup } = providerProject(THROWING_PROVIDER);
 
-      const judge = new Judge({
+      const judgment = evaluate({
         targetPath: abs("docs/guide.md"),
         root,
-        useCache: false,
-        config: { ...TEST_JUDGE, provider: "./praxis-providers/echo.mjs" },
+        config: echoJudge,
       });
-      const judgment = judge.validate();
 
       await expect(judgment).rejects.toThrow('Judge provider "flaky" failed: socket hang up');
 
@@ -608,25 +566,14 @@ describe("Judge", () => {
     it("uses cached result on second call with same content", async () => {
       useOpenRouterResponse(server, fixtures.pass);
 
-      const cacheManager = new CacheManager({
+      const cache = new CacheManager({
         cacheRoot: join(tmpdir, ".praxis", "cache", "validation"),
       });
+      const judged = () =>
+        evaluate({ targetPath: join(tmpdir, "content", "experts", "test-expert.md"), cache });
 
-      const validator1 = new Judge({
-        targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
-        cacheManager,
-        config: TEST_JUDGE,
-      });
-      await validator1.validate();
-      expect(validator1.cacheHit).toBe(false);
-
-      const validator2 = new Judge({
-        targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
-        cacheManager,
-        config: TEST_JUDGE,
-      });
-      await validator2.validate();
-      expect(validator2.cacheHit).toBe(true);
+      expect((await judged()).cacheHit).toBe(false);
+      expect((await judged()).cacheHit).toBe(true);
     });
   });
 });

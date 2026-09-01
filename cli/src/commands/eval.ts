@@ -16,9 +16,11 @@ import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
 import { Paths, resolvePath } from "@/core/paths.js";
+import { Judge } from "@/domains/eval/models/judge.js";
+import { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
 import { EvalRun } from "@/domains/eval/orchestrators/eval-run.js";
 import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
-import { Judge } from "@/domains/eval/services/judge-target.js";
+import { evaluateTarget } from "@/domains/eval/services/judge-target.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 import { VerdictReporter } from "@/domains/eval/views/verdict-report.js";
 
@@ -138,18 +140,21 @@ export class EvalCommand extends PraxisProjectBase {
 
     let worst: Verdict | null = null;
 
+    const target = JudgmentTarget.resolve({
+      targetPath: path,
+      specPath: options.spec,
+      specFilePattern: this.config.specFilePattern,
+      root: this.root,
+    });
+
     for (const judgeConfig of judges) {
-      const judge = new Judge({
-        targetPath: path,
-        specPath: options.spec,
-        specFilePattern: this.config.specFilePattern,
-        useCache: options.cache,
-        cacheManager: this.cacheManagerFor(judgeConfig, options.cache),
-        config: judgeConfig,
+      const { verdict: result } = await evaluateTarget({
+        target,
+        judge: Judge.fromConfig(judgeConfig),
+        cache: this.cacheManagerFor(judgeConfig, options.cache) ?? null,
         root: this.root,
       });
 
-      const result = await judge.validate();
       const label =
         judges.length > 1 ? `${path} ${chalk.cyan(`[judge: ${judgeConfig.name}]`)}` : path;
       this.displayResult(label, result, options.verbose);

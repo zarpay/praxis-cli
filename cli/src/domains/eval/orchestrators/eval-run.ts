@@ -17,9 +17,11 @@ import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
+import { Judge } from "@/domains/eval/models/judge.js";
+import { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
 import { SpecFile } from "@/domains/eval/models/spec-file.js";
 import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
-import { Judge } from "@/domains/eval/services/judge-target.js";
+import { evaluateTarget } from "@/domains/eval/services/judge-target.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 
 /**
@@ -489,21 +491,23 @@ export class EvalRun extends PraxisProjectBase {
     judgeIndex: number,
   ): Promise<Verdict> {
     const cohort = isCohort(unit);
-    const judge = new Judge({
+    const target = JudgmentTarget.resolve({
       targetPath: unit.path,
       targetContent: cohort ? this.assembleCohort(unit) : undefined,
       kind: cohort ? "cohort" : "file",
       specPath,
       specFilePattern: this.specFilePattern,
-      useCache: this.useCache,
-      cacheManager: this.cacheManagers[judgeIndex] ?? undefined,
-      config: judgeConfig,
       root: this.root,
     });
 
-    const verdict = await judge.validate();
+    const { verdict, cacheHit } = await evaluateTarget({
+      target,
+      judge: Judge.fromConfig(judgeConfig),
+      cache: this.cacheManagers[judgeIndex] ?? null,
+      root: this.root,
+    });
 
-    if (judge.cacheHit) {
+    if (cacheHit) {
       this.cacheStats.hits++;
     } else {
       this.cacheStats.misses++;
