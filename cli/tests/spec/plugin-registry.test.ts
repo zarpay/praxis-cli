@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { Logger } from "@/core/logger.js";
 import { resolvePlugins } from "@/spec/plugin-registry.js";
 import { ClaudeCodePlugin } from "@/spec/plugins/claude-code.js";
+import { Logger } from "@/views/logger.js";
 
 describe("resolvePlugins", () => {
   const logger = new Logger({ color: false });

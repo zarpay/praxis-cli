@@ -6,7 +6,8 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { PraxisBase, PraxisProjectBase } from "@/core/base.js";
 import { PraxisConfig } from "@/core/config.js";
-import { Display, Logger } from "@/core/logger.js";
+import { Display } from "@/views/display.js";
+import { Logger } from "@/views/logger.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 
 /** Minimal subclass exposing the protected plumbing for assertions. */

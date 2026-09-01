@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 
-import type { Logger } from "@/core/logger.js";
+import type { Logger } from "@/views/logger.js";
 
 import { runAction } from "@/commands/action.js";
 import { PraxisBase } from "@/core/base.js";

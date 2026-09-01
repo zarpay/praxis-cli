@@ -1,7 +1,8 @@
 import type { PraxisBaseOptions, PraxisProjectBaseOptions } from "@/types.js";
 
 import { PraxisConfig } from "@/core/config.js";
-import { Display, Logger } from "@/core/logger.js";
+import { Display } from "@/views/display.js";
+import { Logger } from "@/views/logger.js";
 
 /**
  * Shared plumbing for Praxis classes: `out` renders the command's

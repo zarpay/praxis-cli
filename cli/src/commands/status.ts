@@ -15,6 +15,8 @@ import { cacheIdentity } from "@/eval/judge-hash.js";
 import { DocumentFile } from "@/models/document-file.js";
 import { ExpertFile } from "@/models/expert-file.js";
 import { GlobExpander } from "@/spec/glob-expander.js";
+import { verdictTally } from "@/views/badges.js";
+import { statLines } from "@/views/stats.js";
 
 /** The reference keys an expert can point at other documents with. */
 const REF_KEYS = ["practices", "context", "refs"] as const;
@@ -359,12 +361,12 @@ export class StatusCommand extends PraxisProjectBase {
 
 /** The document-count lines, label-aligned. */
 export function countLines(counts: StatusReport["counts"]): string[] {
-  return [
-    `  Experts:            ${counts.experts}`,
-    `  Practices:          ${counts.practices}`,
-    `  References:         ${counts.references}`,
-    `  Context files:      ${counts.context}`,
-  ];
+  return statLines([
+    ["Experts", counts.experts],
+    ["Practices", counts.practices],
+    ["References", counts.references],
+    ["Context files", counts.context],
+  ]);
 }
 
 /**
@@ -378,15 +380,7 @@ export function validationBlocks(
 ): { judge: string; badges: BadgeEntry[] }[] {
   return validation
     .filter((v) => v.pass + v.warn + v.fail + v.notValidated > 0)
-    .map((v) => ({
-      judge: v.judge,
-      badges: [
-        { badge: "PASS", color: "green", value: v.pass, indent: 2 },
-        { badge: "WARN", color: "yellow", value: v.warn, indent: 2 },
-        { badge: "FAIL", color: "red", value: v.fail, indent: 2 },
-        { badge: "NOT VALIDATED", color: "gray", value: v.notValidated, indent: 2 },
-      ],
-    }));
+    .map((v) => ({ judge: v.judge, badges: verdictTally(v) }));
 }
 
 /**

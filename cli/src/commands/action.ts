@@ -1,4 +1,4 @@
-import { Logger } from "@/core/logger.js";
+import { Logger } from "@/views/logger.js";
 
 /**
  * Wraps a CLI action body with the one error policy every command

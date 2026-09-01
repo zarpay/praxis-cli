@@ -154,13 +154,41 @@ export default tseslint.config(
     },
   },
   {
+    // Dependencies flow one way:
+    //
+    //   core, views  ->  spec, eval  ->  workspace  ->  commands
+    //
+    // core and views are the kernel: primitives and the render kit,
+    // depending on no domain. Each domain under src/domains owns one
+    // area end to end (models, services, orchestrators, views).
+    // workspace sits above spec and eval because project health reads
+    // both. Nothing imports commands.
+    //
+    // These blocks come last and restate the fs/path and relative-import
+    // bans, because rule configs replace rather than merge.
+    files: ["src/core/**/*.ts", "src/views/**/*.ts"],
+    ignores: ["src/core/files.ts", "src/core/paths.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+          ],
+          patterns: [
+            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
+            { group: ["@/domains/*", "@/commands/*"], message: "core and views are the kernel: they must not depend on a domain or on commands." },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // The two layers (11-spec-layer.md) never import each other: the
     // spec layer produces artifacts the eval layer consumes as plain
-    // files, and the eval layer never calls back. Shared primitives
-    // live in @/core; commands may wire both layers together. These
-    // blocks come last and restate the fs/path and relative-import
-    // bans, because rule configs replace rather than merge.
-    files: ["src/eval/**/*.ts"],
+    // files, and the eval layer never calls back.
+    files: ["src/domains/eval/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -171,14 +199,15 @@ export default tseslint.config(
           ],
           patterns: [
             { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
-            { group: ["@/spec/*"], message: "The eval layer must not depend on the spec layer (11-spec-layer.md)." },
+            { group: ["@/domains/spec/*"], message: "The eval layer must not depend on the spec layer (11-spec-layer.md)." },
+            { group: ["@/domains/workspace/*", "@/commands/*"], message: "Domains must not depend on workspace or on commands (dependencies flow one way)." },
           ],
         },
       ],
     },
   },
   {
-    files: ["src/spec/**/*.ts"],
+    files: ["src/domains/spec/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -189,19 +218,18 @@ export default tseslint.config(
           ],
           patterns: [
             { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
-            { group: ["@/eval/*"], message: "The spec layer must not depend on the eval layer (11-spec-layer.md)." },
+            { group: ["@/domains/eval/*"], message: "The spec layer must not depend on the eval layer (11-spec-layer.md)." },
+            { group: ["@/domains/workspace/*", "@/commands/*"], message: "Domains must not depend on workspace or on commands (dependencies flow one way)." },
           ],
         },
       ],
     },
   },
   {
-    // Models are a shared leaf like core and prompts: typed readers for
-    // the project's document kinds, so they may import neither layer.
-    // NOTE: this makes the eval layer *able* to import spec-layer
-    // taxonomy (@/models/expert-file.js). Nothing but review stops it;
-    // the taxonomy-free guarantee for @/eval is convention here.
-    files: ["src/models/**/*.ts"],
+    // workspace is the project itself: config surface, document
+    // discovery, health. It reads both spec and eval, so it sits above
+    // them and nothing below it may import it back.
+    files: ["src/domains/workspace/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -212,57 +240,38 @@ export default tseslint.config(
           ],
           patterns: [
             { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
-            { group: ["@/eval/*", "@/spec/*"], message: "Models are a shared leaf: they must not depend on either layer." },
+            { group: ["@/commands/*"], message: "Domains must not depend on commands (dependencies flow one way)." },
           ],
         },
       ],
     },
   },
   {
-    // Prompts are a shared leaf like core: both layers may import them,
-    // so they may import neither layer (only @/core and each other).
-    files: ["src/prompts/**/*.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
-          ],
-          patterns: [
-            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
-            { group: ["@/eval/*", "@/spec/*"], message: "Prompts are a shared leaf: they must not depend on either layer." },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    // Every type and interface lives in src/types.ts — the project's
-    // single, organized types home. Modules declare behavior only.
+    // Every type and interface lives in a types.ts — the root one for
+    // shapes more than one domain needs, a domain's own for its
+    // vocabulary. Modules declare behavior only.
     files: ["src/**/*.ts"],
-    ignores: ["src/types.ts"],
+    ignores: ["src/types.ts", "src/domains/*/types.ts"],
     rules: {
       "no-restricted-syntax": [
         "error",
         {
           selector: "TSInterfaceDeclaration",
-          message: "Declare interfaces in src/types.ts (import from @/types.js).",
+          message: "Declare interfaces in a types.ts — the domain's own, or src/types.ts when more than one domain needs it.",
         },
         {
           selector: "TSTypeAliasDeclaration",
-          message: "Declare type aliases in src/types.ts (import from @/types.js).",
+          message: "Declare type aliases in a types.ts — the domain's own, or src/types.ts when more than one domain needs it.",
         },
       ],
     },
   },
   {
-    // All terminal output goes through the logger module: Display for
-    // stdout reports, Logger for stderr diagnostics. Raw console calls
-    // are allowed only inside that module.
+    // All terminal output goes through the view kit: Display for stdout
+    // reports, Logger for stderr diagnostics. Raw console calls are
+    // allowed only inside those modules.
     files: ["src/**/*.ts"],
-    ignores: ["src/core/logger.ts"],
+    ignores: ["src/views/display.ts", "src/views/logger.ts"],
     rules: {
       "no-console": "error",
     },

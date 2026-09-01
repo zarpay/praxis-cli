@@ -14,10 +14,11 @@
  */
 
 import type { PraxisConfig } from "@/core/config.js";
-import type { Display, Logger } from "@/core/logger.js";
+import type { Display } from "@/views/display.js";
+import type { Logger } from "@/views/logger.js";
 
 // ---------------------------------------------------------------------------
-// Terminal output (core/logger.ts)
+// Terminal output (views/)
 // ---------------------------------------------------------------------------
 
 /** Chalk styles a Display entry may name. */

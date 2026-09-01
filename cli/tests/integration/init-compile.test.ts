@@ -6,8 +6,8 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { InitCommand } from "@/commands/init.js";
-import { Logger } from "@/core/logger.js";
 import { ExpertCompiler } from "@/spec/expert-compiler.js";
+import { Logger } from "@/views/logger.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 
 /** Resolved path to the scaffold directory at the project root. */
