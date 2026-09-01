@@ -17,21 +17,19 @@ const BLANK_SEPARATOR = "\n";
  * can never drift.
  */
 export function evalTargetingLines(metadata: AgentMetadata): string[] {
-  const validates = metadata.validates ?? [];
+  if (metadata.validates.length === 0) return [];
 
-  if (validates.length === 0) return [];
-
-  const lines = ["paths:", ...validates.map((p) => `  - "${p}"`)];
+  const lines = ["paths:", ...metadata.validates.map((p) => `  - "${p}"`)];
 
   if (metadata.cohort) {
     lines.push(`cohort: ${metadata.cohort}`);
   }
 
-  if (metadata.excludes && metadata.excludes.length > 0) {
+  if (metadata.excludes.length > 0) {
     lines.push("excludes:", ...metadata.excludes.map((p) => `  - "${p}"`));
   }
 
-  if (metadata.exemplars && metadata.exemplars.length > 0) {
+  if (metadata.exemplars.length > 0) {
     lines.push("exemplars:", ...metadata.exemplars.map((p) => `  - "${p}"`));
   }
 

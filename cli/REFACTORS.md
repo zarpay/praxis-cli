@@ -151,6 +151,31 @@ on arbitrary content files and `owner` on practices. Those want a third model
 
 ---
 
+## [x] 8. Retire the frontmatter-handling left behind by the models
+
+**Done.** Once models validated on construction, the defensive code around them
+was dead weight. Six removals:
+
+1. `Markdown` was a **second implementation** of the frontmatter format — its own
+   `DELIMITER`, its own `indexOf("\n---")` scan. `Frontmatter.body()` now owns it
+   and `Markdown` delegates.
+2. `buildExpertProfile` **read every expert file twice** (once via `ExpertFile`,
+   again via `new Markdown(expert.path)`). `ExpertFile.body()` closes that.
+3. The **alias slug** lived in the compiler and could produce `""`. It moved to
+   `ExpertFile.agentName`, which raises on an alias with no letter or digit.
+4. `AgentMetadata.validates/excludes/exemplars` became required `string[]`, so
+   `output-builder` dropped `?? []` and two `&& x.length > 0` guards.
+5. `claude-code.buildFrontmatter` re-checked `!name || !description` — both
+   unreachable once 3 and 4 landed.
+6. `ExpertCompiler.compile()` returned `string | null` for a null it can no
+   longer produce; it returns `string` and throws instead.
+
+**New model:** `DocumentFile` (`type`, `owner`, both optional) for `praxis status`
+sweeping trees where the kind isn't known per file. That closes item 7's leftover
+— no production code outside `src/models/` reads keys off `Frontmatter` any more.
+
+---
+
 ## Considered and deliberately not scheduled
 
 **Splitting `src/types.ts` (623 loc, the largest file).** `AgentMetadata`,

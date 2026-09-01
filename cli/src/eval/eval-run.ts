@@ -57,10 +57,10 @@ export class EvalRun extends PraxisProjectBase {
   constructor({
     root,
     sources,
-    ignore = [],
-    failFast = false,
-    useCache = true,
     judges,
+    ignore = [],
+    useCache = true,
+    failFast = false,
     specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
   }: {
     root: string;
@@ -83,8 +83,8 @@ export class EvalRun extends PraxisProjectBase {
     this.cacheManagers = judges.map((judge) =>
       useCache ? new CacheManager({ projectRoot: root, judge: cacheIdentity(judge) }) : null,
     );
-    this.cacheStats = { hits: 0, misses: 0 };
     this.specFilePattern = specFilePattern;
+    this.cacheStats = { hits: 0, misses: 0 };
     this.absoluteIgnore = ignore.map((p) => joinPath(root, p));
   }
 
@@ -365,8 +365,6 @@ export class EvalRun extends PraxisProjectBase {
         const type = relativePath(this.root, dir) || baseName(dir);
 
         const spec = SpecFile.at(specPath, this.root);
-        const pathPatterns = spec.paths;
-        const cohort = spec.cohort;
         const excludes = spec.excludes.map((p) => joinPath(this.root, p));
         const exemplars = spec.exemplars.map((p) => joinPath(this.root, p));
         // Exemplars are shielded from adverse judgment exactly like
@@ -375,30 +373,30 @@ export class EvalRun extends PraxisProjectBase {
 
         const domain: ValidationDomain = {
           dir,
-          specPath,
           type,
-          cohort,
+          specPath,
           excludes,
           exemplars,
+          cohort: spec.cohort,
         };
 
         const syncOptions: fg.Options = {
+          dot: true,
           cwd: this.root,
           absolute: true,
-          dot: true,
           ignore: shielded,
         };
 
-        if (cohort === "by_directory") {
+        if (spec.cohort === "by_directory") {
           syncOptions.onlyDirectories = true;
 
-          const targetDirs = fg.sync(pathPatterns, syncOptions).sort();
+          const targetDirs = fg.sync(spec.paths, syncOptions).sort();
 
           domain.targetDirs = targetDirs;
-        } else if (pathPatterns.length > 0) {
+        } else if (spec.paths.length > 0) {
           syncOptions.onlyFiles = true;
 
-          const targetFiles = fg.sync(pathPatterns, syncOptions).filter(targetFilesFilterCallback);
+          const targetFiles = fg.sync(spec.paths, syncOptions).filter(targetFilesFilterCallback);
 
           domain.targetFiles = targetFiles;
         }

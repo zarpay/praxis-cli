@@ -98,15 +98,12 @@ export class ClaudeCodePlugin implements CompilerPlugin {
       return null;
     }
 
-    const { name, description } = metadata;
-
-    if (!name || !description) {
-      return null;
-    }
-
+    // name and description are both guaranteed: ExpertFile rejects an
+    // alias that slugs to nothing, and buildAgentMetadata returns null
+    // rather than metadata without a description.
     const lines = ["---"];
-    lines.push(`name: ${name}`);
-    lines.push(`description: ${quoteIfNeeded(description)}`);
+    lines.push(`name: ${metadata.name}`);
+    lines.push(`description: ${quoteIfNeeded(metadata.description)}`);
 
     if (metadata.tools) {
       lines.push(`tools: ${metadata.tools}`);

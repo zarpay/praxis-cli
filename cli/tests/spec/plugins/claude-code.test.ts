@@ -1,3 +1,5 @@
+import type { AgentMetadata } from "@/types.js";
+
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -7,6 +9,11 @@ import { afterEach, describe, expect, it } from "vitest";
 import { Logger } from "@/core/logger.js";
 import { ClaudeCodePlugin } from "@/spec/plugins/claude-code.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
+
+/** A complete AgentMetadata with only the fields a test cares about set. */
+function metadata(fields: Partial<AgentMetadata> & { name: string }): AgentMetadata {
+  return { description: "", validates: [], excludes: [], exemplars: [], ...fields };
+}
 
 describe("ClaudeCodePlugin", () => {
   const dirs: string[] = [];
@@ -31,7 +38,7 @@ describe("ClaudeCodePlugin", () => {
 
     plugin.compile(
       "# Role\n\nTest content\n",
-      { name: "tester", description: "A test agent" },
+      metadata({ name: "tester", description: "A test agent" }),
       "Tester",
     );
 
@@ -45,7 +52,7 @@ describe("ClaudeCodePlugin", () => {
 
     plugin.compile(
       "# Role\n\nTest content\n",
-      { name: "tester", description: "A test agent" },
+      metadata({ name: "tester", description: "A test agent" }),
       "Tester",
     );
 
@@ -62,13 +69,13 @@ describe("ClaudeCodePlugin", () => {
 
     plugin.compile(
       "# Role\n\nContent\n",
-      {
+      metadata({
         name: "tester",
         description: "A test agent",
         tools: "Read, Glob, Grep",
         model: "opus",
         permissionMode: "plan",
-      },
+      }),
       "Tester",
     );
 
@@ -95,11 +102,11 @@ describe("ClaudeCodePlugin", () => {
 
     plugin.compile(
       "# Role\n\nContent\n",
-      {
+      metadata({
         name: "servus-expert",
         description: "SME on Servus",
         validates: ["backend/app/services/**/*.rb", "backend/app/events/**/*.rb"],
-      },
+      }),
       "ServusExpert",
     );
 
@@ -118,7 +125,7 @@ describe("ClaudeCodePlugin", () => {
 
     plugin.compile(
       "# Role\n\nContent\n",
-      { name: "tester", description: "A test agent" },
+      metadata({ name: "tester", description: "A test agent" }),
       "Tester",
     );
 
@@ -132,10 +139,7 @@ describe("ClaudeCodePlugin", () => {
 
     plugin.compile(
       "# Role\n\nContent\n",
-      {
-        name: "tester",
-        description: "Use this agent to do: things & stuff [here]",
-      },
+      metadata({ name: "tester", description: "Use this agent to do: things & stuff [here]" }),
       "Tester",
     );
 
@@ -147,7 +151,7 @@ describe("ClaudeCodePlugin", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
-    plugin.compile("Content", { name: "stewart", description: "Test" }, "Stewart");
+    plugin.compile("Content", metadata({ name: "stewart", description: "Test" }), "Stewart");
 
     expect(existsSync(join(root, "plugins", "praxis", "agents", "stewart.md"))).toBe(true);
   });
@@ -172,7 +176,11 @@ describe("ClaudeCodePlugin", () => {
       pluginConfig: { name: "claude-code", outputDir: "./my-plugins/custom" },
     });
 
-    plugin.compile("# Role\n\nContent\n", { name: "tester", description: "Test" }, "Tester");
+    plugin.compile(
+      "# Role\n\nContent\n",
+      metadata({ name: "tester", description: "Test" }),
+      "Tester",
+    );
 
     const outputFile = join(root, "my-plugins", "custom", "agents", "tester.md");
     expect(existsSync(outputFile)).toBe(true);
@@ -182,7 +190,7 @@ describe("ClaudeCodePlugin", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
-    plugin.compile("Content", { name: "tester", description: "Test" }, "Tester");
+    plugin.compile("Content", metadata({ name: "tester", description: "Test" }), "Tester");
 
     const pluginJsonPath = join(root, "plugins", "praxis", ".claude-plugin", "plugin.json");
     expect(existsSync(pluginJsonPath)).toBe(true);
@@ -199,7 +207,7 @@ describe("ClaudeCodePlugin", () => {
       pluginConfig: { name: "claude-code", claudeCodePluginName: "my-org" },
     });
 
-    plugin.compile("Content", { name: "tester", description: "Test" }, "Tester");
+    plugin.compile("Content", metadata({ name: "tester", description: "Test" }), "Tester");
 
     const pluginJsonPath = join(root, "plugins", "praxis", ".claude-plugin", "plugin.json");
     const pluginJson = readJsonFile<{ name: string }>(pluginJsonPath);
@@ -218,7 +226,7 @@ describe("ClaudeCodePlugin", () => {
       },
     });
 
-    plugin.compile("Content", { name: "tester", description: "Test" }, "Tester");
+    plugin.compile("Content", metadata({ name: "tester", description: "Test" }), "Tester");
 
     // Agent file in custom output dir
     expect(existsSync(join(root, "my-plugins", "custom", "agents", "tester.md"))).toBe(true);
@@ -267,7 +275,7 @@ describe("ClaudeCodePlugin", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
-    plugin.compile("Content", { name: "tester", description: "Test" }, "Tester");
+    plugin.compile("Content", metadata({ name: "tester", description: "Test" }), "Tester");
 
     const commandPath = join(root, "plugins", "praxis", "commands", "praxis-resolve.md");
     expect(existsSync(commandPath)).toBe(true);
@@ -286,7 +294,7 @@ describe("ClaudeCodePlugin", () => {
       pluginConfig: { name: "claude-code", outputDir: "./my-plugins/custom" },
     });
 
-    plugin.compile("Content", { name: "tester", description: "Test" }, "Tester");
+    plugin.compile("Content", metadata({ name: "tester", description: "Test" }), "Tester");
 
     const commandPath = join(root, "my-plugins", "custom", "commands", "praxis-resolve.md");
     expect(existsSync(commandPath)).toBe(true);
@@ -296,7 +304,7 @@ describe("ClaudeCodePlugin", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
-    plugin.compile("Content", { name: "tester", description: "Test" }, "Tester");
+    plugin.compile("Content", metadata({ name: "tester", description: "Test" }), "Tester");
 
     const skillPath = join(root, "plugins", "praxis", "skills", "praxis", "SKILL.md");
     expect(existsSync(skillPath)).toBe(true);
@@ -311,8 +319,8 @@ describe("ClaudeCodePlugin", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
-    plugin.compile("Content 1", { name: "a", description: "Agent A" }, "A");
-    plugin.compile("Content 2", { name: "b", description: "Agent B" }, "B");
+    plugin.compile("Content 1", metadata({ name: "a", description: "Agent A" }), "A");
+    plugin.compile("Content 2", metadata({ name: "b", description: "Agent B" }), "B");
 
     // Both agents should exist
     expect(existsSync(join(root, "plugins", "praxis", "agents", "a.md"))).toBe(true);

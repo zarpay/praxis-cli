@@ -150,6 +150,28 @@ describe("ExpertFile", () => {
     });
   });
 
+  describe("agentName", () => {
+    it("slugs the alias", () => {
+      const subject = expert(["alias: Feature Steward"]);
+
+      expect(subject.agentName).toBe("feature-steward");
+    });
+
+    it("raises when the alias slugs to nothing", () => {
+      const build = () => expert(["alias: '***'"]);
+
+      expect(build).toThrow(/at least one letter or digit/);
+    });
+  });
+
+  describe("body()", () => {
+    it("returns the prose with frontmatter stripped and trimmed", () => {
+      const subject = expert(["alias: Scooper"]);
+
+      expect(subject.body()).toBe("# Steward");
+    });
+  });
+
   it("keeps the path it was built with", () => {
     const subject = expert(["alias: Scooper"], "/project/experts/scooper.md");
 

@@ -1,20 +1,17 @@
 import { readText } from "@/core/files.js";
-
-/** Delimiter used to fence YAML frontmatter in markdown files. */
-const DELIMITER = "---";
+import { Frontmatter } from "@/core/frontmatter.js";
 
 /**
  * Extracts the body content from a markdown file, stripping frontmatter.
  *
- * Handles files with or without YAML frontmatter. For files with
- * frontmatter, returns everything after the closing `---` delimiter.
- * For files without, returns the entire content.
+ * A thin file-reading wrapper over `Frontmatter.body()` — the delimiter
+ * format has one implementation, in the parser that owns it.
  */
 export class Markdown {
-  private readonly content: string;
+  private readonly fm: Frontmatter;
 
   constructor(filePath: string) {
-    this.content = readText(filePath);
+    this.fm = Frontmatter.fromContent(readText(filePath));
   }
 
   /**
@@ -26,29 +23,8 @@ export class Markdown {
     return this.bodyRaw().trim();
   }
 
-  /**
-   * Returns the raw markdown body preserving original whitespace.
-   *
-   * If the file has frontmatter, returns everything after the closing
-   * `---` delimiter. If not, returns the entire file content.
-   */
+  /** Returns the raw markdown body preserving original whitespace. */
   bodyRaw(): string {
-    if (!this.hasFrontmatter()) {
-      return this.content;
-    }
-
-    const endIndex = this.content.indexOf(`\n${DELIMITER}`, DELIMITER.length);
-
-    if (endIndex === -1) {
-      return this.content;
-    }
-
-    const startOfBody = endIndex + DELIMITER.length + 2;
-    return this.content.slice(startOfBody);
-  }
-
-  /** Checks whether the file content starts with a frontmatter delimiter. */
-  private hasFrontmatter(): boolean {
-    return this.content.startsWith(`${DELIMITER}\n`);
+    return this.fm.body();
   }
 }

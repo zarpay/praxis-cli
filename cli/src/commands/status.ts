@@ -7,12 +7,12 @@ import fg from "fast-glob";
 import { runAction } from "@/commands/action.js";
 import { PraxisProjectBase } from "@/core/base.js";
 import { exists } from "@/core/files.js";
-import { Frontmatter } from "@/core/frontmatter.js";
 import { Paths, baseName, joinPath, relativePath, resolvePath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { CacheManager } from "@/eval/cache-manager.js";
 import { EvalRun } from "@/eval/eval-run.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
+import { DocumentFile } from "@/models/document-file.js";
 import { ExpertFile } from "@/models/expert-file.js";
 import { GlobExpander } from "@/spec/glob-expander.js";
 
@@ -129,7 +129,7 @@ export class StatusCommand extends PraxisProjectBase {
       const allFiles = await this.listContentFiles(sourceDir, true);
 
       for (const file of allFiles) {
-        const type = Frontmatter.fromFile(file).optionalValue("type");
+        const type = DocumentFile.at(file).type;
 
         if (type === "reference") references++;
         else if (type === "convention" || type === "constitution") context++;
@@ -234,7 +234,7 @@ export class StatusCommand extends PraxisProjectBase {
     const unmatched: StatusReport["unmatchedOwners"] = [];
 
     for (const practiceFile of practiceFiles) {
-      const owner = Frontmatter.fromFile(practiceFile).optionalValue("owner");
+      const owner = DocumentFile.at(practiceFile).owner;
 
       if (owner && !aliases.has(owner.toLowerCase())) {
         unmatched.push({ practice: baseName(practiceFile), owner });

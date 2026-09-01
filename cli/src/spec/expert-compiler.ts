@@ -41,12 +41,13 @@ export class ExpertCompiler extends PraxisProjectBase {
    * Compiles a single role file, writing output based on config.
    *
    * @param expertFile - Absolute path to the role markdown file
-   * @returns The role alias, or null if the role was skipped
+   * @returns The compiled expert's alias
+   * @throws PraxisError when the file is not a valid expert document
    */
-  async compile(expertFile: string): Promise<string | null> {
+  async compile(expertFile: string): Promise<string> {
     const expert = ExpertFile.at(expertFile);
     const alias = expert.alias;
-    const { profile, metadata } = await this.buildExpertProfile(expert, alias);
+    const { profile, metadata } = await this.buildExpertProfile(expert);
     this.writeOutputs(profile, metadata, alias);
 
     this.logger.success(`Compiled ${alias.toLowerCase()}.md`);
@@ -56,8 +57,8 @@ export class ExpertCompiler extends PraxisProjectBase {
   /**
    * Compiles all role files found in the project's roles directory.
    *
-   * Skips templates (underscore-prefixed files), spec files, and roles without
-   * an alias (compile() logs a warning for the latter).
+   * Skips templates (underscore-prefixed files) and spec files. A file
+   * that is not a valid expert is warned about and skipped.
    *
    * @returns Summary with the count of compiled agents
    */
@@ -82,9 +83,8 @@ export class ExpertCompiler extends PraxisProjectBase {
       // A malformed expert is reported and skipped, never fatal: one
       // bad file in the directory must not abandon every other agent.
       try {
-        const alias = await this.compile(expertFile);
-
-        if (alias) compiled++;
+        await this.compile(expertFile);
+        compiled++;
       } catch (err) {
         this.logger.warn(`Skipping ${baseName(expertFile)}: ${(err as Error).message}`);
       }
@@ -99,13 +99,11 @@ export class ExpertCompiler extends PraxisProjectBase {
    */
   private async buildExpertProfile(
     expert: ExpertFile,
-    alias: string,
   ): Promise<{ profile: string; metadata: AgentMetadata | null }> {
-    const md = new Markdown(expert.path);
-    const metadata = this.buildAgentMetadata(expert, alias);
+    const metadata = this.buildAgentMetadata(expert);
     const builder = new OutputBuilder();
 
-    builder.addRole(md.body());
+    builder.addRole(expert.body());
     builder.addResponsibilities(await this.inlineRefs(expert, "practices"));
     builder.addConstitution(await this.inlineConstitution(expert));
     builder.addContext(await this.inlineRefs(expert, "context"));
@@ -219,12 +217,7 @@ export class ExpertCompiler extends PraxisProjectBase {
    * frontmatter stay undefined. Returns null if no `description` is
    * provided.
    */
-  private buildAgentMetadata(expert: ExpertFile, alias: string): AgentMetadata | null {
-    const name = alias
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-
+  private buildAgentMetadata(expert: ExpertFile): AgentMetadata | null {
     const description = expert.description;
 
     if (!description) {
@@ -233,7 +226,7 @@ export class ExpertCompiler extends PraxisProjectBase {
     }
 
     return {
-      name,
+      name: expert.agentName,
       description,
       cohort: expert.cohort,
       tools: expert.agentTools,

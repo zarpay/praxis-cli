@@ -1,5 +1,8 @@
 import type { CohortMode, RefKey } from "@/types.js";
 
+import { errors } from "@/core/errors.js";
+import { readText } from "@/core/files.js";
+import { Frontmatter } from "@/core/frontmatter.js";
 import { Fields } from "@/models/fields.js";
 
 /** The accepted `cohort:` frontmatter values. */
@@ -33,6 +36,8 @@ export class ExpertFile {
   readonly path: string;
   /** The expert's short name, and the compiled agent's filename. */
   readonly alias: string;
+  /** The alias slugged for use as an agent name; never empty. */
+  readonly agentName: string;
   /** What the agent is for; absent means no agent metadata is emitted. */
   readonly description: string | undefined;
   /** Constitution glob patterns, as written. */
@@ -53,10 +58,23 @@ export class ExpertFile {
   readonly exemplars: string[];
 
   private readonly references: Record<RefKey, string[]>;
+  private readonly bodyText: string;
 
-  private constructor(fields: Fields, path: string) {
+  private constructor(fields: Fields, path: string, body: string) {
     this.path = path;
+    this.bodyText = body;
     this.alias = fields.requiredString("alias");
+    this.agentName = slug(this.alias);
+
+    if (!this.agentName) {
+      throw errors.invalidFrontmatterField(
+        "alias",
+        path,
+        "a name with at least one letter or digit",
+        this.alias,
+      );
+    }
+
     this.description = fields.optionalString("description");
     this.constitution = fields.stringList("constitution");
     this.agentTools = fields.optionalString("agent_tools");
@@ -75,12 +93,19 @@ export class ExpertFile {
 
   /** Reads and validates an expert from disk. */
   static at(path: string): ExpertFile {
-    return new ExpertFile(Fields.fromFile(path, path), path);
+    return ExpertFile.fromContent(readText(path), path);
   }
 
   /** Reads and validates an expert from already-loaded content. */
   static fromContent(content: string, path: string): ExpertFile {
-    return new ExpertFile(Fields.fromContent(content, path), path);
+    const fm = Frontmatter.fromContent(content);
+
+    return new ExpertFile(new Fields(fm, path), path, fm.body().trim());
+  }
+
+  /** The expert's prose, frontmatter stripped — the compiled Role section. */
+  body(): string {
+    return this.bodyText;
   }
 
   /**
@@ -91,4 +116,12 @@ export class ExpertFile {
   refs(key: RefKey): string[] {
     return this.references[key];
   }
+}
+
+/** Slugs an alias into an agent name: lowercase, hyphen-separated. */
+function slug(alias: string): string {
+  return alias
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }

@@ -112,6 +112,27 @@ export class Frontmatter {
   }
 
   /**
+   * Returns everything after the frontmatter block, unmodified.
+   *
+   * A file with no frontmatter is all body. The delimiter scan lives
+   * here, with the parser that owns the format, rather than being
+   * reimplemented by every reader that wants the prose.
+   */
+  body(): string {
+    if (!this.content.startsWith(`${DELIMITER}\n`)) {
+      return this.content;
+    }
+
+    const endIndex = this.content.indexOf(`\n${DELIMITER}`, DELIMITER.length);
+
+    if (endIndex === -1) {
+      return this.content;
+    }
+
+    return this.content.slice(endIndex + DELIMITER.length + 2);
+  }
+
+  /**
    * Returns the raw YAML string between delimiters, without parsing.
    *
    * Useful for debugging or re-serialization. Returns an empty string
