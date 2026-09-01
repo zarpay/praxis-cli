@@ -8,10 +8,10 @@ import type { DisplayEntry, JudgeConfig } from "@/types.js";
 import chalk from "chalk";
 
 import { runAction } from "@/commands/action.js";
-import { PraxisProjectBase } from "@/core/base.js";
+import { PraxisProjectBase } from "@/commands/base.js";
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
-import { Paths, joinPath, resolvePath } from "@/core/paths.js";
+import { joinPath, resolvePath } from "@/core/paths.js";
 import { Judge } from "@/domains/eval/models/judge.js";
 import { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
 import runEval from "@/domains/eval/orchestrators/run-eval.js";
@@ -20,6 +20,7 @@ import evaluateTarget from "@/domains/eval/services/evaluate-target.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 import { unitHeading, verdictMark } from "@/domains/eval/views/progress.js";
 import { VerdictReporter } from "@/domains/eval/views/verdict-report.js";
+import { Paths } from "@/domains/workspace/models/project-paths.js";
 
 /**
  * Registers the `praxis eval` command group.

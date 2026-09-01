@@ -116,15 +116,6 @@ export class Frontmatter {
     );
   }
 
-  /** Narrows one value to a string, naming the key when it isn't one. */
-  private asString(key: string, raw: unknown): string {
-    if (typeof raw !== "string") {
-      throw errors.invalidFrontmatterField(key, this.docName, "a string", raw);
-    }
-
-    return raw;
-  }
-
   /**
    * Parses the YAML with js-yaml's safe load.
    *
@@ -139,5 +130,14 @@ export class Frontmatter {
     const parsed = yaml.load(this.rawYaml, { schema: yaml.DEFAULT_SCHEMA });
 
     return (parsed as Record<string, unknown>) ?? {};
+  }
+
+  /** Narrows one value to a string, naming the key when it isn't one. */
+  private asString(key: string, raw: unknown): string {
+    if (typeof raw !== "string") {
+      throw errors.invalidFrontmatterField(key, this.docName, "a string", raw);
+    }
+
+    return raw;
   }
 }

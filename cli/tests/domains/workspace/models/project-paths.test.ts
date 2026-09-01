@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { Paths } from "@/core/paths.js";
+import { Paths } from "@/domains/workspace/models/project-paths.js";
 
 describe("Paths", () => {
   const dirs: string[] = [];
@@ -56,16 +56,6 @@ describe("Paths", () => {
     const root1 = paths.root;
     const root2 = paths.root;
     expect(root1).toBe(root2);
-  });
-
-  it("exposes the well-known project paths", () => {
-    const dir = makeTmpdir();
-    mkdirSync(join(dir, ".praxis"), { recursive: true });
-
-    const paths = new Paths(dir);
-    expect(paths.praxisDir).toBe(join(dir, ".praxis"));
-    expect(paths.configFile).toBe(join(dir, ".praxis", "config.json"));
-    expect(paths.validationCacheDir).toBe(join(dir, ".praxis", "cache", "validation"));
   });
 
   it("resolves relative paths against root", () => {

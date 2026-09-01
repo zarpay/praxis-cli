@@ -2,7 +2,6 @@ import type { AssistFileRecord, AssistInputs } from "@/domains/eval/types.js";
 
 import fg from "fast-glob";
 
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { exists, readText } from "@/core/files.js";
 import { joinPath, parentDir } from "@/core/paths.js";
@@ -11,6 +10,7 @@ import assistFileRecords from "@/domains/eval/services/build-assist-file-records
 import assistHashInput from "@/domains/eval/services/build-assist-hash-input.js";
 import contentHash from "@/domains/eval/services/hash-content.js";
 import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs.js";
+import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
  * Everything a judge is shown about one target: the target itself, the

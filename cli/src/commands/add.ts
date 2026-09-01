@@ -4,10 +4,11 @@ import type { AddableType } from "@/domains/workspace/types.js";
 import type { Logger } from "@/views/logger.js";
 
 import { runAction } from "@/commands/action.js";
-import { PraxisProjectBase } from "@/core/base.js";
+import { PraxisProjectBase } from "@/commands/base.js";
 import { errors } from "@/core/errors.js";
 import { exists, readText, writeText } from "@/core/files.js";
-import { Paths, SCAFFOLD_DIR, joinPath, relativePath } from "@/core/paths.js";
+import { joinPath, relativePath } from "@/core/paths.js";
+import { Paths, SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
 
 /**
  * Registers the `praxis add` command group.

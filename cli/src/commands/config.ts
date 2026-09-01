@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { runAction } from "@/commands/action.js";
 import { PraxisBase } from "@/core/base.js";
 import { readJson } from "@/core/files.js";
-import { Paths } from "@/core/paths.js";
+import { Paths } from "@/domains/workspace/models/project-paths.js";
 
 /** Horizontal rule used in the config header output. */
 const DIVIDER = chalk.cyan("─".repeat(42));

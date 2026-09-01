@@ -2,9 +2,9 @@ import type { DiscoveryScope } from "@/domains/eval/types.js";
 
 import fg from "fast-glob";
 
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { joinPath } from "@/core/paths.js";
 import { isJudgeable } from "@/core/spec-pattern.js";
+import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
  * Every .md document across the source directories.

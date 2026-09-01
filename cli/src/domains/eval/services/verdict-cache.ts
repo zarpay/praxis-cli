@@ -12,10 +12,10 @@ import fg from "fast-glob";
 import { createHash } from "node:crypto";
 
 import { PraxisBase } from "@/core/base.js";
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, fileSize, readText, removeFile, writeText } from "@/core/files.js";
-import { baseName, joinPath, parentDir, validationCacheDir } from "@/core/paths.js";
+import { baseName, joinPath, parentDir } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
+import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /** Current cache format version. Pre-3.0 files are ignored (v2 is a breaking release). */
 const CACHE_VERSION = "3.0";
@@ -263,9 +263,12 @@ export class CacheManager extends PraxisBase {
     return this.cacheRelative(cacheFile).split("/")[0] ?? "unknown";
   }
 
-  /** Derives the default cache root from the project root or cwd. */
+  /**
+   * The default cache root: `.praxis/cache/validation` under the
+   * project. Eval owns where its own verdicts live.
+   */
   private defaultCacheRoot(): string {
-    return validationCacheDir(this.projectRoot ?? process.cwd());
+    return joinPath(this.projectRoot ?? process.cwd(), ".praxis", "cache", "validation");
   }
 
   /** Reads a target's v3.0 entries belonging to this manager's judge. */

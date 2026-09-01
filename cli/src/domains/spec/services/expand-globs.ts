@@ -2,9 +2,9 @@ import type { ExpandGlobsInput, GlobExpansion } from "@/domains/spec/types.js";
 
 import fg from "fast-glob";
 
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { baseName } from "@/core/paths.js";
 import { hasGlobChars, isSpecFile } from "@/core/spec-pattern.js";
+import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
  * Resolves an expert's declared patterns to the files they match.

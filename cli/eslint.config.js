@@ -156,13 +156,19 @@ export default tseslint.config(
   {
     // Dependencies flow one way:
     //
-    //   core, views  ->  spec, eval  ->  workspace  ->  commands
+    //   core, views  ->  workspace/{models,types}  ->  spec, eval  ->  commands
     //
-    // core and views are the kernel: primitives and the render kit,
-    // depending on no domain. Each domain under src/domains owns one
-    // area end to end (models, services, orchestrators, views).
-    // workspace sits above spec and eval because project health reads
-    // both. Nothing imports commands.
+    // core and views are the kernel: generic primitives and the render
+    // kit, knowing nothing about Praxis and depending on no domain.
+    //
+    // workspace is the project itself, and the ONLY domain the others
+    // may reach into: spec and eval import its models and types (config,
+    // project paths, document kinds) and stay isolated from each other.
+    //
+    // The reach-in is scoped to models/ and types.ts. The health slice —
+    // audit-experts, tally-validation, analyze-project — reads *back*
+    // into spec and eval, so letting a domain import it would be a
+    // cycle. Nothing but commands imports those.
     //
     // These blocks come last and restate the fs/path and relative-import
     // bans, because rule configs replace rather than merge.
@@ -200,7 +206,8 @@ export default tseslint.config(
           patterns: [
             { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
             { group: ["@/domains/spec/*"], message: "The eval layer must not depend on the spec layer (11-spec-layer.md)." },
-            { group: ["@/domains/workspace/*", "@/commands/*"], message: "Domains must not depend on workspace or on commands (dependencies flow one way)." },
+            { group: ["@/domains/workspace/services/*", "@/domains/workspace/orchestrators/*", "@/domains/workspace/views/*"], message: "Only workspace's models and types may be reached into: its services read back into spec and eval, so importing them would be a cycle." },
+            { group: ["@/commands/*"], message: "Domains must not depend on commands (dependencies flow one way)." },
           ],
         },
       ],
@@ -219,16 +226,17 @@ export default tseslint.config(
           patterns: [
             { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
             { group: ["@/domains/eval/*"], message: "The spec layer must not depend on the eval layer (11-spec-layer.md)." },
-            { group: ["@/domains/workspace/*", "@/commands/*"], message: "Domains must not depend on workspace or on commands (dependencies flow one way)." },
+            { group: ["@/domains/workspace/services/*", "@/domains/workspace/orchestrators/*", "@/domains/workspace/views/*"], message: "Only workspace's models and types may be reached into: its services read back into spec and eval, so importing them would be a cycle." },
+            { group: ["@/commands/*"], message: "Domains must not depend on commands (dependencies flow one way)." },
           ],
         },
       ],
     },
   },
   {
-    // workspace is the project itself: config surface, document
-    // discovery, health. It reads both spec and eval, so it sits above
-    // them and nothing below it may import it back.
+    // workspace's services and orchestrators are the health slice: they
+    // may read both layers. Its models and types may not — the block
+    // after this one narrows them, and comes later so it wins.
     files: ["src/domains/workspace/**/*.ts"],
     rules: {
       "no-restricted-imports": [
@@ -241,6 +249,26 @@ export default tseslint.config(
           patterns: [
             { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
             { group: ["@/commands/*"], message: "Domains must not depend on commands (dependencies flow one way)." },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // workspace's models and types are the floor spec and eval stand on,
+    // so they must not reach into a domain at all.
+    files: ["src/domains/workspace/models/**/*.ts", "src/domains/workspace/types.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+          ],
+          patterns: [
+            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
+            { group: ["@/domains/spec/*", "@/domains/eval/*", "@/commands/*"], message: "workspace's models and types are what spec and eval depend on: they must not depend back." },
           ],
         },
       ],

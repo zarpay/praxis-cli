@@ -3,9 +3,9 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import { PraxisConfig } from "@/core/config.js";
 import runEval from "@/domains/eval/orchestrators/run-eval.js";
 import listSourceDocuments from "@/domains/eval/services/list-source-documents.js";
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,

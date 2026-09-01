@@ -26,27 +26,33 @@ npm publish --access public  # prepublishOnly runs: lint → typecheck → test 
 src/
   index.ts        CLI entry
   types.ts        shapes more than one domain needs, and nothing else
-  core/           kernel primitives: base, config, errors, files, frontmatter,
+  core/           Praxis-agnostic kernel: base, errors, files, frontmatter,
                   markdown-file, paths, spec-pattern
   views/          the render kit: display, logger, badges, stats, table
   domains/        one directory per area, each owning its work end to end
     spec/         authoring → agent profiles
     eval/         judging targets against specs
-    workspace/    the project itself: discovery, health, scaffolding
+    workspace/    the project itself: config, paths, discovery, health
   commands/       CLI wiring only — parse args, call an orchestrator, map exit codes
 ```
 
 **Dependencies flow one way, and ESLint enforces it:**
 
 ```
-core, views  →  spec, eval  →  workspace  →  commands
+core, views  →  workspace/{models,types}  →  spec, eval  →  commands
 ```
 
-- `core/` and `views/` depend on no domain and no command.
-- **`domains/spec` and `domains/eval` never import each other** (11-spec-layer.md):
-  the spec layer produces artifacts the eval layer consumes as plain files, and
-  the eval layer never calls back.
-- `domains/workspace` may import both, because project health reads both.
+- `core/` and `views/` know nothing about Praxis and depend on no domain. The
+  test for core is whether a thing could be lifted into any markdown-and-config
+  CLI unchanged; anything that knows what `.praxis/` is belongs to a domain.
+- **`workspace` is the only domain the others may reach into.** `spec` and `eval`
+  import its models and types (`PraxisConfig`, `Paths`, `DocumentFile`) and stay
+  isolated from each other (11-spec-layer.md): the spec layer produces artifacts
+  the eval layer consumes as plain files, and the eval layer never calls back.
+- That reach-in is scoped to `workspace/models/` and `workspace/types.ts`, which
+  may not import a domain themselves. Workspace's health slice — `audit-experts`,
+  `tally-validation`, `analyze-project` — reads _back_ into both layers, so a
+  domain importing it would be a cycle.
 - Nothing imports `commands/`.
 
 That handoff between the layers is a real contract: an expert's `validates:` is
@@ -60,8 +66,8 @@ the two ends of it.
 | Layer            | What belongs here                                                                                                                                                                                              |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `models/`        | Data structures and the helpers on that data. **Validate on construction** — a model that exists is a valid document. No I/O beyond reading its own file. `SpecFile`, `ExpertFile`, `Judge`, `JudgmentTarget`. |
-| `services/`      | **One file, one default-exported function**, one input → one output. Operates on primitives and models and returns its work; no workflow. `expandGlobs`, `auditExperts`, `discoverDomains`, `judgeTarget`. |
-| `orchestrators/` | **One file, one default-exported function.** Coordinates several services into a workflow, and is the primary interface for a command. `runEval`, `compileExperts`, `analyzeProject`. |
+| `services/`      | **One file, one default-exported function**, one input → one output. Operates on primitives and models and returns its work; no workflow. `expandGlobs`, `auditExperts`, `discoverDomains`, `judgeTarget`.     |
+| `orchestrators/` | **One file, one default-exported function.** Coordinates several services into a workflow, and is the primary interface for a command. `runEval`, `compileExperts`, `analyzeProject`.                          |
 | `views/`         | Rendering only — pure functions returning `DisplayEntry[]` or strings, never performing work. `unitHeading`, `issueBlocks`, `evalTargetingLines`.                                                              |
 
 A domain's `prompts/` holds the LLM- or agent-facing text it owns: the eval domain
@@ -144,7 +150,7 @@ Plugins implement the `CompilerPlugin` interface (`domains/spec/types.ts`): `nam
 
 ## Code Conventions
 
-- **Types live in a `types.ts`:** a domain's own (`domains/<name>/types.ts`) for its vocabulary, or `src/types.ts` for shapes more than one domain needs — `JudgeConfig` (normalized by `core/config.ts`) and `CohortMode` (declared by an expert, honored by a spec) are there for that reason. ESLint bans interface/type-alias declarations anywhere else in `src/`. Modules declare behavior — classes, functions, constants — never shapes. Sole exception: `core/files.ts` re-exports node's `FSWatcher`, because `node:fs` is walled into that module.
+- **Types live in a `types.ts`:** a domain's own (`domains/<name>/types.ts`) for its vocabulary, or `src/types.ts` for shapes more than one domain needs — `JudgeConfig` (normalized by `domains/workspace/models/praxis-config.ts`) and `CohortMode` (declared by an expert, honored by a spec) are there for that reason. ESLint bans interface/type-alias declarations anywhere else in `src/`. Modules declare behavior — classes, functions, constants — never shapes. Sole exception: `core/files.ts` re-exports node's `FSWatcher`, because `node:fs` is walled into that module.
 - **Path aliases:** `@/*` → `./src/*`, `@tests/*` → `./tests/*` (tsconfig.json and vitest.config.ts). Imports always use aliases, never relative paths (ESLint-enforced; sole exception: `../package.json`).
 - **Import order:** third-party types, internal types, third-party values, internal values — blank line between groups, alphabetical within (perfectionist, autofixable)
 - **Import extensions:** `.js` required for local imports (ESM)

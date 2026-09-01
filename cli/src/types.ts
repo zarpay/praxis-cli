@@ -13,7 +13,7 @@
  * that module.
  */
 
-import type { PraxisConfig } from "@/core/config.js";
+import type { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import type { Display } from "@/views/display.js";
 import type { Logger } from "@/views/logger.js";
 

@@ -5,10 +5,10 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { PraxisConfig } from "@/core/config.js";
 import compileExpert from "@/domains/spec/orchestrators/compile-expert.js";
 import compileExperts from "@/domains/spec/orchestrators/compile-experts.js";
 import resolvePlugins from "@/domains/spec/services/resolve-plugins.js";
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 

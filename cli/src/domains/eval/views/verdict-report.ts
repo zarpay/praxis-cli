@@ -4,13 +4,13 @@ import chalk from "chalk";
 import fg from "fast-glob";
 
 import { PraxisBase } from "@/core/base.js";
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, readText } from "@/core/files.js";
 import { joinPath, parentDir } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
 import assistHashInput from "@/domains/eval/services/build-assist-hash-input.js";
 import contentHash from "@/domains/eval/services/hash-content.js";
 import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs.js";
+import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /** Divider line width for the rendered report. */
 const DIVIDER_WIDTH = 50;

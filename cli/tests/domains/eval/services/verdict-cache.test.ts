@@ -8,6 +8,14 @@ import contentHash from "@/domains/eval/services/hash-content.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 
 describe("CacheManager", () => {
+  describe("default cache root", () => {
+    it("defaults to .praxis/cache/validation under the project root", () => {
+      const manager = new CacheManager({ projectRoot: "/project" });
+
+      expect(manager.cacheRoot).toBe("/project/.praxis/cache/validation");
+    });
+  });
+
   let projectRoot: string;
   let cacheRoot: string;
   let manager: CacheManager;

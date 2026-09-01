@@ -3,7 +3,7 @@ import type { Verdict } from "@/domains/eval/types.js";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { EvalCommand, severityRank } from "@/commands/eval.js";
-import { PraxisConfig } from "@/core/config.js";
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import {
   createOpenRouterServer,
   useOpenRouterResponse,

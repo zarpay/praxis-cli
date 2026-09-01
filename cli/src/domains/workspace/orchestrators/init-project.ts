@@ -1,6 +1,5 @@
 import type { InitProjectInput, InitProjectResult } from "@/domains/workspace/types.js";
 
-import { PraxisConfig } from "@/core/config.js";
 import {
   copyFile,
   ensureDir,
@@ -9,7 +8,9 @@ import {
   readText,
   writeText,
 } from "@/core/files.js";
-import { SCAFFOLD_DIR, joinPath, relativePath, resolvePath } from "@/core/paths.js";
+import { joinPath, relativePath, resolvePath } from "@/core/paths.js";
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
+import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
 
 /**
  * Scaffolds a new Praxis project.

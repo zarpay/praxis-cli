@@ -2,7 +2,7 @@ import { readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { PraxisConfig } from "@/core/config.js";
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
 import countStatusIssues from "@/domains/workspace/services/count-status-issues.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";

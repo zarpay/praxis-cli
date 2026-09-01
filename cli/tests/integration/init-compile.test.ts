@@ -5,9 +5,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { PraxisConfig } from "@/core/config.js";
 import compileExperts from "@/domains/spec/orchestrators/compile-experts.js";
 import resolvePlugins from "@/domains/spec/services/resolve-plugins.js";
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import initProject from "@/domains/workspace/orchestrators/init-project.js";
 import { Logger } from "@/views/logger.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";

@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { CompileCommand } from "@/commands/compile.js";
-import { PraxisConfig } from "@/core/config.js";
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 

@@ -7,14 +7,15 @@ import type { PraxisProjectBaseOptions } from "@/types.js";
 import fg from "fast-glob";
 
 import { runAction } from "@/commands/action.js";
-import { PraxisProjectBase } from "@/core/base.js";
+import { PraxisProjectBase } from "@/commands/base.js";
 import { errors } from "@/core/errors.js";
 import { watchDir } from "@/core/files.js";
-import { Paths, resolvePath } from "@/core/paths.js";
+import { resolvePath } from "@/core/paths.js";
 import { ExpertFile } from "@/domains/spec/models/expert-file.js";
 import compileExpert from "@/domains/spec/orchestrators/compile-expert.js";
 import compileExperts from "@/domains/spec/orchestrators/compile-experts.js";
 import resolvePlugins from "@/domains/spec/services/resolve-plugins.js";
+import { Paths } from "@/domains/workspace/models/project-paths.js";
 import { Logger } from "@/views/logger.js";
 
 /**

@@ -4,8 +4,8 @@ import type { StatusReport } from "@/domains/workspace/types.js";
 
 import { runAction } from "@/commands/action.js";
 import { PraxisBase } from "@/core/base.js";
-import { PraxisConfig } from "@/core/config.js";
-import { Paths } from "@/core/paths.js";
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
+import { Paths } from "@/domains/workspace/models/project-paths.js";
 import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
 import countStatusIssues from "@/domains/workspace/services/count-status-issues.js";
 import { countLines, issueBlocks, validationBlocks } from "@/domains/workspace/views/status.js";

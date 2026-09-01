@@ -4,8 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { PraxisBase, PraxisProjectBase } from "@/core/base.js";
-import { PraxisConfig } from "@/core/config.js";
+import { PraxisProjectBase } from "@/commands/base.js";
+import { PraxisBase } from "@/core/base.js";
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { Display } from "@/views/display.js";
 import { Logger } from "@/views/logger.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";

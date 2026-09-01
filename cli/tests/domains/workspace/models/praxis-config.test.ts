@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { PraxisConfig } from "@/core/config.js";
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 
 describe("PraxisConfig", () => {
   const dirs: string[] = [];

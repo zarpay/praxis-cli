@@ -1,14 +1,14 @@
 import type { CacheJudgeIdentity } from "@/domains/eval/types.js";
 import type { JudgeConfig } from "@/types.js";
 
+import { errors } from "@/core/errors.js";
+import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
+import judgeHash from "@/domains/eval/services/hash-judge.js";
 import {
   DEFAULT_JUDGE_BASE_URL,
   DEFAULT_JUDGE_PROVIDER,
   DEFAULT_JUDGE_TEMPERATURE,
-} from "@/core/config.js";
-import { errors } from "@/core/errors.js";
-import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
-import judgeHash from "@/domains/eval/services/hash-judge.js";
+} from "@/domains/workspace/models/praxis-config.js";
 
 /**
  * A configured judge: who is judging, and with what settings.

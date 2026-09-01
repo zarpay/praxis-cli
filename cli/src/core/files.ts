@@ -35,6 +35,12 @@ export function readText(path: string): string {
   return readFileSync(path, "utf-8");
 }
 
+/** Writes UTF-8 text to a file, creating missing parent directories. */
+export function writeText(path: string, content: string): void {
+  ensureDir(dirname(path));
+  writeFileSync(path, content);
+}
+
 /**
  * Reads and parses a JSON file, cast to the caller's expected shape.
  *
@@ -43,12 +49,6 @@ export function readText(path: string): string {
  */
 export function readJson<T = unknown>(path: string): T {
   return JSON.parse(readText(path)) as T;
-}
-
-/** Writes UTF-8 text to a file, creating missing parent directories. */
-export function writeText(path: string, content: string): void {
-  ensureDir(dirname(path));
-  writeFileSync(path, content);
 }
 
 /**

@@ -8,7 +8,8 @@ import type {
 
 import { errors } from "@/core/errors.js";
 import { exists, readJson } from "@/core/files.js";
-import { configFile, resolvePath } from "@/core/paths.js";
+import { resolvePath } from "@/core/paths.js";
+import { configFile } from "@/domains/workspace/models/project-paths.js";
 
 /** Default spec file pattern when none is configured. */
 export const DEFAULT_SPEC_FILE_PATTERN = "README.md";

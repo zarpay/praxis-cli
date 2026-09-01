@@ -5,7 +5,7 @@
  * Shapes more than one domain needs live in src/types.ts instead.
  */
 
-import type { PraxisConfig } from "@/core/config.js";
+import type { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 
 // ---------------------------------------------------------------------------
 // Workspace (domains/workspace/)
