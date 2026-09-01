@@ -1,9 +1,5 @@
 import type { Logger } from "@/core/logger.js";
-import type {
-  CompilerPlugin,
-  PluginConfigEntry,
-  PluginConstructor,
-} from "@/types.js";
+import type { CompilerPlugin, PluginConfigEntry, PluginConstructor } from "@/types.js";
 
 import { errors } from "@/core/errors.js";
 import { ClaudeCodePlugin } from "@/spec/plugins/claude-code.js";

@@ -124,7 +124,10 @@ describe("errors", () => {
   });
 
   it("invalidJudgeProvider", () => {
-    const err = errors.invalidJudgeProvider("./providers/echo.js", "default export is not a function");
+    const err = errors.invalidJudgeProvider(
+      "./providers/echo.js",
+      "default export is not a function",
+    );
     expect(err.code).toBe("INVALID_JUDGE_PROVIDER");
     expect(err.message).toBe(
       'Invalid judge provider "./providers/echo.js": default export is not a function — ' +

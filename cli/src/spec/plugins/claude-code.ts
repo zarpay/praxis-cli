@@ -14,8 +14,6 @@ const DEFAULT_PLUGIN_JSON = {
   keywords: ["productivity"],
 };
 
-
-
 /**
  * Claude Code compiler plugin.
  *
@@ -86,10 +84,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
    * documents without needing an OpenRouter API key.
    */
   private ensureCommands(): void {
-    writeText(
-      joinPath(this.outputDir, "commands", "praxis-resolve.md"),
-      praxisResolveCommand(),
-    );
+    writeText(joinPath(this.outputDir, "commands", "praxis-resolve.md"), praxisResolveCommand());
     writeText(joinPath(this.outputDir, "skills", "praxis", "SKILL.md"), praxisSkill());
   }
 

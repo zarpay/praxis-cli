@@ -124,7 +124,7 @@ describe("VerdictReporter", () => {
     });
 
     it("reports stale when a spec-declared context file changed since validation", () => {
-      const specContent = ['---', 'context:', '  - "services/store.ts"', '---', '# Spec'].join(
+      const specContent = ["---", "context:", '  - "services/store.ts"', "---", "# Spec"].join(
         "\n",
       );
       writeFileSync(join(dir, "README.md"), specContent);
@@ -147,7 +147,7 @@ describe("VerdictReporter", () => {
     });
 
     it("skips the staleness check when a context-declaring spec has no root to resolve against", () => {
-      const specContent = ['---', 'context:', '  - "services/store.ts"', '---', '# Spec'].join(
+      const specContent = ["---", "context:", '  - "services/store.ts"', "---", "# Spec"].join(
         "\n",
       );
       writeFileSync(join(dir, "README.md"), specContent);

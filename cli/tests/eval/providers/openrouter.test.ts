@@ -37,9 +37,7 @@ function captureBody(bodies: Record<string, unknown>[]): void {
   server.use(
     http.post(OPENROUTER_URL, async ({ request: req }) => {
       bodies.push((await req.json()) as Record<string, unknown>);
-      return HttpResponse.json(
-        validationToolCallResponse("validation_pass", { reason: "Fine." }),
-      );
+      return HttpResponse.json(validationToolCallResponse("validation_pass", { reason: "Fine." }));
     }),
   );
 }

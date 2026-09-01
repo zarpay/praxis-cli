@@ -8,9 +8,7 @@ import type { AssistFile } from "@/types.js";
 export default function contextSection(context: readonly AssistFile[]): string {
   if (context.length === 0) return "";
 
-  const blocks = context
-    .map((c) => `===== CONTEXT: ${c.path} =====\n\n${c.content}`)
-    .join("\n\n");
+  const blocks = context.map((c) => `===== CONTEXT: ${c.path} =====\n\n${c.content}`).join("\n\n");
 
   return `## CONTEXT
 

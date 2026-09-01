@@ -435,7 +435,10 @@ export class EvalRun extends PraxisProjectBase {
     const judgeLabel =
       this.judges.length > 1 ? ` ${chalk.cyan(`[judge: ${judgeConfig.name}]`)}` : "";
 
-    this.out.print(["", `${counter} ${chalk.bold(baseName(unit.path))}${cohortLabel}${judgeLabel}`]);
+    this.out.print([
+      "",
+      `${counter} ${chalk.bold(baseName(unit.path))}${cohortLabel}${judgeLabel}`,
+    ]);
 
     try {
       const judge = new Judge({

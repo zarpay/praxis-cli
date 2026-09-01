@@ -461,11 +461,7 @@ export class CacheManager extends PraxisBase {
  * them invalidates the cached verdict. The assist component defaults to
  * empty, leaving plain specs' hashes unchanged.
  */
-export function contentHash(
-  targetContent: string,
-  specContent: string,
-  assistInput = "",
-): string {
+export function contentHash(targetContent: string, specContent: string, assistInput = ""): string {
   return createHash("sha256")
     .update(targetContent + specContent + assistInput)
     .digest("hex")
