@@ -130,10 +130,15 @@ typed fields.
 Both models are pure over content (`fromContent`), so their 25 tests need no
 tmpdir at all — that is the real win, not the line count.
 
-**Constraint honored:** models report absence, they never validate on
-construction. `compile.ts` skips an expert with no `alias` and `status` reports it
-as a finding; a throwing constructor would break both. `cohort` is the sole
-exception and it already threw.
+**Models validate on construction** (`models/fields.ts`): a missing required key
+or a wrong-shaped value raises, so a model that exists is a valid document.
+`ExpertFile.alias` is required; `cohort` is checked against the same enum
+`SpecFile` uses, which moves an entire error class from eval time to compile time.
+
+The batch callers absorb it rather than propagating: `compileAll` warns and skips
+a malformed expert, `praxis status` reports it in a new `invalidExperts` bucket.
+One bad file never abandons the run — that was the original worry, and it is
+handled at the caller where it belongs, not by weakening the model.
 
 **Cost accepted (see `CLAUDE.md`):** `src/models/` is a shared leaf, so the eval
 layer is now _able_ to import `ExpertFile` — spec-layer taxonomy. The ESLint rule

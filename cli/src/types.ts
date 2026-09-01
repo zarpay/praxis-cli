@@ -65,7 +65,8 @@ export type PraxisErrorCode =
   | "TEMPLATE_NOT_FOUND"
   | "SPEC_NOT_FOUND"
   | "MISSING_PROJECT_ROOT"
-  | "INVALID_COHORT"
+  | "MISSING_FRONTMATTER_FIELD"
+  | "INVALID_FRONTMATTER_FIELD"
   | "EXPERT_NOT_FOUND"
   | "DOCUMENT_NOT_FOUND"
   | "INVALID_JUDGE_CONFIG"
@@ -380,6 +381,9 @@ export interface ChatCompletionResponse {
 // ---------------------------------------------------------------------------
 
 /** How a spec groups its targets into evaluation units. */
+/** The reference keys an expert can point at other documents with. */
+export type RefKey = "practices" | "context" | "refs";
+
 export type CohortMode = "by_file" | "by_directory";
 
 /**
@@ -610,6 +614,8 @@ export interface StatusReport {
     fail: number;
     notValidated: number;
   }[];
+  /** Expert files that failed validation, with the reason. */
+  invalidExperts: { expert: string; reason: string }[];
   /** Practice files no expert references. */
   orphanedPractices: string[];
   /** Expert references pointing at files that do not exist. */

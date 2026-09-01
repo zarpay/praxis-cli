@@ -142,13 +142,24 @@ export class CompileCommand extends PraxisProjectBase {
     });
 
     for (const expertFile of expertFiles) {
-      const alias = ExpertFile.at(expertFile).alias;
+      // A malformed neighbour is not this search's problem — compiling
+      // it is what surfaces the error, with the full message.
+      const alias = readAlias(expertFile);
 
       if (alias?.toLowerCase() === targetAlias.toLowerCase()) {
         return expertFile;
       }
     }
 
+    return null;
+  }
+}
+
+/** An expert's alias, or null when the file cannot be read as an expert. */
+function readAlias(expertFile: string): string | null {
+  try {
+    return ExpertFile.at(expertFile).alias;
+  } catch {
     return null;
   }
 }

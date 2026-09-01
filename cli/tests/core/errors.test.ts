@@ -3,6 +3,23 @@ import { describe, expect, it } from "vitest";
 import { PraxisError, errors } from "@/core/errors.js";
 
 describe("errors", () => {
+  it("missingFrontmatterField", () => {
+    const err = errors.missingFrontmatterField("alias", "experts/broken.md");
+
+    expect(err.code).toBe("MISSING_FRONTMATTER_FIELD");
+    expect(err.message).toContain(
+      'experts/broken.md is missing required frontmatter field "alias"',
+    );
+  });
+
+  it("invalidFrontmatterField", () => {
+    const err = errors.invalidFrontmatterField("cohort", "src/README.md", '"by_file"', "by_magic");
+
+    expect(err.code).toBe("INVALID_FRONTMATTER_FIELD");
+    expect(err.message).toContain('Invalid "cohort" in src/README.md');
+    expect(err.message).toContain('expected "by_file", got "by_magic"');
+  });
+
   it("factories produce PraxisError instances that are also Errors", () => {
     const err = errors.rootNotFound();
     expect(err).toBeInstanceOf(PraxisError);
@@ -66,14 +83,6 @@ describe("errors", () => {
     const err = errors.missingJudges();
     expect(err.code).toBe("JUDGES_NOT_CONFIGURED");
     expect(err.message).toContain('"judges": [');
-  });
-
-  it("invalidCohortValue", () => {
-    const err = errors.invalidCohortValue("by_magic", "docs/services.sme.md");
-    expect(err.code).toBe("INVALID_COHORT");
-    expect(err.message).toBe(
-      'Invalid cohort value "by_magic" in docs/services.sme.md — expected "by_file" or "by_directory"',
-    );
   });
 
   it("unknownDocumentType", () => {

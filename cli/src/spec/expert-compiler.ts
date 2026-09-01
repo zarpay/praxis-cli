@@ -46,12 +46,6 @@ export class ExpertCompiler extends PraxisProjectBase {
   async compile(expertFile: string): Promise<string | null> {
     const expert = ExpertFile.at(expertFile);
     const alias = expert.alias;
-
-    if (!alias) {
-      this.logger.warn(`No alias found in ${expertFile}, skipping`);
-      return null;
-    }
-
     const { profile, metadata } = await this.buildExpertProfile(expert, alias);
     this.writeOutputs(profile, metadata, alias);
 
@@ -85,9 +79,15 @@ export class ExpertCompiler extends PraxisProjectBase {
         continue;
       }
 
-      const alias = await this.compile(expertFile);
+      // A malformed expert is reported and skipped, never fatal: one
+      // bad file in the directory must not abandon every other agent.
+      try {
+        const alias = await this.compile(expertFile);
 
-      if (alias) compiled++;
+        if (alias) compiled++;
+      } catch (err) {
+        this.logger.warn(`Skipping ${baseName(expertFile)}: ${(err as Error).message}`);
+      }
     }
 
     this.logger.info(`Compiled ${compiled} agent(s) (up-to-date)`);
@@ -147,7 +147,7 @@ export class ExpertCompiler extends PraxisProjectBase {
    * @returns Array of body strings with frontmatter stripped
    */
   private async inlineConstitution(expert: ExpertFile): Promise<string[]> {
-    if (!expert.declaresConstitution) return [];
+    if (expert.constitution.length === 0) return [];
 
     const expanded = await this.globExpander.expandAll(expert.constitution);
 

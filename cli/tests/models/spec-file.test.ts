@@ -9,6 +9,14 @@ function spec(lines: string[], path = "/project/src/services/README.md", root?: 
 }
 
 describe("SpecFile", () => {
+  describe("structural validation", () => {
+    it("raises when a list holds a non-string entry", () => {
+      const build = () => spec(["paths:", "  - 42"]);
+
+      expect(build).toThrow(/Invalid "paths".*expected a string, got 42/s);
+    });
+  });
+
   describe("paths", () => {
     it("returns the declared target patterns", () => {
       const patterns = spec(["paths:", '  - "src/services/*.ts"']).paths;
@@ -36,22 +44,22 @@ describe("SpecFile", () => {
       expect(cohort).toBe("by_directory");
     });
 
-    it("throws on a value outside the enum", () => {
-      const subject = spec(["cohort: by_module"]);
+    it("raises at construction on a value outside the enum", () => {
+      const build = () => spec(["cohort: by_module"]);
 
-      expect(() => subject.cohort).toThrow(/Invalid cohort value "by_module"/);
+      expect(build).toThrow(/expected "by_file" or "by_directory", got "by_module"/);
     });
 
-    it("throws on a non-string value, showing it as JSON", () => {
-      const subject = spec(["cohort:", "  - by_file"]);
+    it("raises on a non-string value, showing it as JSON", () => {
+      const build = () => spec(["cohort:", "  - by_file"]);
 
-      expect(() => subject.cohort).toThrow(/\["by_file"\]/);
+      expect(build).toThrow(/\["by_file"\]/);
     });
 
     it("names the spec relative to the root when one is given", () => {
-      const subject = spec(["cohort: nope"], "/project/src/services/README.md", "/project");
+      const build = () => spec(["cohort: nope"], "/project/src/services/README.md", "/project");
 
-      expect(() => subject.cohort).toThrow(/src\/services\/README\.md/);
+      expect(build).toThrow(/src\/services\/README\.md/);
     });
   });
 

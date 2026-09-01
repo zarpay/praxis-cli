@@ -98,6 +98,7 @@ export class StatusCommand extends PraxisProjectBase {
       orphanedPractices: this.findOrphanedPractices(practiceFiles, audit.referencedPractices),
       danglingRefs: audit.danglingRefs,
       expertsMissingDescription: audit.missingDescriptions,
+      invalidExperts: audit.invalidExperts,
       zeroMatchGlobs: audit.zeroMatchGlobs,
       unmatchedOwners: this.findUnmatchedOwners(practiceFiles, audit.aliases),
     };
@@ -112,6 +113,7 @@ export class StatusCommand extends PraxisProjectBase {
       orphanedPractices: [],
       danglingRefs: [],
       expertsMissingDescription: [],
+      invalidExperts: [],
       zeroMatchGlobs: [],
       unmatchedOwners: [],
     };
@@ -144,25 +146,37 @@ export class StatusCommand extends PraxisProjectBase {
    */
   private async auditExperts(expertFiles: string[]): Promise<{
     aliases: Map<string, string>;
+    invalidExperts: StatusReport["invalidExperts"];
     referencedPractices: Set<string>;
     danglingRefs: StatusReport["danglingRefs"];
     zeroMatchGlobs: StatusReport["zeroMatchGlobs"];
     missingDescriptions: string[];
   }> {
     const aliases = new Map<string, string>();
+    const invalidExperts: StatusReport["invalidExperts"] = [];
     const referencedPractices = new Set<string>();
     const danglingRefs: StatusReport["danglingRefs"] = [];
     const zeroMatchGlobs: StatusReport["zeroMatchGlobs"] = [];
     const missingDescriptions: string[] = [];
 
     for (const expertFile of expertFiles) {
-      const expert = ExpertFile.at(expertFile);
-      const alias = expert.alias;
       const expertName = baseName(expertFile);
+      // Status reports on a broken document; it never dies on one.
+      let expert: ExpertFile;
 
-      if (alias) {
-        aliases.set(alias.toLowerCase(), expertName);
+      try {
+        expert = ExpertFile.at(expertFile);
+      } catch (err) {
+        invalidExperts.push({
+          expert: expertName,
+          reason: err instanceof Error ? err.message : String(err),
+        });
+        continue;
       }
+
+      const alias = expert.alias;
+
+      aliases.set(alias.toLowerCase(), expertName);
 
       if (!expert.description) {
         missingDescriptions.push(expertName);
@@ -195,7 +209,14 @@ export class StatusCommand extends PraxisProjectBase {
       }
     }
 
-    return { aliases, referencedPractices, danglingRefs, zeroMatchGlobs, missingDescriptions };
+    return {
+      aliases,
+      referencedPractices,
+      danglingRefs,
+      zeroMatchGlobs,
+      missingDescriptions,
+      invalidExperts,
+    };
   }
 
   /** Practices no expert references, by basename. */
@@ -262,6 +283,10 @@ export class StatusCommand extends PraxisProjectBase {
       ],
       ["Orphaned practices (not referenced by any expert):", report.orphanedPractices],
       ["Experts missing description:", report.expertsMissingDescription],
+      [
+        "Experts that failed to parse:",
+        report.invalidExperts.map(({ expert, reason }) => `${expert}: ${reason}`),
+      ],
       [
         "Glob patterns matching zero files:",
         report.zeroMatchGlobs.map(({ expert, pattern }) => `${expert}: ${pattern}`),

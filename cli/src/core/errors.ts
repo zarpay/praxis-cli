@@ -142,11 +142,26 @@ export const errors = {
     );
   },
 
-  /** A spec declared a `cohort:` value outside the two-member enum. */
-  invalidCohortValue(value: string, specPath: string): PraxisError {
+  /** A document omits a frontmatter field its kind requires. */
+  missingFrontmatterField(key: string, docPath: string): PraxisError {
     return new PraxisError(
-      "INVALID_COHORT",
-      `Invalid cohort value "${value}" in ${specPath} — expected "by_file" or "by_directory"`,
+      "MISSING_FRONTMATTER_FIELD",
+      `${docPath} is missing required frontmatter field "${key}"`,
+    );
+  },
+
+  /** A frontmatter field holds a value of the wrong shape. */
+  invalidFrontmatterField(
+    key: string,
+    docPath: string,
+    expected: string,
+    actual: unknown,
+  ): PraxisError {
+    const shown = typeof actual === "string" ? `"${actual}"` : JSON.stringify(actual);
+
+    return new PraxisError(
+      "INVALID_FRONTMATTER_FIELD",
+      `Invalid "${key}" in ${docPath} — expected ${expected}, got ${shown}`,
     );
   },
 

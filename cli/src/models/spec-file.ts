@@ -1,8 +1,7 @@
 import type { CohortMode } from "@/types.js";
 
-import { errors } from "@/core/errors.js";
-import { Frontmatter } from "@/core/frontmatter.js";
 import { relativePath } from "@/core/paths.js";
+import { Fields } from "@/models/fields.js";
 
 /** The accepted `cohort:` frontmatter values. */
 const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
@@ -13,78 +12,52 @@ const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
  * Names the frontmatter keys the eval layer honors, in one place,
  * instead of leaving them as string literals scattered across
  * discovery and assist resolution. Its `paths:` is the spec layer's
- * `validates:` after compilation (see `evalTargetingLines`); the two
- * models are the write and read ends of that one contract.
+ * `validates:` after compilation (see `evalTargetingLines`); this model
+ * and `ExpertFile` are the read and write ends of that one contract.
  *
- * Reads what the file declares and nothing more: patterns come back as
- * written, for the caller to resolve against a root. An absent key is
- * normal, not an error — `cohort:` is the sole exception, because a
- * value outside the enum can only be a typo.
+ * Every field is read and validated in the constructor, so a SpecFile
+ * that exists is a valid spec. Patterns come back as written, for the
+ * caller to resolve against a root: resolving paths is not a document's
+ * job.
+ *
+ * @throws PraxisError when any declared field is malformed
  */
 export class SpecFile {
   /** Absolute path to the spec file. */
   readonly path: string;
+  /** Glob patterns naming the targets this spec judges (`paths:`). */
+  readonly paths: string[];
+  /** How this spec's targets group into units; `by_file` when undeclared. */
+  readonly cohort: CohortMode;
+  /** Patterns structurally excluded from judgment, as written. */
+  readonly excludes: string[];
+  /** Spec-blessed positive examples, as written. */
+  readonly exemplars: string[];
+  /** Assist-only material inlined into the judgment, as written. */
+  readonly context: string[];
 
-  private readonly fm: Frontmatter;
-  /** Project root, used only to render paths in error messages. */
-  private readonly root: string | undefined;
-
-  private constructor(fm: Frontmatter, path: string, root?: string) {
-    this.fm = fm;
+  private constructor(fields: Fields, path: string) {
     this.path = path;
-    this.root = root;
+    this.paths = fields.stringList("paths");
+    this.cohort = fields.enumValue("cohort", COHORT_MODES) ?? "by_file";
+    this.excludes = fields.stringList("excludes");
+    this.exemplars = fields.stringList("exemplars");
+    this.context = fields.stringList("context");
   }
 
-  /** Reads a spec from disk. */
+  /** Reads and validates a spec from disk. */
   static at(path: string, root?: string): SpecFile {
-    return new SpecFile(Frontmatter.fromFile(path), path, root);
+    return new SpecFile(Fields.fromFile(path, display(path, root)), path);
   }
 
   /**
-   * Builds a spec from already-loaded content.
+   * Reads and validates a spec from already-loaded content.
    *
    * For callers that read the file for other purposes and should not
    * pay for a second filesystem read.
    */
   static fromContent(content: string, path: string, root?: string): SpecFile {
-    return new SpecFile(Frontmatter.fromContent(content), path, root);
-  }
-
-  /** Glob patterns naming the targets this spec judges (`paths:`). */
-  get paths(): string[] {
-    return this.fm.array("paths");
-  }
-
-  /** Patterns structurally excluded from judgment, as written. */
-  get excludes(): string[] {
-    return this.fm.array("excludes");
-  }
-
-  /** Spec-blessed positive examples, as written. */
-  get exemplars(): string[] {
-    return this.fm.array("exemplars");
-  }
-
-  /**
-   * How this spec's targets group into evaluation units.
-   *
-   * Defaults to `by_file` when undeclared.
-   *
-   * @throws PraxisError when the value is outside the two-member enum
-   */
-  get cohort(): CohortMode {
-    const raw = this.fm.value("cohort");
-
-    if (raw === undefined || raw === null) {
-      return "by_file";
-    }
-
-    if (typeof raw === "string" && (COHORT_MODES as string[]).includes(raw)) {
-      return raw as CohortMode;
-    }
-
-    const shown = typeof raw === "string" ? raw : JSON.stringify(raw);
-    throw errors.invalidCohortValue(shown, this.displayPath);
+    return new SpecFile(Fields.fromContent(content, display(path, root)), path);
   }
 
   /**
@@ -94,11 +67,11 @@ export class SpecFile {
    * @param key - `exemplars` (shielded positives) or `context`
    */
   assistPatterns(key: "exemplars" | "context"): string[] {
-    return this.fm.array(key);
+    return key === "exemplars" ? this.exemplars : this.context;
   }
+}
 
-  /** The spec's path as it should appear in a message to the author. */
-  private get displayPath(): string {
-    return this.root ? relativePath(this.root, this.path) : this.path;
-  }
+/** A spec's path as it should appear in a message to its author. */
+function display(path: string, root?: string): string {
+  return root ? relativePath(root, path) : path;
 }

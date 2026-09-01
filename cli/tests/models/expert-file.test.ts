@@ -17,38 +17,55 @@ describe("ExpertFile", () => {
       expect(subject.description).toBe("reviews services");
     });
 
-    it("reports absence rather than throwing", () => {
-      const subject = expert(["type: expert"]);
+    it("raises when alias is absent — a file without one is not an expert", () => {
+      const build = () => expert(["type: expert"]);
 
-      expect(subject.alias).toBeUndefined();
+      expect(build).toThrow(/missing required frontmatter field "alias"/);
+    });
+
+    it("names the offending file in the message", () => {
+      const build = () => expert(["type: expert"], "/project/experts/broken.md");
+
+      expect(build).toThrow(/\/project\/experts\/broken\.md/);
+    });
+
+    it("raises when alias is present but not a string", () => {
+      const build = () => expert(["alias:", "  - Scooper"]);
+
+      expect(build).toThrow(/expected a string, got \["Scooper"\]/);
+    });
+
+    it("allows an absent description — the compiler emits no metadata for it", () => {
+      const subject = expert(["alias: Scooper"]);
+
       expect(subject.description).toBeUndefined();
     });
   });
 
   describe("constitution", () => {
-    it("declaresConstitution is true for a declared glob", () => {
-      const subject = expert(["constitution:", '  - "context/constitution/*.md"']);
+    it("reads a declared glob", () => {
+      const subject = expert(["alias: A", "constitution:", '  - "context/constitution/*.md"']);
 
-      expect(subject.declaresConstitution).toBe(true);
       expect(subject.constitution).toEqual(["context/constitution/*.md"]);
     });
 
-    it("declaresConstitution is false when the key is absent", () => {
+    it("is empty when the key is absent", () => {
       const subject = expert(["alias: Scooper"]);
 
-      expect(subject.declaresConstitution).toBe(false);
+      expect(subject.constitution).toEqual([]);
     });
 
-    it("treats `constitution: false` as no constitution", () => {
-      const subject = expert(["constitution: false"]);
+    it("raises on a boolean, which is not a glob", () => {
+      const build = () => expert(["alias: A", "constitution: false"]);
 
-      expect(subject.declaresConstitution).toBe(false);
+      expect(build).toThrow(/expected a string, got false/);
     });
   });
 
   describe("refs()", () => {
     it("reads each reference key", () => {
       const subject = expert([
+        "alias: A",
         "practices:",
         '  - "practices/services.md"',
         "context:",
@@ -72,6 +89,7 @@ describe("ExpertFile", () => {
   describe("agent settings", () => {
     it("reads the agent_-prefixed keys", () => {
       const subject = expert([
+        "alias: A",
         "agent_tools: Read, Glob",
         "agent_model: opus",
         "agent_permission_mode: plan",
@@ -89,11 +107,18 @@ describe("ExpertFile", () => {
       expect(subject.agentModel).toBeUndefined();
       expect(subject.agentPermissionMode).toBeUndefined();
     });
+
+    it("raises on a list where a string belongs", () => {
+      const build = () => expert(["alias: A", "agent_tools:", "  - Read", "  - Glob"]);
+
+      expect(build).toThrow(/Invalid "agent_tools"/);
+    });
   });
 
   describe("targeting fields compiled into the spec", () => {
     it("reads validates, cohort, excludes and exemplars", () => {
       const subject = expert([
+        "alias: A",
         "validates:",
         '  - "src/services/*.ts"',
         "cohort: by_directory",
@@ -109,13 +134,19 @@ describe("ExpertFile", () => {
       expect(subject.exemplars).toEqual(["src/services/good.ts"]);
     });
 
-    it("returns undefined, not empty arrays, when undeclared", () => {
+    it("returns empty lists and an undeclared cohort when absent", () => {
       const subject = expert(["alias: Scooper"]);
 
-      expect(subject.validates).toBeUndefined();
-      expect(subject.excludes).toBeUndefined();
-      expect(subject.exemplars).toBeUndefined();
+      expect(subject.validates).toEqual([]);
+      expect(subject.excludes).toEqual([]);
+      expect(subject.exemplars).toEqual([]);
       expect(subject.cohort).toBeUndefined();
+    });
+
+    it("raises on a cohort outside the enum, at compile time", () => {
+      const build = () => expert(["alias: A", "cohort: by_module"]);
+
+      expect(build).toThrow(/expected "by_file" or "by_directory", got "by_module"/);
     });
   });
 

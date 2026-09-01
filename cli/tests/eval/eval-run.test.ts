@@ -563,7 +563,9 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await expect(run.validateAll()).rejects.toThrow('Invalid cohort value "by_magic"');
+      await expect(run.validateAll()).rejects.toThrow(
+        /Invalid "cohort" in docs\/services\.sme\.md .* expected "by_file" or "by_directory", got "by_magic"/,
+      );
 
       cleanup();
     });

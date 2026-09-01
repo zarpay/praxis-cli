@@ -316,6 +316,16 @@ describe("ExpertCompiler", () => {
 
       expect(result).toBeTypeOf("object");
     });
+
+    it("keeps compiling the rest when one expert is malformed", async () => {
+      const broken = join(expertsDir, "broken.md");
+      writeFileSync(broken, "---\nalias: Broken\nagent_tools:\n  - Read\n---\n# Broken");
+
+      const result = await compiler.compileAll();
+
+      expect(result.compiled).toBeGreaterThanOrEqual(1);
+      expect(existsSync(join(agentsOutputDir, "broken.md"))).toBe(false);
+    });
   });
 
   describe("config-driven output", () => {

@@ -78,6 +78,31 @@ describe("StatusCommand", () => {
     expect(report.expertsMissingDescription).toContain("no-desc.md");
   });
 
+  it("reports a malformed expert instead of dying on it", async () => {
+    writeFileSync(
+      join(tmpdir, "content", "experts", "broken.md"),
+      "---\ntitle: Broken\n---\n# No Alias",
+    );
+
+    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const broken = report.invalidExperts.find((e) => e.expert === "broken.md");
+
+    expect(broken?.reason).toContain('missing required frontmatter field "alias"');
+  });
+
+  it("still audits the other experts when one is malformed", async () => {
+    writeFileSync(
+      join(tmpdir, "content", "experts", "broken.md"),
+      "---\ncohort: by_magic\nalias: Broken\n---\n# Broken",
+    );
+    writeFileSync(join(tmpdir, "content", "experts", "fine.md"), "---\nalias: Fine\n---\n# Fine");
+
+    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+
+    expect(report.invalidExperts.map((e) => e.expert)).toContain("broken.md");
+    expect(report.expertsMissingDescription).toContain("fine.md");
+  });
+
   it("detects zero-match glob patterns", async () => {
     writeFileSync(
       join(tmpdir, "content", "experts", "bad-glob.md"),
