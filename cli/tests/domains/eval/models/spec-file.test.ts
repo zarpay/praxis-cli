@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { SpecFile } from "@/models/spec-file.js";
+import { SpecFile } from "@/domains/eval/models/spec-file.js";
 
 /** Builds a spec from frontmatter lines, without touching the filesystem. */
 function spec(lines: string[], path = "/project/src/services/README.md", root?: string): SpecFile {

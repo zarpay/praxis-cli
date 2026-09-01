@@ -3,7 +3,7 @@ import type { Verdict } from "@/types.js";
 import chalk from "chalk";
 import { describe, expect, it } from "vitest";
 
-import { unitHeading, verdictMark } from "@/eval/eval-run.js";
+import { unitHeading, verdictMark } from "@/domains/eval/orchestrators/eval-run.js";
 
 /** Strips ANSI colour so assertions read as plain text. */
 function plain(text: string): string {

@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { assistFileRecords, assistHashInput, resolveAssistInputs } from "@/eval/judgment-input.js";
+import {
+  assistFileRecords,
+  assistHashInput,
+  resolveAssistInputs,
+} from "@/domains/eval/services/judgment-input.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 const cleanups: (() => void)[] = [];

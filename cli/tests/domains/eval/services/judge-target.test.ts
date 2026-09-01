@@ -5,8 +5,8 @@ import { tmpdir as osTmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import { CacheManager } from "@/eval/cache-manager.js";
-import { Judge } from "@/eval/judge.js";
+import { Judge } from "@/domains/eval/services/judge-target.js";
+import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,

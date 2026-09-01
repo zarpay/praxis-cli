@@ -19,13 +19,17 @@ import { PraxisError, errors } from "@/core/errors.js";
 import { exists, readText } from "@/core/files.js";
 import { joinPath, parentDir } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
-import { CacheManager, contentHash } from "@/eval/cache-manager.js";
-import { cacheIdentity } from "@/eval/judge-hash.js";
-import { assistFileRecords, assistHashInput, resolveAssistInputs } from "@/eval/judgment-input.js";
-import { resolveProvider } from "@/eval/providers/registry.js";
-import judgeTools from "@/prompts/judge-tools.js";
-import systemPrompt from "@/prompts/system-prompt.js";
-import validationQuestion from "@/prompts/validation-question.js";
+import judgeTools from "@/domains/eval/prompts/judge-tools.js";
+import systemPrompt from "@/domains/eval/prompts/system-prompt.js";
+import validationQuestion from "@/domains/eval/prompts/validation-question.js";
+import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
+import {
+  assistFileRecords,
+  assistHashInput,
+  resolveAssistInputs,
+} from "@/domains/eval/services/judgment-input.js";
+import { resolveProvider } from "@/domains/eval/services/providers/registry.js";
+import { CacheManager, contentHash } from "@/domains/eval/services/verdict-cache.js";
 
 /**
  * AI-powered judge.

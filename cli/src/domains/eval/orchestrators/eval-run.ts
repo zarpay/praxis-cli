@@ -17,10 +17,10 @@ import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
-import { CacheManager } from "@/eval/cache-manager.js";
-import { cacheIdentity } from "@/eval/judge-hash.js";
-import { Judge } from "@/eval/judge.js";
-import { SpecFile } from "@/models/spec-file.js";
+import { SpecFile } from "@/domains/eval/models/spec-file.js";
+import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
+import { Judge } from "@/domains/eval/services/judge-target.js";
+import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 
 /**
  * One evaluation run: everything a single `praxis eval run` invocation

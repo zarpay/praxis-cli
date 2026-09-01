@@ -3,7 +3,7 @@ import { writeFileSync } from "node:fs";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/core/config.js";
-import { EvalRun } from "@/eval/eval-run.js";
+import { EvalRun } from "@/domains/eval/orchestrators/eval-run.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,

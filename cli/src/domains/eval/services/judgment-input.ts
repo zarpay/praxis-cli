@@ -18,7 +18,7 @@ import { createHash } from "node:crypto";
 import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
 import { relativePath } from "@/core/paths.js";
-import { SpecFile } from "@/models/spec-file.js";
+import { SpecFile } from "@/domains/eval/models/spec-file.js";
 
 /**
  * Resolves a spec's `exemplars:` and `context:` globs into file contents.

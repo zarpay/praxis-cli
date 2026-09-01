@@ -4,8 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { OpenRouterProvider } from "@/eval/providers/openrouter.js";
-import { resolveProvider } from "@/eval/providers/registry.js";
+import { OpenRouterProvider } from "@/domains/eval/services/providers/openrouter.js";
+import { resolveProvider } from "@/domains/eval/services/providers/registry.js";
 
 /** A well-formed local provider module returning a canned verdict. */
 const ECHO_PROVIDER_SOURCE = `export default function echoProvider() {

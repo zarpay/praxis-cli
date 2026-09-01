@@ -7,7 +7,7 @@ import {
   DEFAULT_JUDGE_PROVIDER,
   DEFAULT_JUDGE_TEMPERATURE,
 } from "@/core/config.js";
-import promptSurface from "@/prompts/prompt-surface.js";
+import promptSurface from "@/domains/eval/prompts/prompt-surface.js";
 
 /**
  * Judge identity hashing.

@@ -16,11 +16,11 @@ import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
 import { Paths, resolvePath } from "@/core/paths.js";
-import { CacheManager } from "@/eval/cache-manager.js";
-import { EvalRun } from "@/eval/eval-run.js";
-import { cacheIdentity } from "@/eval/judge-hash.js";
-import { Judge } from "@/eval/judge.js";
-import { VerdictReporter } from "@/eval/verdict-reporter.js";
+import { EvalRun } from "@/domains/eval/orchestrators/eval-run.js";
+import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
+import { Judge } from "@/domains/eval/services/judge-target.js";
+import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
+import { VerdictReporter } from "@/domains/eval/views/verdict-report.js";
 
 /**
  * Registers the `praxis eval` command group.

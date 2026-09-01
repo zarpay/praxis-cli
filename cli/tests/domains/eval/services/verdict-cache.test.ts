@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { CacheManager, contentHash } from "@/eval/cache-manager.js";
+import { CacheManager, contentHash } from "@/domains/eval/services/verdict-cache.js";
 
 describe("CacheManager", () => {
   let projectRoot: string;

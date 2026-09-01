@@ -1,8 +1,8 @@
 import type { ValidationQuestionInput } from "@/types.js";
 
 import { baseName, parentDir } from "@/core/paths.js";
-import contextSection from "@/prompts/context-section.js";
-import exemplarSection from "@/prompts/exemplar-section.js";
+import contextSection from "@/domains/eval/prompts/context-section.js";
+import exemplarSection from "@/domains/eval/prompts/exemplar-section.js";
 
 /**
  * The user prompt sent to the LLM for one judgment: specification,

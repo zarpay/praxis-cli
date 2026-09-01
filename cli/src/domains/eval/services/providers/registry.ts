@@ -2,7 +2,7 @@ import type { JudgeProvider, JudgeProviderFactory } from "@/types.js";
 
 import { errors } from "@/core/errors.js";
 import { fileUrl, resolvePath } from "@/core/paths.js";
-import { OpenRouterProvider } from "@/eval/providers/openrouter.js";
+import { OpenRouterProvider } from "@/domains/eval/services/providers/openrouter.js";
 
 /** Built-in providers, keyed by the name used in a judge's `provider`. */
 const BUILTIN_PROVIDERS: Record<string, JudgeProviderFactory> = {
