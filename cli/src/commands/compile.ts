@@ -25,7 +25,7 @@ import { renderReport } from "@/views/report.js";
  * Compiles expert definitions into agent profiles and runs any enabled
  * plugins, per .praxis/config.json.
  */
-export function registerCompileCommand(program: Command): void {
+export default function registerCompileCommand(program: Command): void {
   program
     .command("compile")
     .description("Compile expert definitions into agent files")

@@ -12,7 +12,7 @@ import { Display } from "@/views/display.js";
  *
  * Shows the config file or opens it for editing.
  */
-export function registerConfigCommand(program: Command): void {
+export default function registerConfigCommand(program: Command): void {
   const config = program.command("config").description("View or edit the project configuration");
 
   config

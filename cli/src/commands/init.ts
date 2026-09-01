@@ -13,7 +13,7 @@ import { renderReport } from "@/views/report.js";
  * Scaffolds a new Praxis project: the minimal `.praxis/` tree by
  * default, and the spec-layer authoring taxonomy on request.
  */
-export function registerInitCommand(program: Command): void {
+export default function registerInitCommand(program: Command): void {
   program
     .command("init")
     .description("Initialize a new Praxis project")

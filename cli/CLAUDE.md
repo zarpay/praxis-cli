@@ -77,16 +77,19 @@ has the six reviewer prompts, the spec domain the two Claude Code plugin templat
 default-exported function, taking a single input payload and returning a single
 result — both declared in the domain's `types.ts`. Nothing to construct, nothing
 to inject, nothing to mock; a test calls the function with a literal. It is the
-same one-per-file rule the prompts already follow.
+same one-per-file rule the prompts already follow — and the commands too, each
+one an `export default function register{Name}Command(program)` that `index.ts`
+is the only caller of.
 
 Classes remain for four things, and only these:
 
 - **Models** — data plus helpers on that data, validated on construction.
 - **Extension-point contracts** — `CompilerPlugin`, `ReviewProvider`. A third
   party implements these against a documented interface.
-- **`CacheManager`** — a repository over the verdict store, bound to one reviewer
-  identity, with six operations. As functions, every call would re-thread
-  `{ cacheRoot, projectRoot, reviewer }`.
+- **`VerdictCache`** — where one reviewer's verdicts live and under what key,
+  bound to one reviewer identity. As functions, every call would re-thread
+  `{ projectRoot, reviewer }`; the reads and writes themselves are services
+  (`read-verdict`, `write-verdict`) that take it.
 - Anything else genuinely better expressed as a smart data object.
 
 **Orchestrators never print.** They take an optional `onProgress` callback and

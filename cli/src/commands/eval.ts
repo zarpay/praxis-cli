@@ -28,7 +28,7 @@ import { renderReport } from "@/views/report.js";
  * `eval run` writes (invokes reviewers); every other subcommand reads
  * existing results.
  */
-export function registerEvalCommand(program: Command): void {
+export default function registerEvalCommand(program: Command): void {
   const evalCmd = program.command("eval").description("Review targets against their specs");
 
   evalCmd

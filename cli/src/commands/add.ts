@@ -14,7 +14,7 @@ import { renderReport } from "@/views/report.js";
  * Creates new experts and practices from the templates the compiler
  * expects, so an author starts from the right shape.
  */
-export function registerAddCommand(program: Command): void {
+export default function registerAddCommand(program: Command): void {
   const add = program.command("add").description("Add new content from templates");
 
   add

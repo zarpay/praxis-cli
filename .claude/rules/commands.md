@@ -11,10 +11,14 @@ parses what the user typed; calls an orchestrator; renders the result through th
 domain's views; and maps it to an exit code. Nothing else. Nothing imports
 `commands/`.
 
+- **One file, one `export default function register{Name}Command(program)`.** It
+  takes the commander `Program` and registers onto it; `index.ts` is the only
+  caller. The same one-per-file default export the services, orchestrators and
+  prompts use.
 - **Every command has one or more dedicated orchestrators.** Logic that is not
   argument parsing or rendering belongs to one of them. If you are reaching for a
   model or a service directly from here, an orchestrator is missing.
-- Rendering happens here because printing is the route's job — but *what* to show
+- Rendering happens here because printing is the route's job — but _what_ to show
   is decided by a view that returns entries, never assembled inline.
 - Error policy is `runAction` (`commands/action.ts`): a thrown error logs to
   stderr and exits 1, a returned number is the exit code, returning nothing lets

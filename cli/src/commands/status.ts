@@ -15,7 +15,7 @@ import { renderReport } from "@/views/report.js";
  * when any structural issue is found, so CI fails on a project whose
  * taxonomy has drifted.
  */
-export function registerStatusCommand(program: Command): void {
+export default function registerStatusCommand(program: Command): void {
   program
     .command("status")
     .description("Show project health dashboard")

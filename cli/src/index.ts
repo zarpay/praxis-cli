@@ -1,11 +1,11 @@
 import { Command } from "commander";
 
-import { registerAddCommand } from "@/commands/add.js";
-import { registerCompileCommand } from "@/commands/compile.js";
-import { registerConfigCommand } from "@/commands/config.js";
-import { registerEvalCommand } from "@/commands/eval.js";
-import { registerInitCommand } from "@/commands/init.js";
-import { registerStatusCommand } from "@/commands/status.js";
+import registerAddCommand from "@/commands/add.js";
+import registerCompileCommand from "@/commands/compile.js";
+import registerConfigCommand from "@/commands/config.js";
+import registerEvalCommand from "@/commands/eval.js";
+import registerInitCommand from "@/commands/init.js";
+import registerStatusCommand from "@/commands/status.js";
 
 import pkg from "../package.json";
 
@@ -33,5 +33,4 @@ function createProgram(): Command {
   return program;
 }
 
-const program = createProgram();
-program.parse();
+createProgram().parse();
