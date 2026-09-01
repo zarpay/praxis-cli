@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import contentHash from "@/domains/eval/services/content-hash.js";
+import contentHash from "@/domains/eval/services/hash-content.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 
 describe("CacheManager", () => {

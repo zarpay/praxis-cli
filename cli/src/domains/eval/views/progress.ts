@@ -1,13 +1,8 @@
-import type { EvalUnit, Verdict } from "@/domains/eval/types.js";
+import type { Verdict } from "@/domains/eval/types.js";
 
 import chalk from "chalk";
 
 import { baseName } from "@/core/paths.js";
-
-/** Whether a unit judges a set of files rather than the one at its path. */
-export function isCohort(unit: EvalUnit): boolean {
-  return unit.files.length > 1 || unit.files[0] !== unit.path;
-}
 
 /**
  * The progress line printed before a unit is judged.

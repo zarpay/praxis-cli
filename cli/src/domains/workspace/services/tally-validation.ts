@@ -1,7 +1,7 @@
 import type { StatusReport, TallyValidationInput } from "@/domains/workspace/types.js";
 
 import { joinPath } from "@/core/paths.js";
-import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
+import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
 import listTargetPaths from "@/domains/eval/services/list-target-paths.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 

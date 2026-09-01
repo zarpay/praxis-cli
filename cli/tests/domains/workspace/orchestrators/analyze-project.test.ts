@@ -3,7 +3,8 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/core/config.js";
-import analyzeProject, { hasIssues } from "@/domains/workspace/orchestrators/analyze-project.js";
+import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
+import countStatusIssues from "@/domains/workspace/services/count-status-issues.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
@@ -76,6 +77,19 @@ describe("analyzeProject", () => {
     const report = await analyzeProject({ root: tmpdir, config });
 
     expect(report.expertsMissingDescription).toContain("no-desc.md");
+  });
+
+  it("counts a malformed expert as a structural issue", async () => {
+    writeFileSync(
+      join(tmpdir, "content", "experts", "broken.md"),
+      "---\ntitle: Broken\n---\n# No Alias",
+    );
+
+    const report = await analyzeProject({ root: tmpdir, config });
+
+    // It is reported in the output, so it must also fail the exit code —
+    // otherwise CI passes on a project the compiler cannot read.
+    expect(countStatusIssues(report)).toBeGreaterThan(0);
   });
 
   it("reports a malformed expert instead of dying on it", async () => {
@@ -211,7 +225,7 @@ describe("analyzeProject", () => {
       expect(report.counts).toEqual({ experts: 0, practices: 0, references: 0, context: 0 });
       expect(report.unmatchedOwners).toEqual([]);
       expect(report.orphanedPractices).toEqual([]);
-      expect(hasIssues(report)).toBe(false);
+      expect(countStatusIssues(report)).toBe(0);
 
       cleanup();
     });

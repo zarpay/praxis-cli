@@ -6,7 +6,8 @@ import { runAction } from "@/commands/action.js";
 import { PraxisBase } from "@/core/base.js";
 import { PraxisConfig } from "@/core/config.js";
 import { Paths } from "@/core/paths.js";
-import analyzeProject, { hasIssues } from "@/domains/workspace/orchestrators/analyze-project.js";
+import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
+import countStatusIssues from "@/domains/workspace/services/count-status-issues.js";
 import { countLines, issueBlocks, validationBlocks } from "@/domains/workspace/views/status.js";
 
 /**
@@ -26,7 +27,7 @@ export function registerStatusCommand(program: Command): void {
 
         new StatusDisplay().render(report);
 
-        if (hasIssues(report)) {
+        if (countStatusIssues(report) > 0) {
           process.exitCode = 1;
         }
       }),

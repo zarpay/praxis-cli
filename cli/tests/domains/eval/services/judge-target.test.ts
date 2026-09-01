@@ -9,7 +9,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { Judge } from "@/domains/eval/models/judge.js";
 import { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
-import { evaluateTarget } from "@/domains/eval/services/judge-target.js";
+import evaluateTarget from "@/domains/eval/services/evaluate-target.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {

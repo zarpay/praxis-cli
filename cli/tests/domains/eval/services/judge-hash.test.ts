@@ -2,7 +2,7 @@ import type { JudgeConfig } from "@/types.js";
 
 import { describe, expect, it } from "vitest";
 
-import { judgeHash } from "@/domains/eval/services/judge-hash.js";
+import judgeHash from "@/domains/eval/services/hash-judge.js";
 
 /** A baseline judge; tests vary one field at a time. */
 function judge(overrides: Partial<JudgeConfig> = {}): JudgeConfig {

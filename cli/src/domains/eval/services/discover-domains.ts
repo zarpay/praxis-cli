@@ -4,8 +4,8 @@ import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
+import { isJudgeable } from "@/core/spec-pattern.js";
 import { SpecFile } from "@/domains/eval/models/spec-file.js";
-import { isJudgeable } from "@/domains/eval/services/is-judgeable.js";
 
 /**
  * Every spec in the source directories, with what it governs.

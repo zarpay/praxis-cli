@@ -4,7 +4,7 @@ import fg from "fast-glob";
 
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { joinPath } from "@/core/paths.js";
-import { isJudgeable } from "@/domains/eval/services/is-judgeable.js";
+import { isJudgeable } from "@/core/spec-pattern.js";
 
 /**
  * Every .md document across the source directories.

@@ -69,17 +69,6 @@ export default async function analyzeProject({
   };
 }
 
-/** Whether a report contains any structural issue worth a non-zero exit. */
-export function hasIssues(report: StatusReport): boolean {
-  return (
-    report.danglingRefs.length > 0 ||
-    report.orphanedPractices.length > 0 ||
-    report.expertsMissingDescription.length > 0 ||
-    report.zeroMatchGlobs.length > 0 ||
-    report.unmatchedOwners.length > 0
-  );
-}
-
 /** The report for a project with no spec layer: validation state only. */
 function evalOnlyReport(validation: StatusReport["validation"]): StatusReport {
   return {

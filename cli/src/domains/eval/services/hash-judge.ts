@@ -1,4 +1,3 @@
-import type { CacheJudgeIdentity } from "@/domains/eval/types.js";
 import type { JudgeConfig } from "@/types.js";
 
 import { createHash } from "node:crypto";
@@ -47,7 +46,7 @@ const NON_BEHAVIORAL_FIELDS = ["name", "apiKeyEnvVar"] as const;
  * @param judge - The configured judge
  * @param prompts - Overridable for tests; defaults to the real prompt surface
  */
-export function judgeHash(judge: JudgeConfig, prompts: string = promptSurface()): string {
+export default function judgeHash(judge: JudgeConfig, prompts: string = promptSurface()): string {
   const behavioral: Record<string, unknown> = { ...judge };
 
   for (const field of NON_BEHAVIORAL_FIELDS) {
@@ -80,12 +79,4 @@ function canonicalize(value: unknown): string {
   }
 
   return JSON.stringify(value);
-}
-
-/**
- * The cache-facing identity of a judge: its behavioral hash plus the
- * human-readable name and model recorded alongside cached verdicts.
- */
-export function cacheIdentity(judge: JudgeConfig): CacheJudgeIdentity {
-  return { name: judge.name, model: judge.model, hash: judgeHash(judge) };
 }

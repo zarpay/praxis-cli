@@ -21,7 +21,7 @@ const BUILTIN_PROVIDERS: Record<string, JudgeProviderFactory> = {
  * @throws PraxisError on unknown names, unloadable modules, or modules
  *   that do not implement the contract
  */
-export async function resolveProvider(spec: string, root?: string): Promise<JudgeProvider> {
+export default async function resolveProvider(spec: string, root?: string): Promise<JudgeProvider> {
   if (spec.startsWith("./") || spec.startsWith("../")) {
     return loadLocalProvider(spec, root);
   }

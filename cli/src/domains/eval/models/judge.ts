@@ -7,7 +7,8 @@ import {
   DEFAULT_JUDGE_TEMPERATURE,
 } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
-import { cacheIdentity, judgeHash } from "@/domains/eval/services/judge-hash.js";
+import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
+import judgeHash from "@/domains/eval/services/hash-judge.js";
 
 /**
  * A configured judge: who is judging, and with what settings.

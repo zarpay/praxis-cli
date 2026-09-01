@@ -15,9 +15,9 @@ import { readText } from "@/core/files.js";
 import { baseName, relativePath } from "@/core/paths.js";
 import { Judge } from "@/domains/eval/models/judge.js";
 import { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
+import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
 import discoverDomains from "@/domains/eval/services/discover-domains.js";
-import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
-import { evaluateTarget } from "@/domains/eval/services/judge-target.js";
+import evaluateTarget from "@/domains/eval/services/evaluate-target.js";
 import listSourceDocuments from "@/domains/eval/services/list-source-documents.js";
 import resolveUnits from "@/domains/eval/services/resolve-units.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
@@ -110,7 +110,7 @@ export default async function runEval({
 }
 
 /** Whether a unit judges a set of files rather than the one at its path. */
-export function isCohort(unit: EvalUnit): boolean {
+function isCohort(unit: EvalUnit): boolean {
   return unit.files.length > 1 || unit.files[0] !== unit.path;
 }
 
