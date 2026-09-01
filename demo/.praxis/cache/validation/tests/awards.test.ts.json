@@ -1,161 +1,19 @@
 {
-  "version": "3.0",
+  "version": "4.0",
   "verdicts": {
-    "dacac2eb:f83a92f1": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "f83a92f1"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T00:03:20.631Z",
-      "content_hash": "e242314a",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file conforms to all three test conventions. Subject framing: the top-level describe names the unit by its module name ('awards'), nested describes use 'when' clauses, and each `it` states one observable outcome so describe + it reads as a sentence. One assertion per block: every `it` contains exactly one `expect`, and compound shapes are asserted once with `toMatchObject`. Functionality, not implementation: tests exercise only the public API (`pickWinners` and the exported `run` of create-review), assert on returned values, use the honest in-memory store with no spies or mocking, and build data fresh in `beforeEach` setup so suites are independent."
-      }
-    },
-    "dacac2eb:4e6f3185": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "4e6f3185"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T00:04:32.876Z",
-      "content_hash": "e242314a",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully complies with all requirements in the specification: proper subject framing with module name and when clauses, one assertion per test block, and testing functionality rather than implementation details."
-      }
-    },
-    "dacac2eb:0ac6cb25": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ac6cb25"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T14:23:37.984Z",
-      "content_hash": "b35b5069",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria in the specification. The top-level describe names the unit by its module name ('awards'), nested describes are all 'when' clauses, and each it states one observable outcome so describe + it reads as a sentence. Every it block contains exactly one expect, and compound shapes are asserted once via toMatchObject. Tests exercise only public APIs (pickWinners and the create-review run function), use the honest in-memory store with no spies or mocks, and build data fresh in beforeEach setup with no cross-suite dependencies. The file also matches the tests/*.test.ts path pattern."
-      }
-    },
-    "dacac2eb:e216be4c": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e216be4c"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T14:25:44.656Z",
-      "content_hash": "b35b5069",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file fully satisfies all criteria defined in the specification: proper subject framing with module name and 'when' clauses, exactly one assertion per test block, and testing functionality through public API without implementation details."
-      }
-    },
-    "dacac2eb:8d4c2b8f": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "8d4c2b8f"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:52:20.182Z",
-      "content_hash": "b35b5069",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all the test conventions: the top-level describe names the unit under test by its module name ('awards'), nested describes use when clauses, each it states one observable outcome, every it block contains exactly one expect, tests exercise only the public API (pickWinners and the createReview service run function), use honest in-memory collaborators (createMemoryStore) with no spies or implementation reaching, and test data is built fresh inside describe/beforeEach setup without cross-suite dependencies. One subtle nuance: the expects use toMatchObject with an expression that can be false (result.ok && ...), which the matcher would treat as falsy and hence pass, but the spec's 'one assertion per block' criterion is still met since each block has exactly one expect; the intended observable behavior is stated clearly and the assertion is compound via toMatchObject as required. The file conforms to the required patterns without violations.</think>## Validation Report: awards.test.ts / tests/awards.test.ts (awards suite... assert `result.ok && result.value.find(...)` against `toMatchObject`, which could be weak if the `ok` flag were false (a falsy value would be compared). This does **not** violate the specification — the one-assertion rule is about count (exactly one `expect` per `it`), and the compound shape is asserted once via `toMatchObject` as permitted. No spies, no mocking of honest in-memory collaborators, no reaching into module scope, and each suite builds its own state in `beforeEach`/`describe` setup, so suites do not depend on ordering. Every required criterion is met.</think>**Verdict: PASS (conforms to specification)** — with a nuance noted below as a suggestion, not a violation, the file satisfies all criteria defined in the test conventions specification. No further action is required. If the author wants extra robustness, consider testing `result.ok` as an explicit assertion in the `describe` body before the value lookups, but this is optional and outside the specification's requirements.</think>**Verdict: PASS (conforms)** —- **No required criteria are violated. The file fully conforms to the specification's test conventions** — with a small optional robustness nuance noted below (not a spec violation). No required change is necessary. If the author wants extra robustness (optional, outside the spec): in the "
-      }
-    },
-    "dacac2eb:be933a57": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "be933a57"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:53:48.040Z",
-      "content_hash": "b35b5069",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully satisfies all criteria in the specification: proper subject framing with module name and when clauses, one assertion per test block using toMatchObject for compound shapes, and testing functionality through public API with injected dependencies rather than implementation details."
-      }
-    },
-    "dacac2eb:a28ce678": {
-      "judge": {
+    "dacac2eb:6f7a874e": {
+      "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "a28ce678"
+        "hash": "6f7a874e"
       },
       "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:54:12.951Z",
+      "cached_at": "2026-09-01T16:55:59.842Z",
       "content_hash": "b35b5069",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Judgment input has 539 words."
-      }
-    },
-    "dacac2eb:433458bb": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "433458bb"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:07:45.311Z",
-      "content_hash": "b35b5069",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The awards.test.ts file conforms to all three test conventions. Subject framing: the top-level describe names the module under test by its module name ("
-      }
-    },
-    "dacac2eb:22073e9f": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "22073e9f"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:09:10.756Z",
-      "content_hash": "b35b5069",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully complies with the specification. It follows proper subject framing with module name and when clauses, maintains one assertion per test block, tests functionality through public API without implementation details, uses fresh test data setup, and avoids inappropriate mocking or spying."
-      }
-    },
-    "dacac2eb:dfa53848": {
-      "judge": {
-        "name": "counter",
-        "model": "none",
-        "hash": "dfa53848"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:09:48.499Z",
-      "content_hash": "b35b5069",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Judgment input has 539 words."
+        "reason": "Review input has 539 words."
       }
     }
   }

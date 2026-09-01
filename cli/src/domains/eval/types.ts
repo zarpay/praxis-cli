@@ -127,14 +127,6 @@ export interface CacheFileData {
   result: Verdict;
 }
 
-/** Information about an orphaned (stale) cache file. */
-export interface OrphanedCacheFile {
-  file: string;
-  reason: "document_missing";
-  docName: string;
-  type: string;
-}
-
 // ---------------------------------------------------------------------------
 // Reviewer providers (eval/providers/)
 // ---------------------------------------------------------------------------

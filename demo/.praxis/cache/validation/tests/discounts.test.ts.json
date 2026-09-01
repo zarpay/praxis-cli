@@ -1,168 +1,19 @@
 {
-  "version": "3.0",
+  "version": "4.0",
   "verdicts": {
-    "dacac2eb:0ac6cb25": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ac6cb25"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T14:24:26.200Z",
-      "content_hash": "c2f1d782",
-      "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "Subject framing: the top-level describe must name the unit under test by its module name (e.g. describe('apply-discount', ...)), but the file uses describe('should work', ...).",
-          "Subject framing: nested describe blocks must name the situation as a when clause (e.g. describe('when the code is unknown', ...)); the file has no nested describes at all.",
-          "Subject framing: each it must state one observable outcome in plain language so describe + it reads as a sentence; the file uses it('does stuff', ...), which states no outcome.",
-          "One assertion per block: every it block must contain exactly one expect; the single it block contains five expects covering unrelated outcomes (discount value, unknown code, store length, store id, throwing on empty code), each of which should be its own it block.",
-          "Functionality, not implementation: the test relies on internal array ordering via store.listParlors()[0] and asserts on unrelated store internals (list length, element id) rather than observable behavior of applyDiscount; it should assert only on returned values/observable state relevant to the unit under test."
-        ],
-        "reason": "The file deliberately violates the test conventions laid out in the specification and fails multiple required criteria."
-      }
-    },
-    "dacac2eb:e216be4c": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e216be4c"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T14:26:05.539Z",
-      "content_hash": "c2f1d782",
-      "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "Top-level describe uses 'should work' instead of naming the unit under test by its module name (e.g., 'apply-discount')",
-          "No nested describe blocks with 'when' clauses to name the situation",
-          "The it statement uses vague language 'does stuff' instead of stating an observable outcome in plain language",
-          "The single it block contains 5 expect statements, violating the 'one assertion per block' rule",
-          "Tests implementation details (internal array ordering) instead of focusing on observable behavior"
-        ],
-        "reason": "The file violates multiple required criteria in the test conventions specification, including subject framing rules, the one assertion per block rule, and the functionality-over-implementation principle."
-      }
-    },
-    "dacac2eb:8d4c2b8f": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "8d4c2b8f"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:52:23.656Z",
-      "content_hash": "c2f1d782",
-      "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "...",
-          "..."
-        ],
-        "reason": "..."
-      }
-    },
-    "dacac2eb:be933a57": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "be933a57"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:54:02.164Z",
-      "content_hash": "c2f1d782",
-      "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "Violates subject framing criterion: The top-level describe should name the unit under test by its module name, not vague phrasing like 'should work'. Specification requires 'describe('create-review', ...)' format.",
-          "Violates subject framing criterion: No nested describe blocks naming situations as 'when' clauses. Specification requires nested describe blocks to name the situation as a 'when' clause.",
-          "Violates one assertion per block criterion: The single it block contains 5 expect statements. Specification requires exactly one expect per it block.",
-          "Violates functionality, not implementation criterion: Tests implementation details like internal array ordering ('expect(store.listParlors()[0].id).toBe(parlor.id)') rather than observable behavior through public API.",
-          "Violates functionality, not implementation criterion: Tests unrelated assertions about store state ('expect(store.listParlors().length).toBeGreaterThan(0)') that aren't the primary outcome of the unit under test."
-        ],
-        "reason": "The file violates multiple required criteria in the test conventions specification. It demonstrates deliberate violations of core testing principles including subject framing, single assertion per block, and functionality-focused testing."
-      }
-    },
-    "dacac2eb:a28ce678": {
-      "judge": {
+    "dacac2eb:6f7a874e": {
+      "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "a28ce678"
+        "hash": "6f7a874e"
       },
       "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:54:12.953Z",
+      "cached_at": "2026-09-01T16:55:59.844Z",
       "content_hash": "c2f1d782",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Judgment input has 403 words."
-      }
-    },
-    "dacac2eb:433458bb": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "433458bb"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:07:50.538Z",
-      "content_hash": "c2f1d782",
-      "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "The top-level describe must name the unit under test by its module name (e.g. describe('apply-discount', ...)); here it is describe('should work') which does not frame the subject.",
-          "Nested describe blocks must name the situation as a when clause (e.g. describe('when ...', ...)); the file has no nested describe blocks at all and its single it is not grouped under a situation.",
-          "Each it block must contain exactly one expect; this it block contains five expects covering unrelated outcomes (discount value, unknown code, store length, parlor id, empty-code throw), each of which should be its own it under the same describe.",
-          "Tests must exercise the public API and assert on observable behavior, not implementation details; the assertions on store.listParlors()[0] internal array ordering and the store length test internals/observable-state beyond the unit's returned result, mixing implementation-oriented checks into the outcome.",
-          "The it description must state one observable outcome in plain language (describe + it reads as a sentence); 'does stuff' states no outcome."
-        ],
-        "reason": "The file deliberately violates every subject-framing, one-assertion, and functionality-not-implementation rule in the Test Conventions specification, so it does not conform to the required valid pattern."
-      }
-    },
-    "dacac2eb:22073e9f": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "22073e9f"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:09:30.864Z",
-      "content_hash": "c2f1d782",
-      "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "Top-level describe must name the unit under test by its module name, not 'should work'",
-          "Missing nested describe blocks with 'when' clauses to name situations",
-          "Each it block must contain exactly one expect, but this has 5 expects",
-          "The it statement 'does stuff' doesn't state an observable outcome in plain language",
-          "The describe + it doesn't form a readable sentence as required"
-        ],
-        "reason": "The file violates multiple required criteria in the test conventions specification, including subject framing requirements, the one assertion per block rule, and proper test structure."
-      }
-    },
-    "dacac2eb:dfa53848": {
-      "judge": {
-        "name": "counter",
-        "model": "none",
-        "hash": "dfa53848"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:09:48.502Z",
-      "content_hash": "c2f1d782",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Judgment input has 403 words."
+        "reason": "Review input has 403 words."
       }
     }
   }

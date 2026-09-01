@@ -142,7 +142,7 @@ describe("errors", () => {
     expect(err.code).toBe("INVALID_REVIEW_PROVIDER");
     expect(err.message).toBe(
       'Invalid reviewer provider "./providers/echo.js": default export is not a function — ' +
-        "a provider module's default export must be a factory returning { name, reviewer() }",
+        "a provider module's default export must be a factory returning { name, review() }",
     );
   });
 

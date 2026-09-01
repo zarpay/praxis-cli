@@ -1,133 +1,19 @@
 {
-  "version": "3.0",
+  "version": "4.0",
   "verdicts": {
-    "244fa7f3:0ac6cb25": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ac6cb25"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T14:22:12.790Z",
-      "content_hash": "9345eb3c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria in the specification. Frontmatter includes title, type ('expert'), alias, and a two-sentence description. The body opens with a level-1 heading naming the expert and its alias ('Service Steward (a.k.a **Scooper**)'), and states in prose that it is the subject-matter expert on how Scoop Society services are written. No placeholder text (TODO, TBD, lorem ipsum) is present."
-      }
-    },
-    "244fa7f3:e216be4c": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e216be4c"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T14:24:59.655Z",
-      "content_hash": "9345eb3c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification: it contains all required frontmatter fields with correct types, opens with the required level-1 heading naming the expert and alias, clearly states what the expert is the subject-matter expert on, and contains no prohibited placeholder text."
-      }
-    },
-    "244fa7f3:8d4c2b8f": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "8d4c2b8f"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T20:52:04.428Z",
-      "content_hash": "9345eb3c",
-      "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "Only three of the four required frontmatter fields are present...",
-          "The body states what the expert is an SME on..."
-        ],
-        "reason": "The file ..."
-      }
-    },
-    "244fa7f3:be933a57": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "be933a57"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T20:52:45.062Z",
-      "content_hash": "9345eb3c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification: all required frontmatter fields are present with correct values, the body opens with the required level-1 heading naming the expert and its alias, the body clearly states what the expert is the subject-matter expert on, and there is no prohibited placeholder text."
-      }
-    },
-    "244fa7f3:a28ce678": {
-      "judge": {
+    "244fa7f3:6f7a874e": {
+      "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "a28ce678"
+        "hash": "6f7a874e"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T20:54:12.936Z",
+      "cached_at": "2026-09-01T16:55:59.832Z",
       "content_hash": "9345eb3c",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Judgment input has 286 words."
-      }
-    },
-    "244fa7f3:433458bb": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "433458bb"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-08-31T22:07:29.323Z",
-      "content_hash": "9345eb3c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies every criterion in the specification. Frontmatter includes title (string), type set to 'expert', alias, and description. The body opens with a level-1 heading naming the expert and its alias (# Service Steward (a.k.a **Scooper**)), and states in prose what the expert is the subject-matter expert on ('The subject-matter expert on how Scoop Society services are written'). No placeholder text (TODO, TBD, lorem ipsum) is present. The extra frontmatter fields (constitution, context, practices, refs, validates, excludes, exemplars) are not prohibited by the spec."
-      }
-    },
-    "244fa7f3:22073e9f": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "22073e9f"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-08-31T22:08:11.758Z",
-      "content_hash": "9345eb3c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification. It includes all required frontmatter fields (title, type, alias, description), opens with the required level-1 heading naming the expert and alias, clearly states what the expert is the subject-matter expert on, and contains no prohibited placeholder text."
-      }
-    },
-    "244fa7f3:dfa53848": {
-      "judge": {
-        "name": "counter",
-        "model": "none",
-        "hash": "dfa53848"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-08-31T22:09:48.483Z",
-      "content_hash": "9345eb3c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Judgment input has 286 words."
+        "reason": "Review input has 286 words."
       }
     }
   }

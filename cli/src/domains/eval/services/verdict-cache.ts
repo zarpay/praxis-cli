@@ -1,53 +1,26 @@
 import type {
   AssistFileRecord,
-  CacheFile,
   CacheFileData,
   CacheReviewerIdentity,
-  OrphanedCacheFile,
   Verdict,
   VerdictEntry,
 } from "@/domains/eval/types.js";
 
-import fg from "fast-glob";
-import { createHash } from "node:crypto";
-
 import { PraxisBase } from "@/core/base.js";
-import {
-  exists,
-  fileSize,
-  matchesFilename,
-  readText,
-  removeFile,
-  writeText,
-} from "@/core/files.js";
+import { exists, readText, removeFile, writeText } from "@/core/files.js";
 import { baseName, joinPath, parentDir } from "@/core/paths.js";
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
+import { CACHE_VERSION, VerdictCacheFile } from "@/domains/eval/models/verdict-cache-file.js";
 
 /**
- * Current cache format version.
+ * The verdict store, bound to one reviewer.
  *
- * 4.0 renamed each entry's `judge` field to `reviewer`. Older files are
- * ignored rather than migrated — a 3.0 entry has no `reviewer` to match
- * against, so reading one would silently miss every time. Discarding
- * them costs one re-review and cannot be got wrong.
- */
-const CACHE_VERSION = "4.0";
-
-/**
- * Manages the file-based verdict cache.
+ * A repository over `.praxis/cache/validation/`: one JSON file per
+ * target, mirroring the target's project path. The file itself is a
+ * `VerdictCacheFile` — this owns only where it lives, which reviewer's
+ * entries to read, and the I/O.
  *
- * One JSON file per target under `.praxis/cache/validation/`, mirroring
- * the target's project path. Each file holds every verdict for that
- * target — all specs, all reviewers — keyed by `<specHash>:<reviewerHash>`,
- * so a target's complete review state lives in one committed artifact
- * and cross-reviewer comparison is a single read.
- *
- * The reviewer hash in the key is what makes the cache's invalidation
- * behavior the epoch structure (05): a behavioral reviewer change misses
- * every old key and writes new ones; rolling the config back re-hits
- * the old keys at zero cost; keys belonging to no configured reviewer are
- * prunable. A CacheManager is bound to one reviewer identity; readers
- * construct one per configured reviewer.
+ * Every failure degrades to a miss. A cache that cannot be read costs
+ * an API call; a cache that raises would cost the run.
  */
 export class CacheManager extends PraxisBase {
   /** Directory all cache files live under (default: {root}/.praxis/cache/validation). */
@@ -69,33 +42,28 @@ export class CacheManager extends PraxisBase {
   } = {}) {
     super();
     this.projectRoot = projectRoot ?? null;
-    this.cacheRoot = cacheRoot ?? this.defaultCacheRoot();
+    this.cacheRoot =
+      cacheRoot ?? joinPath(projectRoot ?? process.cwd(), ".praxis/cache/validation");
     this.reviewer = reviewer ?? null;
   }
 
   /**
-   * Computes the filesystem path for a target's cache file.
+   * Where a target's cache file lives.
    *
-   * When a projectRoot is set, strips it from absolute target paths
-   * to produce a root-relative cache path. Otherwise uses the path as-is.
-   *
-   * @param targetPath - Path to the reviewed target
+   * Mirrors the target's project-relative path, so the committed cache
+   * reads like the tree it describes.
    */
   cachePathFor(targetPath: string): string {
-    const relativePath = this.relativeToRoot(targetPath);
-    const dirPath = parentDir(relativePath);
-    const base = baseName(relativePath, ".md");
+    const relative = this.relativeToRoot(targetPath);
 
-    return joinPath(this.cacheRoot, dirPath, `${base}.json`);
+    return joinPath(this.cacheRoot, parentDir(relative), `${baseName(relative, ".md")}.json`);
   }
 
   /**
-   * Writes a verdict to the cache.
+   * Stores this reviewer's verdict for a (target, spec) pair.
    *
-   * Reads the target's existing cache file (if any) and upserts this
-   * reviewer's entry for the spec; other specs' and reviewers' entries are
-   * preserved. Verifies JSON integrity before writing. Silently fails
-   * on I/O errors.
+   * Other specs' and reviewers' entries are preserved. Silently fails
+   * on I/O errors: a verdict that cannot be cached is still a verdict.
    */
   write({
     targetPath,
@@ -115,29 +83,37 @@ export class CacheManager extends PraxisBase {
     };
   }): void {
     const cachePath = this.cachePathFor(targetPath);
-    const fileData = this.loadFile(cachePath);
+    const file = this.load(cachePath) ?? VerdictCacheFile.empty();
+    const specPath = this.relativeToRoot(metadata.specPath);
 
-    fileData.verdicts[this.verdictKey(metadata.specPath)] = this.buildEntry(
-      contentHash,
-      result,
-      metadata,
-    );
+    file.put(VerdictCacheFile.keyFor(specPath, this.identity().hash), {
+      reviewer: this.identity(),
+      spec_path: specPath,
+      cached_at: new Date().toISOString(),
+      content_hash: contentHash,
+      result: {
+        ...result,
+        reason: sanitizeText(result.reason),
+        issues: result.issues.map(sanitizeText),
+      },
+      ...(metadata.exemplarFiles?.length ? { exemplar_files: metadata.exemplarFiles } : {}),
+      ...(metadata.contextFiles?.length ? { context_files: metadata.contextFiles } : {}),
+    });
 
     try {
-      const json = JSON.stringify(fileData, null, 2);
-      JSON.parse(json); // verify integrity before writing
-      writeText(cachePath, json);
+      writeText(cachePath, file.toJson());
     } catch (err) {
-      this.removeQuietly(cachePath);
-      this.debug(`Failed to write cache file (${(err as Error).message})`);
+      this.discard(cachePath, `Failed to write cache file (${(err as Error).message})`);
     }
   }
 
   /**
-   * Reads this reviewer's cached verdict for a (target, spec) pair.
+   * This reviewer's cached verdict for a (target, spec) pair.
    *
-   * Returns null if the cache file doesn't exist, the entry is absent,
-   * or the content hash doesn't match.
+   * Null when the file is absent, the entry is missing, or the inputs
+   * have changed since it was written. A corrupt file is discarded so
+   * the next write starts clean — the read-only accessor below
+   * deliberately leaves it alone.
    */
   read({
     targetPath,
@@ -149,16 +125,14 @@ export class CacheManager extends PraxisBase {
     specPath: string;
   }): Verdict | null {
     const cachePath = this.cachePathFor(targetPath);
-    // The reviewing path discards a corrupt file so the next write starts
-    // clean; the report-only readers below deliberately leave it alone.
-    const fileData = this.parseFile(cachePath, (err) => {
-      this.removeQuietly(cachePath);
-      this.debug(`Removed corrupt cache file ${cachePath} (${err.message})`);
-    });
+    const file = this.load(cachePath, (err) =>
+      this.discard(cachePath, `Removed corrupt cache file ${cachePath} (${err.message})`),
+    );
 
-    if (!fileData) return null;
+    if (!file) return null;
 
-    const entry = fileData.verdicts[this.verdictKey(specPath)];
+    const key = VerdictCacheFile.keyFor(this.relativeToRoot(specPath), this.identity().hash);
+    const entry = file.entry(key);
 
     if (entry?.content_hash !== contentHash) return null;
 
@@ -166,12 +140,12 @@ export class CacheManager extends PraxisBase {
   }
 
   /**
-   * Reads one of this reviewer's cached verdicts without hash validation.
+   * One stored verdict, without checking whether it is still current.
    *
-   * When `specPath` is provided, returns the entry for that spec.
-   * When omitted, returns this reviewer's first entry (useful for
-   * single-spec targets). Returns null if no matching entry exists.
-   * Does not delete corrupt files (purely read-only).
+   * What `praxis eval verdict` and `praxis status` read: they report
+   * what was recorded, staleness included, and make no API call. With
+   * no `specPath` they take this reviewer's first entry, which is what
+   * a single-spec target has.
    */
   readRaw({
     targetPath,
@@ -180,254 +154,81 @@ export class CacheManager extends PraxisBase {
     targetPath: string;
     specPath?: string;
   }): CacheFileData | null {
-    const entries = this.readEntries(targetPath);
+    const file = this.load(this.cachePathFor(targetPath));
 
-    const entry = specPath
-      ? entries.find((candidate) => this.verdictKeyOf(candidate) === this.verdictKey(specPath))
+    if (!file) return null;
+
+    const entries = file.entriesFor(this.identity());
+    const wanted = specPath
+      ? VerdictCacheFile.keyFor(this.relativeToRoot(specPath), this.identity().hash)
+      : null;
+    const entry = wanted
+      ? entries.find((candidate) => VerdictCacheFile.keyOf(candidate) === wanted)
       : entries[0];
 
     if (!entry) return null;
 
-    return this.entryToCacheFileData(targetPath, entry);
+    return this.toCacheFileData(targetPath, entry);
   }
 
   /**
-   * Reads all of this reviewer's cached verdicts for a target across specs.
+   * Reads a target's cache file, or null when there is nothing usable.
    *
-   * Returns an empty array if no cache file exists or it is unreadable.
+   * Absent, outdated and corrupt files all yield null; `onCorrupt`
+   * fires only for a file that exists and fails to parse, so the
+   * decision to delete stays with the caller.
    */
-  readAllRaw({ targetPath }: { targetPath: string }): CacheFileData[] {
-    return this.readEntries(targetPath).map((entry) =>
-      this.entryToCacheFileData(targetPath, entry),
-    );
-  }
-
-  /**
-   * Returns statistics about the current cache.
-   *
-   * Not yet surfaced by any CLI command; kept for cache tooling.
-   */
-  stats(): { totalFiles: number; totalSize: number; byType: Record<string, number> } {
-    const cacheFiles = fg.sync("**/*.json", { cwd: this.cacheRoot, absolute: true });
-
-    let totalSize = 0;
-    const byType: Record<string, number> = {};
-
-    for (const file of cacheFiles) {
-      try {
-        totalSize += fileSize(file);
-      } catch {
-        /* skip unreadable files */
-      }
-
-      const type = this.typeOf(file);
-      byType[type] = (byType[type] ?? 0) + 1;
-    }
-
-    return { totalFiles: cacheFiles.length, totalSize, byType };
-  }
-
-  /**
-   * Finds cache files that no longer correspond to valid documents.
-   *
-   * A cache file is orphaned if the source document was deleted.
-   * Stale hashes are no longer orphans — they get overwritten in-place.
-   *
-   * Known limitation: only deleted documents are detected. Entries whose
-   * spec or reviewer was removed (while the target still exists) are not
-   * reported. Not yet surfaced by any CLI command; kept for cache tooling.
-   *
-   * @param root - Project root directory
-   * @param sources - Array of source directory paths relative to root
-   */
-  orphanedCacheFiles(
-    root: string,
-    sources: string[],
-    specFilePattern: string = DEFAULT_SPEC_FILE_PATTERN,
-    ignore: string[] = [],
-  ): OrphanedCacheFile[] {
-    const validDocuments = this.buildDocumentMap(root, sources, specFilePattern, ignore);
-    const orphans: OrphanedCacheFile[] = [];
-    const cacheFiles = fg.sync("**/*.json", { cwd: this.cacheRoot, absolute: true });
-
-    for (const cacheFile of cacheFiles) {
-      const docKey = this.cacheRelative(cacheFile).replace(/\.json$/, "");
-
-      if (!validDocuments.has(docKey)) {
-        orphans.push({
-          file: cacheFile,
-          reason: "document_missing",
-          docName: baseName(cacheFile, ".json"),
-          type: this.typeOf(cacheFile),
-        });
-      }
-    }
-
-    return orphans;
-  }
-
-  /** A cache file's path relative to the cache root. */
-  private cacheRelative(cacheFile: string): string {
-    return cacheFile.replace(`${this.cacheRoot}/`, "");
-  }
-
-  /** A cache file's type: the first directory segment under the cache root. */
-  private typeOf(cacheFile: string): string {
-    return this.cacheRelative(cacheFile).split("/")[0] ?? "unknown";
-  }
-
-  /**
-   * The default cache root: `.praxis/cache/validation` under the
-   * project. Eval owns where its own verdicts live.
-   */
-  private defaultCacheRoot(): string {
-    return joinPath(this.projectRoot ?? process.cwd(), ".praxis", "cache", "validation");
-  }
-
-  /** Reads a target's current-version entries belonging to this manager's reviewer. */
-  private readEntries(targetPath: string): VerdictEntry[] {
-    const fileData = this.parseFile(this.cachePathFor(targetPath));
-
-    if (!fileData) return [];
-
-    const reviewerHash = this.reviewerIdentity().hash;
-
-    return Object.values(fileData.verdicts).filter((entry) => entry.reviewer.hash === reviewerHash);
-  }
-
-  /**
-   * Loads a target's cache file as a current-version structure.
-   *
-   * Files that are absent, corrupt, or in an older format start fresh
-   * — v2 is a breaking release and old verdicts are simply re-reviewed.
-   */
-  private loadFile(cachePath: string): CacheFile {
-    return this.parseFile(cachePath) ?? { version: CACHE_VERSION, verdicts: {} };
-  }
-
-  /**
-   * Parses a target's cache file, or null when there is nothing usable.
-   *
-   * Absent, outdated and corrupt files all yield null: v2 is a breaking
-   * release, and an unreadable verdict is simply re-reviewed. `onCorrupt`
-   * fires only for a file that exists and fails to parse — the one case
-   * a caller may want to act on — so the decision to delete stays with
-   * the caller rather than being buried here.
-   */
-  private parseFile(cachePath: string, onCorrupt?: (err: Error) => void): CacheFile | null {
+  private load(cachePath: string, onCorrupt?: (err: Error) => void): VerdictCacheFile | null {
     if (!exists(cachePath)) return null;
 
     try {
-      const fileData = JSON.parse(readText(cachePath)) as CacheFile;
-
-      return fileData.version === CACHE_VERSION ? fileData : null;
+      return VerdictCacheFile.parse(readText(cachePath));
     } catch (err) {
       onCorrupt?.(err as Error);
       return null;
     }
   }
 
-  /** Builds the entry this manager's reviewer stores for one review. */
-  private buildEntry(
-    contentHash: string,
-    result: Verdict,
-    metadata: {
-      specPath: string;
-      exemplarFiles?: AssistFileRecord[];
-      contextFiles?: AssistFileRecord[];
-    },
-  ): VerdictEntry {
-    const entry: VerdictEntry = {
-      reviewer: this.reviewerIdentity(),
-      spec_path: this.relativeToRoot(metadata.specPath),
-      cached_at: new Date().toISOString(),
-      content_hash: contentHash,
-      result: {
-        ...result,
-        reason: sanitizeText(result.reason),
-        issues: result.issues.map(sanitizeText),
-      },
-    };
-
-    if (metadata.exemplarFiles?.length) entry.exemplar_files = metadata.exemplarFiles;
-
-    if (metadata.contextFiles?.length) entry.context_files = metadata.contextFiles;
-
-    return entry;
-  }
-
-  /** Deletes a file, ignoring failures: cleanup must never mask the real error. */
-  private removeQuietly(cachePath: string): void {
-    try {
-      if (exists(cachePath)) removeFile(cachePath);
-    } catch {
-      /* ignore cleanup failures */
-    }
-  }
-
   /**
-   * Reports a cache problem, but only under DEBUG.
+   * Removes an unusable cache file, reporting only under DEBUG.
    *
    * The cache degrades silently by design — a miss costs an API call,
    * never a failed run — so its diagnostics are opt-in.
    */
-  private debug(message: string): void {
+  private discard(cachePath: string, message: string): void {
+    try {
+      if (exists(cachePath)) removeFile(cachePath);
+    } catch {
+      /* cleanup failures must never mask the real error */
+    }
+
     if (process.env["DEBUG"]) {
       this.logger.warn(message);
     }
   }
 
-  /** Constructs the flattened per-verdict view for report consumers. */
-  private entryToCacheFileData(targetPath: string, entry: VerdictEntry): CacheFileData {
+  /** The flattened per-verdict view report consumers read. */
+  private toCacheFileData(targetPath: string, entry: VerdictEntry): CacheFileData {
     return {
       version: CACHE_VERSION,
       cached_at: entry.cached_at,
       content_hash: entry.content_hash,
-      document: {
-        path: targetPath,
-        spec_path: entry.spec_path,
-      },
+      document: { path: targetPath, spec_path: entry.spec_path },
       result: entry.result,
     };
   }
 
-  /**
-   * The entry key for a (spec, reviewer) pair: `<specHash>:<reviewerHash>`.
-   *
-   * Both dimensions of verdict identity live in the key, so one file
-   * holds a target's complete review state.
-   */
-  private verdictKey(specPath: string): string {
-    return `${this.specHash(specPath)}:${this.reviewerIdentity().hash}`;
-  }
-
-  /** Recomputes an entry's key from its stored fields. */
-  private verdictKeyOf(entry: VerdictEntry): string {
-    return `${this.specHash(entry.spec_path)}:${entry.reviewer.hash}`;
-  }
-
-  /** This manager's reviewer identity, with a placeholder when unbound (tests). */
-  private reviewerIdentity(): CacheReviewerIdentity {
+  /** This manager's reviewer, with a placeholder when unbound (tests). */
+  private identity(): CacheReviewerIdentity {
     return this.reviewer ?? { name: "unbound", model: "unbound", hash: "00000000" };
-  }
-
-  /**
-   * Computes an 8-char SHA256 hash of the spec's project-relative path.
-   *
-   * Normalizing to a project-relative path before hashing ensures
-   * stability across machines.
-   */
-  private specHash(specPath: string): string {
-    return createHash("sha256").update(this.relativeToRoot(specPath)).digest("hex").slice(0, 8);
   }
 
   /**
    * Strips the project root prefix from a path.
    *
-   * Returns the path unchanged when there is no root or the path lies
-   * outside it. Both the cache file's location and the hashed spec path
-   * go through here, so a target and its spec are normalized the same
-   * way and cache keys stay stable across machines.
+   * Both the cache file's location and the stored spec path go through
+   * here, so a target and its spec normalize the same way and keys stay
+   * stable across machines.
    */
   private relativeToRoot(path: string): string {
     if (!this.projectRoot) return path;
@@ -435,47 +236,6 @@ export class CacheManager extends PraxisBase {
     const root = this.projectRoot.endsWith("/") ? this.projectRoot : `${this.projectRoot}/`;
 
     return path.startsWith(root) ? path.slice(root.length) : path;
-  }
-
-  /**
-   * Builds a set of valid document keys for orphan detection.
-   *
-   * Scans source directories for .md files and builds keys matching
-   * the cache path structure (source-relative paths without extension).
-   */
-  private buildDocumentMap(
-    root: string,
-    sources: string[],
-    specFilePattern: string,
-    ignore: string[] = [],
-  ): Set<string> {
-    const documents = new Set<string>();
-    const absoluteIgnore = ignore.map((p) => joinPath(root, p));
-
-    for (const source of sources) {
-      const sourceDir = joinPath(root, source);
-
-      if (!exists(sourceDir)) continue;
-
-      const docFiles = fg.sync("**/*.md", {
-        cwd: sourceDir,
-        absolute: false,
-        ignore: absoluteIgnore,
-      });
-
-      for (const relFile of docFiles) {
-        const name = baseName(relFile);
-
-        if (matchesFilename(name, specFilePattern) || baseName(relFile, ".md").startsWith("_")) {
-          continue;
-        }
-
-        const key = joinPath(source, relFile).replace(/\.md$/, "");
-        documents.add(key);
-      }
-    }
-
-    return documents;
   }
 }
 

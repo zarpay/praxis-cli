@@ -1,129 +1,19 @@
 {
-  "version": "3.0",
+  "version": "4.0",
   "verdicts": {
-    "244fa7f3:0ac6cb25": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ac6cb25"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T14:22:06.701Z",
-      "content_hash": "268389a1",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria in the specification. Required frontmatter (title, type='expert', alias, description) is present and valid. The body opens with a level-1 heading naming the expert and its alias ('# Feature Steward (a.k.a **Sundae**)'), and states in prose what the expert is the subject-matter expert on. No placeholder text (TODO, TBD, lorem ipsum) is present."
-      }
-    },
-    "244fa7f3:e216be4c": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e216be4c"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T14:24:51.742Z",
-      "content_hash": "268389a1",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria: required frontmatter fields (title, type, alias, description) are present and correctly formatted; the body opens with a level-1 heading naming the expert and its alias; the body clearly states what the expert is the subject-matter expert on; and there is no placeholder text."
-      }
-    },
-    "244fa7f3:8d4c2b8f": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "8d4c2b8f"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T20:52:03.274Z",
-      "content_hash": "268389a1",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all required frontmatter (title, type: expert, alias, description), opens with a level-1 heading naming the expert and alias, states in prose the subject-matter expertise, and contains no placeholder text. The extra frontmatter fields do not violate any criterion, so the document meets the spec."
-      }
-    },
-    "244fa7f3:be933a57": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "be933a57"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T20:52:38.535Z",
-      "content_hash": "268389a1",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification. All required frontmatter fields (title, type, alias, description) are present and correctly formatted. The body opens with a level-1 heading naming the expert and its alias, and clearly states in prose what the expert is the subject-matter expert on. No placeholder text is present."
-      }
-    },
-    "244fa7f3:a28ce678": {
-      "judge": {
+    "244fa7f3:6f7a874e": {
+      "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "a28ce678"
+        "hash": "6f7a874e"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T20:54:12.934Z",
-      "content_hash": "268389a1",
+      "cached_at": "2026-09-01T16:55:59.830Z",
+      "content_hash": "8f4f2fef",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Judgment input has 294 words."
-      }
-    },
-    "244fa7f3:433458bb": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "433458bb"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-08-31T22:07:27.781Z",
-      "content_hash": "268389a1",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "file satisfies all criteria"
-      }
-    },
-    "244fa7f3:22073e9f": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "22073e9f"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-08-31T22:08:04.494Z",
-      "content_hash": "268389a1",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file fully complies with the expert document specification. All required frontmatter fields are present and correctly formatted, the content opens with the required level-1 heading naming the expert and its alias, the body clearly states what the expert is the subject-matter expert on, and there are no placeholder texts."
-      }
-    },
-    "244fa7f3:dfa53848": {
-      "judge": {
-        "name": "counter",
-        "model": "none",
-        "hash": "dfa53848"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-08-31T22:09:48.481Z",
-      "content_hash": "268389a1",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Judgment input has 294 words."
+        "reason": "Review input has 294 words."
       }
     }
   }

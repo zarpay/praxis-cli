@@ -234,56 +234,6 @@ describe("CacheManager", () => {
     });
   });
 
-  describe("stats()", () => {
-    it("returns zero counts for empty cache", () => {
-      const stats = manager.stats();
-
-      expect(stats.totalFiles).toBe(0);
-      expect(stats.totalSize).toBe(0);
-    });
-
-    it("counts cache files after writes", () => {
-      manager.write({
-        targetPath: join(projectRoot, "roles", "a.md"),
-        contentHash: "aaaa1111",
-        result: { compliant: true, issues: [], reason: "ok" },
-        metadata: { specPath: "roles/README.md" },
-      });
-      manager.write({
-        targetPath: join(projectRoot, "roles", "b.md"),
-        contentHash: "bbbb2222",
-        result: { compliant: true, issues: [], reason: "ok" },
-        metadata: { specPath: "roles/README.md" },
-      });
-
-      const stats = manager.stats();
-
-      expect(stats.totalFiles).toBe(2);
-      expect(stats.totalSize).toBeGreaterThan(0);
-      expect(stats.byType["roles"]).toBe(2);
-    });
-  });
-
-  describe("orphanedCacheFiles()", () => {
-    it("identifies cache files for deleted documents", () => {
-      mkdirSync(join(projectRoot, "roles"), { recursive: true });
-      writeFileSync(join(projectRoot, "roles", "README.md"), "# Roles");
-
-      manager.write({
-        targetPath: join(projectRoot, "roles", "deleted-role.md"),
-        contentHash: "dead1234",
-        result: { compliant: true, issues: [], reason: "ok" },
-        metadata: { specPath: "roles/README.md" },
-      });
-
-      const orphans = manager.orphanedCacheFiles(projectRoot, ["roles"]);
-
-      expect(orphans.length).toBe(1);
-      expect(orphans[0].reason).toBe("document_missing");
-      expect(orphans[0].docName).toBe("deleted-role");
-    });
-  });
-
   describe("per-reviewer verdict keys", () => {
     const reviewerA = { name: "a", model: "model-a", hash: "aaaa1111" };
     const reviewerB = { name: "b", model: "model-b", hash: "bbbb2222" };
@@ -508,60 +458,6 @@ describe("CacheManager", () => {
       const cached = manager.readRaw({ targetPath });
       expect(cached).toBeNull();
       expect(existsSync(cachePath)).toBe(true);
-    });
-  });
-
-  describe("readAllRaw()", () => {
-    it("returns all spec entries for a document with multiple validations", () => {
-      const targetPath = join(projectRoot, "docs", "guide.md");
-      const metadata1 = { specPath: "specs/README.md" };
-      const metadata2 = { specPath: "other/README.md" };
-
-      manager.write({
-        targetPath,
-        contentHash: "hash1",
-        result: { compliant: true, issues: [], reason: "spec A ok" },
-        metadata: metadata1,
-      });
-      manager.write({
-        targetPath,
-        contentHash: "hash2",
-        result: {
-          compliant: false,
-          issues: ["issue"],
-          reason: "spec B fail",
-          severity: "error" as const,
-        },
-        metadata: metadata2,
-      });
-
-      const all = manager.readAllRaw({ targetPath });
-
-      expect(all).toHaveLength(2);
-      const reasons = all.map((e) => e.result.reason).sort();
-      expect(reasons).toEqual(["spec A ok", "spec B fail"]);
-    });
-
-    it("returns empty array when no cache file exists", () => {
-      const targetPath = join(projectRoot, "roles", "nonexistent.md");
-      const all = manager.readAllRaw({ targetPath });
-
-      expect(all).toHaveLength(0);
-    });
-
-    it("returns a single entry for a document with one validation", () => {
-      const targetPath = join(projectRoot, "roles", "test-expert.md");
-      manager.write({
-        targetPath,
-        contentHash: "hash1",
-        result: { compliant: true, issues: [], reason: "ok" },
-        metadata: { specPath: "roles/README.md" },
-      });
-
-      const all = manager.readAllRaw({ targetPath });
-
-      expect(all).toHaveLength(1);
-      expect(all[0].result.reason).toBe("ok");
     });
   });
 

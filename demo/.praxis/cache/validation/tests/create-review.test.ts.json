@@ -1,161 +1,19 @@
 {
-  "version": "3.0",
+  "version": "4.0",
   "verdicts": {
-    "dacac2eb:f83a92f1": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "f83a92f1"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T00:03:28.696Z",
-      "content_hash": "1aa34b7c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file fully conforms to the test conventions specification. The top-level describe names the module ('create-review'), every nested describe is a 'when' clause, and each it statement reads as a sentence with describe. Every it block contains exactly one expect, using toMatchObject for compound shapes. Tests exercise only the public run API and observable store state via the injected collaborator, with no spies, mocks, or module-scope access. Test data is built fresh via validInput() and a fresh store in beforeEach, so suites are independent."
-      }
-    },
-    "dacac2eb:4e6f3185": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "4e6f3185"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T00:04:41.810Z",
-      "content_hash": "1aa34b7c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully complies with all specification criteria: proper subject framing with module name and 'when' clauses, exactly one assertion per test block using appropriate matchers, and testing only public API functionality with real implementations and fresh state."
-      }
-    },
-    "dacac2eb:0ac6cb25": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ac6cb25"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T14:24:11.833Z",
-      "content_hash": "9d212d01",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file fully conforms to the specification. Subject framing is correct: the top-level describe names the module ('create-review'), nested describes use 'when' clauses, and each it states one observable outcome so describe + it reads as a sentence. Every it block contains exactly one expect, and compound shapes are asserted once via toMatchObject. Tests exercise only the public `run` API and observable state through the injected Store (allowed as functionality), with no spies, mocks, or module-scope access. Test data is built fresh via validInput() and a fresh store in beforeEach, so suites have no shared state or ordering dependencies. The file also matches the declared path pattern tests/*.test.ts."
-      }
-    },
-    "dacac2eb:e216be4c": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e216be4c"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T14:25:54.995Z",
-      "content_hash": "9d212d01",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file perfectly satisfies all criteria in the specification: subject framing follows the naming conventions, each it block contains exactly one assertion, and tests exercise only public API functionality without implementation details."
-      }
-    },
-    "dacac2eb:8d4c2b8f": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "8d4c2b8f"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:52:22.555Z",
-      "content_hash": "9d212d01",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file conforms to all three conventions. Subject framing: top-level describe names the module (create-review); nested describes use when-clauses; each it states one observable outcome reading as a sentence. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once with toMatchObject. Functionality not implementation: tests exercise the exported run function and observable store state, build fresh data via validInput() inside each test, use honest in-memory store with no spies or mocks, and no cross-suite state dependencies. No violations found. The only nuance is a single `expect` per block is satisfied (one expect per it), matching the one-assertion rule; the nested uses of expect.stringContaining are matchers, not separate expects. This file is a valid, conforming test suite. The only nuance is a single `expect` per block is satisfied (one expect per it), matching the one-assertion rule. The file is valid."
-      }
-    },
-    "dacac2eb:be933a57": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "be933a57"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:53:55.184Z",
-      "content_hash": "9d212d01",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification: proper subject framing with module name and when clauses, one assertion per test block using toMatchObject for compound shapes, and testing only public functionality without implementation details."
-      }
-    },
-    "dacac2eb:a28ce678": {
-      "judge": {
+    "dacac2eb:6f7a874e": {
+      "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "a28ce678"
+        "hash": "6f7a874e"
       },
       "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:54:12.952Z",
+      "cached_at": "2026-09-01T16:55:59.843Z",
       "content_hash": "9d212d01",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Judgment input has 681 words."
-      }
-    },
-    "dacac2eb:433458bb": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "433458bb"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:07:47.955Z",
-      "content_hash": "9d212d01",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies every criterion in the specification: the top-level describe names the unit by its module name ('create-review'), nested describes are when-clauses, each it is a plain-language outcome such that describe + it reads as a sentence, every it block contains exactly one expect (compound shapes asserted once via toMatchObject), tests exercise only the public run API plus observable store state through the injected collaborator, no spies/mocks/internals, and test data is built fresh inside each test via validInput() and seeded per-test with beforeEach."
-      }
-    },
-    "dacac2eb:22073e9f": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "22073e9f"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:09:21.350Z",
-      "content_hash": "9d212d01",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file perfectly satisfies all criteria in the specification: 1) Subject framing follows the pattern of module name → 'when' clauses → observable outcomes, 2) Each it block contains exactly one assertion, 3) Tests exercise only the public API with honest implementations and fresh test data, avoiding implementation details."
-      }
-    },
-    "dacac2eb:dfa53848": {
-      "judge": {
-        "name": "counter",
-        "model": "none",
-        "hash": "dfa53848"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:09:48.500Z",
-      "content_hash": "9d212d01",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Judgment input has 681 words."
+        "reason": "Review input has 681 words."
       }
     }
   }

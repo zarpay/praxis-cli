@@ -1,161 +1,19 @@
 {
-  "version": "3.0",
+  "version": "4.0",
   "verdicts": {
-    "dacac2eb:f83a92f1": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "f83a92f1"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T00:03:46.167Z",
-      "content_hash": "94c25420",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file conforms to all three test conventions. Subject framing: the top-level describe names the module ('tasting-menu'), nested describes are 'when' clauses, and each it reads as a sentence with describe. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toEqual/toMatchObject. Functionality, not implementation: tests exercise only the exported buildMenu public API, assert on returned values, use the honest in-memory createMemoryStore without spies or mocks, and build fresh state in beforeEach per suite. The file also matches the tests/*.test.ts path pattern."
-      }
-    },
-    "dacac2eb:4e6f3185": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "4e6f3185"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T00:04:59.894Z",
-      "content_hash": "94c25420",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file satisfies all criteria defined in the specification: proper subject framing with module name and when clauses, one assertion per block, and testing functionality rather than implementation using honest in-memory implementations and fresh test data."
-      }
-    },
-    "dacac2eb:0ac6cb25": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ac6cb25"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T14:24:43.553Z",
-      "content_hash": "1d27ad5e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file conforms to all three test conventions. Subject framing: the top-level describe names the unit by module name ('tasting-menu'), nested describes are when-clauses, and each it states one observable outcome that reads as a sentence with its describe. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toMatchObject/toEqual/toHaveLength. Functionality, not implementation: tests exercise only the exported buildMenu public API, assert on returned values, use the honest in-memory createMemoryStore without spies or mocking, never reach into module scope, and build state fresh in beforeEach so suites don't depend on each other."
-      }
-    },
-    "dacac2eb:e216be4c": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e216be4c"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T14:26:23.451Z",
-      "content_hash": "1d27ad5e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully complies with all requirements in the specification: proper subject framing with module name and when clauses, one assertion per test block, and testing functionality through public API without implementation details."
-      }
-    },
-    "dacac2eb:8d4c2b8f": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "8d4c2b8f"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:52:28.068Z",
-      "content_hash": "1d27ad5e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all three test conventions from the specification.\n\n1. Subject framing: The top-level describe names the unit by its module name ('tasting-menu' — matching the file's module under test). Nested describes are when clauses ('when a tour of three stops is requested', 'when more stops are requested than parlors exist', 'when stops is less than one'). Each it states one observable outcome in plain language so describe + it reads as a sentence (e.g., 'tasting-menu, when stops is less than one, fails stating the minimum').\n\n2. One assertion per block: Each it block contains exactly one expect. Compound shapes are asserted once with toEqual/toMatchObject rather than field-by-field.\n\n3. Functionality, not implementation: Tests exercise the public API (buildMenu) and assert on returned values only. No spies, no mocking of collaborators (the memory store is an honest in-memory implementation created fresh in beforeEach), no reaching into module scope. Test data is built fresh in each test/setup, and suites do not depend on each other's state or ordering (store is recreated per test via beforeEach)."
-      }
-    },
-    "dacac2eb:be933a57": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "be933a57"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:54:12.930Z",
-      "content_hash": "1d27ad5e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification. It follows the three rules exactly: proper subject framing with describe/it forming readable sentences, one assertion per block, and testing functionality rather than implementation."
-      }
-    },
-    "dacac2eb:a28ce678": {
-      "judge": {
+    "dacac2eb:6f7a874e": {
+      "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "a28ce678"
+        "hash": "6f7a874e"
       },
       "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:54:12.956Z",
+      "cached_at": "2026-09-01T16:55:59.845Z",
       "content_hash": "1d27ad5e",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Judgment input has 479 words."
-      }
-    },
-    "dacac2eb:433458bb": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "433458bb"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:07:54.501Z",
-      "content_hash": "1d27ad5e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "...empty..."
-      }
-    },
-    "dacac2eb:22073e9f": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "22073e9f"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:09:48.477Z",
-      "content_hash": "1d27ad5e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully satisfies all criteria in the specification: proper subject framing with module name and 'when' clauses, exactly one assertion per test block, and a focus on functionality rather than implementation details."
-      }
-    },
-    "dacac2eb:dfa53848": {
-      "judge": {
-        "name": "counter",
-        "model": "none",
-        "hash": "dfa53848"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:09:48.503Z",
-      "content_hash": "1d27ad5e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Judgment input has 479 words."
+        "reason": "Review input has 479 words."
       }
     }
   }

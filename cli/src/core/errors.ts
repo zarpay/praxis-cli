@@ -218,11 +218,11 @@ export const errors = {
     return new PraxisError(
       "INVALID_REVIEW_PROVIDER",
       `Invalid reviewer provider "${spec}": ${problem} — ` +
-        "a provider module's default export must be a factory returning { name, reviewer() }",
+        "a provider module's default export must be a factory returning { name, review() }",
     );
   },
 
-  /** A provider's reviewer() threw something other than a PraxisError. */
+  /** A provider's review() threw something other than a PraxisError. */
   reviewProviderFailed(provider: string, message: string): PraxisError {
     return new PraxisError(
       "REVIEW_PROVIDER_FAILED",

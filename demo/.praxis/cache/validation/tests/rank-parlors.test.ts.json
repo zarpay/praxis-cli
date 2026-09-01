@@ -1,161 +1,19 @@
 {
-  "version": "3.0",
+  "version": "4.0",
   "verdicts": {
-    "dacac2eb:f83a92f1": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "f83a92f1"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T00:03:38.701Z",
-      "content_hash": "4e966d3a",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file conforms to all three test conventions. Subject framing: the top-level describe names the module ('rank-parlors'), every nested describe is a 'when' clause, and each it reads as a plain-language sentence when combined with its describes. One assertion per block: every it contains exactly one expect, and compound shapes are asserted once via toMatchObject/toEqual. Functionality, not implementation: tests exercise only the exported run function (and the public createReview service for setup), use the honest in-memory store, assert on returned values only, contain no spies or mocks, and build fresh state in beforeEach so suites don't depend on each other."
-      }
-    },
-    "dacac2eb:4e6f3185": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "4e6f3185"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T00:04:50.322Z",
-      "content_hash": "4e966d3a",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully satisfies all criteria in the specification: proper subject framing with module name and when clauses, one assertion per test block, and focus on functionality through the public API without implementation details."
-      }
-    },
-    "dacac2eb:0ac6cb25": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ac6cb25"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T14:24:34.894Z",
-      "content_hash": "a1734e88",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all three test conventions.\n\n**Subject framing:** The top-level `describe('rank-parlors', ...)` names the unit by module name. All nested `describe` blocks use `when` clauses ('when no parlors have reviews', 'when parlors have different ratings', 'when a minimum review count is set', 'when minReviews is negative'). Each `it` states one observable outcome in plain language, and each `describe` + `it` reads as a sentence.\n\n**One assertion per block:** Every `it` block contains exactly one `expect`. Compound shapes are asserted once with `toMatchObject`/`toEqual` rather than field-by-field.\n\n**Functionality, not implementation:** Tests exercise the public `run` API only, use the honest in-memory `createMemoryStore` collaborator (no spies or mocks), never reach into module scope, and build fresh state in `beforeEach` so suites don't depend on each other's state or ordering. The `reviewParlor` helper uses another service's public API to set up observable state, which is functionality, not implementation."
-      }
-    },
-    "dacac2eb:e216be4c": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e216be4c"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T14:26:14.861Z",
-      "content_hash": "a1734e88",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file satisfies all criteria in the specification: proper subject framing with module name and 'when' clauses, one assertion per test block, and focuses on functionality through the public API without implementation details."
-      }
-    },
-    "dacac2eb:8d4c2b8f": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "8d4c2b8f"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:52:25.539Z",
-      "content_hash": "a1734e88",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The only `expect` is actually the inner one (assertEquals) — the outer call had a single argument, so it's ambiguous/parse error territory. Let's be precise: the vitest `expect` takes one value; `expect(assertEquals(...))` would assert on the return value of assertEquals, and with bare single-arg call it's invalid — so the outer expect cannot be counted; there is exactly one expect-equivalent assertion (the inner assertEquals). The file satisfies the spec: exact one assertion per it, tests public API only, no implementation/reaching, no spies, fresh store in beforeEach, subject framing and when clauses. Pass."
-      }
-    },
-    "dacac2eb:be933a57": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "be933a57"
-      },
-      "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:54:04.909Z",
-      "content_hash": "a1734e88",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification. It follows the three main rules: proper subject framing with descriptive describe/it blocks, one assertion per block, and testing functionality rather than implementation."
-      }
-    },
-    "dacac2eb:a28ce678": {
-      "judge": {
+    "dacac2eb:6f7a874e": {
+      "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "a28ce678"
+        "hash": "6f7a874e"
       },
       "spec_path": "tests/README.md",
-      "target_type": "unknown",
-      "cached_at": "2026-08-31T20:54:12.955Z",
+      "cached_at": "2026-09-01T16:55:59.844Z",
       "content_hash": "a1734e88",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Judgment input has 585 words."
-      }
-    },
-    "dacac2eb:433458bb": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "433458bb"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:07:52.879Z",
-      "content_hash": "a1734e88",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file adheres to all three conventions: (1) Subject framing — top-level describe names the module 'rank-parlors', nested describes use when-clauses, and each it states a single observable outcome; (2) One assertion per block — every it contains exactly one expect, using toMatchObject/toEqual for compound shapes; (3) Functionality, not implementation — tests exercise only the exported run function and the injected Store collaborator, with no spies, no mocking of honest in-memory stores, no reaching into module scope, and data built fresh per test via beforeEach setup. No required criteria are violated. The assert helper and tests reference the store imported from ../src/services/rank-parlors.js, and the suite reads cleanly as sentences like 'rank-parlors, when no parlors have reviews, ranks every seeded parlor with a zero average' which is consistent with the specification. All requirements are met, so the file passes."
-      }
-    },
-    "dacac2eb:22073e9f": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "22073e9f"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:09:39.667Z",
-      "content_hash": "a1734e88",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully satisfies all criteria in the specification: proper subject framing with module name and 'when' clauses, exactly one assertion per test block, testing only public API functionality without implementation details, and proper test data isolation."
-      }
-    },
-    "dacac2eb:dfa53848": {
-      "judge": {
-        "name": "counter",
-        "model": "none",
-        "hash": "dfa53848"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-08-31T22:09:48.503Z",
-      "content_hash": "a1734e88",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Judgment input has 585 words."
+        "reason": "Review input has 585 words."
       }
     }
   }

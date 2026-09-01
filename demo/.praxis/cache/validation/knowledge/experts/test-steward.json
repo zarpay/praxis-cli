@@ -1,129 +1,19 @@
 {
-  "version": "3.0",
+  "version": "4.0",
   "verdicts": {
-    "244fa7f3:0ac6cb25": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ac6cb25"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T14:22:19.135Z",
-      "content_hash": "ed0cc57e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria in the experts.sme.md specification. Required frontmatter is present and valid: title ('Test Steward'), type ('expert'), alias ('Taster'), and a two-sentence description of when to invoke the expert. The body opens with a level-1 heading naming the expert and its alias ('# Test Steward (a.k.a **Taster**)'), and states in prose that it is the subject-matter expert on how Scoop Society tests are written. No placeholder text (TODO, TBD, lorem ipsum) appears anywhere in the document."
-      }
-    },
-    "244fa7f3:e216be4c": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e216be4c"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T14:25:07.835Z",
-      "content_hash": "ed0cc57e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification. It contains all required frontmatter fields (title, type, alias, description), opens with a level-1 heading naming the expert and its alias, states what the expert is the subject-matter expert on in prose, and contains no placeholder text."
-      }
-    },
-    "244fa7f3:8d4c2b8f": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "8d4c2b8f"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T20:52:07.439Z",
-      "content_hash": "ed0cc57e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all required criteria from experts.sme.md: it has the required frontmatter (title, type: expert, alias, description), the body opens with a level-1 heading naming the expert and its alias ('# Test Steward (a.k.a **Taster**)'), states in prose what the expert is the subject-matter expert on (testing conventions for Scoop Society test suites), and contains no placeholder text (TODO, TBD, lorem ipsum). Additional frontmatter keys (context, practices, validates) are not prohibited by the spec and the prose body is present. The alias 'Taster' appears in the heading, satisfying the requirement to name the expert and its alias. All criteria are satisfied, so this is a pass. There are no issues. Under the spec, required frontmatter keys are all present with valid types, the body has the level-1 heading and prose statement, and no placeholders are used. The file conforms. Reason: All required criteria are met — frontmatter fields (title, type='expert', alias, description) present and correctly typed; body opens with a level-1 heading naming both the expert and alias; prose states the SME scope (Scoop Society test-writing conventions); no placeholder text appears anywhere in the file. Additional optional metadata (context, practices, validates) does not conflict with the spec. Note: The term 'Taster' could be mistaken for the name; alias is included in heading so this meets the criterion. The validation outcome is pass."
-      }
-    },
-    "244fa7f3:be933a57": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "be933a57"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T20:52:52.911Z",
-      "content_hash": "ed0cc57e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all required criteria: it has all required frontmatter fields with correct types, opens with the required level-1 heading naming the expert and alias, clearly states what the expert is subject-matter expert on, and contains no placeholder text. Additional frontmatter fields beyond the specification do not violate requirements."
-      }
-    },
-    "244fa7f3:a28ce678": {
-      "judge": {
+    "244fa7f3:6f7a874e": {
+      "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "a28ce678"
+        "hash": "6f7a874e"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "target_type": "expert",
-      "cached_at": "2026-08-31T20:54:12.938Z",
+      "cached_at": "2026-09-01T16:55:59.833Z",
       "content_hash": "ed0cc57e",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Judgment input has 279 words."
-      }
-    },
-    "244fa7f3:433458bb": {
-      "judge": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "433458bb"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-08-31T22:07:30.658Z",
-      "content_hash": "ed0cc57e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Test Steward.md satisfies all criteria in the spec: it has valid frontmatter (title, type='expert', alias, description), opens with a level-1 heading naming the expert and its alias, states in prose what the expert is the SME on, and contains no placeholder text.</think>all criteria. The spec's requirements are met."
-      }
-    },
-    "244fa7f3:22073e9f": {
-      "judge": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "22073e9f"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-08-31T22:08:19.854Z",
-      "content_hash": "ed0cc57e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification: it contains all required frontmatter fields (title, type, alias, description), opens with a level-1 heading naming the expert and its alias, states what the expert is the subject-matter expert on in prose, and contains no placeholder text."
-      }
-    },
-    "244fa7f3:dfa53848": {
-      "judge": {
-        "name": "counter",
-        "model": "none",
-        "hash": "dfa53848"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-08-31T22:09:48.485Z",
-      "content_hash": "ed0cc57e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Judgment input has 279 words."
+        "reason": "Review input has 279 words."
       }
     }
   }
