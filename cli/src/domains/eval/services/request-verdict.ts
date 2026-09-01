@@ -21,7 +21,7 @@ import resolveProvider from "@/domains/eval/services/providers/resolve-provider.
  * @throws PraxisError when the key is missing, the provider cannot be
  *   resolved, or (wrapped) when the provider itself fails
  */
-export default async function judgeTarget(
+export default async function requestVerdict(
   target: JudgmentTarget,
   judge: Judge,
   root?: string,
@@ -47,7 +47,7 @@ export default async function judgeTarget(
   };
 
   try {
-    return await provider.judge(request);
+    return await provider.evaluate(request);
   } catch (err) {
     if (err instanceof PraxisError) throw err;
 

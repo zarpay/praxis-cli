@@ -22,3 +22,13 @@ frontmatter keys are spelled.
   job, not a parser's.
 - Callers that sweep a directory catch per file and report, so one malformed
   document never takes down a batch.
+
+## `judge` is a noun
+
+The configured instrument, never the action. It is fixed by the public surface —
+`judges:` in `.praxis/config.json`, `--judge <name>`, and the `judge` field in
+every committed cache entry — so the verb had to give way instead.
+
+The verb is **evaluate**, matching the domain and `praxis eval run`:
+`evaluateTarget`, `provider.evaluate(request)`, `isTarget`. Write "the judge
+evaluates a target", never "judges" it.

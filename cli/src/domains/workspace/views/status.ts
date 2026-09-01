@@ -15,7 +15,7 @@ export function countLines(counts: StatusReport["counts"]): string[] {
 }
 
 /**
- * One badge block per judge that has judged anything.
+ * One badge block per judge that has evaluated anything.
  *
  * A judge with no verdicts at all is dropped rather than rendered as
  * four zeros, which reads as a broken judge instead of an unused one.

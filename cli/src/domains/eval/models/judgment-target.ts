@@ -13,7 +13,7 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-con
 
 /**
  * Everything a judge is shown about one target: the target itself, the
- * spec it is judged against, and the spec's assist inputs.
+ * spec it is evaluated against, and the spec's assist inputs.
  *
  * Assembled once and read many times — the content hash, the prompt,
  * and the cache provenance all derive from the same resolved state, so
@@ -26,7 +26,7 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-con
 export class JudgmentTarget {
   /** Path of the target under judgment. */
   readonly targetPath: string;
-  /** Path of the spec the target is judged against. */
+  /** Path of the spec the target is evaluated against. */
   readonly specPath: string;
   /** Target content as read (or assembled) at construction time. */
   readonly targetContent: string;

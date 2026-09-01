@@ -59,8 +59,8 @@ async function loadLocalProvider(spec: string, root?: string): Promise<JudgeProv
     throw errors.invalidJudgeProvider(spec, "factory returned an object without a string name");
   }
 
-  if (typeof provider.judge !== "function") {
-    throw errors.invalidJudgeProvider(spec, "factory returned an object without a judge()");
+  if (typeof provider.evaluate !== "function") {
+    throw errors.invalidJudgeProvider(spec, "factory returned an object without an evaluate()");
   }
 
   return provider;

@@ -11,7 +11,7 @@ import resolveProvider from "@/domains/eval/services/providers/resolve-provider.
 const ECHO_PROVIDER_SOURCE = `export default function echoProvider() {
   return {
     name: "echo",
-    async judge(request) {
+    async evaluate(request) {
       return {
         verdict: { compliant: true, issues: [], reason: "echo: " + request.model },
         usage: null,
@@ -57,7 +57,7 @@ describe("resolveProvider", () => {
     const root = makeProjectWithModule(ECHO_PROVIDER_SOURCE);
 
     const provider = await resolveProvider("./praxis-providers/echo.mjs", root);
-    const result = await provider.judge({
+    const result = await provider.evaluate({
       systemPrompt: "s",
       userPrompt: "u",
       tools: [],
@@ -101,6 +101,6 @@ describe("resolveProvider", () => {
 
     const resolution = resolveProvider("./praxis-providers/echo.mjs", root);
 
-    await expect(resolution).rejects.toThrow("factory returned an object without a judge()");
+    await expect(resolution).rejects.toThrow("factory returned an object without an evaluate()");
   });
 });

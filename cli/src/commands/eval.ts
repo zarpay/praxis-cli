@@ -25,7 +25,7 @@ import { Paths } from "@/domains/workspace/models/project-paths.js";
 /**
  * Registers the `praxis eval` command group.
  *
- * Provides subcommands for judging targets against their specs via
+ * Provides subcommands for evaluating targets against their specs via
  * the OpenRouter API. Family rule: `eval run` writes (invokes judges);
  * every other subcommand reads existing results. The wiring here only
  * parses arguments, constructs EvalCommand, and maps results to exit
@@ -93,7 +93,7 @@ function makeCommand(): EvalCommand {
  */
 export class EvalCommand extends PraxisProjectBase {
   /**
-   * The `eval run` entry point: judges the given targets, or performs
+   * The `eval run` entry point: evaluates the given targets, or performs
    * a full run over every spec-covered target when none are given.
    *
    * @returns An aggregated summary (the caller maps it to an exit code)

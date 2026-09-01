@@ -28,7 +28,7 @@ export interface AssistFile {
 
 /** Everything the judge's user prompt is built from. */
 export interface ValidationQuestionInput {
-  /** The spec content the target is judged against. */
+  /** The spec content the target is evaluated against. */
   specContent: string;
   /** The judgment input: one file's content, or an assembled cohort. */
   targetContent: string;
@@ -36,9 +36,9 @@ export interface ValidationQuestionInput {
   targetPath: string;
   /** Whether the target is one file or a pre-assembled cohort of files. */
   kind: "file" | "cohort";
-  /** Spec-blessed positive examples, inlined and never judged. */
+  /** Spec-blessed positive examples, inlined and never evaluated. */
   exemplars: readonly AssistFile[];
-  /** Assist-only reference files, inlined and never judged. */
+  /** Assist-only reference files, inlined and never evaluated. */
   context: readonly AssistFile[];
 }
 
@@ -184,12 +184,17 @@ export interface ProviderResult {
   usage: ProviderUsage | null;
 }
 
-/** A judge provider: named, stateless, and able to judge one request at a time. */
+/**
+ * The backend a judge runs on: named, stateless, one request at a time.
+ *
+ * `judge` is a noun in this codebase — the configured instrument. The
+ * action is `evaluate`, which is what a provider does for it.
+ */
 export interface JudgeProvider {
   /** Identifier used in error context (e.g. "openrouter", or a module path). */
   readonly name: string;
   /** Obtains one verdict for a fully-prepared request. */
-  judge(request: ProviderRequest): Promise<ProviderResult>;
+  evaluate(request: ProviderRequest): Promise<ProviderResult>;
 }
 
 /**
@@ -231,7 +236,7 @@ export interface ChatCompletionResponse {
  * Under `by_file` (the default) a unit is one file and `path` is that
  * file. Under `by_directory` a unit is a directory matched by the
  * spec's `paths:` patterns, `path` is the directory, and `files` are
- * every file it contains — judged together as one input.
+ * every file it contains — evaluated together as one input.
  */
 export interface EvalUnit {
   path: string;
@@ -363,9 +368,9 @@ export interface ResolveAssistInputsInput {
 
 /** One target to evaluate, with the judge and cache to do it. */
 export interface EvaluateTargetInput {
-  /** What is being judged, already resolved. */
+  /** What is being evaluated, already resolved. */
   target: JudgmentTarget;
-  /** The instrument doing the judging. */
+  /** The instrument doing the evaluating. */
   judge: Judge;
   /** Judge-namespaced cache, or null to always call the provider. */
   cache: CacheManager | null;
@@ -386,7 +391,7 @@ export interface EvaluateTargetResult {
 // Orchestrator payloads (domains/eval/orchestrators/)
 // ---------------------------------------------------------------------------
 
-/** What a run needs to know to judge a project. */
+/** What a run needs to know to evaluate a project. */
 export interface RunEvalInput extends DiscoveryScope {
   /** The judges to run; every judge evaluates every unit. */
   judges: JudgeConfig[];
@@ -418,12 +423,12 @@ export type EvalProgress =
 
 /** Everything a completed run produced. */
 export interface RunEvalResult {
-  /** One verdict per (unit, judge), in the order they were judged. */
+  /** One verdict per (unit, judge), in the order they were evaluated. */
   verdicts: TargetVerdict[];
   /** Aggregated counts across the whole run. */
   summary: EvalSummary;
   /** Cache hits and misses accumulated over the run. */
   cacheStats: { hits: number; misses: number };
-  /** Whether fail-fast stopped the run before every unit was judged. */
+  /** Whether fail-fast stopped the run before every unit was evaluated. */
   stoppedEarly: boolean;
 }

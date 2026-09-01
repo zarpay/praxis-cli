@@ -11,7 +11,7 @@ When `praxis eval run` judges a target, each configured judge:
 3. If the file holds an entry for this (spec, judge) pair and the hash matches — returns the cached verdict without any API call
 4. If there is no entry, or the hash doesn't match — calls the API and writes the verdict
 
-The hash covers everything the judge saw. If the target, the spec, an exemplar, or a context file changes, the cached verdict is automatically invalidated and the target is re-judged on the next run. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
+The hash covers everything the judge saw. If the target, the spec, an exemplar, or a context file changes, the cached verdict is automatically invalidated and the target is re-evaluated on the next run. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
 
 ## Cache file structure
 

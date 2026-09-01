@@ -72,7 +72,7 @@ export class CacheManager extends PraxisBase {
    * When a projectRoot is set, strips it from absolute target paths
    * to produce a root-relative cache path. Otherwise uses the path as-is.
    *
-   * @param targetPath - Path to the judged target
+   * @param targetPath - Path to the evaluated target
    */
   cachePathFor(targetPath: string): string {
     const relativePath = this.relativeToRoot(targetPath);
@@ -142,7 +142,7 @@ export class CacheManager extends PraxisBase {
     specPath: string;
   }): Verdict | null {
     const cachePath = this.cachePathFor(targetPath);
-    // The judging path discards a corrupt file so the next write starts
+    // The evaluating path discards a corrupt file so the next write starts
     // clean; the report-only readers below deliberately leave it alone.
     const fileData = this.parseFile(cachePath, (err) => {
       this.removeQuietly(cachePath);
@@ -292,7 +292,7 @@ export class CacheManager extends PraxisBase {
    * Loads a target's cache file as a v3.0 structure.
    *
    * Files that are absent, corrupt, or in a pre-3.0 format start fresh
-   * — v2 is a breaking release and old verdicts are simply re-judged.
+   * — v2 is a breaking release and old verdicts are simply re-evaluated.
    */
   private loadFile(cachePath: string): CacheFile {
     return this.parseFile(cachePath) ?? { version: CACHE_VERSION, verdicts: {} };
@@ -302,7 +302,7 @@ export class CacheManager extends PraxisBase {
    * Parses a target's cache file, or null when there is nothing usable.
    *
    * Absent, pre-3.0, and corrupt files all yield null: v2 is a breaking
-   * release, and an unreadable verdict is simply re-judged. `onCorrupt`
+   * release, and an unreadable verdict is simply re-evaluated. `onCorrupt`
    * fires only for a file that exists and fails to parse — the one case
    * a caller may want to act on — so the decision to delete stays with
    * the caller rather than being buried here.

@@ -8,7 +8,7 @@ import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 /**
  * Counts each judge's cached verdicts across every spec target.
  *
- * Reads only: no API keys, no judging. The targets come from the eval
+ * Reads only: no API keys, no evaluating. The targets come from the eval
  * layer's own discovery, so coverage counts what a run would actually
  * judge rather than a second guess at it — a file with no cached
  * verdict is "not validated", which is the number that tells you a run

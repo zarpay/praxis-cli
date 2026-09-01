@@ -2,7 +2,7 @@ import type { DiscoveryScope, EvalUnit, ValidationDomain } from "@/domains/eval/
 
 import fg from "fast-glob";
 
-import isJudgeable from "@/domains/eval/services/is-judgeable.js";
+import isTarget from "@/domains/eval/services/is-target.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
@@ -10,7 +10,7 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-con
  *
  * `cohort: by_directory` yields one unit per matched directory holding
  * every member file — an empty directory yields no unit, because there
- * is nothing to judge. `by_file` yields one unit per target file, from
+ * is nothing to evaluate. `by_file` yields one unit per target file, from
  * `paths:` when declared, otherwise the spec's sibling .md files.
  */
 export default function resolveUnits({
@@ -30,7 +30,7 @@ export default function resolveUnits({
     return domain.targetFiles.map((file) => ({ path: file, files: [file] }));
   }
 
-  return judgeable("*.md", domain.dir, shielded, specFilePattern).map((file) => ({
+  return targetsIn("*.md", domain.dir, shielded, specFilePattern).map((file) => ({
     path: file,
     files: [file],
   }));
@@ -38,11 +38,11 @@ export default function resolveUnits({
 
 /** A cohort directory's member files, sorted. */
 function members(dir: string, shielded: string[], specFilePattern: string): string[] {
-  return judgeable("**/*", dir, shielded, specFilePattern).sort();
+  return targetsIn("**/*", dir, shielded, specFilePattern).sort();
 }
 
 /** Files matching a pattern in a directory, minus specs and templates. */
-function judgeable(
+function targetsIn(
   pattern: string,
   cwd: string,
   ignore: string[],
@@ -50,5 +50,5 @@ function judgeable(
 ): string[] {
   return fg
     .sync(pattern, { cwd, onlyFiles: true, absolute: true, dot: true, ignore })
-    .filter((file) => isJudgeable(file, specFilePattern));
+    .filter((file) => isTarget(file, specFilePattern));
 }

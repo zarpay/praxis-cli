@@ -11,11 +11,11 @@ import {
 } from "@/domains/workspace/models/praxis-config.js";
 
 /**
- * A configured judge: who is judging, and with what settings.
+ * A configured judge: who is evaluating, and with what settings.
  *
  * Holds the configuration and the helpers on it — the resolved
  * defaults, the behavioral hash, the cache identity, the API key
- * lookup. It performs no judgment itself; `judgeTarget()` does that,
+ * lookup. It performs no judgment itself; `requestVerdict()` does that,
  * taking a Judge as its instrument.
  *
  * Defaults are materialized here so every reader sees the same values

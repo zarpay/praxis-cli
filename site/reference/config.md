@@ -160,7 +160,7 @@ The judges — named inference backends that evaluate targets against specs. **E
 | `baseUrl` | no | OpenAI-compatible endpoint base; defaults to OpenRouter |
 | `temperature` | no | Sampling temperature for judgments; defaults to `0` |
 
-Each target's cache file holds every judge's verdicts, keyed by a hash of the judge's *behavioral* settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the judging prompt. Renaming a judge or rotating a key keeps its cached verdicts; changing the model, endpoint, or temperature invalidates them.
+Each target's cache file holds every judge's verdicts, keyed by a hash of the judge's *behavioral* settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the evaluating prompt. Renaming a judge or rotating a key keeps its cached verdicts; changing the model, endpoint, or temperature invalidates them.
 
 ::: warning Breaking change in v2
 ### Providers
@@ -187,7 +187,7 @@ Each judge runs through a **provider** — the backend that executes the judgmen
 export default function internalProvider() {
   return {
     name: "internal",
-    async judge(request) {
+    async evaluate(request) {
       // request: systemPrompt, userPrompt, tools, model, temperature,
       //          baseUrl, apiKey (resolved), options
       // call anything; return the normalized contract:
@@ -200,7 +200,7 @@ export default function internalProvider() {
 }
 ```
 
-`options` is passed to the provider verbatim. For the built-in OpenRouter provider it is spread into the request body first, so it can add backend fields (routing, reasoning settings) but never overrides `model`, `temperature`, or the tool-calling protocol. Both `provider` and `options` are part of the judge's behavioral identity: changing them re-judges that judge's targets. A local provider module is code your project runs — treat it with the same trust as an npm script.
+`options` is passed to the provider verbatim. For the built-in OpenRouter provider it is spread into the request body first, so it can add backend fields (routing, reasoning settings) but never overrides `model`, `temperature`, or the tool-calling protocol. Both `provider` and `options` are part of the judge's behavioral identity: changing them re-evaluates that judge's targets. A local provider module is code your project runs — treat it with the same trust as an npm script.
 
 The v1 `validation` section is removed. Configure `judges` instead, and move `specFilePattern` to the top level.
 :::

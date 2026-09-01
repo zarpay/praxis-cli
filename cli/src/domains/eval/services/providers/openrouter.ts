@@ -32,7 +32,7 @@ export class OpenRouterProvider implements JudgeProvider {
    * @throws PraxisError on non-OK responses, missing tool calls, or a
    *   tool outside the three validation tools
    */
-  async judge(request: ProviderRequest): Promise<ProviderResult> {
+  async evaluate(request: ProviderRequest): Promise<ProviderResult> {
     const response = await fetch(`${request.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {

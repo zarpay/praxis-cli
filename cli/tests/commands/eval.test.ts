@@ -132,7 +132,7 @@ describe("judge configuration", () => {
 describe("run() target dispatch", () => {
   const BASE = { verbose: false, failFast: false, cache: false };
 
-  /** A project with one keyed judge and two judgeable documents. */
+  /** A project with one keyed judge and two documents to evaluate. */
   function judgingProject(): { command: EvalCommand; abs: (rel: string) => string } {
     const { root, abs, cleanup } = createValidatorTmpdir({
       sources: ["specs"],
@@ -182,7 +182,7 @@ describe("run() target dispatch", () => {
     expect(summary).toEqual({ errors: 0, warnings: 1 });
   });
 
-  it("judges every named target, not just the first", async () => {
+  it("evaluates every named target, not just the first", async () => {
     useVerdict("validation_fail");
     const { command, abs } = judgingProject();
     const summary = await command.run([abs("specs/doc.md"), abs("specs/other.md")], BASE);

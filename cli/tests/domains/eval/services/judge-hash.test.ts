@@ -97,7 +97,7 @@ describe("judgeHash", () => {
 
   it("changes when the system prompt changes", () => {
     const defaultHash = judgeHash(judge());
-    const rewordedPromptHash = judgeHash(judge(), "a different judging protocol");
+    const rewordedPromptHash = judgeHash(judge(), "a different evaluating protocol");
 
     expect(rewordedPromptHash).not.toBe(defaultHash);
   });

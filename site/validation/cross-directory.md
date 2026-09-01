@@ -22,7 +22,7 @@ Glob patterns are resolved against the project root. Any file matched by `paths`
 
 ## The `cohort` frontmatter field
 
-By default (`cohort: by_file`, usually omitted), each file matched by `paths` is judged on its own. Set `cohort: by_directory` to make `paths` match *directories* instead — each matched directory becomes **one evaluation unit**: every file it contains is judged together in a single call, receiving a single verdict cached against the member set.
+By default (`cohort: by_file`, usually omitted), each file matched by `paths` is evaluated on its own. Set `cohort: by_directory` to make `paths` match *directories* instead — each matched directory becomes **one evaluation unit**: every file it contains is evaluated together in a single call, receiving a single verdict cached against the member set.
 
 ```yaml
 ---
@@ -36,7 +36,7 @@ cohort: by_directory
 Every service directory must contain a single entry point, and no orphaned files...
 ```
 
-Here each first-layer directory under `src/services/` is judged as a set — the shape for relational standards ("no orphans," "one entry point per namespace") that no single file can answer. Editing any member file invalidates that directory's cached verdict. An unknown `cohort` value fails with an error listing the accepted options.
+Here each first-layer directory under `src/services/` is evaluated as a set — the shape for relational standards ("no orphans," "one entry point per namespace") that no single file can answer. Editing any member file invalidates that directory's cached verdict. An unknown `cohort` value fails with an error listing the accepted options.
 
 `paths` and `cohort` combine with the scoping keys `excludes:`, `exemplars:`, and `context:` — see [Writing Specs — Scoping frontmatter](/validation/writing-specs#scoping-frontmatter).
 

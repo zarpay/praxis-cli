@@ -73,7 +73,7 @@ describe("runEval", () => {
       expect(judgeNames).toEqual(config.judges.map((j) => j.name));
     });
 
-    it("judges with only the judges it is given", async () => {
+    it("judges with only the evaluates it is given", async () => {
       useCompliantFixture();
       const only = config.judges.slice(0, 1);
       const run = await runEval({
@@ -400,7 +400,7 @@ describe("runEval", () => {
       });
     }
 
-    it("judges each matched directory as one evaluation unit", async () => {
+    it("evaluates each matched directory as one evaluation unit", async () => {
       useCompliantFixture();
       const { root, cleanup } = cohortProject();
 
@@ -813,7 +813,7 @@ describe("runEval", () => {
   });
 
   describe("context frontmatter", () => {
-    it("inlines context files into every unit's judgment request, never judging them", async () => {
+    it("inlines context files into every unit's judgment request, never evaluating them", async () => {
       const bodies: string[] = [];
       server.use(
         http.post(OPENROUTER_URL, async ({ request }) => {

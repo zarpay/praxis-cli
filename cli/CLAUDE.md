@@ -31,7 +31,7 @@ src/
   views/          the render kit: display, logger, badges, stats, table
   domains/        one directory per area, each owning its work end to end
     spec/         authoring → agent profiles
-    eval/         judging targets against specs
+    eval/         evaluating targets against specs
     workspace/    the project itself: config, paths, discovery, health
   commands/       CLI wiring only — parse args, call an orchestrator, map exit codes
 ```
@@ -124,7 +124,7 @@ Spec discovered (specFilePattern match, frontmatter read)
       and assist provenance (exemplar_files/context_files with per-file hashes)
 ```
 
-Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never judged), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
+Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
 Key files: `domains/eval/services/judge-target.ts`, `domains/eval/models/` (Judge, JudgmentTarget, SpecFile), `domains/eval/services/` (judgment-input, verdict-cache, judge-hash, discover-domains, resolve-units), `domains/eval/orchestrators/run-eval.ts`, `domains/eval/views/`, `domains/eval/prompts/`.
 

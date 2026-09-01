@@ -3,7 +3,7 @@ import type { DiscoveryScope } from "@/domains/eval/types.js";
 import fg from "fast-glob";
 
 import { joinPath } from "@/core/paths.js";
-import isJudgeable from "@/domains/eval/services/is-judgeable.js";
+import isTarget from "@/domains/eval/services/is-target.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
@@ -28,7 +28,7 @@ export default function listSourceDocuments({
         dot: true,
         ignore: absoluteIgnore,
       })
-      .filter((file) => isJudgeable(file, specFilePattern)),
+      .filter((file) => isTarget(file, specFilePattern)),
   );
 
   return new Set(docs);

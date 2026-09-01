@@ -21,7 +21,7 @@ import {
 } from "@tests/helpers/openrouter-msw.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
-/** Canned tool-call responses used across the judging tests. */
+/** Canned tool-call responses used across the evaluating tests. */
 const fixtures = {
   pass: validationToolCallResponse("validation_pass", {
     reason: "The file satisfies all criteria defined in the specification.",
@@ -46,7 +46,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-describe("judgeTarget", () => {
+describe("requestVerdict", () => {
   let tmpdir: string;
   let cleanup: () => void;
 
@@ -339,7 +339,7 @@ describe("judgeTarget", () => {
       useOpenRouterResponse(server, fixtures.pass);
       const { root, abs, cleanup } = exemplarProject();
 
-      const judged = () =>
+      const evaluated = () =>
         evaluate({
           targetPath: abs("src/events/signup_event.rb"),
           specPath: abs("docs/events.sme.md"),
@@ -347,13 +347,13 @@ describe("judgeTarget", () => {
           cache: new CacheManager({ projectRoot: root }),
         });
 
-      await judged();
+      await evaluated();
 
-      expect((await judged()).cacheHit).toBe(true);
+      expect((await evaluated()).cacheHit).toBe(true);
 
       writeFileSync(abs("src/events/referral_event.rb"), "REFERRAL_EXEMPLAR_EDITED");
 
-      expect((await judged()).cacheHit).toBe(false);
+      expect((await evaluated()).cacheHit).toBe(false);
 
       cleanup();
     });
@@ -476,7 +476,7 @@ describe("judgeTarget", () => {
     const ECHO_PROVIDER = `export default function echoProvider() {
       return {
         name: "echo",
-        async judge() {
+        async evaluate() {
           return {
             verdict: { compliant: true, issues: [], reason: "echoed" },
             usage: { promptTokens: 7, completionTokens: 3, costUsd: 0.0001 },
@@ -489,7 +489,7 @@ describe("judgeTarget", () => {
     const THROWING_PROVIDER = `export default function throwingProvider() {
       return {
         name: "flaky",
-        async judge() {
+        async evaluate() {
           throw new Error("socket hang up");
         },
       };
@@ -530,7 +530,7 @@ describe("judgeTarget", () => {
     it("reports null usage for a cache hit — nothing was spent", async () => {
       const { root, abs, cleanup } = providerProject(ECHO_PROVIDER);
 
-      const judged = () =>
+      const evaluated = () =>
         evaluate({
           targetPath: abs("docs/guide.md"),
           root,
@@ -538,8 +538,8 @@ describe("judgeTarget", () => {
           cache: new CacheManager({ projectRoot: root }),
         });
 
-      await judged();
-      const second = await judged();
+      await evaluated();
+      const second = await evaluated();
 
       expect(second.cacheHit).toBe(true);
       expect(second.usage).toBeNull();
@@ -569,11 +569,11 @@ describe("judgeTarget", () => {
       const cache = new CacheManager({
         cacheRoot: join(tmpdir, ".praxis", "cache", "validation"),
       });
-      const judged = () =>
+      const evaluated = () =>
         evaluate({ targetPath: join(tmpdir, "content", "experts", "test-expert.md"), cache });
 
-      expect((await judged()).cacheHit).toBe(false);
-      expect((await judged()).cacheHit).toBe(true);
+      expect((await evaluated()).cacheHit).toBe(false);
+      expect((await evaluated()).cacheHit).toBe(true);
     });
   });
 });

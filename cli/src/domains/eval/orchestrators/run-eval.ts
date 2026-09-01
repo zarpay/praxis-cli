@@ -25,13 +25,13 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-con
 /**
  * One `praxis eval run`: judge every target every judge covers.
  *
- * Discovers the specs, resolves them into units, and judges each unit
+ * Discovers the specs, resolves them into units, and evaluates each unit
  * with each judge — **judge-major**, so one instrument's output stays
  * contiguous in the terminal rather than interleaving.
  *
  * Everything the caller needs comes back in the result; progress
  * arrives through `onProgress` as it happens, so the orchestrator never
- * touches an output stream. A judging failure is recorded as an error
+ * touches an output stream. A evaluating failure is recorded as an error
  * verdict rather than raised: one unreachable target must not abandon
  * the rest of a run that costs real money.
  *
@@ -81,7 +81,7 @@ export default async function runEval({
         judgeName: judges.length > 1 ? judgeConfig.name : undefined,
       });
 
-      const verdict = await judgeOneUnit({
+      const verdict = await evaluateUnit({
         unit,
         specPath: domain.specPath,
         type: domain.type,
@@ -132,7 +132,7 @@ function selectDomains(domains: ValidationDomain[], type?: string): ValidationDo
 }
 
 /** Judges one unit with one judge, turning any failure into an error verdict. */
-async function judgeOneUnit({
+async function evaluateUnit({
   unit,
   specPath,
   type,
@@ -213,7 +213,7 @@ function assembleCohort(unit: EvalUnit, root: string): string {
  * Aggregates a run's verdicts.
  *
  * `total` covers every document seen: all .md documents in the source
- * directories plus any file judged via spec `paths:` targeting, which
+ * directories plus any file evaluated via spec `paths:` targeting, which
  * may live outside the sources and have any extension. `notValidated`
  * is the count of those no verdict covers — a document with no spec, or
  * a target fail-fast never reached.

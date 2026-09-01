@@ -4,7 +4,7 @@ import fg from "fast-glob";
 
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
 import { SpecFile } from "@/domains/eval/models/spec-file.js";
-import isJudgeable from "@/domains/eval/services/is-judgeable.js";
+import isTarget from "@/domains/eval/services/is-target.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
@@ -72,7 +72,7 @@ function domainFor(
   } else if (spec.paths.length > 0) {
     domain.targetFiles = fg
       .sync(spec.paths, { cwd: root, onlyFiles: true, absolute: true, dot: true, ignore })
-      .filter((file) => isJudgeable(file, specFilePattern));
+      .filter((file) => isTarget(file, specFilePattern));
   }
 
   return domain;

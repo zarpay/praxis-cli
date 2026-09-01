@@ -5,7 +5,7 @@ import chalk from "chalk";
 import { baseName } from "@/core/paths.js";
 
 /**
- * The progress line printed before a unit is judged.
+ * The progress line printed before a unit is evaluated.
  *
  * `cohortSize` is set only for cohort units and `judgeName` only when
  * more than one judge is running, so a single-judge run of plain files

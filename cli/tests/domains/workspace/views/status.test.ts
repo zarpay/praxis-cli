@@ -39,7 +39,7 @@ describe("countLines", () => {
 });
 
 describe("validationBlocks", () => {
-  it("returns one block per judge that has judged something", () => {
+  it("returns one block per judge that has evaluated something", () => {
     const blocks = validationBlocks([tally({ judge: "flash", pass: 2 }), tally({ judge: "v32" })]);
     const judges = blocks.map((block) => block.judge);
 
