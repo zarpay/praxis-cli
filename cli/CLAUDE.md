@@ -18,38 +18,76 @@ npm publish --access public  # prepublishOnly runs: lint → typecheck → test 
 
 ## Architecture
 
-Praxis is two layers (see `praxis_v2_specs/11-spec-layer.md`), and `src/` mirrors them:
+`src/` is organised by **ownership**, not by category. Every directory answers
+"what goes in here and what doesn't?" — a directory named for a kind of thing
+(`models/`, `prompts/`) collects unrelated code, which is what the old layout did.
 
-- **`src/spec/`** — the spec layer: compiles experts, practices, and context into self-contained SME agent profiles. Owns the content taxonomy.
-- **`src/eval/`** — the eval layer: judges targets against specs, caches verdicts, and (as v2 lands) writes the ledger. Taxonomy-free.
-- **`src/core/`** — shared primitives both layers use: config, errors, files, paths, logger, frontmatter, spec-pattern. `Frontmatter` is the only YAML/delimiter implementation: it owns `body()` too, so nothing re-scans for `---`. Outside `src/models/`, prefer a model over reading keys off `Frontmatter` directly.
-- **`src/prompts/`** — every LLM/agent-facing prompt, one per file as a typed default-export function. A shared leaf like core: both layers import it, it imports neither (ESLint-enforced).
-- **`src/models/`** — typed readers for the project's document kinds (`SpecFile`, `ExpertFile`, and `DocumentFile` for a sweep that cannot know a file's kind), each naming the frontmatter keys its kind honors so those spellings live in one place. **Models validate on construction**: every field is read through `models/fields.ts`, which raises on a missing required key or a wrong-shaped value, so a model that exists is a valid document and no consumer re-checks. Callers that scan a directory (`compileAll`, `praxis status`) catch per file and report, so one malformed document never takes down a batch. A shared leaf like core and prompts: it imports neither layer (ESLint-enforced). **Caveat:** because it is shared, the eval layer *can* import `ExpertFile`, which is spec-layer taxonomy — nothing but review prevents it. Keep `@/eval` free of taxonomy models by convention.
-- **`src/commands/`** — CLI wiring; the only place the two layers meet.
+```
+src/
+  index.ts        CLI entry
+  types.ts        shapes more than one domain needs, and nothing else
+  core/           kernel primitives: base, config, errors, files, frontmatter,
+                  frontmatter-fields, paths, spec-pattern
+  views/          the render kit: display, logger, badges, stats, table
+  domains/        one directory per area, each owning its work end to end
+    spec/         authoring → agent profiles
+    eval/         judging targets against specs
+    workspace/    the project itself: discovery, health, scaffolding
+  commands/       CLI wiring only — parse args, call an orchestrator, map exit codes
+```
 
-**The layers never import each other** (ESLint-enforced): the spec layer produces files the eval layer consumes as plain specs. That handoff is a real contract: an expert's `validates:` is compiled out as the spec's `paths:` (`spec/output-builder.ts:evalTargetingLines` writes it, `eval/eval-run.ts:discoverValidationDomains` reads it), and `cohort:`/`excludes:`/`exemplars:` pass through under the same names. `ExpertFile` and `SpecFile` are the two ends of it.
+**Dependencies flow one way, and ESLint enforces it:**
+
+```
+core, views  →  spec, eval  →  workspace  →  commands
+```
+
+- `core/` and `views/` depend on no domain and no command.
+- **`domains/spec` and `domains/eval` never import each other** (11-spec-layer.md):
+  the spec layer produces artifacts the eval layer consumes as plain files, and
+  the eval layer never calls back.
+- `domains/workspace` may import both, because project health reads both.
+- Nothing imports `commands/`.
+
+That handoff between the layers is a real contract: an expert's `validates:` is
+compiled out as the spec's `paths:` (`domains/spec/views/targeting.ts` writes it,
+`domains/eval/services/discover-targets.ts` reads it), and `cohort:`/`excludes:`/
+`exemplars:` pass through under the same names. `ExpertFile` and `SpecFile` are
+the two ends of it.
+
+### The four layers inside a domain
+
+| Layer            | What belongs here                                                                                                                                                                                              |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `models/`        | Data structures and the helpers on that data. **Validate on construction** — a model that exists is a valid document. No I/O beyond reading its own file. `SpecFile`, `ExpertFile`, `Judge`, `JudgmentTarget`. |
+| `services/`      | One input → one output. Operates on primitives and models and returns its work; no workflow. `judgeTarget`, `resolveAssistInputs`, `TargetDiscovery`, `ExpertAuditor`.                                         |
+| `orchestrators/` | Coordinate several services into a workflow. The primary interface for a command. `EvalRun`, `ExpertCompiler`, `ProjectStatus`, `InitCommand`.                                                                 |
+| `views/`         | Rendering only — pure functions returning `DisplayEntry[]` or strings, never performing work. `unitHeading`, `issueBlocks`, `evalTargetingLines`.                                                              |
+
+A domain's `prompts/` holds the LLM- or agent-facing text it owns: the eval domain
+has the six judge prompts, the spec domain the two Claude Code plugin templates.
 
 ### Spec Layer — Compiler Pipeline
 
 ```
 Expert .md file (with YAML frontmatter)
-  → Frontmatter parsed (src/core/frontmatter.ts)
-  → Referenced content resolved via globs (src/spec/glob-expander.ts)
+  → Frontmatter parsed (core/frontmatter.ts)
+  → Referenced content resolved via globs (domains/spec/services/glob-expander.ts)
   → Sections assembled: Expert → Responsibilities → Constitution → Context → Reference
-      (src/spec/output-builder.ts)
+      (domains/spec/services/build-profile.ts)
   → Pure profile written to agentProfilesOutputDir/{alias}.md
   → Each plugin receives profile + metadata and writes its own output
-      (src/spec/plugin-registry.ts → plugins/*)
+      (domains/spec/services/plugin-registry.ts → plugins/*)
 ```
 
-The **Claude Code plugin** (`src/spec/plugins/claude-code.ts`) wraps the profile with YAML frontmatter (name, description, tools, model, permissionMode), writes to `{outputDir}/agents/{alias}.md` (default `plugins/praxis/agents/`), and creates/updates `.claude-plugin/plugin.json` in the output directory.
+The **Claude Code plugin** (`domains/spec/services/plugins/claude-code.ts`) wraps the profile with YAML frontmatter (name, description, tools, model, permissionMode), writes to `{outputDir}/agents/{alias}.md` (default `plugins/praxis/agents/`), and creates/updates `.claude-plugin/plugin.json` in the output directory.
 
 ### Eval Layer — Judge Pipeline
 
 ```
 Spec discovered (specFilePattern match, frontmatter read)
   → Units resolved: paths:/cohort: expand; excludes:/exemplars: shielded from judgment
-  → Assist inputs resolved: exemplars: + context: files (src/eval/judgment-input.ts)
+  → Assist inputs resolved: exemplars: + context: files (domains/eval/services/judgment-input.ts)
   → Content hash computed over the full judgment input: target + spec + assist (SHA256, 8-char prefix)
   → Cache checked: one file per target at .praxis/cache/validation/<target-path>.json,
       verdicts keyed <specHash>:<judgeHash> (format 3.0)
@@ -60,30 +98,31 @@ Spec discovered (specFilePattern match, frontmatter read)
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never judged), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
-Key files: `src/eval/judge.ts`, `src/prompts/` (one prompt per file), `src/eval/judgment-input.ts`, `src/eval/cache-manager.ts`, `src/eval/eval-run.ts`, `src/eval/verdict-reporter.ts`, `src/eval/judge-hash.ts`.
+Key files: `domains/eval/services/judge-target.ts`, `domains/eval/models/` (Judge, JudgmentTarget, SpecFile), `domains/eval/services/` (judgment-input, verdict-cache, judge-hash, discover-targets), `domains/eval/orchestrators/eval-run.ts`, `domains/eval/views/`, `domains/eval/prompts/`.
 
 ### Project Root Detection
 
-`src/core/paths.ts` walks up from cwd until it finds a `.praxis/` directory. All paths resolve relative to this root. Config loads from `.praxis/config.json`.
+`core/paths.ts` walks up from cwd until it finds a `.praxis/` directory. All paths resolve relative to this root. Config loads from `.praxis/config.json`.
 
 ### Configuration
 
 Config lives at `{root}/.praxis/config.json` with these fields:
+
 - `sources: string[]` — directories scanned for documents (default: `experts`, `practices`, `reference`, `context`)
 - `expertsDir: string` — where expert `.md` files live (default: `"experts"`)
 - `practicesDir: string` — where practice `.md` files live (default: `"practices"`)
 - `agentProfilesOutputDir: string | false` — where pure profiles are written (default: `"./agent-profiles"`)
 - `plugins: (string | PluginConfigEntry)[]` — enabled plugins with optional per-plugin config (default: `[]`). String entries are normalized to `{ name: theString }`. Object entries support `name`, `outputDir`, `claudeCodePluginName`.
-- `judges: { name, model, apiKeyEnvVar, baseUrl?, temperature?, provider?, options? }[]` — the configured judges; every judge evaluates every target, each with its own cache namespace keyed by its behavioral hash. `provider` selects the execution backend: a built-in registry name (default `"openrouter"`) or a `./relative` ESM module path whose default export is a provider factory (`src/eval/providers/types.ts`); `options` passes through to the provider verbatim (`src/eval/judge-hash.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
+- `judges: { name, model, apiKeyEnvVar, baseUrl?, temperature?, provider?, options? }[]` — the configured judges; every judge evaluates every target, each with its own cache namespace keyed by its behavioral hash. `provider` selects the execution backend: a built-in registry name (default `"openrouter"`) or a `./relative` ESM module path whose default export is a provider factory (`domains/eval/types.ts`); `options` passes through to the provider verbatim (`domains/eval/services/judge-hash.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
 - `specFilePattern?: string` — top-level; filename or glob for spec files (default `README.md`).
 
 ### Plugin System
 
-Plugins implement `CompilerPlugin` interface (`src/spec/plugins/types.ts`): `name` property and `compile(profileContent, metadata, roleAlias)` method. Registered in `src/spec/plugin-registry.ts`. Enabled via `plugins` array in config. Each plugin receives a `PluginConfigEntry` with per-plugin options (e.g., `outputDir`, `claudeCodePluginName`). The Claude Code plugin writes agent files to `{outputDir}/agents/` and manages `.claude-plugin/plugin.json`.
+Plugins implement the `CompilerPlugin` interface (`domains/spec/types.ts`): `name` property and `compile(profileContent, metadata, roleAlias)` method. Registered in `domains/spec/services/plugin-registry.ts`. Enabled via `plugins` array in config. Each plugin receives a `PluginConfigEntry` with per-plugin options (e.g., `outputDir`, `claudeCodePluginName`). The Claude Code plugin writes agent files to `{outputDir}/agents/` and manages `.claude-plugin/plugin.json`.
 
 ## Code Conventions
 
-- **One types home:** every type and interface is declared in `src/types.ts`, organized by domain, and imported from `@/types.js` (ESLint-enforced: interface/type-alias declarations are banned elsewhere in src/). Modules declare behavior — classes, functions, constants — never shapes. Sole exception: `core/files.ts` re-exports node's `FSWatcher`, because `node:fs` is walled into that module.
+- **Types live in a `types.ts`:** a domain's own (`domains/<name>/types.ts`) for its vocabulary, or `src/types.ts` for shapes more than one domain needs — `JudgeConfig` (normalized by `core/config.ts`) and `CohortMode` (declared by an expert, honored by a spec) are there for that reason. ESLint bans interface/type-alias declarations anywhere else in `src/`. Modules declare behavior — classes, functions, constants — never shapes. Sole exception: `core/files.ts` re-exports node's `FSWatcher`, because `node:fs` is walled into that module.
 - **Path aliases:** `@/*` → `./src/*`, `@tests/*` → `./tests/*` (tsconfig.json and vitest.config.ts). Imports always use aliases, never relative paths (ESLint-enforced; sole exception: `../package.json`).
 - **Import order:** third-party types, internal types, third-party values, internal values — blank line between groups, alphabetical within (perfectionist, autofixable)
 - **Import extensions:** `.js` required for local imports (ESM)
@@ -95,6 +134,6 @@ Plugins implement `CompilerPlugin` interface (`src/spec/plugins/types.ts`): `nam
 - **Excluded from compilation:** Files named `_template.md` or `README.md`
 - **File/path operations:** import from `@/core/files.js` (I/O: readText, writeText, exists, ...) and `@/core/paths.js` (composition: joinPath, baseName, ...; well-known locations: configFile, SCAFFOLD_DIR, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced).
 - **Construct at invocation time, not import time:** module tops hold definitions, not work. `new Paths()` (and anything touching cwd or the filesystem) belongs in the command wiring helpers (`makeCommand()`), executed at action dispatch — never as a module-level instance or exported singleton (decided 2026-08-31: import-time cwd capture, test isolation, and `praxis init` running before `.praxis/` exists).
-- **Prompts:** every LLM/agent-facing prompt lives in `src/prompts/`, one prompt per file, as that file's default-export function — typed parameters wherever the prompt templates, with the parameter interfaces grouped in `src/prompts/types.ts`. No prompt text inline anywhere else. The judge hash covers the complete judge-facing surface via `src/prompts/prompt-surface.ts`; rewording any of it is a judge-identity change (new epoch), by design.
+- **Prompts:** every LLM/agent-facing prompt lives in its domain's `prompts/`, one prompt per file, as that file's default-export function — typed parameters wherever the prompt templates, with the parameter interfaces in the domain's `types.ts`. No prompt text inline anywhere else. The judge hash covers the complete judge-facing surface via `domains/eval/prompts/prompt-surface.ts`; rewording any of it is a judge-identity change (new epoch), by design.
 - **Base classes:** classes extend `PraxisBase` (`@/core/base.js`) for the shared plumbing — protected `out` (Display) and `logger` (Logger), injectable — or `PraxisProjectBase` when bound to a project, which adds protected `root` and a `config` that resolves lazily from it on first access. Don't re-declare these fields.
-- **Terminal output:** all output goes through `@/core/logger.js` — `Display.print([...])` renders a whole stdout block as one payload of entries (plain strings; `{ text, color }`; `{ badge, color, value, indent? }`; `{ header, char?, width? }`; falsy entries skipped so conditionals inline), with `line()` for single lines; `Logger` writes stderr diagnostics. Raw `console.*` is banned outside that module (ESLint `no-console`).
+- **Terminal output:** all output goes through the view kit — `@/views/display.js` for stdout and `@/views/logger.js` for stderr. `Display.print([...])` renders a whole stdout block as one payload of entries (plain strings; `{ text, color }`; `{ badge, color, value, indent? }`; `{ header, char?, width? }`; falsy entries skipped so conditionals inline), with `line()` for single lines; `Logger` writes stderr diagnostics. Raw `console.*` is banned outside those two modules (ESLint `no-console`). Reusable rendering — badge rows, aligned stat blocks, tables — lives in `@/views/badges.js`, `@/views/stats.js`, `@/views/table.js` rather than being hand-built at the call site.

@@ -6,6 +6,15 @@ Praxis v2 is two layers. This document names them, states the contract between t
 
 ## The two layers
 
+> **Where they live in the code.** `src/domains/eval` and `src/domains/spec`, one
+> directory each, and ESLint refuses an import in either direction. Each holds its
+> own models, services, orchestrators, views and prompts, so a layer can be read on
+> its own. `src/domains/workspace` sits above both — project health reads both
+> layers — and `src/core` plus `src/views` sit below, depending on neither. The
+> bridge described at the end of this section is `domains/spec/views/targeting.ts`
+> writing `paths:` and `domains/eval/services/discover-targets.ts` reading it.
+
+
 **The eval layer** — spec, scope, judge, cache, ledger, triage, axioms, calibration, metrics, briefs. This is what v2 *is*. Its input contract with the world is exactly three things:
 
 1. **A spec** — any file carrying direction, identified by `specFilePattern`.

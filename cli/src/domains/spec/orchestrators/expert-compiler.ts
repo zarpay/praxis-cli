@@ -8,10 +8,11 @@ import { exists, writeText } from "@/core/files.js";
 import { baseName, joinPath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { ExpertFile } from "@/domains/spec/models/expert-file.js";
-import { OutputBuilder, evalTargetingLines } from "@/domains/spec/services/build-profile.js";
+import { OutputBuilder } from "@/domains/spec/services/build-profile.js";
 import { GlobExpander } from "@/domains/spec/services/glob-expander.js";
 import { Markdown } from "@/domains/spec/services/markdown.js";
 import { resolvePlugins } from "@/domains/spec/services/plugin-registry.js";
+import { evalTargetingLines } from "@/domains/spec/views/targeting.js";
 
 /**
  * Compiles role definition files into agent profiles and plugin-specific output.
