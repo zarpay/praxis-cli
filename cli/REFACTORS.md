@@ -28,19 +28,38 @@ which judges run.
 
 ---
 
-## [ ] 2. `CacheManager` — the corrupt-file dance appears twice
+## [x] 2. `CacheManager` — the corrupt-file dance appears twice
 
-**Where:** `src/eval/cache-manager.ts:140-155` and `:186-198`
+**Done — it appeared four times, not two.** A bad cache file was handled in
+`write`, `read`, `readEntries`, and `loadFile`, three different ways: two deleted
+the file and warned under `DEBUG`, two returned an empty value silently. Beneath
+them sat the same "parse if it's the current version" block, written out three
+times.
 
-Both sites are the same shape: try/catch → nested try/catch to `removeFile` →
-`if (process.env["DEBUG"]) logger.warn`. That is the only place `DEBUG` is read
-in the entire codebase, and it is read twice. Extract
-`private discardCorruptFile(cachePath, err, context)`.
+`parseFile(cachePath, onCorrupt?)` is now the single reader: absent, pre-3.0 and
+corrupt all yield null, and the optional callback fires only for a file that
+exists and fails to parse.
 
-While in here: `write()` (65 lines) and `read()` (50) both re-derive `cachePath`
-and `verdictKey` — an internal `entryFor(targetPath, specPath)` pairs them.
+That callback is what keeps the two policies distinct, because both are
+deliberate and both are pinned by tests: `read()` (the judging path) deletes a
+corrupt file so the next write starts clean, while `readRaw`/`readAllRaw` are
+read-only and leave it alone. The decision stays at the caller rather than being
+buried in the parser.
 
-Pure deduplication, no hot-path risk. Good one to do alongside #1.
+Three more duplications went with it:
+
+- `removeQuietly()` and `debug()` — the nested try/catch delete and the
+  `process.env["DEBUG"]` gate, each written twice.
+- `relativeToRoot()` — `cachePathFor` and `relSpecPath` had separate,
+  character-identical trailing-slash-and-strip implementations. This one has
+  teeth: a target and its spec now normalize the same way, which is what keeps
+  cache keys stable across machines.
+- `cacheRelative()` / `typeOf()` — `stats()` and `orphanedCacheFiles()` both
+  derived a cache file's type with the same `split("/")[0] ?? "unknown"`.
+
+`write()` went 65 -> 42 lines (entry construction moved to `buildEntry`),
+`read()` 50 -> 34. The file itself went 478 -> 489: the duplication is gone, and
+the extracted helpers carry docblocks explaining why the two corrupt paths differ.
 
 ---
 
