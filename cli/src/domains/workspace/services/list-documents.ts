@@ -2,9 +2,8 @@ import type { ListDocumentsInput } from "@/domains/workspace/types.js";
 
 import fg from "fast-glob";
 
-import { exists } from "@/core/files.js";
+import { exists, matchesFilename } from "@/core/files.js";
 import { baseName, resolvePath } from "@/core/paths.js";
-import { isSpecFile } from "@/core/spec-pattern.js";
 
 /**
  * The authored markdown documents in a directory.
@@ -30,5 +29,5 @@ export default async function listDocuments({
     ignore: ignore.map((pattern) => resolvePath(root, pattern)),
   });
 
-  return files.filter((f) => !isSpecFile(f, specFilePattern) && !baseName(f).startsWith("_"));
+  return files.filter((f) => !matchesFilename(f, specFilePattern) && !baseName(f).startsWith("_"));
 }

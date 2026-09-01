@@ -3,9 +3,8 @@ import type { AssistFileRecord, AssistInputs } from "@/domains/eval/types.js";
 import fg from "fast-glob";
 
 import { errors } from "@/core/errors.js";
-import { exists, readText } from "@/core/files.js";
+import { exists, hasGlobChars, readText } from "@/core/files.js";
 import { joinPath, parentDir } from "@/core/paths.js";
-import { hasGlobChars } from "@/core/spec-pattern.js";
 import assistFileRecords from "@/domains/eval/services/build-assist-file-records.js";
 import assistHashInput from "@/domains/eval/services/build-assist-hash-input.js";
 import contentHash from "@/domains/eval/services/hash-content.js";

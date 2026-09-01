@@ -2,12 +2,13 @@ import { basename, dirname, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 /**
- * Standard path operations for the project.
+ * Path composition — the single home for it.
  *
- * Alongside the well-known Praxis locations below, this module is the
- * single home for path composition: outside of core/files.ts and this
- * file, code imports these helpers instead of node:path (enforced by
- * ESLint's no-restricted-imports).
+ * Pure string math over paths, with no knowledge of what any of them
+ * mean: where a Praxis project keeps its files is
+ * `domains/workspace/models/project-paths.ts`. Outside this file and
+ * core/files.ts, code imports these helpers rather than node:path
+ * (ESLint's no-restricted-imports).
  */
 
 /** Joins path segments (see node:path join). */

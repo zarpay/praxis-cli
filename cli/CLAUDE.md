@@ -27,7 +27,7 @@ src/
   index.ts        CLI entry
   types.ts        shapes more than one domain needs, and nothing else
   core/           Praxis-agnostic kernel: base, errors, files, frontmatter,
-                  markdown-file, paths, spec-pattern
+                  markdown-file, paths
   views/          the render kit: display, logger, badges, stats, table
   domains/        one directory per area, each owning its work end to end
     spec/         authoring → agent profiles
@@ -160,7 +160,7 @@ Plugins implement the `CompilerPlugin` interface (`domains/spec/types.ts`): `nam
 - **Formatting:** Double quotes, semicolons, trailing commas, 100-char line width
 - **Test location:** `tests/` mirrors `src/` structure, uses `.test.ts` suffix
 - **Excluded from compilation:** Files named `_template.md` or `README.md`
-- **File/path operations:** import from `@/core/files.js` (I/O: readText, writeText, exists, ...) and `@/core/paths.js` (composition: joinPath, baseName, ...; well-known locations: configFile, SCAFFOLD_DIR, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced).
+- **File/path operations:** import from `@/core/files.js` (I/O: readText, writeText, exists, ...) and `@/core/paths.js` (composition: joinPath, baseName, ...; well-known locations: configFile, SCAFFOLD_DIR, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced). Where a _Praxis project_ keeps its files is `domains/workspace/models/project-paths.ts`, not core.
 - **Construct at invocation time, not import time:** module tops hold definitions, not work. `new Paths()` (and anything touching cwd or the filesystem) belongs in the command wiring helpers (`makeCommand()`), executed at action dispatch — never as a module-level instance or exported singleton (decided 2026-08-31: import-time cwd capture, test isolation, and `praxis init` running before `.praxis/` exists).
 - **Prompts:** every LLM/agent-facing prompt lives in its domain's `prompts/`, one prompt per file, as that file's default-export function — typed parameters wherever the prompt templates, with the parameter interfaces in the domain's `types.ts`. No prompt text inline anywhere else. The judge hash covers the complete judge-facing surface via `domains/eval/prompts/prompt-surface.ts`; rewording any of it is a judge-identity change (new epoch), by design.
 - **Base classes:** classes extend `PraxisBase` (`@/core/base.js`) for the shared plumbing — protected `out` (Display) and `logger` (Logger), injectable — or `PraxisProjectBase` when bound to a project, which adds protected `root` and a `config` that resolves lazily from it on first access. Don't re-declare these fields.

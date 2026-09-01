@@ -12,9 +12,15 @@ import fg from "fast-glob";
 import { createHash } from "node:crypto";
 
 import { PraxisBase } from "@/core/base.js";
-import { exists, fileSize, readText, removeFile, writeText } from "@/core/files.js";
+import {
+  exists,
+  fileSize,
+  matchesFilename,
+  readText,
+  removeFile,
+  writeText,
+} from "@/core/files.js";
 import { baseName, joinPath, parentDir } from "@/core/paths.js";
-import { isSpecFile } from "@/core/spec-pattern.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /** Current cache format version. Pre-3.0 files are ignored (v2 is a breaking release). */
@@ -453,7 +459,7 @@ export class CacheManager extends PraxisBase {
       for (const relFile of docFiles) {
         const name = baseName(relFile);
 
-        if (isSpecFile(name, specFilePattern) || baseName(relFile, ".md").startsWith("_")) {
+        if (matchesFilename(name, specFilePattern) || baseName(relFile, ".md").startsWith("_")) {
           continue;
         }
 

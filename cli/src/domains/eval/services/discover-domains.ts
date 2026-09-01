@@ -3,8 +3,8 @@ import type { DiscoveryScope, ValidationDomain } from "@/domains/eval/types.js";
 import fg from "fast-glob";
 
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
-import { isJudgeable } from "@/core/spec-pattern.js";
 import { SpecFile } from "@/domains/eval/models/spec-file.js";
+import isJudgeable from "@/domains/eval/services/is-judgeable.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**

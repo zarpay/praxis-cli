@@ -2,7 +2,7 @@ import type { DiscoveryScope, EvalUnit, ValidationDomain } from "@/domains/eval/
 
 import fg from "fast-glob";
 
-import { isJudgeable } from "@/core/spec-pattern.js";
+import isJudgeable from "@/domains/eval/services/is-judgeable.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**

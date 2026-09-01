@@ -2,8 +2,8 @@ import type { CompileExpertsInput, CompileExpertsResult } from "@/domains/spec/t
 
 import fg from "fast-glob";
 
+import { matchesFilename } from "@/core/files.js";
 import { baseName } from "@/core/paths.js";
-import { isSpecFile } from "@/core/spec-pattern.js";
 import compileExpert from "@/domains/spec/orchestrators/compile-expert.js";
 
 /**
@@ -32,7 +32,7 @@ export default async function compileExperts({
   for (const expertFile of expertFiles) {
     const name = baseName(expertFile);
 
-    if (name.startsWith("_") || isSpecFile(name, specFilePattern)) {
+    if (name.startsWith("_") || matchesFilename(name, specFilePattern)) {
       continue;
     }
 

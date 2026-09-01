@@ -11,12 +11,14 @@ import {
   watch,
   writeFileSync,
 } from "node:fs";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
+import picomatch from "picomatch";
 
 export type { FSWatcher } from "node:fs";
 
 /**
- * Standard file operations for the project.
+ * Standard file operations, and the filename matching that goes with
+ * them.
  *
  * Every read, write, and existence check goes through this module so
  * the conventions live in one place: text is always UTF-8, writes
@@ -114,4 +116,35 @@ export function watchDir(dir: string, onChange: (filename: string | null) => voi
   return watch(dir, { recursive: true }, (_event, filename) => {
     onChange(filename === null ? null : String(filename));
   });
+}
+
+/**
+ * Checks whether a pattern contains any glob metacharacters.
+ *
+ * Covers wildcards (`*`, `?`), character classes (`[...]`),
+ * brace expansion (`{a,b}`), and extglob groups (`(...)`).
+ * Patterns without any of these are treated as literal filenames.
+ */
+export function hasGlobChars(pattern: string): boolean {
+  return /[*?[\]{}()]/.test(pattern);
+}
+
+/**
+ * Whether a file's name matches a pattern.
+ *
+ * Matches on the basename only, so a bare filename and a full path to
+ * it answer the same. A pattern with no metacharacters is compared for
+ * equality; a glob goes through picomatch.
+ *
+ * @param filePathOrName - A filename or any path ending in one
+ * @param pattern - A literal filename or a glob
+ */
+export function matchesFilename(filePathOrName: string, pattern: string): boolean {
+  const name = basename(filePathOrName);
+
+  if (!hasGlobChars(pattern)) {
+    return name === pattern;
+  }
+
+  return picomatch.isMatch(name, pattern);
 }

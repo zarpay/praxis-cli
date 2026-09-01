@@ -2,8 +2,8 @@ import type { ExpandGlobsInput, GlobExpansion } from "@/domains/spec/types.js";
 
 import fg from "fast-glob";
 
+import { hasGlobChars, matchesFilename } from "@/core/files.js";
 import { baseName } from "@/core/paths.js";
-import { hasGlobChars, isSpecFile } from "@/core/spec-pattern.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
@@ -48,5 +48,5 @@ export default async function expandGlobs({
 function isExcluded(filePath: string, specFilePattern: string): boolean {
   const name = baseName(filePath);
 
-  return name === "_template.md" || isSpecFile(name, specFilePattern);
+  return name === "_template.md" || matchesFilename(name, specFilePattern);
 }
