@@ -1,4 +1,5 @@
-import type { ChatCompletionUsage, JudgeConfig } from "@/types.js";
+import type { ChatCompletionUsage } from "@/domains/eval/types.js";
+import type { JudgeConfig } from "@/types.js";
 
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";

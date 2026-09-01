@@ -6,7 +6,7 @@ import type {
   ProviderUsage,
   ToolCall,
   Verdict,
-} from "@/types.js";
+} from "@/domains/eval/types.js";
 
 import { errors } from "@/core/errors.js";
 

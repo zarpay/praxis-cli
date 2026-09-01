@@ -1,4 +1,4 @@
-import type { CohortMode } from "@/types.js";
+import type { CohortMode } from "@/domains/eval/types.js";
 
 import { relativePath } from "@/core/paths.js";
 import { Fields } from "@/models/fields.js";

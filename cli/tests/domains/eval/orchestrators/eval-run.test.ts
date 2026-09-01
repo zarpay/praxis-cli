@@ -1,9 +1,11 @@
 import { HttpResponse, http } from "msw";
 import { writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/core/config.js";
 import { EvalRun } from "@/domains/eval/orchestrators/eval-run.js";
+import { TargetDiscovery } from "@/domains/eval/services/discover-targets.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,
@@ -349,16 +351,14 @@ describe("EvalRun", () => {
         },
       });
 
-      const run = new EvalRun({
+      const discovery = new TargetDiscovery({
         root,
         sources: ["docs"],
-        ignore: ["docs/generated/**"],
-        useCache: false,
-        judges: [TEST_JUDGE],
         specFilePattern: "*.praxis.md",
+        absoluteIgnore: [join(root, "docs/generated/**")],
       });
 
-      const docs = run["collectSourceDocuments"]();
+      const docs = discovery.sourceDocuments();
       expect(docs.size).toBe(1); // only counted.md; generated/output.md is ignored
 
       cleanup();

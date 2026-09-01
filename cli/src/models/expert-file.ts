@@ -1,4 +1,5 @@
-import type { CohortMode, RefKey } from "@/types.js";
+import type { CohortMode } from "@/domains/eval/types.js";
+import type { RefKey } from "@/types.js";
 
 import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";

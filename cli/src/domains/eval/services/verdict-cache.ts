@@ -6,7 +6,7 @@ import type {
   OrphanedCacheFile,
   Verdict,
   VerdictEntry,
-} from "@/types.js";
+} from "@/domains/eval/types.js";
 
 import fg from "fast-glob";
 import { createHash } from "node:crypto";

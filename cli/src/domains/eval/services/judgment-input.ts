@@ -10,7 +10,8 @@
  * the staleness check in VerdictReporter — resolves identically.
  */
 
-import type { AssistFile, AssistFileRecord, AssistInputs } from "@/types.js";
+import type { AssistFileRecord, AssistInputs } from "@/domains/eval/types.js";
+import type { AssistFile } from "@/domains/eval/types.js";
 
 import fg from "fast-glob";
 import { createHash } from "node:crypto";

@@ -1,4 +1,4 @@
-import type { Verdict } from "@/types.js";
+import type { Verdict } from "@/domains/eval/types.js";
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 

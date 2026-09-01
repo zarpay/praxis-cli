@@ -1,4 +1,4 @@
-import type { AssistFile } from "@/types.js";
+import type { AssistFile } from "@/domains/eval/types.js";
 
 import judgeTools from "@/domains/eval/prompts/judge-tools.js";
 import systemPrompt from "@/domains/eval/prompts/system-prompt.js";

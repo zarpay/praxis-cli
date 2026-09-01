@@ -1,9 +1,9 @@
-import type { Verdict } from "@/types.js";
+import type { Verdict } from "@/domains/eval/types.js";
 
 import chalk from "chalk";
 import { describe, expect, it } from "vitest";
 
-import { unitHeading, verdictMark } from "@/domains/eval/orchestrators/eval-run.js";
+import { unitHeading, verdictMark } from "@/domains/eval/views/progress.js";
 
 /** Strips ANSI colour so assertions read as plain text. */
 function plain(text: string): string {

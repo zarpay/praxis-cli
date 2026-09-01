@@ -1,4 +1,4 @@
-import type { CacheFileData } from "@/types.js";
+import type { CacheFileData } from "@/domains/eval/types.js";
 
 import { randomUUID } from "node:crypto";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";

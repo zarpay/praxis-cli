@@ -1,4 +1,4 @@
-import type { AssistFileRecord, AssistInputs } from "@/types.js";
+import type { AssistFileRecord, AssistInputs } from "@/domains/eval/types.js";
 
 import fg from "fast-glob";
 

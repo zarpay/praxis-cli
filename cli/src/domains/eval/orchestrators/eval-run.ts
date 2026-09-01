@@ -3,26 +3,25 @@ import type {
   Verdict,
   EvalSummary,
   EvalUnit,
-  JudgeConfig,
   TargetVerdict,
   ValidationDomain,
-} from "@/types.js";
+} from "@/domains/eval/types.js";
+import type { JudgeConfig } from "@/types.js";
 
 import chalk from "chalk";
-import fg from "fast-glob";
 
 import { PraxisProjectBase } from "@/core/base.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
-import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
-import { isSpecFile } from "@/core/spec-pattern.js";
+import { baseName, joinPath, relativePath } from "@/core/paths.js";
 import { Judge } from "@/domains/eval/models/judge.js";
 import { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
-import { SpecFile } from "@/domains/eval/models/spec-file.js";
+import { TargetDiscovery } from "@/domains/eval/services/discover-targets.js";
 import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
 import { evaluateTarget } from "@/domains/eval/services/judge-target.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
+import { isCohort, unitHeading, verdictMark } from "@/domains/eval/views/progress.js";
 
 /**
  * One evaluation run: everything a single `praxis eval run` invocation
@@ -47,8 +46,8 @@ export class EvalRun extends PraxisProjectBase {
   /** One namespaced cache per judge, aligned by index with `judges`. */
   private readonly cacheManagers: (CacheManager | null)[];
   private readonly specFilePattern: string;
-  /** Ignore patterns resolved to absolute paths for fast-glob. */
-  private readonly absoluteIgnore: string[];
+  /** Finds the specs and units this run judges. */
+  private readonly discovery: TargetDiscovery;
   private results: TargetVerdict[] = [];
   private stoppedEarly = false;
   /** Absolute paths of all .md source documents, collected per run for summary(). */
@@ -87,7 +86,12 @@ export class EvalRun extends PraxisProjectBase {
     );
     this.specFilePattern = specFilePattern;
     this.cacheStats = { hits: 0, misses: 0 };
-    this.absoluteIgnore = ignore.map((p) => joinPath(root, p));
+    this.discovery = new TargetDiscovery({
+      root,
+      sources,
+      specFilePattern,
+      absoluteIgnore: ignore.map((p) => joinPath(root, p)),
+    });
   }
 
   /**
@@ -134,7 +138,7 @@ export class EvalRun extends PraxisProjectBase {
    * document each spec targets. Respects fail-fast if enabled.
    */
   async validateAll(): Promise<TargetVerdict[]> {
-    return this.runValidation(this.discoverValidationDomains());
+    return this.runValidation(this.discovery.domains());
   }
 
   /**
@@ -144,7 +148,7 @@ export class EvalRun extends PraxisProjectBase {
    * @throws Error if no matching type is found
    */
   async validateType(type: string): Promise<TargetVerdict[]> {
-    const domains = this.discoverValidationDomains();
+    const domains = this.discovery.domains();
     const matching = domains.filter((d) => d.type === type || baseName(d.dir) === type);
 
     if (matching.length === 0) {
@@ -162,10 +166,10 @@ export class EvalRun extends PraxisProjectBase {
   private async runValidation(domains: ValidationDomain[]): Promise<TargetVerdict[]> {
     this.results = [];
     this.stoppedEarly = false;
-    this.sourceDocs = this.collectSourceDocuments();
+    this.sourceDocs = this.discovery.sourceDocuments();
 
     const unitQueue = domains.flatMap((domain) =>
-      this.resolveUnits(domain).map((unit) => ({ unit, domain })),
+      this.discovery.units(domain).map((unit) => ({ unit, domain })),
     );
 
     this.validatedCount = 0;
@@ -193,8 +197,8 @@ export class EvalRun extends PraxisProjectBase {
    * status to compute accurate coverage counts.
    */
   listTargetFiles(): string[] {
-    const domains = this.discoverValidationDomains();
-    return domains.flatMap((domain) => this.resolveUnits(domain).map((unit) => unit.path));
+    const domains = this.discovery.domains();
+    return domains.flatMap((domain) => this.discovery.units(domain).map((unit) => unit.path));
   }
 
   /**
@@ -249,165 +253,6 @@ export class EvalRun extends PraxisProjectBase {
       byType,
       byJudge,
     };
-  }
-
-  /**
-   * Collects the absolute paths of all .md documents across source directories.
-   *
-   * Includes documents in directories without a spec file, providing the
-   * true universe of source documents for summary() denominators.
-   * Excludes spec files and templates (files starting with `_`).
-   */
-  private collectSourceDocuments(): Set<string> {
-    const docs = new Set<string>();
-
-    for (const source of this.sources) {
-      const sourceAbsPath = joinPath(this.root, source);
-      const allMdFiles = fg.sync("**/*.md", {
-        cwd: sourceAbsPath,
-        onlyFiles: true,
-        absolute: true,
-        dot: true,
-        ignore: this.absoluteIgnore,
-      });
-
-      for (const file of allMdFiles) {
-        const name = baseName(file);
-
-        if (isSpecFile(name, this.specFilePattern) || name.startsWith("_")) continue;
-
-        docs.add(file);
-      }
-    }
-
-    return docs;
-  }
-
-  /**
-   * Returns the evaluation units a domain should validate.
-   *
-   * `cohort: by_directory` domains yield one unit per matched directory,
-   * containing every (non-spec, non-template) file under it; empty
-   * directories yield no unit. `by_file` domains yield one unit per
-   * target file — from `paths:` when declared, otherwise the spec's
-   * sibling .md files.
-   */
-  private resolveUnits(domain: ValidationDomain): EvalUnit[] {
-    const shielded = [...domain.excludes, ...domain.exemplars];
-
-    if (domain.cohort === "by_directory") {
-      return (domain.targetDirs ?? [])
-        .map((dir) => ({ path: dir, files: this.collectMembers(dir, shielded) }))
-        .filter((unit) => unit.files.length > 0);
-    }
-
-    if (domain.targetFiles) {
-      return domain.targetFiles.map((file) => ({ path: file, files: [file] }));
-    }
-
-    return fg
-      .sync("*.md", {
-        cwd: domain.dir,
-        onlyFiles: true,
-        absolute: true,
-        dot: true,
-        ignore: [...this.absoluteIgnore, ...shielded],
-      })
-      .filter((f) => {
-        const name = baseName(f);
-        return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
-      })
-      .map((file) => ({ path: file, files: [file] }));
-  }
-
-  /** Collects a cohort directory's member files, sorted, minus specs, templates, and shielded paths. */
-  private collectMembers(dir: string, shielded: string[]): string[] {
-    return fg
-      .sync("**/*", {
-        cwd: dir,
-        onlyFiles: true,
-        absolute: true,
-        dot: true,
-        ignore: [...this.absoluteIgnore, ...shielded],
-      })
-      .filter((f) => {
-        const name = baseName(f);
-        return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
-      })
-      .sort();
-  }
-
-  /**
-   * Discovers validation domains by scanning source directories.
-   *
-   * For each spec file found, checks for an optional `paths` frontmatter
-   * field. When present, the glob patterns are expanded against the project
-   * root to build an explicit target file list. Otherwise the spec validates
-   * sibling files in its own directory.
-   */
-  private discoverValidationDomains(): ValidationDomain[] {
-    const domains: ValidationDomain[] = [];
-
-    const targetFilesFilterCallback = (f: string) => {
-      const name = baseName(f);
-      return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
-    };
-
-    for (const source of this.sources) {
-      const sourceAbsPath = joinPath(this.root, source);
-      const specPaths = fg.sync(`**/${this.specFilePattern}`, {
-        cwd: sourceAbsPath,
-        onlyFiles: true,
-        absolute: true,
-        dot: true,
-      });
-
-      for (const specPath of specPaths) {
-        const dir = parentDir(specPath);
-        const type = relativePath(this.root, dir) || baseName(dir);
-
-        const spec = SpecFile.at(specPath, this.root);
-        const excludes = spec.excludes.map((p) => joinPath(this.root, p));
-        const exemplars = spec.exemplars.map((p) => joinPath(this.root, p));
-        // Exemplars are shielded from adverse judgment exactly like
-        // excludes; they reach the judge only as inlined positives.
-        const shielded = [...this.absoluteIgnore, ...excludes, ...exemplars];
-
-        const domain: ValidationDomain = {
-          dir,
-          type,
-          specPath,
-          excludes,
-          exemplars,
-          cohort: spec.cohort,
-        };
-
-        const syncOptions: fg.Options = {
-          dot: true,
-          cwd: this.root,
-          absolute: true,
-          ignore: shielded,
-        };
-
-        if (spec.cohort === "by_directory") {
-          syncOptions.onlyDirectories = true;
-
-          const targetDirs = fg.sync(spec.paths, syncOptions).sort();
-
-          domain.targetDirs = targetDirs;
-        } else if (spec.paths.length > 0) {
-          syncOptions.onlyFiles = true;
-
-          const targetFiles = fg.sync(spec.paths, syncOptions).filter(targetFilesFilterCallback);
-
-          domain.targetFiles = targetFiles;
-        }
-
-        domains.push(domain);
-      }
-    }
-
-    return domains;
   }
 
   /** Checks if the last result triggers fail-fast (stops on errors, not warnings). */
@@ -525,45 +370,4 @@ export class EvalRun extends PraxisProjectBase {
       .map((file) => `===== FILE: ${relativePath(this.root, file)} =====\n\n${readText(file)}`)
       .join("\n\n");
   }
-}
-
-/** Whether a unit judges a set of files rather than the one at its path. */
-function isCohort(unit: EvalUnit): boolean {
-  return unit.files.length > 1 || unit.files[0] !== unit.path;
-}
-
-/**
- * The progress line printed before a unit is judged.
- *
- * `cohortSize` is set only for cohort units and `judgeName` only when
- * more than one judge is running, so a single-judge run of plain files
- * gets the bare counter and filename.
- */
-export function unitHeading({
-  index,
-  total,
-  path,
-  cohortSize,
-  judgeName,
-}: {
-  index: number;
-  total: number;
-  path: string;
-  cohortSize?: number;
-  judgeName?: string;
-}): string {
-  const counter = chalk.dim(`[${index}/${total}]`);
-  const cohortLabel = cohortSize ? ` ${chalk.dim(`(cohort · ${cohortSize} files)`)}` : "";
-  const judgeLabel = judgeName ? ` ${chalk.cyan(`[judge: ${judgeName}]`)}` : "";
-
-  return `${counter} ${chalk.bold(baseName(path))}${cohortLabel}${judgeLabel}`;
-}
-
-/** The colored ✓/⚠/✗ progress mark for a verdict. */
-export function verdictMark(result: Verdict): string {
-  if (result.compliant) return chalk.green("✓ PASS");
-
-  if (result.severity === "warning") return chalk.yellow("⚠ WARN");
-
-  return chalk.red("✗ FAIL");
 }

@@ -1,4 +1,4 @@
-import type { ValidationQuestionInput } from "@/types.js";
+import type { ValidationQuestionInput } from "@/domains/eval/types.js";
 
 import { baseName, parentDir } from "@/core/paths.js";
 import contextSection from "@/domains/eval/prompts/context-section.js";

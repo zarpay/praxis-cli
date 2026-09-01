@@ -1,4 +1,4 @@
-import type { AssistFile } from "@/types.js";
+import type { AssistFile } from "@/domains/eval/types.js";
 
 /**
  * The CONTEXT prompt section: assist-only reference files that inform

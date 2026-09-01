@@ -1,4 +1,4 @@
-import type { CacheFileData, ReportStatus, VerdictReport } from "@/types.js";
+import type { CacheFileData, ReportStatus, VerdictReport } from "@/domains/eval/types.js";
 
 import chalk from "chalk";
 import fg from "fast-glob";

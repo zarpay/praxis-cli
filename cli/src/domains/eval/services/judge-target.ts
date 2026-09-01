@@ -1,7 +1,7 @@
 import type { Judge } from "@/domains/eval/models/judge.js";
 import type { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
 import type { CacheManager } from "@/domains/eval/services/verdict-cache.js";
-import type { ProviderRequest, ProviderResult, Verdict } from "@/types.js";
+import type { ProviderRequest, ProviderResult, Verdict } from "@/domains/eval/types.js";
 
 import { PraxisError, errors } from "@/core/errors.js";
 import judgeTools from "@/domains/eval/prompts/judge-tools.js";
