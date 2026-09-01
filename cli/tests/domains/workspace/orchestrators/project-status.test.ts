@@ -2,12 +2,12 @@ import { readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { StatusCommand } from "@/commands/status.js";
 import { PraxisConfig } from "@/core/config.js";
+import { ProjectStatus } from "@/domains/workspace/orchestrators/project-status.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
-describe("StatusCommand", () => {
+describe("ProjectStatus", () => {
   let tmpdir: string;
   let cleanup: () => void;
   let config: PraxisConfig;
@@ -24,7 +24,7 @@ describe("StatusCommand", () => {
   });
 
   it("counts roles, responsibilities, references, and context", async () => {
-    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const report = await new ProjectStatus({ root: tmpdir, config }).analyze();
 
     expect(report.counts.experts).toBeGreaterThanOrEqual(1);
     expect(report.counts.practices).toBeGreaterThanOrEqual(1);
@@ -33,7 +33,7 @@ describe("StatusCommand", () => {
   });
 
   it("excludes _template.md and README.md from counts", async () => {
-    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const report = await new ProjectStatus({ root: tmpdir, config }).analyze();
 
     // Roles dir has README.md + content files; reported count must be less than total .md files
     const allRoleFiles = readdirSync(join(tmpdir, "content", "experts")).filter((f) =>
@@ -48,7 +48,7 @@ describe("StatusCommand", () => {
       "---\nalias: BadRefs\ndescription: test\nrefs:\n  - content/reference/nonexistent.md\n---\n# Bad",
     );
 
-    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const report = await new ProjectStatus({ root: tmpdir, config }).analyze();
 
     expect(report.danglingRefs).toContainEqual({
       expert: "bad-refs.md",
@@ -62,7 +62,7 @@ describe("StatusCommand", () => {
       "---\ntitle: Orphan\ntype: practice\nowner: nobody\n---\n# Orphan",
     );
 
-    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const report = await new ProjectStatus({ root: tmpdir, config }).analyze();
 
     expect(report.orphanedPractices).toContain("orphan.md");
   });
@@ -73,7 +73,7 @@ describe("StatusCommand", () => {
       "---\nalias: NoDesc\n---\n# No Description",
     );
 
-    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const report = await new ProjectStatus({ root: tmpdir, config }).analyze();
 
     expect(report.expertsMissingDescription).toContain("no-desc.md");
   });
@@ -84,7 +84,7 @@ describe("StatusCommand", () => {
       "---\ntitle: Broken\n---\n# No Alias",
     );
 
-    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const report = await new ProjectStatus({ root: tmpdir, config }).analyze();
     const broken = report.invalidExperts.find((e) => e.expert === "broken.md");
 
     expect(broken?.reason).toContain('missing required frontmatter field "alias"');
@@ -97,7 +97,7 @@ describe("StatusCommand", () => {
     );
     writeFileSync(join(tmpdir, "content", "experts", "fine.md"), "---\nalias: Fine\n---\n# Fine");
 
-    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const report = await new ProjectStatus({ root: tmpdir, config }).analyze();
 
     expect(report.invalidExperts.map((e) => e.expert)).toContain("broken.md");
     expect(report.expertsMissingDescription).toContain("fine.md");
@@ -109,7 +109,7 @@ describe("StatusCommand", () => {
       "---\nalias: BadGlob\ndescription: test\nrefs:\n  - content/reference/nope-*.md\n---\n# Bad",
     );
 
-    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const report = await new ProjectStatus({ root: tmpdir, config }).analyze();
 
     expect(report.zeroMatchGlobs).toContainEqual({
       expert: "bad-glob.md",
@@ -123,7 +123,7 @@ describe("StatusCommand", () => {
       "---\ntitle: Unmatched\ntype: practice\nowner: phantom-role\n---\n# Unmatched",
     );
 
-    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const report = await new ProjectStatus({ root: tmpdir, config }).analyze();
 
     expect(report.unmatchedOwners).toContainEqual({
       practice: "unmatched.md",
@@ -144,10 +144,10 @@ describe("StatusCommand", () => {
       }),
     );
     const ignoringConfig = new PraxisConfig(tmpdir);
-    const report = await new StatusCommand({ root: tmpdir, config: ignoringConfig }).analyze();
+    const report = await new ProjectStatus({ root: tmpdir, config: ignoringConfig }).analyze();
 
     // validates-role.md is in the roles dir but should be excluded
-    const baseReport = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const baseReport = await new ProjectStatus({ root: tmpdir, config }).analyze();
     expect(report.counts.experts).toBe(baseReport.counts.experts - 1);
   });
 
@@ -165,7 +165,7 @@ describe("StatusCommand", () => {
     });
 
     const nonMdConfig = new PraxisConfig(root);
-    const report = await new StatusCommand({ root, config: nonMdConfig }).analyze();
+    const report = await new ProjectStatus({ root, config: nonMdConfig }).analyze();
 
     // One validation row per configured judge (the legacy validation
     // section normalizes to one judge named "default"); both .rb files
@@ -178,7 +178,7 @@ describe("StatusCommand", () => {
   });
 
   it("reports clean for a healthy project", async () => {
-    const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+    const report = await new ProjectStatus({ root: tmpdir, config }).analyze();
 
     // The default fixtures form a healthy project
     expect(report.danglingRefs).toEqual([]);
@@ -188,7 +188,7 @@ describe("StatusCommand", () => {
 
   describe("layer split", () => {
     it("marks the compiler in use when the experts directory exists", async () => {
-      const report = await new StatusCommand({ root: tmpdir, config }).analyze();
+      const report = await new ProjectStatus({ root: tmpdir, config }).analyze();
 
       expect(report.compilerInUse).toBe(true);
     });
@@ -205,13 +205,13 @@ describe("StatusCommand", () => {
         },
       });
 
-      const report = await new StatusCommand({ root }).analyze();
+      const report = await new ProjectStatus({ root }).analyze();
 
       expect(report.compilerInUse).toBe(false);
       expect(report.counts).toEqual({ experts: 0, practices: 0, references: 0, context: 0 });
       expect(report.unmatchedOwners).toEqual([]);
       expect(report.orphanedPractices).toEqual([]);
-      expect(StatusCommand.hasIssues(report)).toBe(false);
+      expect(ProjectStatus.hasIssues(report)).toBe(false);
 
       cleanup();
     });
@@ -226,7 +226,7 @@ describe("StatusCommand", () => {
         judges: [{ name: "test", model: "test-model", apiKeyEnvVar: "OPENROUTER_API_KEY" }],
       });
 
-      const report = await new StatusCommand({ root }).analyze();
+      const report = await new ProjectStatus({ root }).analyze();
 
       expect(report.validation).toHaveLength(1);
       expect(report.validation[0]).toMatchObject({ judge: "test", notValidated: 1 });

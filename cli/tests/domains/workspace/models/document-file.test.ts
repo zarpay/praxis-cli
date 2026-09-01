@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { DocumentFile } from "@/models/document-file.js";
+import { DocumentFile } from "@/domains/workspace/models/document-file.js";
 
 /** Builds a document from frontmatter lines, without touching the filesystem. */
 function doc(lines: string[], path = "/project/practices/services.md"): DocumentFile {

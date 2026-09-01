@@ -1,7 +1,8 @@
 import type { Command } from "commander";
 
 import type { EvalSummary, Verdict } from "@/domains/eval/types.js";
-import type { AllOptions, DisplayEntry, DocumentOptions, JudgeConfig } from "@/types.js";
+import type { AllOptions, DocumentOptions } from "@/domains/workspace/types.js";
+import type { DisplayEntry, JudgeConfig } from "@/types.js";
 
 import chalk from "chalk";
 

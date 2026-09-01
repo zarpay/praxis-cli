@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 
-import type { AddableType } from "@/types.js";
+import type { AddableType } from "@/domains/workspace/types.js";
 import type { Logger } from "@/views/logger.js";
 
 import { runAction } from "@/commands/action.js";

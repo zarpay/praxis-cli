@@ -5,8 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { InitCommand } from "@/commands/init.js";
 import { ExpertCompiler } from "@/domains/spec/orchestrators/expert-compiler.js";
+import { InitCommand } from "@/domains/workspace/orchestrators/init-project.js";
 import { Logger } from "@/views/logger.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 

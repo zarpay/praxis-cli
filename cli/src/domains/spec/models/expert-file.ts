@@ -3,8 +3,8 @@ import type { CohortMode } from "@/types.js";
 
 import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
+import { Fields } from "@/core/frontmatter-fields.js";
 import { Frontmatter } from "@/core/frontmatter.js";
-import { Fields } from "@/models/fields.js";
 
 /** The accepted `cohort:` frontmatter values. */
 const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];

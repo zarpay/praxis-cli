@@ -1,4 +1,4 @@
-import { Fields } from "@/models/fields.js";
+import { Fields } from "@/core/frontmatter-fields.js";
 
 /**
  * Any Praxis markdown document, read for the two fields that classify

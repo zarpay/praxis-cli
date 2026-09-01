@@ -5,12 +5,12 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { InitCommand } from "@/commands/init.js";
+import { InitCommand } from "@/domains/workspace/orchestrators/init-project.js";
 import { Logger } from "@/views/logger.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 
 /** Resolved path to the scaffold directory at the project root. */
-const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
+const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "..", "..", "scaffold");
 
 /** Creates a fresh temporary directory for each test. */
 function makeTmpdir(): string {

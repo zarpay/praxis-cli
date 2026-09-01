@@ -1,8 +1,8 @@
-import type { StatusReport } from "@/types.js";
+import type { StatusReport } from "@/domains/workspace/types.js";
 
 import { describe, expect, it } from "vitest";
 
-import { countLines, issueBlocks, validationBlocks } from "@/commands/status.js";
+import { countLines, issueBlocks, validationBlocks } from "@/domains/workspace/views/status.js";
 
 /** A clean report, with only the fields a test cares about overridden. */
 function report(fields: Partial<StatusReport> = {}): StatusReport {

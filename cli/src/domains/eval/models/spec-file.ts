@@ -1,7 +1,7 @@
 import type { CohortMode } from "@/types.js";
 
+import { Fields } from "@/core/frontmatter-fields.js";
 import { relativePath } from "@/core/paths.js";
-import { Fields } from "@/models/fields.js";
 
 /** The accepted `cohort:` frontmatter values. */
 const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
