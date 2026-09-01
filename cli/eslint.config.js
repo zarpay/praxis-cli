@@ -183,8 +183,15 @@ export default tseslint.config(
             { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
           ],
           patterns: [
-            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
-            { group: ["@/domains/*", "@/commands/*"], message: "core and views are the kernel: they must not depend on a domain or on commands." },
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/domains/*", "@/commands/*"],
+              message:
+                "core and views are the kernel: they must not depend on a domain or on commands.",
+            },
           ],
         },
       ],
@@ -204,10 +211,27 @@ export default tseslint.config(
             { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
           ],
           patterns: [
-            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
-            { group: ["@/domains/spec/*"], message: "The eval layer must not depend on the spec layer (11-spec-layer.md)." },
-            { group: ["@/domains/workspace/services/*", "@/domains/workspace/orchestrators/*", "@/domains/workspace/views/*"], message: "Only workspace's models and types may be reached into: its services read back into spec and eval, so importing them would be a cycle." },
-            { group: ["@/commands/*"], message: "Domains must not depend on commands (dependencies flow one way)." },
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/domains/spec/*"],
+              message: "The eval layer must not depend on the spec layer (11-spec-layer.md).",
+            },
+            {
+              group: [
+                "@/domains/workspace/services/*",
+                "@/domains/workspace/orchestrators/*",
+                "@/domains/workspace/views/*",
+              ],
+              message:
+                "Only workspace's models and types may be reached into: its services read back into spec and eval, so importing them would be a cycle.",
+            },
+            {
+              group: ["@/commands/*"],
+              message: "Domains must not depend on commands (dependencies flow one way).",
+            },
           ],
         },
       ],
@@ -224,10 +248,27 @@ export default tseslint.config(
             { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
           ],
           patterns: [
-            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
-            { group: ["@/domains/eval/*"], message: "The spec layer must not depend on the eval layer (11-spec-layer.md)." },
-            { group: ["@/domains/workspace/services/*", "@/domains/workspace/orchestrators/*", "@/domains/workspace/views/*"], message: "Only workspace's models and types may be reached into: its services read back into spec and eval, so importing them would be a cycle." },
-            { group: ["@/commands/*"], message: "Domains must not depend on commands (dependencies flow one way)." },
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/domains/eval/*"],
+              message: "The spec layer must not depend on the eval layer (11-spec-layer.md).",
+            },
+            {
+              group: [
+                "@/domains/workspace/services/*",
+                "@/domains/workspace/orchestrators/*",
+                "@/domains/workspace/views/*",
+              ],
+              message:
+                "Only workspace's models and types may be reached into: its services read back into spec and eval, so importing them would be a cycle.",
+            },
+            {
+              group: ["@/commands/*"],
+              message: "Domains must not depend on commands (dependencies flow one way).",
+            },
           ],
         },
       ],
@@ -247,8 +288,14 @@ export default tseslint.config(
             { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
           ],
           patterns: [
-            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
-            { group: ["@/commands/*"], message: "Domains must not depend on commands (dependencies flow one way)." },
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/commands/*"],
+              message: "Domains must not depend on commands (dependencies flow one way).",
+            },
           ],
         },
       ],
@@ -267,8 +314,15 @@ export default tseslint.config(
             { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
           ],
           patterns: [
-            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
-            { group: ["@/domains/spec/*", "@/domains/eval/*", "@/commands/*"], message: "workspace's models and types are what spec and eval depend on: they must not depend back." },
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/domains/spec/*", "@/domains/eval/*", "@/commands/*"],
+              message:
+                "workspace's models and types are what spec and eval depend on: they must not depend back.",
+            },
           ],
         },
       ],
@@ -285,11 +339,13 @@ export default tseslint.config(
         "error",
         {
           selector: "TSInterfaceDeclaration",
-          message: "Declare interfaces in a types.ts — the domain's own, or src/types.ts when more than one domain needs it.",
+          message:
+            "Declare interfaces in a types.ts — the domain's own, or src/types.ts when more than one domain needs it.",
         },
         {
           selector: "TSTypeAliasDeclaration",
-          message: "Declare type aliases in a types.ts — the domain's own, or src/types.ts when more than one domain needs it.",
+          message:
+            "Declare type aliases in a types.ts — the domain's own, or src/types.ts when more than one domain needs it.",
         },
       ],
     },
@@ -305,9 +361,12 @@ export default tseslint.config(
     },
   },
   {
-    // Every orchestrator is async, so runAction has one shape to await
-    // rather than a union of sync and async ones. The signature is the
-    // layer's contract, not a claim that the body does I/O.
+    // Every orchestrator is async so runAction has exactly one shape to
+    // handle. Dropping `async` from the ones that never await looks
+    // tidier and is not: a plain function returning Promise.resolve()
+    // throws *synchronously*, so failures would arrive on two different
+    // channels depending on the orchestrator. `async` is the contract,
+    // not a claim that the body does I/O.
     files: ["src/domains/*/orchestrators/**/*.ts"],
     rules: {
       "@typescript-eslint/require-await": "off",
