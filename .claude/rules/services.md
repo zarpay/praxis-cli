@@ -6,7 +6,7 @@ paths:
 
 # Services
 
-A service is **one action**, named `{verb}-{noun}` after what it does to what it
+**A service is a service object.** One action, named `{verb}-{noun}` after what it does to what it
 acts on: `expand-globs.ts`, `audit-experts.ts`, `request-verdict.ts`,
 `count-documents-by-type.ts`. The noun is usually a model or a domain concept.
 
@@ -18,7 +18,7 @@ acts on: `expand-globs.ts`, `audit-experts.ts`, `request-verdict.ts`,
 - It returns its work, **including problems**: warnings come back in the result.
   A service never logs, never prints, and takes no logger.
 - No workflow. A service that calls two other services in sequence to produce an
-  outcome is an orchestrator.
+  outcome is an orchestrator — a controller's job, not a service object's.
 
 The only classes under `services/` are the sanctioned exceptions:
 `verdict-cache.ts` (a repository over the verdict store) and the extension-point

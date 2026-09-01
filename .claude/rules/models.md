@@ -6,7 +6,7 @@ paths:
 
 # Models
 
-A model is a **noun**, named for the thing it represents — `spec-file.ts`,
+**A model is a model**, in the ordinary sense: a **noun**, named for the thing it represents — `spec-file.ts`,
 `expert-file.ts`, `reviewer.ts`, `review-target.ts`. Never a verb. It is a class:
 the data plus the helpers on that data, and the one place a document kind's
 frontmatter keys are spelled.
