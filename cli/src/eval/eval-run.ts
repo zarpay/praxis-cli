@@ -435,88 +435,131 @@ export class EvalRun extends PraxisProjectBase {
     judgeIndex: number,
   ): Promise<void> {
     this.validatedCount++;
-    const index = this.validatedCount;
-    const total = this.totalToValidate;
-    const counter = chalk.dim(`[${index}/${total}]`);
-    const isCohort = unit.files.length > 1 || unit.files[0] !== unit.path;
-    const cohortLabel = isCohort ? ` ${chalk.dim(`(cohort · ${unit.files.length} files)`)}` : "";
-    const judgeLabel =
-      this.judges.length > 1 ? ` ${chalk.cyan(`[judge: ${judgeConfig.name}]`)}` : "";
 
     this.out.print([
       "",
-      `${counter} ${chalk.bold(baseName(unit.path))}${cohortLabel}${judgeLabel}`,
+      unitHeading({
+        index: this.validatedCount,
+        total: this.totalToValidate,
+        path: unit.path,
+        cohortSize: isCohort(unit) ? unit.files.length : undefined,
+        judgeName: this.judges.length > 1 ? judgeConfig.name : undefined,
+      }),
     ]);
 
+    const identity = {
+      path: unit.path,
+      type,
+      filename: baseName(unit.path),
+      judge: judgeConfig.name,
+    };
+
     try {
-      const judge = new Judge({
-        targetPath: unit.path,
-        targetContent: isCohort ? this.assembleCohort(unit) : undefined,
-        kind: isCohort ? "cohort" : "file",
-        specPath,
-        specFilePattern: this.specFilePattern,
-        useCache: this.useCache,
-        cacheManager: this.cacheManagers[judgeIndex] ?? undefined,
-        config: judgeConfig,
-        root: this.root,
-      });
-
-      const result = await judge.validate();
-
-      if (judge.cacheHit) {
-        this.cacheStats.hits++;
-      } else {
-        this.cacheStats.misses++;
-      }
-
-      const runResult: TargetVerdict = {
-        ...result,
-        path: unit.path,
-        type,
-        filename: baseName(unit.path),
-        judge: judgeConfig.name,
-      };
+      const verdict = await this.judgeUnit(unit, specPath, judgeConfig, judgeIndex);
 
       this.out.print([
-        `\t${this.verdictMark(result)}`,
-        ...(result.compliant ? [] : result.issues.map((issue) => `\t${chalk.dim("·")} ${issue}`)),
+        `\t${verdictMark(verdict)}`,
+        ...(verdict.compliant ? [] : verdict.issues.map((issue) => `\t${chalk.dim("·")} ${issue}`)),
       ]);
-
-      this.results.push(runResult);
+      this.results.push({ ...verdict, ...identity });
     } catch (err) {
-      this.out.print([
-        `\t${chalk.red("✗ ERROR")}`,
-        `\t${chalk.dim("·")} ${(err as Error).message}`,
-      ]);
+      const message = err instanceof Error ? err.message : String(err);
+
+      this.out.print([`\t${chalk.red("✗ ERROR")}`, `\t${chalk.dim("·")} ${message}`]);
       this.results.push({
-        path: unit.path,
-        type,
-        filename: baseName(unit.path),
-        judge: judgeConfig.name,
+        ...identity,
         compliant: false,
         severity: "error",
-        issues: [`Validation failed: ${(err as Error).message}`],
-        reason: (err as Error).message,
+        issues: [`Validation failed: ${message}`],
+        reason: message,
       });
     }
+  }
+
+  /**
+   * Judges one unit and records whether the verdict came from cache.
+   *
+   * A cohort is assembled into one path-labeled input and judged as a
+   * single target, so the set receives one verdict.
+   */
+  private async judgeUnit(
+    unit: EvalUnit,
+    specPath: string,
+    judgeConfig: JudgeConfig,
+    judgeIndex: number,
+  ): Promise<Verdict> {
+    const cohort = isCohort(unit);
+    const judge = new Judge({
+      targetPath: unit.path,
+      targetContent: cohort ? this.assembleCohort(unit) : undefined,
+      kind: cohort ? "cohort" : "file",
+      specPath,
+      specFilePattern: this.specFilePattern,
+      useCache: this.useCache,
+      cacheManager: this.cacheManagers[judgeIndex] ?? undefined,
+      config: judgeConfig,
+      root: this.root,
+    });
+
+    const verdict = await judge.validate();
+
+    if (judge.cacheHit) {
+      this.cacheStats.hits++;
+    } else {
+      this.cacheStats.misses++;
+    }
+
+    return verdict;
   }
 
   /**
    * Assembles a cohort's members into one judgment input, each labeled
    * with its project-relative path so critiques can locate their file.
    */
-  /** The colored ✓/⚠/✗ progress mark for a verdict. */
-  private verdictMark(result: Verdict): string {
-    if (result.compliant) return chalk.green("✓ PASS");
-
-    if (result.severity === "warning") return chalk.yellow("⚠ WARN");
-
-    return chalk.red("✗ FAIL");
-  }
-
   private assembleCohort(unit: EvalUnit): string {
     return unit.files
       .map((file) => `===== FILE: ${relativePath(this.root, file)} =====\n\n${readText(file)}`)
       .join("\n\n");
   }
+}
+
+/** Whether a unit judges a set of files rather than the one at its path. */
+function isCohort(unit: EvalUnit): boolean {
+  return unit.files.length > 1 || unit.files[0] !== unit.path;
+}
+
+/**
+ * The progress line printed before a unit is judged.
+ *
+ * `cohortSize` is set only for cohort units and `judgeName` only when
+ * more than one judge is running, so a single-judge run of plain files
+ * gets the bare counter and filename.
+ */
+export function unitHeading({
+  index,
+  total,
+  path,
+  cohortSize,
+  judgeName,
+}: {
+  index: number;
+  total: number;
+  path: string;
+  cohortSize?: number;
+  judgeName?: string;
+}): string {
+  const counter = chalk.dim(`[${index}/${total}]`);
+  const cohortLabel = cohortSize ? ` ${chalk.dim(`(cohort · ${cohortSize} files)`)}` : "";
+  const judgeLabel = judgeName ? ` ${chalk.cyan(`[judge: ${judgeName}]`)}` : "";
+
+  return `${counter} ${chalk.bold(baseName(path))}${cohortLabel}${judgeLabel}`;
+}
+
+/** The colored ✓/⚠/✗ progress mark for a verdict. */
+export function verdictMark(result: Verdict): string {
+  if (result.compliant) return chalk.green("✓ PASS");
+
+  if (result.severity === "warning") return chalk.yellow("⚠ WARN");
+
+  return chalk.red("✗ FAIL");
 }

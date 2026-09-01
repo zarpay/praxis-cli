@@ -63,22 +63,33 @@ the extracted helpers carry docblocks explaining why the two corrupt paths diffe
 
 ---
 
-## [ ] 3. `EvalRun.validateUnit()` — 79 lines, the longest real function in src/
+## [x] 3. `EvalRun.validateUnit()` — 79 lines, the longest real function in src/
 
-**Where:** `src/eval/eval-run.ts:422`
+**Done.** Split into `unitHeading()`, `judgeUnit()`, and two module-level pure
+functions; the body is now ~35 lines and reads as its three steps: print the
+heading, judge, record the outcome.
 
-Does five separable jobs: compute display labels, construct the `Judge`, tally
-cache stats, format verdict output, build the error `TargetVerdict`. The `catch`
-hand-builds a `TargetVerdict` duplicating the success path's shape, and
-`(err as Error).message` appears three times inside it.
+- `unitHeading({ index, total, path, cohortSize?, judgeName? })` — **exported and
+  module-level**, so the label logic is directly testable. It was the item's
+  stated goal and it needed the function out of the class: `cohortSize` is set
+  only for cohorts and `judgeName` only for multi-judge runs, so the caller
+  decides what to show and the formatter just formats.
+- `verdictMark()` — likewise exported; pure, three branches.
+- `judgeUnit()` — constructs the `Judge`, awaits the verdict, tallies the cache
+  hit. The only piece that touches state.
+- `identity` (`path`/`type`/`filename`/`judge`) is built once and spread into both
+  the success and error results, which previously restated all four fields.
 
-Split into `unitLabel(unit, judgeConfig)`, `runJudge(...)`, and
-`errorVerdict(unit, type, judge, err)` — body drops to roughly 20 lines.
+**One real fix rode along.** The catch block called `(err as Error).message`
+three times; a thrown non-`Error` produced `"Validation failed: undefined"`. It is
+now `err instanceof Error ? err.message : String(err)`, computed once.
 
-**Testability:** the label logic (`isCohort`, cohort/judge suffixes) is pure
-string work that today can only be reached by running a full judged eval.
+**Also fixed:** `assembleCohort`'s docblock had drifted onto `verdictMark` in an
+earlier refactor, leaving `assembleCohort` undocumented and `verdictMark`
+described as something it wasn't.
 
-**Risk:** touches the hot path. Do it after #1 and #2, on its own commit.
+8 new tests in `tests/eval/eval-run-display.test.ts`, none of which need a
+project, a judge, or an API call.
 
 ---
 
