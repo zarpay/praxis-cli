@@ -106,12 +106,12 @@ export class EvalRun extends PraxisProjectBase {
   ): EvalRun {
     return new EvalRun({
       root,
-      sources: config.sources,
       ignore: config.ignore,
+      sources: config.sources,
+      useCache: overrides.useCache,
+      failFast: overrides.failFast,
       specFilePattern: config.specFilePattern,
       judges: overrides.judges ?? config.judges,
-      failFast: overrides.failFast,
-      useCache: overrides.useCache,
     });
   }
 

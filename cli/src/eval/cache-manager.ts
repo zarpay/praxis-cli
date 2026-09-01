@@ -69,15 +69,7 @@ export class CacheManager extends PraxisBase {
    * @param targetPath - Path to the judged target
    */
   cachePathFor(targetPath: string): string {
-    let relativePath: string;
-
-    if (this.projectRoot) {
-      const absRoot = this.projectRoot.endsWith("/") ? this.projectRoot : this.projectRoot + "/";
-      relativePath = targetPath.startsWith(absRoot) ? targetPath.slice(absRoot.length) : targetPath;
-    } else {
-      relativePath = targetPath;
-    }
-
+    const relativePath = this.relativeToRoot(targetPath);
     const dirPath = parentDir(relativePath);
     const base = baseName(relativePath, ".md");
 
@@ -110,44 +102,21 @@ export class CacheManager extends PraxisBase {
     };
   }): void {
     const cachePath = this.cachePathFor(targetPath);
-
-    const entry: VerdictEntry = {
-      judge: this.judgeIdentity(),
-      spec_path: this.relSpecPath(metadata.specPath),
-      cached_at: new Date().toISOString(),
-      content_hash: contentHash,
-      result: {
-        ...result,
-        reason: sanitizeText(result.reason),
-        issues: result.issues.map(sanitizeText),
-      },
-    };
-
-    if (metadata.exemplarFiles && metadata.exemplarFiles.length > 0) {
-      entry.exemplar_files = metadata.exemplarFiles;
-    }
-
-    if (metadata.contextFiles && metadata.contextFiles.length > 0) {
-      entry.context_files = metadata.contextFiles;
-    }
-
     const fileData = this.loadFile(cachePath);
-    fileData.verdicts[this.verdictKey(metadata.specPath)] = entry;
+
+    fileData.verdicts[this.verdictKey(metadata.specPath)] = this.buildEntry(
+      contentHash,
+      result,
+      metadata,
+    );
 
     try {
       const json = JSON.stringify(fileData, null, 2);
       JSON.parse(json); // verify integrity before writing
       writeText(cachePath, json);
     } catch (err) {
-      try {
-        if (exists(cachePath)) removeFile(cachePath);
-      } catch {
-        /* ignore cleanup failures */
-      }
-
-      if (process.env["DEBUG"]) {
-        this.logger.warn(`Failed to write cache file (${(err as Error).message})`);
-      }
+      this.removeQuietly(cachePath);
+      this.debug(`Failed to write cache file (${(err as Error).message})`);
     }
   }
 
@@ -167,36 +136,20 @@ export class CacheManager extends PraxisBase {
     specPath: string;
   }): Verdict | null {
     const cachePath = this.cachePathFor(targetPath);
+    // The judging path discards a corrupt file so the next write starts
+    // clean; the report-only readers below deliberately leave it alone.
+    const fileData = this.parseFile(cachePath, (err) => {
+      this.removeQuietly(cachePath);
+      this.debug(`Removed corrupt cache file ${cachePath} (${err.message})`);
+    });
 
-    if (!exists(cachePath)) {
-      return null;
-    }
+    if (!fileData) return null;
 
-    try {
-      const fileData = JSON.parse(readText(cachePath)) as { version: string };
+    const entry = fileData.verdicts[this.verdictKey(specPath)];
 
-      if (fileData.version !== CACHE_VERSION) {
-        return null;
-      }
+    if (entry?.content_hash !== contentHash) return null;
 
-      const entry = (fileData as CacheFile).verdicts[this.verdictKey(specPath)];
-
-      if (entry?.content_hash !== contentHash) return null;
-
-      return entry.result;
-    } catch (err) {
-      try {
-        removeFile(cachePath);
-      } catch {
-        /* ignore */
-      }
-
-      if (process.env["DEBUG"]) {
-        this.logger.warn(`Removed corrupt cache file ${cachePath} (${(err as Error).message})`);
-      }
-
-      return null;
-    }
+    return entry.result;
   }
 
   /**
@@ -254,8 +207,7 @@ export class CacheManager extends PraxisBase {
         /* skip unreadable files */
       }
 
-      const relativePath = file.replace(`${this.cacheRoot}/`, "");
-      const type = relativePath.split("/")[0] ?? "unknown";
+      const type = this.typeOf(file);
       byType[type] = (byType[type] ?? 0) + 1;
     }
 
@@ -286,17 +238,29 @@ export class CacheManager extends PraxisBase {
     const cacheFiles = fg.sync("**/*.json", { cwd: this.cacheRoot, absolute: true });
 
     for (const cacheFile of cacheFiles) {
-      const docName = baseName(cacheFile, ".json");
-      const relativePath = cacheFile.replace(`${this.cacheRoot}/`, "");
-      const type = relativePath.split("/")[0] ?? "unknown";
-      const docKey = relativePath.replace(/\.json$/, "");
+      const docKey = this.cacheRelative(cacheFile).replace(/\.json$/, "");
 
       if (!validDocuments.has(docKey)) {
-        orphans.push({ file: cacheFile, reason: "document_missing", docName, type });
+        orphans.push({
+          file: cacheFile,
+          reason: "document_missing",
+          docName: baseName(cacheFile, ".json"),
+          type: this.typeOf(cacheFile),
+        });
       }
     }
 
     return orphans;
+  }
+
+  /** A cache file's path relative to the cache root. */
+  private cacheRelative(cacheFile: string): string {
+    return cacheFile.replace(`${this.cacheRoot}/`, "");
+  }
+
+  /** A cache file's type: the first directory segment under the cache root. */
+  private typeOf(cacheFile: string): string {
+    return this.cacheRelative(cacheFile).split("/")[0] ?? "unknown";
   }
 
   /** Derives the default cache root from the project root or cwd. */
@@ -306,27 +270,13 @@ export class CacheManager extends PraxisBase {
 
   /** Reads a target's v3.0 entries belonging to this manager's judge. */
   private readEntries(targetPath: string): VerdictEntry[] {
-    const cachePath = this.cachePathFor(targetPath);
+    const fileData = this.parseFile(this.cachePathFor(targetPath));
 
-    if (!exists(cachePath)) {
-      return [];
-    }
+    if (!fileData) return [];
 
-    try {
-      const fileData = JSON.parse(readText(cachePath)) as { version: string };
+    const judgeHash = this.judgeIdentity().hash;
 
-      if (fileData.version !== CACHE_VERSION) {
-        return [];
-      }
-
-      const judgeHash = this.judgeIdentity().hash;
-
-      return Object.values((fileData as CacheFile).verdicts).filter(
-        (entry) => entry.judge.hash === judgeHash,
-      );
-    } catch {
-      return [];
-    }
+    return Object.values(fileData.verdicts).filter((entry) => entry.judge.hash === judgeHash);
   }
 
   /**
@@ -336,21 +286,79 @@ export class CacheManager extends PraxisBase {
    * — v2 is a breaking release and old verdicts are simply re-judged.
    */
   private loadFile(cachePath: string): CacheFile {
-    const empty: CacheFile = { version: "3.0", verdicts: {} };
+    return this.parseFile(cachePath) ?? { version: CACHE_VERSION, verdicts: {} };
+  }
 
-    if (!exists(cachePath)) return empty;
+  /**
+   * Parses a target's cache file, or null when there is nothing usable.
+   *
+   * Absent, pre-3.0, and corrupt files all yield null: v2 is a breaking
+   * release, and an unreadable verdict is simply re-judged. `onCorrupt`
+   * fires only for a file that exists and fails to parse — the one case
+   * a caller may want to act on — so the decision to delete stays with
+   * the caller rather than being buried here.
+   */
+  private parseFile(cachePath: string, onCorrupt?: (err: Error) => void): CacheFile | null {
+    if (!exists(cachePath)) return null;
 
     try {
-      const fileData = JSON.parse(readText(cachePath)) as { version: string };
+      const fileData = JSON.parse(readText(cachePath)) as CacheFile;
 
-      if (fileData.version === CACHE_VERSION) {
-        return fileData as CacheFile;
-      }
-    } catch {
-      /* corrupt file — start fresh */
+      return fileData.version === CACHE_VERSION ? fileData : null;
+    } catch (err) {
+      onCorrupt?.(err as Error);
+      return null;
     }
+  }
 
-    return empty;
+  /** Builds the entry this manager's judge stores for one judgment. */
+  private buildEntry(
+    contentHash: string,
+    result: Verdict,
+    metadata: {
+      specPath: string;
+      exemplarFiles?: AssistFileRecord[];
+      contextFiles?: AssistFileRecord[];
+    },
+  ): VerdictEntry {
+    const entry: VerdictEntry = {
+      judge: this.judgeIdentity(),
+      spec_path: this.relativeToRoot(metadata.specPath),
+      cached_at: new Date().toISOString(),
+      content_hash: contentHash,
+      result: {
+        ...result,
+        reason: sanitizeText(result.reason),
+        issues: result.issues.map(sanitizeText),
+      },
+    };
+
+    if (metadata.exemplarFiles?.length) entry.exemplar_files = metadata.exemplarFiles;
+
+    if (metadata.contextFiles?.length) entry.context_files = metadata.contextFiles;
+
+    return entry;
+  }
+
+  /** Deletes a file, ignoring failures: cleanup must never mask the real error. */
+  private removeQuietly(cachePath: string): void {
+    try {
+      if (exists(cachePath)) removeFile(cachePath);
+    } catch {
+      /* ignore cleanup failures */
+    }
+  }
+
+  /**
+   * Reports a cache problem, but only under DEBUG.
+   *
+   * The cache degrades silently by design — a miss costs an API call,
+   * never a failed run — so its diagnostics are opt-in.
+   */
+  private debug(message: string): void {
+    if (process.env["DEBUG"]) {
+      this.logger.warn(message);
+    }
   }
 
   /** Constructs the flattened per-verdict view for report consumers. */
@@ -394,20 +402,23 @@ export class CacheManager extends PraxisBase {
    * stability across machines.
    */
   private specHash(specPath: string): string {
-    return createHash("sha256").update(this.relSpecPath(specPath)).digest("hex").slice(0, 8);
+    return createHash("sha256").update(this.relativeToRoot(specPath)).digest("hex").slice(0, 8);
   }
 
-  /** Returns the project-relative form of specPath, or the path unchanged if not resolvable. */
-  private relSpecPath(specPath: string): string {
-    if (this.projectRoot) {
-      const root = this.projectRoot.endsWith("/") ? this.projectRoot : `${this.projectRoot}/`;
+  /**
+   * Strips the project root prefix from a path.
+   *
+   * Returns the path unchanged when there is no root or the path lies
+   * outside it. Both the cache file's location and the hashed spec path
+   * go through here, so a target and its spec are normalized the same
+   * way and cache keys stay stable across machines.
+   */
+  private relativeToRoot(path: string): string {
+    if (!this.projectRoot) return path;
 
-      if (specPath.startsWith(root)) {
-        return specPath.slice(root.length);
-      }
-    }
+    const root = this.projectRoot.endsWith("/") ? this.projectRoot : `${this.projectRoot}/`;
 
-    return specPath;
+    return path.startsWith(root) ? path.slice(root.length) : path;
   }
 
   /**

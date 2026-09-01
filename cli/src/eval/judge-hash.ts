@@ -53,11 +53,11 @@ export function judgeHash(judge: JudgeConfig, prompts: string = promptSurface())
     delete behavioral[field];
   }
 
-  behavioral["baseUrl"] ??= DEFAULT_JUDGE_BASE_URL;
-  behavioral["temperature"] ??= DEFAULT_JUDGE_TEMPERATURE;
-  behavioral["provider"] ??= DEFAULT_JUDGE_PROVIDER;
   behavioral["options"] ??= {};
   behavioral["promptSurface"] = prompts;
+  behavioral["baseUrl"] ??= DEFAULT_JUDGE_BASE_URL;
+  behavioral["provider"] ??= DEFAULT_JUDGE_PROVIDER;
+  behavioral["temperature"] ??= DEFAULT_JUDGE_TEMPERATURE;
 
   return createHash("sha256").update(canonicalize(behavioral)).digest("hex").slice(0, 8);
 }
