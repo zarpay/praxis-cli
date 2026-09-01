@@ -7,12 +7,12 @@ import { errors } from "@/core/errors.js";
 import { exists, readText } from "@/core/files.js";
 import { joinPath, parentDir } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
+import contentHash from "@/domains/eval/services/content-hash.js";
 import {
   assistFileRecords,
   assistHashInput,
   resolveAssistInputs,
 } from "@/domains/eval/services/judgment-input.js";
-import { contentHash } from "@/domains/eval/services/verdict-cache.js";
 
 /**
  * Everything a judge is shown about one target: the target itself, the

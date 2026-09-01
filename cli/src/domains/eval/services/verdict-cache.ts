@@ -464,22 +464,6 @@ export class CacheManager extends PraxisBase {
 }
 
 /**
- * Computes a cache-key hash from the full judgment input.
- *
- * Returns the first 8 characters of the SHA256 hex digest. Every input
- * the judge saw participates — target, spec, and the serialized assist
- * inputs (exemplars/context, see judgment-input.ts) — so editing any of
- * them invalidates the cached verdict. The assist component defaults to
- * empty, leaving plain specs' hashes unchanged.
- */
-export function contentHash(targetContent: string, specContent: string, assistInput = ""): string {
-  return createHash("sha256")
-    .update(targetContent + specContent + assistInput)
-    .digest("hex")
-    .slice(0, 8);
-}
-
-/**
  * Strips control characters and double quotes from a string to prevent
  * malformed JSON in cache files. Preserves newlines, carriage returns, and tabs.
  */

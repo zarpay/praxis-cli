@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 
 import type { EvalSummary, Verdict } from "@/domains/eval/types.js";
+import type { DiscoveryScope, EvalProgress } from "@/domains/eval/types.js";
 import type { AllOptions, DocumentOptions } from "@/domains/workspace/types.js";
 import type { DisplayEntry, JudgeConfig } from "@/types.js";
 
@@ -10,13 +11,14 @@ import { runAction } from "@/commands/action.js";
 import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
-import { Paths, resolvePath } from "@/core/paths.js";
+import { Paths, joinPath, resolvePath } from "@/core/paths.js";
 import { Judge } from "@/domains/eval/models/judge.js";
 import { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
-import { EvalRun } from "@/domains/eval/orchestrators/eval-run.js";
+import runEval from "@/domains/eval/orchestrators/run-eval.js";
 import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
 import { evaluateTarget } from "@/domains/eval/services/judge-target.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
+import { unitHeading, verdictMark } from "@/domains/eval/views/progress.js";
 import { VerdictReporter } from "@/domains/eval/views/verdict-report.js";
 
 /**
@@ -173,29 +175,27 @@ export class EvalCommand extends PraxisProjectBase {
   async all(options: AllOptions): Promise<EvalSummary> {
     const judges = this.requireJudges(options.judge);
 
-    const run = EvalRun.forProject(this.root, this.config, {
+    this.out.line(
+      options.type ? `Validating all ${options.type} documents...` : "Validating all documents...",
+    );
+
+    const run = await runEval({
+      ...this.evalScope(),
       judges,
+      type: options.type,
       failFast: options.failFast,
       useCache: options.cache,
+      onProgress: (event) => this.renderProgress(event),
     });
 
-    if (options.type) {
-      this.out.line(`Validating all ${options.type} documents...`);
-      await run.validateType(options.type);
-    } else {
-      this.out.line("Validating all documents...");
-      await run.validateAll();
-    }
-
-    if (run.stopped) {
+    if (run.stoppedEarly) {
       this.out.print([
         "",
         { badge: "STOPPED", color: "yellow", value: "Validation stopped early due to --fail-fast" },
       ]);
     }
 
-    const summary = run.summary();
-    this.displaySummary(summary);
+    this.displaySummary(run.summary);
 
     if (options.cache) {
       this.out.print([
@@ -208,7 +208,7 @@ export class EvalCommand extends PraxisProjectBase {
       ]);
     }
 
-    return summary;
+    return run.summary;
   }
 
   /**
@@ -220,15 +220,17 @@ export class EvalCommand extends PraxisProjectBase {
   async ci(): Promise<EvalSummary> {
     const judges = this.requireJudges();
 
-    const run = EvalRun.forProject(this.root, this.config, { judges });
-
     this.out.line("Running CI validation...");
-    await run.validateAll();
 
-    const summary = run.summary();
-    this.displaySummary(summary);
+    const run = await runEval({
+      ...this.evalScope(),
+      judges,
+      onProgress: (event) => this.renderProgress(event),
+    });
 
-    return summary;
+    this.displaySummary(run.summary);
+
+    return run.summary;
   }
 
   /**
@@ -265,6 +267,32 @@ export class EvalCommand extends PraxisProjectBase {
 
       const cacheData = manager.readRaw({ targetPath: absolutePath });
       reporter.render(reporter.build(absolutePath, cacheData), options.verbose);
+    }
+  }
+
+  /** The project's discovery scope, as every run needs it. */
+  private evalScope(): DiscoveryScope {
+    return {
+      root: this.root,
+      sources: this.config.sources,
+      specFilePattern: this.config.specFilePattern,
+      absoluteIgnore: this.config.ignore.map((p) => joinPath(this.root, p)),
+    };
+  }
+
+  /** Renders one run event as it happens. */
+  private renderProgress(event: EvalProgress): void {
+    if (event.kind === "unit-start") {
+      this.out.print(["", unitHeading(event)]);
+    } else if (event.kind === "verdict") {
+      this.out.print([
+        `\t${verdictMark(event.verdict)}`,
+        ...(event.verdict.compliant
+          ? []
+          : event.verdict.issues.map((issue) => `\t${chalk.dim("·")} ${issue}`)),
+      ]);
+    } else {
+      this.out.print([`\t${chalk.red("✗ ERROR")}`, `\t${chalk.dim("·")} ${event.message}`]);
     }
   }
 

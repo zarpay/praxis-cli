@@ -4,8 +4,9 @@ import type { StatusReport } from "@/domains/workspace/types.js";
 
 import { runAction } from "@/commands/action.js";
 import { PraxisBase } from "@/core/base.js";
+import { PraxisConfig } from "@/core/config.js";
 import { Paths } from "@/core/paths.js";
-import { ProjectStatus } from "@/domains/workspace/orchestrators/project-status.js";
+import analyzeProject, { hasIssues } from "@/domains/workspace/orchestrators/analyze-project.js";
 import { countLines, issueBlocks, validationBlocks } from "@/domains/workspace/views/status.js";
 
 /**
@@ -21,11 +22,11 @@ export function registerStatusCommand(program: Command): void {
     .action(() =>
       runAction(async () => {
         const root = new Paths().root;
-        const report = await new ProjectStatus({ root }).analyze();
+        const report = await analyzeProject({ root, config: new PraxisConfig(root) });
 
         new StatusDisplay().render(report);
 
-        if (ProjectStatus.hasIssues(report)) {
+        if (hasIssues(report)) {
           process.exitCode = 1;
         }
       }),

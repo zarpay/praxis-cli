@@ -92,3 +92,73 @@ export interface ExpertAudit {
   /** Experts with no description, by filename. */
   missingDescriptions: string[];
 }
+
+// ---------------------------------------------------------------------------
+// Service payloads (domains/workspace/services/)
+// ---------------------------------------------------------------------------
+
+/** Where documents are looked for, and what never counts as one. */
+export interface DocumentScope {
+  /** Project root all relative paths resolve against. */
+  root: string;
+  /** Filename or glob identifying spec files, which are not documents. */
+  specFilePattern: string;
+  /** Ignore patterns, relative to the root. */
+  ignore?: string[];
+}
+
+/** One directory to list documents in. */
+export interface ListDocumentsInput extends DocumentScope {
+  /** Absolute directory path; a missing directory yields nothing. */
+  dir: string;
+  /** Whether to descend into subdirectories. */
+  recursive: boolean;
+}
+
+/** The source trees to classify documents across. */
+export interface CountDocumentsInput extends DocumentScope {
+  /** Source directories, relative to the project root. */
+  sources: string[];
+}
+
+/** How many documents of each non-authored kind a project holds. */
+export interface DocumentCounts {
+  references: number;
+  context: number;
+}
+
+/** The experts to audit, and the project they live in. */
+export interface AuditExpertsInput {
+  /** Absolute paths to the expert files. */
+  expertFiles: string[];
+  /** Project root all references resolve against. */
+  root: string;
+  /** Filename or glob identifying spec files, never a reference target. */
+  specFilePattern: string;
+}
+
+// ---------------------------------------------------------------------------
+// Orchestrator payloads (domains/workspace/orchestrators/)
+// ---------------------------------------------------------------------------
+
+/** What scaffolding a new project needs to know. */
+export interface InitProjectInput {
+  /** Directory to scaffold into; created when absent. */
+  targetDir: string;
+  /** Scaffold source tree; defaults to the packaged one. */
+  scaffoldDir?: string;
+  /** Whether to add the spec-layer authoring taxonomy (11: opt-in). */
+  specLayer?: boolean;
+  /** Called with each created file's path, relative to the target. */
+  onFileCreated?: (path: string) => void;
+}
+
+/** What scaffolding produced. */
+export interface InitProjectResult {
+  /** Files written. */
+  created: number;
+  /** Files left alone because they already existed. */
+  skipped: number;
+  /** Guidance to show the author, matched to what was scaffolded. */
+  nextSteps: string[];
+}

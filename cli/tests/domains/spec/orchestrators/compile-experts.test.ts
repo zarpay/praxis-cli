@@ -1,14 +1,18 @@
+import type { CompileScope } from "@/domains/spec/types.js";
 import type { Logger } from "@/views/logger.js";
 
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { ExpertCompiler } from "@/domains/spec/orchestrators/expert-compiler.js";
+import { PraxisConfig } from "@/core/config.js";
+import compileExpert from "@/domains/spec/orchestrators/compile-expert.js";
+import compileExperts from "@/domains/spec/orchestrators/compile-experts.js";
+import resolvePlugins from "@/domains/spec/services/plugin-registry.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 
-describe("ExpertCompiler", () => {
+describe("compileExperts", () => {
   let tmpdir: string;
   let expertsDir: string;
   let agentsOutputDir: string;
@@ -16,7 +20,7 @@ describe("ExpertCompiler", () => {
   let cleanup: () => void;
   let logOutput: () => string;
   let logger: Logger;
-  let compiler: ExpertCompiler;
+  let scope: CompileScope;
 
   beforeEach(() => {
     const ctx = createCompilerTmpdir();
@@ -29,8 +33,35 @@ describe("ExpertCompiler", () => {
     const capture = createCaptureLogger();
     logger = capture.logger;
     logOutput = capture.output;
-    compiler = new ExpertCompiler({ root: tmpdir, logger });
+    const config = new PraxisConfig(tmpdir);
+    scope = {
+      root: tmpdir,
+      specFilePattern: config.specFilePattern,
+      agentProfilesOutputDir: config.agentProfilesOutputDir,
+      plugins: resolvePlugins(config.plugins, tmpdir, logger),
+    };
   });
+
+  /** Compiles one expert, routing its warnings to the capture logger. */
+  async function compileFile(expertFile: string) {
+    const result = await compileExpert({ ...scope, expertFile });
+
+    for (const message of result.warnings) logger.warn(message);
+
+    return result;
+  }
+
+  /** Compiles every expert, routing warnings and skips to the capture logger. */
+  async function compileAll() {
+    return compileExperts({
+      ...scope,
+      expertsDir,
+      onProgress: (event) => {
+        if (event.kind === "warning") logger.warn(event.message);
+        else if (event.kind === "skipped") logger.warn(`Skipping ${event.file}: ${event.reason}`);
+      },
+    });
+  }
 
   afterEach(() => {
     cleanup();
@@ -40,7 +71,7 @@ describe("ExpertCompiler", () => {
     it("compiles a single role to agent output and profile", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
 
       expect(existsSync(join(agentsOutputDir, "tester.md"))).toBe(true);
       expect(existsSync(join(agentProfilesDir, "tester.md"))).toBe(true);
@@ -49,7 +80,7 @@ describe("ExpertCompiler", () => {
     it("includes the expert body in plugin output", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const content = readFileSync(join(agentsOutputDir, "tester.md"), "utf-8");
 
       expect(content).toContain("# Role");
@@ -59,7 +90,7 @@ describe("ExpertCompiler", () => {
     it("expands constitution: true to glob all constitution files", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const content = readFileSync(join(agentsOutputDir, "tester.md"), "utf-8");
 
       expect(content).toContain("# Constitution");
@@ -70,7 +101,7 @@ describe("ExpertCompiler", () => {
     it("includes context section from context frontmatter key", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const content = readFileSync(join(agentsOutputDir, "tester.md"), "utf-8");
 
       expect(content).toContain("# Context");
@@ -79,7 +110,7 @@ describe("ExpertCompiler", () => {
     it("inlines referenced files (strips their frontmatter)", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const content = readFileSync(join(agentsOutputDir, "tester.md"), "utf-8");
 
       expect(content).toContain("Test Practice");
@@ -89,7 +120,7 @@ describe("ExpertCompiler", () => {
     it("includes description in Claude Code plugin frontmatter", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const content = readFileSync(join(agentsOutputDir, "tester.md"), "utf-8");
 
       expect(content).toMatch(/^description:/m);
@@ -99,7 +130,7 @@ describe("ExpertCompiler", () => {
       const noDesc = join(expertsDir, "no-desc.md");
       writeFileSync(noDesc, "---\nalias: NoDesc\n---\n# Test");
 
-      await compiler.compile(noDesc);
+      await compileFile(noDesc);
 
       expect(logOutput()).toContain("No description found");
     });
@@ -108,7 +139,7 @@ describe("ExpertCompiler", () => {
       const withBlockquote = join(expertsDir, "blockquote.md");
       writeFileSync(withBlockquote, "---\nalias: Block\n---\n> Blockquote text");
 
-      await compiler.compile(withBlockquote);
+      await compileFile(withBlockquote);
       const content = readFileSync(join(agentsOutputDir, "block.md"), "utf-8");
 
       expect(content).not.toMatch(/^description: Blockquote text/m);
@@ -132,7 +163,7 @@ describe("ExpertCompiler", () => {
         ].join("\n"),
       );
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const profile = readFileSync(join(agentProfilesDir, "grouper.md"), "utf-8");
 
       expect(profile).toContain("cohort: by_directory");
@@ -154,7 +185,7 @@ describe("ExpertCompiler", () => {
         ].join("\n"),
       );
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const agent = readFileSync(join(agentsOutputDir, "grouper.md"), "utf-8");
 
       expect(agent).toContain("cohort: by_directory");
@@ -183,7 +214,7 @@ describe("ExpertCompiler", () => {
     }
 
     it("compiles excludes through to the pure profile frontmatter", async () => {
-      await compiler.compile(writeExcludingExpert());
+      await compileFile(writeExcludingExpert());
       const profile = readFileSync(join(agentProfilesDir, "excluder.md"), "utf-8");
 
       expect(profile).toContain("excludes:");
@@ -191,7 +222,7 @@ describe("ExpertCompiler", () => {
     });
 
     it("compiles excludes through to the Claude Code agent frontmatter", async () => {
-      await compiler.compile(writeExcludingExpert());
+      await compileFile(writeExcludingExpert());
       const agent = readFileSync(join(agentsOutputDir, "excluder.md"), "utf-8");
 
       expect(agent).toContain("excludes:");
@@ -217,7 +248,7 @@ describe("ExpertCompiler", () => {
         ].join("\n"),
       );
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const profile = readFileSync(join(agentProfilesDir, "blesser.md"), "utf-8");
 
       expect(profile).toContain("exemplars:");
@@ -242,7 +273,7 @@ describe("ExpertCompiler", () => {
         ].join("\n"),
       );
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const agent = readFileSync(join(agentsOutputDir, "tuned.md"), "utf-8");
 
       expect(agent).toContain("tools: Read, Glob, Grep");
@@ -263,7 +294,7 @@ describe("ExpertCompiler", () => {
         ].join("\n"),
       );
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const agent = readFileSync(join(agentsOutputDir, "plain.md"), "utf-8");
 
       expect(agent).not.toContain("tools:");
@@ -280,7 +311,7 @@ describe("ExpertCompiler", () => {
         ["---", "alias: Todo", "description: placeholder", "---", "# TODO"].join("\n"),
       );
 
-      await compiler.compileAll();
+      await compileAll();
 
       expect(existsSync(join(agentProfilesDir, "todo.md"))).toBe(false);
     });
@@ -288,7 +319,7 @@ describe("ExpertCompiler", () => {
 
   describe("compileAll()", () => {
     it("compiles all roles in the roles directory", async () => {
-      const result = await compiler.compileAll();
+      const result = await compileAll();
 
       expect(result.compiled).toBeGreaterThanOrEqual(1);
     });
@@ -297,13 +328,13 @@ describe("ExpertCompiler", () => {
       const template = join(expertsDir, "_template.md");
       writeFileSync(template, "---\nalias: Template\n---\n# Template");
 
-      await compiler.compileAll();
+      await compileAll();
 
       expect(existsSync(join(agentsOutputDir, "template.md"))).toBe(false);
     });
 
     it("skips README.md files", async () => {
-      await compiler.compileAll();
+      await compileAll();
 
       expect(existsSync(join(agentsOutputDir, "readme.md"))).toBe(false);
     });
@@ -312,7 +343,7 @@ describe("ExpertCompiler", () => {
       const noAlias = join(expertsDir, "no-alias.md");
       writeFileSync(noAlias, "---\ntitle: No Alias\n---\n# No Alias Role");
 
-      const result = await compiler.compileAll();
+      const result = await compileAll();
 
       expect(result).toBeTypeOf("object");
     });
@@ -321,7 +352,7 @@ describe("ExpertCompiler", () => {
       const broken = join(expertsDir, "broken.md");
       writeFileSync(broken, "---\nalias: Broken\nagent_tools:\n  - Read\n---\n# Broken");
 
-      const result = await compiler.compileAll();
+      const result = await compileAll();
 
       expect(result.compiled).toBeGreaterThanOrEqual(1);
       expect(existsSync(join(agentsOutputDir, "broken.md"))).toBe(false);
@@ -332,7 +363,7 @@ describe("ExpertCompiler", () => {
     it("writes pure profiles without frontmatter to agentProfilesDir", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const profile = readFileSync(join(agentProfilesDir, "tester.md"), "utf-8");
 
       // Pure profile has no frontmatter
@@ -343,7 +374,7 @@ describe("ExpertCompiler", () => {
     it("writes Claude Code frontmatter only in plugin output", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
 
       const pluginOutput = readFileSync(join(agentsOutputDir, "tester.md"), "utf-8");
       const profileOutput = readFileSync(join(agentProfilesDir, "tester.md"), "utf-8");
@@ -363,10 +394,16 @@ describe("ExpertCompiler", () => {
           plugins: ["claude-code"],
         }),
       );
-      const noProfileCompiler = new ExpertCompiler({ root: tmpdir, logger });
+      const reloaded = new PraxisConfig(tmpdir);
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await noProfileCompiler.compile(expertFile);
+      await compileExpert({
+        expertFile,
+        root: tmpdir,
+        specFilePattern: reloaded.specFilePattern,
+        agentProfilesOutputDir: reloaded.agentProfilesOutputDir,
+        plugins: resolvePlugins(reloaded.plugins, tmpdir, logger),
+      });
 
       // Plugin output exists, profile dir does not
       expect(existsSync(join(agentsOutputDir, "tester.md"))).toBe(true);
@@ -383,10 +420,16 @@ describe("ExpertCompiler", () => {
           plugins: [],
         }),
       );
-      const noPluginCompiler = new ExpertCompiler({ root: tmpdir, logger });
+      const reloaded = new PraxisConfig(tmpdir);
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await noPluginCompiler.compile(expertFile);
+      await compileExpert({
+        expertFile,
+        root: tmpdir,
+        specFilePattern: reloaded.specFilePattern,
+        agentProfilesOutputDir: reloaded.agentProfilesOutputDir,
+        plugins: resolvePlugins(reloaded.plugins, tmpdir, logger),
+      });
 
       // Profile exists, plugin output does not
       expect(existsSync(join(agentProfilesDir, "tester.md"))).toBe(true);
@@ -398,7 +441,7 @@ describe("ExpertCompiler", () => {
     it("prepends paths: YAML block to pure profile when validates is set", async () => {
       const expertFile = join(expertsDir, "validates-expert.md");
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const profile = readFileSync(join(agentProfilesDir, "servusexpert.md"), "utf-8");
 
       expect(profile).toMatch(/^---\n/);
@@ -411,7 +454,7 @@ describe("ExpertCompiler", () => {
     it("pure profile has no frontmatter when validates is absent", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const profile = readFileSync(join(agentProfilesDir, "tester.md"), "utf-8");
 
       expect(profile).not.toMatch(/^---\n/);
@@ -420,7 +463,7 @@ describe("ExpertCompiler", () => {
     it("includes paths: in Claude Code plugin frontmatter when validates is set", async () => {
       const expertFile = join(expertsDir, "validates-expert.md");
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
       const agent = readFileSync(join(agentsOutputDir, "servusexpert.md"), "utf-8");
 
       expect(agent).toContain("paths:");
@@ -437,7 +480,7 @@ describe("ExpertCompiler", () => {
         "---\nalias: BadRef\ndescription: test\nrefs:\n  - content/reference/nonexistent.md\n---\n# Bad Ref",
       );
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
 
       expect(logOutput()).toContain("Referenced file not found: content/reference/nonexistent.md");
     });
@@ -449,7 +492,7 @@ describe("ExpertCompiler", () => {
         "---\nalias: BadGlob\ndescription: test\nrefs:\n  - content/reference/nope-*.md\n---\n# Bad Glob",
       );
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
 
       expect(logOutput()).toContain("Glob pattern matched zero files: content/reference/nope-*.md");
     });
@@ -464,7 +507,7 @@ describe("ExpertCompiler", () => {
         '---\nalias: NoConst\ndescription: test\nconstitution: "content/context/constitution/*.md"\n---\n# No Constitution',
       );
 
-      await compiler.compile(expertFile);
+      await compileFile(expertFile);
 
       expect(logOutput()).toContain("Constitution patterns matched zero files");
     });

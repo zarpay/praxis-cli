@@ -4,8 +4,8 @@ import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/core/config.js";
-import { EvalRun } from "@/domains/eval/orchestrators/eval-run.js";
-import { TargetDiscovery } from "@/domains/eval/services/discover-targets.js";
+import runEval from "@/domains/eval/orchestrators/run-eval.js";
+import listSourceDocuments from "@/domains/eval/services/list-source-documents.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,
@@ -41,7 +41,7 @@ function useErrorFixture(): void {
   );
 }
 
-describe("EvalRun", () => {
+describe("runEval", () => {
   let tmpdir: string;
   let cleanup: () => void;
   let config: PraxisConfig;
@@ -59,40 +59,30 @@ describe("EvalRun", () => {
     delete process.env["OPENROUTER_API_KEY"];
   });
 
-  describe("forProject()", () => {
-    it("projects sources off the config", () => {
-      const run = EvalRun.forProject(tmpdir, config);
-
-      expect(run.sources).toEqual(config.sources);
-    });
-
-    it("defaults to no fail-fast when no override is given", () => {
-      const run = EvalRun.forProject(tmpdir, config);
-
-      expect(run.failFast).toBe(false);
-    });
-
-    it("applies the fail-fast override", () => {
-      const run = EvalRun.forProject(tmpdir, config, { failFast: true });
-
-      expect(run.failFast).toBe(true);
-    });
-
-    it("judges with the configured judges when none are overridden", async () => {
+  describe("judges", () => {
+    it("judges with every judge it is given", async () => {
       useCompliantFixture();
-      const run = EvalRun.forProject(tmpdir, config, { useCache: false });
-      const results = await run.validateAll();
-      const judgeNames = [...new Set(results.map((r) => r.judge))];
+      const run = await runEval({
+        root: tmpdir,
+        sources: config.sources,
+        useCache: false,
+        judges: config.judges,
+      });
+      const judgeNames = [...new Set(run.verdicts.map((r) => r.judge))];
 
       expect(judgeNames).toEqual(config.judges.map((j) => j.name));
     });
 
-    it("judges with only the overridden judges", async () => {
+    it("judges with only the judges it is given", async () => {
       useCompliantFixture();
       const only = config.judges.slice(0, 1);
-      const run = EvalRun.forProject(tmpdir, config, { judges: only, useCache: false });
-      const results = await run.validateAll();
-      const judgeNames = [...new Set(results.map((r) => r.judge))];
+      const run = await runEval({
+        root: tmpdir,
+        sources: config.sources,
+        useCache: false,
+        judges: only,
+      });
+      const judgeNames = [...new Set(run.verdicts.map((r) => r.judge))];
 
       expect(judgeNames).toEqual(only.map((j) => j.name));
     });
@@ -102,45 +92,46 @@ describe("EvalRun", () => {
     it("validates documents across all types", async () => {
       useCompliantFixture();
 
-      const run = new EvalRun({
+      const run = await runEval({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
         judges: [TEST_JUDGE],
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       expect(results.length).toBeGreaterThan(0);
       expect(results.every((r) => r.compliant)).toBe(true);
     });
   });
 
-  describe("validateType()", () => {
-    it("validates only documents of the specified type", async () => {
+  describe("type filter", () => {
+    it("judges only documents of the specified type", async () => {
       useCompliantFixture();
 
-      const run = new EvalRun({
+      const run = await runEval({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
         judges: [TEST_JUDGE],
+        type: "experts",
       });
-      const results = await run.validateType("experts");
 
-      expect(results.length).toBeGreaterThan(0);
-      expect(results.every((r) => r.type.includes("experts"))).toBe(true);
+      expect(run.verdicts.length).toBeGreaterThan(0);
+      expect(run.verdicts.every((r) => r.type.includes("experts"))).toBe(true);
     });
 
-    it("throws for unknown document type", async () => {
-      const run = new EvalRun({
+    it("throws for an unknown document type", async () => {
+      const run = runEval({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
         judges: [TEST_JUDGE],
+        type: "bogus",
       });
 
-      await expect(run.validateType("bogus")).rejects.toThrow("Unknown document type: bogus");
+      await expect(run).rejects.toThrow("Unknown document type: bogus");
     });
   });
 
@@ -148,7 +139,7 @@ describe("EvalRun", () => {
     it("stops on first error when fail-fast is enabled", async () => {
       useErrorFixture();
 
-      const run = new EvalRun({
+      const run = await runEval({
         root: tmpdir,
         sources: config.sources,
         failFast: true,
@@ -156,9 +147,7 @@ describe("EvalRun", () => {
         judges: [TEST_JUDGE],
       });
 
-      await run.validateAll();
-
-      expect(run.stopped).toBe(true);
+      expect(run.stoppedEarly).toBe(true);
     });
   });
 
@@ -175,7 +164,7 @@ describe("EvalRun", () => {
         specFilePattern: "SPEC.md",
       });
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["roles"],
         useCache: false,
@@ -183,7 +172,7 @@ describe("EvalRun", () => {
         specFilePattern: "SPEC.md",
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       expect(results).toHaveLength(1);
       expect(results[0].filename).toBe("engineer.md");
@@ -205,14 +194,14 @@ describe("EvalRun", () => {
         },
       });
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["specs", "docs"],
         useCache: false,
         judges: [TEST_JUDGE],
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
       const filenames = results.map((r) => r.filename).sort();
 
       expect(filenames).toEqual(["deep.md", "guide.md"]);
@@ -232,14 +221,14 @@ describe("EvalRun", () => {
         },
       });
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["specs", "docs"],
         useCache: false,
         judges: [TEST_JUDGE],
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
       const filenames = results.map((r) => r.filename);
       const paths = results.map((r) => r.path);
 
@@ -260,14 +249,14 @@ describe("EvalRun", () => {
         },
       });
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["roles"],
         useCache: false,
         judges: [TEST_JUDGE],
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       expect(results).toHaveLength(1);
       expect(results[0].filename).toBe("engineer.md");
@@ -291,16 +280,16 @@ describe("EvalRun", () => {
 
       useCompliantFixture();
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
-        ignore: ["docs/smes/**"],
+        absoluteIgnore: [join(root, "docs/smes/**")],
         useCache: false,
         judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       // The spec was discovered despite being in an ignored directory
       expect(results).toHaveLength(1);
@@ -321,16 +310,16 @@ describe("EvalRun", () => {
 
       useCompliantFixture();
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
-        ignore: ["docs/smes/**"],
+        absoluteIgnore: [join(root, "docs/smes/**")],
         useCache: false,
         judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       // only article.md validated; other.md in ignored dir is excluded from paths expansion
       expect(results).toHaveLength(1);
@@ -351,14 +340,13 @@ describe("EvalRun", () => {
         },
       });
 
-      const discovery = new TargetDiscovery({
+      const docs = listSourceDocuments({
         root,
         sources: ["docs"],
         specFilePattern: "*.praxis.md",
         absoluteIgnore: [join(root, "docs/generated/**")],
       });
 
-      const docs = discovery.sourceDocuments();
       expect(docs.size).toBe(1); // only counted.md; generated/output.md is ignored
 
       cleanup();
@@ -377,16 +365,16 @@ describe("EvalRun", () => {
 
       useCompliantFixture();
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
-        ignore: ["docs/ignored/**"],
+        absoluteIgnore: [join(root, "docs/ignored/**")],
         useCache: false,
         judges: [TEST_JUDGE],
         specFilePattern: "*.praxis.md",
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       // Only counted.md in docs/valid/ should be validated; nothing from docs/ignored/
       expect(results).toHaveLength(1);
@@ -416,7 +404,7 @@ describe("EvalRun", () => {
       useCompliantFixture();
       const { root, cleanup } = cohortProject();
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
         useCache: false,
@@ -424,7 +412,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       expect(results.map((r) => r.filename).sort()).toEqual(["alpha", "beta"]);
 
@@ -443,15 +431,13 @@ describe("EvalRun", () => {
       );
       const { root, cleanup } = cohortProject();
 
-      const run = new EvalRun({
+      await runEval({
         root,
         sources: ["docs"],
         useCache: false,
         judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
-
-      await run.validateAll();
 
       const alphaBody = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
       expect(alphaBody).toContain("ALPHA_B_CONTENT");
@@ -471,15 +457,13 @@ describe("EvalRun", () => {
       );
       const { root, cleanup } = cohortProject();
 
-      const run = new EvalRun({
+      await runEval({
         root,
         sources: ["docs"],
         useCache: false,
         judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
-
-      await run.validateAll();
 
       const alphaBody = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
       expect(alphaBody).toContain("src/services/alpha/a.ts");
@@ -492,7 +476,7 @@ describe("EvalRun", () => {
       const { root, abs, cleanup } = cohortProject();
 
       function makeRun() {
-        return new EvalRun({
+        return runEval({
           root,
           sources: ["docs"],
           judges: [TEST_JUDGE],
@@ -500,18 +484,15 @@ describe("EvalRun", () => {
         });
       }
 
-      const first = makeRun();
-      await first.validateAll();
+      const first = await makeRun();
       expect(first.cacheStats).toEqual({ hits: 0, misses: 2 });
 
-      const second = makeRun();
-      await second.validateAll();
+      const second = await makeRun();
       expect(second.cacheStats).toEqual({ hits: 2, misses: 0 });
 
       writeFileSync(abs("src/services/alpha/a.ts"), "ALPHA_A_EDITED");
 
-      const third = makeRun();
-      await third.validateAll();
+      const third = await makeRun();
       expect(third.cacheStats).toEqual({ hits: 1, misses: 1 });
 
       cleanup();
@@ -530,7 +511,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
         useCache: false,
@@ -538,7 +519,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       expect(results.map((r) => r.filename).sort()).toEqual(["a.ts", "c.ts"]);
 
@@ -555,7 +536,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = new EvalRun({
+      const run = runEval({
         root,
         sources: ["docs"],
         useCache: false,
@@ -563,7 +544,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await expect(run.validateAll()).rejects.toThrow(
+      await expect(run).rejects.toThrow(
         /Invalid "cohort" in docs\/services\.sme\.md .* expected "by_file" or "by_directory", got "by_magic"/,
       );
 
@@ -593,7 +574,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
         useCache: false,
@@ -601,7 +582,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       expect(results.map((r) => r.filename)).toEqual(["referral_event.rb"]);
 
@@ -620,14 +601,14 @@ describe("EvalRun", () => {
         },
       });
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
         useCache: false,
         judges: [TEST_JUDGE],
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       expect(results.map((r) => r.filename)).toEqual(["good.md"]);
 
@@ -664,15 +645,13 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = new EvalRun({
+      await runEval({
         root,
         sources: ["docs"],
         useCache: false,
         judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
-
-      await run.validateAll();
 
       const alphaBody = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
       expect(alphaBody).toBeDefined();
@@ -703,7 +682,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
         useCache: false,
@@ -711,7 +690,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       expect(results.map((r) => r.filename)).toEqual(["alpha"]);
 
@@ -745,7 +724,7 @@ describe("EvalRun", () => {
       useCompliantFixture();
       const { root, cleanup } = exemplarProject();
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
         useCache: false,
@@ -753,7 +732,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       expect(results.map((r) => r.filename)).toEqual(["signup_event.rb"]);
 
@@ -772,15 +751,13 @@ describe("EvalRun", () => {
       );
       const { root, cleanup } = exemplarProject();
 
-      const run = new EvalRun({
+      await runEval({
         root,
         sources: ["docs"],
         useCache: false,
         judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
-
-      await run.validateAll();
 
       const body = bodies.find((b) => b.includes("SIGNUP_CONTENT"));
       expect(body).toContain("EXEMPLAR: src/events/referral_event.rb");
@@ -819,15 +796,13 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = new EvalRun({
+      await runEval({
         root,
         sources: ["docs"],
         useCache: false,
         judges: [TEST_JUDGE],
         specFilePattern: "*.sme.md",
       });
-
-      await run.validateAll();
 
       const body = bodies.find((b) => b.includes("ALPHA_A_CONTENT"));
       expect(body).toContain("EXEMPLAR: src/services/alpha/golden.ts");
@@ -868,7 +843,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
         useCache: false,
@@ -876,7 +851,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       expect(results.map((r) => r.filename).sort()).toEqual([
         "referral_event.rb",
@@ -929,14 +904,14 @@ describe("EvalRun", () => {
       useCompliantFixture();
       const { root, cleanup } = twoJudgeProject();
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
         useCache: false,
         judges: [flash, strict],
       });
 
-      const results = await run.validateAll();
+      const results = run.verdicts;
 
       expect(results.map((r) => r.judge).sort()).toEqual(["flash", "strict"]);
 
@@ -947,21 +922,19 @@ describe("EvalRun", () => {
       useCompliantFixture();
       const { root, cleanup } = twoJudgeProject();
 
-      const first = new EvalRun({ root, sources: ["docs"], judges: [flash, strict] });
-      await first.validateAll();
+      const first = await runEval({ root, sources: ["docs"], judges: [flash, strict] });
       expect(first.cacheStats).toEqual({ hits: 0, misses: 2 });
 
-      const second = new EvalRun({ root, sources: ["docs"], judges: [flash, strict] });
-      await second.validateAll();
+      const second = await runEval({ root, sources: ["docs"], judges: [flash, strict] });
       expect(second.cacheStats).toEqual({ hits: 2, misses: 0 });
 
       // A judge with different behavioral settings gets no hits from the others.
-      const third = new EvalRun({
+      const third = await runEval({
         root,
         sources: ["docs"],
         judges: [{ ...flash, name: "hot", temperature: 0.9 }],
       });
-      await third.validateAll();
+
       expect(third.cacheStats).toEqual({ hits: 0, misses: 1 });
 
       cleanup();
@@ -971,15 +944,13 @@ describe("EvalRun", () => {
       useCompliantFixture();
       const { root, cleanup } = twoJudgeProject();
 
-      const first = new EvalRun({ root, sources: ["docs"], judges: [flash] });
-      await first.validateAll();
+      await runEval({ root, sources: ["docs"], judges: [flash] });
 
-      const renamed = new EvalRun({
+      const renamed = await runEval({
         root,
         sources: ["docs"],
         judges: [{ ...flash, name: "renamed" }],
       });
-      await renamed.validateAll();
 
       expect(renamed.cacheStats).toEqual({ hits: 1, misses: 0 });
 
@@ -990,15 +961,14 @@ describe("EvalRun", () => {
       useSplitVerdicts();
       const { root, cleanup } = twoJudgeProject();
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
         useCache: false,
         judges: [flash, strict],
       });
 
-      await run.validateAll();
-      const summary = run.summary();
+      const summary = run.summary;
 
       expect(summary.byJudge).toEqual({
         flash: { compliant: 1, warnings: 0, errors: 0 },
@@ -1025,7 +995,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = new EvalRun({
+      const run = await runEval({
         root,
         sources: ["docs"],
         useCache: false,
@@ -1033,8 +1003,7 @@ describe("EvalRun", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await run.validateAll();
-      const summary = run.summary();
+      const summary = run.summary;
 
       // Three validated targets outnumber the zero .md source docs;
       // the totals must reflect the targets, never a negative remainder.
@@ -1048,14 +1017,13 @@ describe("EvalRun", () => {
     it("aggregates results correctly", async () => {
       useCompliantFixture();
 
-      const run = new EvalRun({
+      const run = await runEval({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
         judges: [TEST_JUDGE],
       });
-      await run.validateAll();
-      const summary = run.summary();
+      const summary = run.summary;
 
       expect(summary.total).toBeGreaterThan(0);
       expect(summary.compliant).toBe(summary.total);

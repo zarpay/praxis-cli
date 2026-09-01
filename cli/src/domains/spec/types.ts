@@ -75,3 +75,101 @@ export interface PluginOptions {
 
 /** Constructor signature every compiler plugin class must satisfy. */
 export type PluginConstructor = new (options: PluginOptions) => CompilerPlugin;
+
+// ---------------------------------------------------------------------------
+// Service payloads (domains/spec/services/)
+// ---------------------------------------------------------------------------
+
+/** Where glob patterns are resolved, and what never counts as a match. */
+export interface ExpandGlobsInput {
+  /** Patterns to expand, in the order the author declared them. */
+  patterns: string[];
+  /** Project root the patterns resolve against. */
+  root: string;
+  /** Filename or glob identifying spec files, which are never matched. */
+  specFilePattern?: string;
+}
+
+/** What one declared pattern turned out to match. */
+export interface GlobExpansion {
+  /** The pattern as the author wrote it. */
+  pattern: string;
+  /** Whether it is a glob; a plain path matches only itself. */
+  isGlob: boolean;
+  /** Project-relative paths matched, sorted. */
+  matches: string[];
+}
+
+/** The content blocks a compiled profile is assembled from. */
+export interface BuildProfileInput {
+  /** The expert's own prose. */
+  role: string;
+  /** Practice bodies, inlined. */
+  responsibilities: string[];
+  /** Constitution bodies, inlined. */
+  constitution: string[];
+  /** Context bodies, inlined. */
+  context: string[];
+  /** Reference bodies, inlined. */
+  reference: string[];
+}
+
+/** Inlined content plus anything the author should know went wrong. */
+export interface InlineReferencesResult {
+  /** Body text of every resolved file, in declaration order. */
+  bodies: string[];
+  /** Author-facing problems: a glob that matched nothing, a missing file. */
+  warnings: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Orchestrator payloads (domains/spec/orchestrators/)
+// ---------------------------------------------------------------------------
+
+/** What compiling needs to know about the project it is compiling in. */
+export interface CompileScope {
+  /** Project root all relative paths resolve against. */
+  root: string;
+  /** Where pure profiles are written, or null to skip them. */
+  agentProfilesOutputDir: string | null;
+  /** Filename or glob identifying spec files, which are never compiled. */
+  specFilePattern: string;
+  /** The enabled output plugins, already constructed. */
+  plugins: CompilerPlugin[];
+}
+
+/** One expert to compile. */
+export interface CompileExpertInput extends CompileScope {
+  /** Absolute path to the expert markdown file. */
+  expertFile: string;
+}
+
+/** What compiling one expert produced. */
+export interface CompileExpertResult {
+  /** The expert's alias, and the compiled file's basename. */
+  alias: string;
+  /** Author-facing problems encountered while inlining content. */
+  warnings: string[];
+}
+
+/** Every expert in a directory. */
+export interface CompileExpertsInput extends CompileScope {
+  /** Directory holding the expert markdown files. */
+  expertsDir: string;
+  /** Called as each expert resolves, for streamed output. */
+  onProgress?: (event: CompileProgress) => void;
+}
+
+/** What happened to one expert during a full compile. */
+export type CompileProgress =
+  | { kind: "compiled"; alias: string }
+  | { kind: "skipped"; file: string; reason: string }
+  | { kind: "warning"; message: string };
+
+/** What a full compile produced. */
+export interface CompileExpertsResult {
+  /** How many experts compiled successfully. */
+  compiled: number;
+  /** Experts that could not be compiled, with the reason. */
+  skipped: { file: string; reason: string }[];
+}

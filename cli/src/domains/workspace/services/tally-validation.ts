@@ -1,8 +1,9 @@
 import type { PraxisConfig } from "@/core/config.js";
 import type { StatusReport } from "@/domains/workspace/types.js";
 
-import { EvalRun } from "@/domains/eval/orchestrators/eval-run.js";
+import { joinPath } from "@/core/paths.js";
 import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
+import listTargetPaths from "@/domains/eval/services/list-target-paths.js";
 import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 
 /**
@@ -17,8 +18,19 @@ import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
  * One row per judge, never pooled: judges are separate instruments, and
  * averaging them would hide exactly the disagreement worth seeing.
  */
-export function tallyValidation(root: string, config: PraxisConfig): StatusReport["validation"] {
-  const targets = EvalRun.forProject(root, config).listTargetFiles();
+export default function tallyValidation({
+  root,
+  config,
+}: {
+  root: string;
+  config: PraxisConfig;
+}): StatusReport["validation"] {
+  const targets = listTargetPaths({
+    root,
+    sources: config.sources,
+    specFilePattern: config.specFilePattern,
+    absoluteIgnore: config.ignore.map((p) => joinPath(root, p)),
+  });
 
   // One cache namespace per judge; the un-namespaced cache when no
   // judges are configured at all.

@@ -6,8 +6,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import contentHash from "@/domains/eval/services/content-hash.js";
 import { assistHashInput, resolveAssistInputs } from "@/domains/eval/services/judgment-input.js";
-import { contentHash } from "@/domains/eval/services/verdict-cache.js";
 import { VerdictReporter } from "@/domains/eval/views/verdict-report.js";
 
 const DOC_CONTENT = "# Guide\nA target under report.";

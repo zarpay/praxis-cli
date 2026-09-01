@@ -8,8 +8,8 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { exists, readText } from "@/core/files.js";
 import { joinPath, parentDir } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
+import contentHash from "@/domains/eval/services/content-hash.js";
 import { assistHashInput, resolveAssistInputs } from "@/domains/eval/services/judgment-input.js";
-import { contentHash } from "@/domains/eval/services/verdict-cache.js";
 
 /** Divider line width for the rendered report. */
 const DIVIDER_WIDTH = 50;

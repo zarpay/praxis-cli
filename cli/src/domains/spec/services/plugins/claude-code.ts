@@ -4,7 +4,7 @@ import { exists, readJson, writeJson, writeText } from "@/core/files.js";
 import { joinPath, resolvePath } from "@/core/paths.js";
 import praxisResolveCommand from "@/domains/spec/prompts/praxis-resolve-command.js";
 import praxisSkill from "@/domains/spec/prompts/praxis-skill.js";
-import { evalTargetingLines } from "@/domains/spec/views/targeting.js";
+import evalTargetingLines from "@/domains/spec/views/targeting.js";
 
 /** Default plugin.json content used when no scaffold file exists. */
 const DEFAULT_PLUGIN_JSON = {

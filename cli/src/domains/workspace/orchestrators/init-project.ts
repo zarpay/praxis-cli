@@ -1,6 +1,5 @@
-import type { Logger } from "@/views/logger.js";
+import type { InitProjectInput, InitProjectResult } from "@/domains/workspace/types.js";
 
-import { PraxisBase } from "@/core/base.js";
 import { PraxisConfig } from "@/core/config.js";
 import {
   copyFile,
@@ -13,175 +12,130 @@ import {
 import { SCAFFOLD_DIR, joinPath, relativePath, resolvePath } from "@/core/paths.js";
 
 /**
- * Scaffolds a Praxis project into a target directory.
+ * Scaffolds a new Praxis project.
  *
- * init() performs three steps:
- * 1. Copies all core scaffold files (content, config, README, etc.)
- * 2. Reads the scaffolded config to determine which plugins are enabled
- * 3. Copies plugin-specific scaffold files for each enabled plugin
+ * Copies the core scaffold, then each enabled plugin's own files. The
+ * spec layer is opt-in: without `--spec-layer` a project gets the
+ * minimal `.praxis/` tree and nothing else, because the eval layer is
+ * what v2 *is* and the authoring taxonomy is one way to feed it.
  *
- * Files that already exist are skipped, never overwritten, which also
- * makes init idempotent.
+ * An existing file is never overwritten — init is safe to re-run, and
+ * re-running with `--spec-layer` adds the taxonomy to a project that
+ * started eval-only.
  */
-export class InitCommand extends PraxisBase {
-  private readonly targetDir: string;
-  private readonly scaffoldDir: string;
-  /** Whether to also scaffold the spec-layer authoring tree (11: opt-in). */
-  private readonly specLayer: boolean;
+export default function initProject({
+  targetDir,
+  scaffoldDir = SCAFFOLD_DIR,
+  specLayer = false,
+  onFileCreated,
+}: InitProjectInput): InitProjectResult {
+  ensureDir(targetDir);
 
-  constructor({
+  // "eval" holds the minimal .praxis/ tree; "core" adds the spec-layer
+  // authoring taxonomy (experts, practices, context).
+  const core = copyScaffold({
+    sourceDir: joinPath(scaffoldDir, specLayer ? "core" : "eval"),
     targetDir,
-    scaffoldDir = SCAFFOLD_DIR,
-    specLayer = false,
-    logger,
-  }: {
-    targetDir: string;
-    scaffoldDir?: string;
-    specLayer?: boolean;
-    logger?: Logger;
-  }) {
-    super({ logger });
-    this.targetDir = targetDir;
-    this.scaffoldDir = scaffoldDir;
-    this.specLayer = specLayer;
+    displayRoot: targetDir,
+    onFileCreated,
+  });
+
+  let created = core.created;
+  let skipped = core.skipped;
+
+  // Config is read *after* the core copy: the scaffold is what puts it
+  // there on a fresh project.
+  for (const plugin of new PraxisConfig(targetDir).plugins) {
+    const sourceDir = joinPath(scaffoldDir, "plugins", plugin.name);
+
+    if (!exists(sourceDir)) continue;
+
+    const result = copyScaffold({
+      sourceDir,
+      targetDir: plugin.outputDir
+        ? resolvePath(targetDir, plugin.outputDir)
+        : joinPath(targetDir, "plugins", "praxis"),
+      displayRoot: targetDir,
+      templateVars: { claudeCodePluginName: plugin.claudeCodePluginName ?? "praxis" },
+      onFileCreated,
+    });
+
+    created += result.created;
+    skipped += result.skipped;
   }
 
-  /** Runs the scaffold, logging each created file and a final summary. */
-  init(): void {
-    ensureDir(this.targetDir);
+  return { created, skipped, nextSteps: nextSteps(specLayer) };
+}
 
-    let created = 0;
-    let skipped = 0;
+/**
+ * Copies a scaffold tree, skipping anything already present.
+ *
+ * Template variables are substituted in `.json` files only, which is
+ * where the plugin manifests carry them.
+ */
+function copyScaffold({
+  sourceDir,
+  targetDir,
+  displayRoot,
+  templateVars = {},
+  onFileCreated,
+}: {
+  sourceDir: string;
+  targetDir: string;
+  /** Root the reported path is shown relative to. */
+  displayRoot: string;
+  templateVars?: Record<string, string>;
+  onFileCreated?: (path: string) => void;
+}): { created: number; skipped: number } {
+  let created = 0;
+  let skipped = 0;
 
-    // Step 1: Copy core scaffold files
-    const coreResult = this.copyCoreScaffold();
-    created += coreResult.created;
-    skipped += coreResult.skipped;
+  for (const relPath of listFilesRecursive(sourceDir)) {
+    const destPath = joinPath(targetDir, relPath);
 
-    // Step 2: Read config to determine which plugins to scaffold
-    const config = new PraxisConfig(this.targetDir);
-
-    // Step 3: Copy plugin scaffold files for each enabled plugin
-    for (const pluginEntry of config.plugins) {
-      const pluginScaffoldDir = joinPath(this.scaffoldDir, "plugins", pluginEntry.name);
-
-      if (!exists(pluginScaffoldDir)) {
-        continue;
-      }
-
-      // Resolve the plugin output directory within the target
-      const pluginOutputDir = pluginEntry.outputDir
-        ? resolvePath(this.targetDir, pluginEntry.outputDir)
-        : joinPath(this.targetDir, "plugins", "praxis");
-
-      const templateVars: Record<string, string> = {
-        claudeCodePluginName: pluginEntry.claudeCodePluginName ?? "praxis",
-      };
-
-      const pluginResult = this.copyPluginScaffold(
-        pluginScaffoldDir,
-        pluginOutputDir,
-        templateVars,
-      );
-      created += pluginResult.created;
-      skipped += pluginResult.skipped;
+    if (exists(destPath)) {
+      skipped++;
+      continue;
     }
 
-    this.out.line();
-    this.logger.info(`Initialized Praxis project: ${created} files created, ${skipped} skipped`);
-    this.out.print(["", "Next steps:", ...this.nextSteps()]);
+    const srcPath = joinPath(sourceDir, relPath);
+
+    if (relPath.endsWith(".json") && Object.keys(templateVars).length > 0) {
+      writeText(destPath, applyTemplate(readText(srcPath), templateVars));
+    } else {
+      copyFile(srcPath, destPath);
+    }
+
+    onFileCreated?.(relativePath(displayRoot, destPath));
+    created++;
   }
 
-  /** Post-init guidance, matched to what was actually scaffolded. */
-  private nextSteps(): string[] {
-    if (this.specLayer) {
-      return [
-        "  1. Edit context/constitution/ to define your organization's identity",
-        "  2. Edit context/conventions/ to document your standards",
-        "  3. Run `praxis compile` to generate agent files",
-        "  4. Define new experts in experts/ as your organization grows",
-      ];
-    }
+  return { created, skipped };
+}
 
+/** Substitutes `{key}` placeholders in scaffold content. */
+function applyTemplate(content: string, vars: Record<string, string>): string {
+  return Object.entries(vars).reduce(
+    (text, [key, value]) => text.replaceAll(`{${key}}`, value),
+    content,
+  );
+}
+
+/** Post-init guidance, matched to what was actually scaffolded. */
+function nextSteps(specLayer: boolean): string[] {
+  if (specLayer) {
     return [
-      "  1. Edit .praxis/config.json: point sources at the directories your specs live in",
-      "  2. Write a spec (README.md) in a directory whose files it should govern",
-      "  3. Set your judge's API key and run `praxis eval run`",
-      "  4. Re-run `praxis init --spec-layer` later to add the authoring taxonomy",
+      "  1. Edit context/constitution/ to define your organization's identity",
+      "  2. Edit context/conventions/ to document your standards",
+      "  3. Run `praxis compile` to generate agent files",
+      "  4. Define new experts in experts/ as your organization grows",
     ];
   }
 
-  /**
-   * Copies all core scaffold files into the target directory.
-   *
-   * @returns Count of files created and skipped
-   */
-  private copyCoreScaffold(): { created: number; skipped: number } {
-    // "eval" holds the minimal .praxis/ tree; "core" adds the
-    // spec-layer authoring taxonomy (experts, practices, context).
-    const sourceDir = joinPath(this.scaffoldDir, this.specLayer ? "core" : "eval");
-    let created = 0;
-    let skipped = 0;
-
-    for (const relPath of listFilesRecursive(sourceDir)) {
-      const srcPath = joinPath(sourceDir, relPath);
-      const destPath = joinPath(this.targetDir, relPath);
-
-      if (exists(destPath)) {
-        skipped++;
-        continue;
-      }
-
-      copyFile(srcPath, destPath);
-      this.logger.success(`Created ${relPath}`);
-      created++;
-    }
-
-    return { created, skipped };
-  }
-
-  /**
-   * Copies plugin scaffold files into the resolved plugin output directory.
-   *
-   * Replaces template variables (e.g. `{claudeCodePluginName}`) in `.json` file contents.
-   *
-   * @param sourceDir - Plugin scaffold source directory
-   * @param targetPluginDir - Resolved output directory for this plugin
-   * @param templateVars - Template variables to substitute in JSON files
-   * @returns Count of files created and skipped
-   */
-  private copyPluginScaffold(
-    sourceDir: string,
-    targetPluginDir: string,
-    templateVars: Record<string, string>,
-  ): { created: number; skipped: number } {
-    let created = 0;
-    let skipped = 0;
-
-    for (const relPath of listFilesRecursive(sourceDir)) {
-      const srcPath = joinPath(sourceDir, relPath);
-      const destPath = joinPath(targetPluginDir, relPath);
-
-      if (exists(destPath)) {
-        skipped++;
-        continue;
-      }
-
-      if (relPath.endsWith(".json")) {
-        let content = readText(srcPath);
-        for (const [key, value] of Object.entries(templateVars)) {
-          content = content.replaceAll(`{${key}}`, value);
-        }
-        writeText(destPath, content);
-      } else {
-        copyFile(srcPath, destPath);
-      }
-
-      const displayPath = relativePath(this.targetDir, destPath);
-      this.logger.success(`Created ${displayPath}`);
-      created++;
-    }
-
-    return { created, skipped };
-  }
+  return [
+    "  1. Edit .praxis/config.json: point sources at the directories your specs live in",
+    "  2. Write a spec (README.md) in a directory whose files it should govern",
+    "  3. Set your judge's API key and run `praxis eval run`",
+    "  4. Re-run `praxis init --spec-layer` later to add the authoring taxonomy",
+  ];
 }

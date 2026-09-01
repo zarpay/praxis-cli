@@ -5,8 +5,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { ExpertCompiler } from "@/domains/spec/orchestrators/expert-compiler.js";
-import { InitCommand } from "@/domains/workspace/orchestrators/init-project.js";
+import { PraxisConfig } from "@/core/config.js";
+import compileExperts from "@/domains/spec/orchestrators/compile-experts.js";
+import resolvePlugins from "@/domains/spec/services/plugin-registry.js";
+import initProject from "@/domains/workspace/orchestrators/init-project.js";
 import { Logger } from "@/views/logger.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 
@@ -28,7 +30,7 @@ describe("init → compile integration", () => {
     dir = join(tmpdir(), `praxis-integration-${randomUUID()}`);
 
     // Scaffold the project (creates .praxis/ which Paths uses for root detection)
-    new InitCommand({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, logger, specLayer: true }).init();
+    initProject({ targetDir: dir, scaffoldDir: SCAFFOLD_DIR, specLayer: true });
 
     // Enable claude-code plugin in config
     writeFileSync(
@@ -43,8 +45,14 @@ describe("init → compile integration", () => {
     );
 
     // Compile all roles
-    const compiler = new ExpertCompiler({ root: dir, logger });
-    await compiler.compileAll();
+    const config = new PraxisConfig(dir);
+    await compileExperts({
+      root: dir,
+      expertsDir: config.expertsDir,
+      specFilePattern: config.specFilePattern,
+      agentProfilesOutputDir: config.agentProfilesOutputDir,
+      plugins: resolvePlugins(config.plugins, dir, logger),
+    });
   });
 
   afterAll(() => {

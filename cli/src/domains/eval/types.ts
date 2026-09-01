@@ -7,7 +7,7 @@
  * CohortMode, which an expert declares and a spec honors.
  */
 
-import type { CohortMode } from "@/types.js";
+import type { CohortMode, JudgeConfig } from "@/types.js";
 
 // ---------------------------------------------------------------------------
 // Prompt inputs (domains/eval/prompts/)
@@ -330,4 +330,66 @@ export interface VerdictReport {
   currentHash: string | null;
   /** Whether the target changed since the cached validation. */
   isStale: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Service payloads (domains/eval/services/)
+// ---------------------------------------------------------------------------
+
+/** Where targets are looked for, and what never counts as one. */
+export interface DiscoveryScope {
+  /** Project root all patterns resolve against. */
+  root: string;
+  /** Source directories scanned for spec files, relative to the root. */
+  sources: string[];
+  /** Filename or glob identifying spec files, which are never targets. */
+  specFilePattern?: string;
+  /** Ignore patterns, already resolved to absolute paths. */
+  absoluteIgnore?: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Orchestrator payloads (domains/eval/orchestrators/)
+// ---------------------------------------------------------------------------
+
+/** What a run needs to know to judge a project. */
+export interface RunEvalInput extends DiscoveryScope {
+  /** The judges to run; every judge evaluates every unit. */
+  judges: JudgeConfig[];
+  /** Whether to consult the verdict cache. */
+  useCache?: boolean;
+  /** Whether to stop at the first error verdict. */
+  failFast?: boolean;
+  /** Judge only the domains of this type; omitted judges everything. */
+  type?: string;
+  /** Called as the run progresses, for streamed output. */
+  onProgress?: (event: EvalProgress) => void;
+}
+
+/** What is happening, as a run happens. */
+export type EvalProgress =
+  | {
+      kind: "unit-start";
+      /** 1-based position across the whole run, judges included. */
+      index: number;
+      total: number;
+      path: string;
+      /** Member count when the unit is a cohort, undefined for a file. */
+      cohortSize?: number;
+      /** The judge's name, only when more than one judge is running. */
+      judgeName?: string;
+    }
+  | { kind: "verdict"; verdict: Verdict }
+  | { kind: "unit-error"; message: string };
+
+/** Everything a completed run produced. */
+export interface RunEvalResult {
+  /** One verdict per (unit, judge), in the order they were judged. */
+  verdicts: TargetVerdict[];
+  /** Aggregated counts across the whole run. */
+  summary: EvalSummary;
+  /** Cache hits and misses accumulated over the run. */
+  cacheStats: { hits: number; misses: number };
+  /** Whether fail-fast stopped the run before every unit was judged. */
+  stoppedEarly: boolean;
 }

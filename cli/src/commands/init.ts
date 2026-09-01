@@ -2,7 +2,9 @@ import type { Command } from "commander";
 
 import { runAction } from "@/commands/action.js";
 import { resolvePath } from "@/core/paths.js";
-import { InitCommand } from "@/domains/workspace/orchestrators/init-project.js";
+import initProject from "@/domains/workspace/orchestrators/init-project.js";
+import { Display } from "@/views/display.js";
+import { Logger } from "@/views/logger.js";
 
 /**
  * Registers the `praxis init` command.
@@ -21,8 +23,21 @@ export function registerInitCommand(program: Command): void {
       false,
     )
     .action((directory: string, options: { specLayer: boolean }) =>
-      runAction(() =>
-        new InitCommand({ targetDir: resolvePath(directory), specLayer: options.specLayer }).init(),
-      ),
+      runAction(() => {
+        const logger = new Logger();
+        const out = new Display();
+
+        const result = initProject({
+          targetDir: resolvePath(directory),
+          specLayer: options.specLayer,
+          onFileCreated: (path) => logger.success(`Created ${path}`),
+        });
+
+        out.line();
+        logger.info(
+          `Initialized Praxis project: ${result.created} files created, ${result.skipped} skipped`,
+        );
+        out.print(["", "Next steps:", ...result.nextSteps]);
+      }),
     );
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { resolvePlugins } from "@/domains/spec/services/plugin-registry.js";
+import resolvePlugins from "@/domains/spec/services/plugin-registry.js";
 import { ClaudeCodePlugin } from "@/domains/spec/services/plugins/claude-code.js";
 import { Logger } from "@/views/logger.js";
 

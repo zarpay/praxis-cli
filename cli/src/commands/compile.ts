@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 
 import type { FSWatcher } from "@/core/files.js";
+import type { CompileProgress, CompileScope } from "@/domains/spec/types.js";
 import type { PraxisProjectBaseOptions } from "@/types.js";
 
 import fg from "fast-glob";
@@ -11,7 +12,9 @@ import { errors } from "@/core/errors.js";
 import { watchDir } from "@/core/files.js";
 import { Paths, resolvePath } from "@/core/paths.js";
 import { ExpertFile } from "@/domains/spec/models/expert-file.js";
-import { ExpertCompiler } from "@/domains/spec/orchestrators/expert-compiler.js";
+import compileExpert from "@/domains/spec/orchestrators/compile-expert.js";
+import compileExperts from "@/domains/spec/orchestrators/compile-experts.js";
+import resolvePlugins from "@/domains/spec/services/plugin-registry.js";
 import { Logger } from "@/views/logger.js";
 
 /**
@@ -53,24 +56,25 @@ export function registerCompileCommand(program: Command): void {
 /**
  * Compiles role definitions, by alias or in bulk, with optional watching.
  *
- * A thin command layer over ExpertCompiler: adds alias lookup and the
- * watch loop, while ExpertCompiler owns the actual compilation.
+ * Wiring only: it builds the compile scope from config, calls an
+ * orchestrator, and renders the progress events the orchestrator emits.
+ * Alias lookup and the watch loop are the CLI's own concerns.
  */
 export class CompileCommand extends PraxisProjectBase {
-  private readonly compiler: ExpertCompiler;
-
   constructor(options: PraxisProjectBaseOptions) {
     super(options);
-    this.compiler = new ExpertCompiler({
-      root: this.root,
-      logger: this.logger,
-      config: this.config,
-    });
   }
 
   /** Compiles all role files in the project's roles directory. */
   async compileAll(): Promise<{ compiled: number }> {
-    return this.compiler.compileAll();
+    const { compiled } = await compileExperts({
+      ...this.scope(),
+      expertsDir: this.config.expertsDir,
+      onProgress: (event) => this.render(event),
+    });
+
+    this.logger.info(`Compiled ${compiled} agent(s) (up-to-date)`);
+    return { compiled };
   }
 
   /**
@@ -86,7 +90,13 @@ export class CompileCommand extends PraxisProjectBase {
       throw errors.expertNotFound(alias);
     }
 
-    await this.compiler.compile(expertFile);
+    const result = await compileExpert({ ...this.scope(), expertFile });
+
+    for (const message of result.warnings) {
+      this.logger.warn(message);
+    }
+
+    this.logger.success(`Compiled ${result.alias.toLowerCase()}.md`);
   }
 
   /**
@@ -115,7 +125,7 @@ export class CompileCommand extends PraxisProjectBase {
         timer = setTimeout(async () => {
           try {
             this.logger.info(`Change detected${filename ? `: ${filename}` : ""}, recompiling...`);
-            await this.compiler.compileAll();
+            await this.compileAll();
           } catch (err) {
             this.logger.error(err instanceof Error ? err.message : String(err));
           }
@@ -126,6 +136,33 @@ export class CompileCommand extends PraxisProjectBase {
     }
 
     return watchers;
+  }
+
+  /**
+   * The project's compile scope.
+   *
+   * Plugins are constructed once per command, not per expert: the
+   * Claude Code plugin writes its manifest on first compile and must
+   * not repeat it for every agent.
+   */
+  private scope(): CompileScope {
+    return {
+      root: this.root,
+      specFilePattern: this.config.specFilePattern,
+      agentProfilesOutputDir: this.config.agentProfilesOutputDir,
+      plugins: resolvePlugins(this.config.plugins, this.root, this.logger),
+    };
+  }
+
+  /** Renders one compile event as it happens. */
+  private render(event: CompileProgress): void {
+    if (event.kind === "compiled") {
+      this.logger.success(`Compiled ${event.alias.toLowerCase()}.md`);
+    } else if (event.kind === "skipped") {
+      this.logger.warn(`Skipping ${event.file}: ${event.reason}`);
+    } else {
+      this.logger.warn(event.message);
+    }
   }
 
   /**

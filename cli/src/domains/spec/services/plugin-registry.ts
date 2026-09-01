@@ -19,7 +19,7 @@ const PLUGINS: Record<string, PluginConstructor> = {
  * @returns Array of instantiated plugins
  * @throws Error if an unknown plugin name is encountered
  */
-export function resolvePlugins(
+export default function resolvePlugins(
   entries: PluginConfigEntry[],
   root: string,
   logger: Logger,

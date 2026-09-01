@@ -60,12 +60,34 @@ the two ends of it.
 | Layer            | What belongs here                                                                                                                                                                                              |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `models/`        | Data structures and the helpers on that data. **Validate on construction** — a model that exists is a valid document. No I/O beyond reading its own file. `SpecFile`, `ExpertFile`, `Judge`, `JudgmentTarget`. |
-| `services/`      | One input → one output. Operates on primitives and models and returns its work; no workflow. `judgeTarget`, `resolveAssistInputs`, `TargetDiscovery`, `ExpertAuditor`.                                         |
-| `orchestrators/` | Coordinate several services into a workflow. The primary interface for a command. `EvalRun`, `ExpertCompiler`, `ProjectStatus`, `InitCommand`.                                                                 |
+| `services/`      | **One file, one default-exported function**, one input → one output. Operates on primitives and models and returns its work; no workflow. `expandGlobs`, `auditExperts`, `discoverDomains`, `judgeTarget`. |
+| `orchestrators/` | **One file, one default-exported function.** Coordinates several services into a workflow, and is the primary interface for a command. `runEval`, `compileExperts`, `analyzeProject`. |
 | `views/`         | Rendering only — pure functions returning `DisplayEntry[]` or strings, never performing work. `unitHeading`, `issueBlocks`, `evalTargetingLines`.                                                              |
 
 A domain's `prompts/` holds the LLM- or agent-facing text it owns: the eval domain
 has the six judge prompts, the spec domain the two Claude Code plugin templates.
+
+**Services and orchestrators are functions, not classes.** One file, one
+default-exported function, taking a single input payload and returning a single
+result — both declared in the domain's `types.ts`. Nothing to construct, nothing
+to inject, nothing to mock; a test calls the function with a literal. It is the
+same one-per-file rule the prompts already follow.
+
+Classes remain for four things, and only these:
+
+- **Models** — data plus helpers on that data, validated on construction.
+- **Extension-point contracts** — `CompilerPlugin`, `JudgeProvider`. A third
+  party implements these against a documented interface.
+- **`CacheManager`** — a repository over the verdict store, bound to one judge
+  identity, with six operations. As functions, every call would re-thread
+  `{ cacheRoot, projectRoot, judge }`.
+- Anything else genuinely better expressed as a smart data object.
+
+**Orchestrators never print.** They take an optional `onProgress` callback and
+emit typed events (`EvalProgress`, `CompileProgress`); the command renders those
+through the domain's views. That keeps streamed output — a 39-unit run reports as
+it goes — without an orchestrator holding an output stream, and lets a test
+collect the events as data.
 
 ### Spec Layer — Compiler Pipeline
 
@@ -98,7 +120,7 @@ Spec discovered (specFilePattern match, frontmatter read)
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never judged), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
-Key files: `domains/eval/services/judge-target.ts`, `domains/eval/models/` (Judge, JudgmentTarget, SpecFile), `domains/eval/services/` (judgment-input, verdict-cache, judge-hash, discover-targets), `domains/eval/orchestrators/eval-run.ts`, `domains/eval/views/`, `domains/eval/prompts/`.
+Key files: `domains/eval/services/judge-target.ts`, `domains/eval/models/` (Judge, JudgmentTarget, SpecFile), `domains/eval/services/` (judgment-input, verdict-cache, judge-hash, discover-domains, resolve-units), `domains/eval/orchestrators/run-eval.ts`, `domains/eval/views/`, `domains/eval/prompts/`.
 
 ### Project Root Detection
 

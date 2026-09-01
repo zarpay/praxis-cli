@@ -10,7 +10,7 @@ import type { AgentMetadata } from "@/domains/spec/types.js";
  * Shared by the pure-profile writer and every plugin so the two outputs
  * can never drift.
  */
-export function evalTargetingLines(metadata: AgentMetadata): string[] {
+export default function evalTargetingLines(metadata: AgentMetadata): string[] {
   if (metadata.validates.length === 0) return [];
 
   const lines = ["paths:", ...metadata.validates.map((p) => `  - "${p}"`)];
