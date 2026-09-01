@@ -5,9 +5,9 @@ import { errors } from "@/core/errors.js";
 import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
 import reviewerHash from "@/domains/eval/services/hash-reviewer.js";
 import {
-  DEFAULT_JUDGE_BASE_URL,
-  DEFAULT_JUDGE_PROVIDER,
-  DEFAULT_JUDGE_TEMPERATURE,
+  DEFAULT_REVIEWER_BASE_URL,
+  DEFAULT_REVIEWER_PROVIDER,
+  DEFAULT_REVIEWER_TEMPERATURE,
 } from "@/domains/workspace/models/praxis-config.js";
 
 /**
@@ -47,9 +47,9 @@ export class Reviewer {
     this.name = config.name;
     this.model = config.model;
     this.apiKeyEnvVar = config.apiKeyEnvVar;
-    this.baseUrl = config.baseUrl ?? DEFAULT_JUDGE_BASE_URL;
-    this.temperature = config.temperature ?? DEFAULT_JUDGE_TEMPERATURE;
-    this.provider = config.provider ?? DEFAULT_JUDGE_PROVIDER;
+    this.baseUrl = config.baseUrl ?? DEFAULT_REVIEWER_BASE_URL;
+    this.temperature = config.temperature ?? DEFAULT_REVIEWER_TEMPERATURE;
+    this.provider = config.provider ?? DEFAULT_REVIEWER_PROVIDER;
     this.options = config.options ?? {};
   }
 

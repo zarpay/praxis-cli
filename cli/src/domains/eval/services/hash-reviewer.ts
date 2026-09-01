@@ -4,9 +4,9 @@ import { createHash } from "node:crypto";
 
 import promptSurface from "@/domains/eval/prompts/prompt-surface.js";
 import {
-  DEFAULT_JUDGE_BASE_URL,
-  DEFAULT_JUDGE_PROVIDER,
-  DEFAULT_JUDGE_TEMPERATURE,
+  DEFAULT_REVIEWER_BASE_URL,
+  DEFAULT_REVIEWER_PROVIDER,
+  DEFAULT_REVIEWER_TEMPERATURE,
 } from "@/domains/workspace/models/praxis-config.js";
 
 /**
@@ -58,9 +58,9 @@ export default function reviewerHash(
 
   behavioral["options"] ??= {};
   behavioral["promptSurface"] = prompts;
-  behavioral["baseUrl"] ??= DEFAULT_JUDGE_BASE_URL;
-  behavioral["provider"] ??= DEFAULT_JUDGE_PROVIDER;
-  behavioral["temperature"] ??= DEFAULT_JUDGE_TEMPERATURE;
+  behavioral["baseUrl"] ??= DEFAULT_REVIEWER_BASE_URL;
+  behavioral["provider"] ??= DEFAULT_REVIEWER_PROVIDER;
+  behavioral["temperature"] ??= DEFAULT_REVIEWER_TEMPERATURE;
 
   return createHash("sha256").update(canonicalize(behavioral)).digest("hex").slice(0, 8);
 }

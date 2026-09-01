@@ -873,7 +873,7 @@ describe("runEval", () => {
     const strict = { name: "strict", model: "strict-model", apiKeyEnvVar: "OPENROUTER_API_KEY" };
 
     /** One target, one spec — the simplest fan-out fixture. */
-    function twoJudgeProject() {
+    function twoReviewerProject() {
       return createValidatorTmpdir({
         sources: ["docs"],
         files: {
@@ -902,7 +902,7 @@ describe("runEval", () => {
 
     it("every reviewer reviews every unit", async () => {
       useCompliantFixture();
-      const { root, cleanup } = twoJudgeProject();
+      const { root, cleanup } = twoReviewerProject();
 
       const run = await runEval({
         root,
@@ -920,7 +920,7 @@ describe("runEval", () => {
 
     it("keeps each reviewer's verdicts in its own cache namespace", async () => {
       useCompliantFixture();
-      const { root, cleanup } = twoJudgeProject();
+      const { root, cleanup } = twoReviewerProject();
 
       const first = await runEval({ root, sources: ["docs"], reviewers: [flash, strict] });
       expect(first.cacheStats).toEqual({ hits: 0, misses: 2 });
@@ -942,7 +942,7 @@ describe("runEval", () => {
 
     it("a renamed reviewer keeps its cache hits — the name is not identity", async () => {
       useCompliantFixture();
-      const { root, cleanup } = twoJudgeProject();
+      const { root, cleanup } = twoReviewerProject();
 
       await runEval({ root, sources: ["docs"], reviewers: [flash] });
 
@@ -959,7 +959,7 @@ describe("runEval", () => {
 
     it("summarizes per reviewer, never pooling silently", async () => {
       useSplitVerdicts();
-      const { root, cleanup } = twoJudgeProject();
+      const { root, cleanup } = twoReviewerProject();
 
       const run = await runEval({
         root,
@@ -970,7 +970,7 @@ describe("runEval", () => {
 
       const summary = run.summary;
 
-      expect(summary.byJudge).toEqual({
+      expect(summary.byReviewer).toEqual({
         flash: { compliant: 1, warnings: 0, errors: 0 },
         strict: { compliant: 0, warnings: 0, errors: 1 },
       });

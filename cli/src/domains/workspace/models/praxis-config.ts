@@ -15,13 +15,13 @@ import { configFile } from "@/domains/workspace/models/project-paths.js";
 export const DEFAULT_SPEC_FILE_PATTERN = "README.md";
 
 /** Default inference endpoint when a reviewer declares no baseUrl. */
-export const DEFAULT_JUDGE_BASE_URL = "https://openrouter.ai/api/v1";
+export const DEFAULT_REVIEWER_BASE_URL = "https://openrouter.ai/api/v1";
 
 /** Provider used when a reviewer declares none. */
-export const DEFAULT_JUDGE_PROVIDER = "openrouter";
+export const DEFAULT_REVIEWER_PROVIDER = "openrouter";
 
 /** Default sampling temperature when a reviewer declares none. */
-export const DEFAULT_JUDGE_TEMPERATURE = 0.0;
+export const DEFAULT_REVIEWER_TEMPERATURE = 0.0;
 
 /** Defaults used when the config file is absent or fields are omitted. */
 const DEFAULT_CONFIG: NormalizedConfig = {

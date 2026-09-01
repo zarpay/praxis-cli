@@ -220,7 +220,7 @@ function assembleCohort(unit: EvalUnit, root: string): string {
  */
 function summarize(verdicts: TargetVerdict[], sourceDocs: Set<string>): EvalSummary {
   const byType: EvalSummary["byType"] = {};
-  const byJudge: EvalSummary["byJudge"] = {};
+  const byReviewer: EvalSummary["byReviewer"] = {};
 
   for (const verdict of verdicts) {
     byType[verdict.type] ??= { total: 0, compliant: 0, issues: 0 };
@@ -229,11 +229,11 @@ function summarize(verdicts: TargetVerdict[], sourceDocs: Set<string>): EvalSumm
     if (verdict.compliant) byType[verdict.type].compliant++;
     else byType[verdict.type].issues++;
 
-    byJudge[verdict.reviewer] ??= { compliant: 0, warnings: 0, errors: 0 };
+    byReviewer[verdict.reviewer] ??= { compliant: 0, warnings: 0, errors: 0 };
 
-    if (verdict.compliant) byJudge[verdict.reviewer].compliant++;
-    else if (verdict.severity === "warning") byJudge[verdict.reviewer].warnings++;
-    else byJudge[verdict.reviewer].errors++;
+    if (verdict.compliant) byReviewer[verdict.reviewer].compliant++;
+    else if (verdict.severity === "warning") byReviewer[verdict.reviewer].warnings++;
+    else byReviewer[verdict.reviewer].errors++;
   }
 
   const reviewedPaths = new Set(verdicts.map((v) => v.path));
@@ -246,6 +246,6 @@ function summarize(verdicts: TargetVerdict[], sourceDocs: Set<string>): EvalSumm
     errors: verdicts.filter((v) => !v.compliant && v.severity === "error").length,
     notValidated: allDocs.size - reviewedPaths.size,
     byType,
-    byJudge,
+    byReviewer,
   };
 }

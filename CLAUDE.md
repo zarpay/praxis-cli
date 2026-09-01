@@ -8,7 +8,7 @@ This is a three-project repository:
 
 - **`cli/`** — the `@zarpay/praxis-cli` npm package. All CLI source, tests, scaffold, tooling config, and the Praxis v2 design specs (`cli/praxis_v2_specs/`). Has its own `CLAUDE.md` with build commands, architecture, and code conventions — read it before working on the CLI.
 - **`site/`** — the VitePress documentation site. Self-contained (`cd site && npm install && npm run dev`).
-- **`demo/`** — Scoop Society, a small TypeScript API that uses the development CLI (`file:../cli` dependency) as a real Praxis project: its `knowledge/` compiles into SME profiles, and its `src/` directories carry spec READMEs that `praxis eval run` judges. Use it to verify end-to-end behavior of CLI changes.
+- **`demo/`** — Scoop Society, a small TypeScript API that uses the development CLI (`file:../cli` dependency) as a real Praxis project: its `knowledge/` compiles into SME profiles, and its `src/` directories carry spec READMEs that `praxis eval run` reviews. Use it to verify end-to-end behavior of CLI changes.
 
 ## Working rules
 

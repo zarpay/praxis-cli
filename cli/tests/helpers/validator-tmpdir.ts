@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
 /** The reviewer written into helper configs; matches TEST_REVIEWER in openrouter-msw. */
-const DEFAULT_JUDGES: ReviewerConfig[] = [
+const DEFAULT_REVIEWERS: ReviewerConfig[] = [
   { name: "test", model: "test-model", apiKeyEnvVar: "OPENROUTER_API_KEY" },
 ];
 
@@ -45,7 +45,7 @@ export function createValidatorTmpdir(options: {
     abs(".praxis/config.json"),
     JSON.stringify({
       sources: options.sources,
-      reviewers: options.reviewers ?? DEFAULT_JUDGES,
+      reviewers: options.reviewers ?? DEFAULT_REVIEWERS,
       ...(options.specFilePattern !== undefined && { specFilePattern: options.specFilePattern }),
     }),
   );

@@ -309,7 +309,7 @@ export interface EvalSummary {
    * Per-reviewer breakdown. Reviewers are instruments with different error
    * rates; their series render separately, never silently pooled (07).
    */
-  byJudge: Record<
+  byReviewer: Record<
     string,
     {
       compliant: number;

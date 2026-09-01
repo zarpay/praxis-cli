@@ -11,14 +11,15 @@ v2 is a **breaking release**: v1 compatibility spellings are being removed rathe
 
 ### Added
 
-- **Multiple judges** — `judges: [{ name, model, apiKeyEnvVar, baseUrl?, temperature? }]` in config. Every judge evaluates every target; results, summaries (`By judge:`), `praxis status`, and `eval verdict` report per judge, never pooled. `eval run --judge <name>` runs one judge.
-- **Judge-keyed verdict cache (format 3.0)** — one cache file per target holds every verdict for it, keyed by `<specHash>:<judgeHash>` with readable judge provenance on each entry. The judge hash covers behavioral settings only (whole config canonically hashed minus `name` and `apiKeyEnvVar`, plus the system prompt text): renames and key rotation keep cache hits; model/endpoint/temperature/prompt changes invalidate — the hash is the epoch boundary.
-- **`cohort:` spec frontmatter** — `by_file` (default) or `by_directory`: each directory matched by `paths:` is judged as one unit. Compiles through from expert `cohort:` frontmatter.
+- **Multiple reviewers** — `reviewers: [{ name, model, apiKeyEnvVar, baseUrl?, temperature? }]` in config. Every reviewer reviews every target; results, summaries (`By reviewer:`), `praxis status`, and `eval verdict` report per reviewer, never pooled. `eval run --reviewer <name>` runs one reviewer.
+- **Reviewer-keyed verdict cache (format 4.0)** — one cache file per target holds every verdict for it, keyed by `<specHash>:<reviewerHash>` with readable reviewer provenance on each entry. The reviewer hash covers behavioral settings only (whole config canonically hashed minus `name` and `apiKeyEnvVar`, plus the system prompt text): renames and key rotation keep cache hits; model/endpoint/temperature/prompt changes invalidate — the hash is the epoch boundary.
+- **`cohort:` spec frontmatter** — `by_file` (default) or `by_directory`: each directory matched by `paths:` is reviewed as one unit. Compiles through from expert `cohort:` frontmatter.
 
 ### Removed (breaking)
 
-- The `validation:` config section — configure `judges:` instead; `specFilePattern` moves top-level.
-- Pre-3.0 cache files (v1/v2 formats) are ignored, not migrated; the first v2 run re-judges (one-time cost).
+- The `validation:` config section — configure `reviewers:` instead; `specFilePattern` moves top-level.
+- Pre-4.0 cache files are ignored, not migrated; the first v2 run re-reviews (one-time cost).
+- **`judge` is now `reviewer`** throughout: the `judges:` config key, the `--judge` flag, the `JudgeProvider` contract method (`provider.judge()` → `provider.review()`), and the `judge` field on every cache entry. A reviewer reviews a target and returns a verdict.
 
 ## [1.4.0] - 2026-08-30
 

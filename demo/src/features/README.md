@@ -10,7 +10,7 @@ context:
 # Feature Module Conventions
 
 A feature is a directory under `src/features/` that composes domain
-logic into one user-facing capability. Features are judged **as a
+logic into one user-facing capability. Features are reviewed **as a
 set** — each directory is one evaluation unit — because every rule
 here is about how the files relate, not about any file alone.
 

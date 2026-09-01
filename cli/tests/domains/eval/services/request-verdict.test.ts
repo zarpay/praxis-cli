@@ -496,7 +496,7 @@ describe("requestVerdict", () => {
     }
     `;
 
-    const echoJudge = { ...TEST_REVIEWER, provider: "./praxis-providers/echo.mjs" };
+    const echoReviewer = { ...TEST_REVIEWER, provider: "./praxis-providers/echo.mjs" };
 
     it("reviewers through a local provider module with no HTTP call", async () => {
       // onUnhandledRequest: "error" makes any network attempt fail loudly.
@@ -505,7 +505,7 @@ describe("requestVerdict", () => {
       const { verdict } = await evaluate({
         targetPath: abs("docs/guide.md"),
         root,
-        config: echoJudge,
+        config: echoReviewer,
       });
 
       expect(verdict).toEqual({ compliant: true, issues: [], reason: "echoed" });
@@ -519,7 +519,7 @@ describe("requestVerdict", () => {
       const { usage } = await evaluate({
         targetPath: abs("docs/guide.md"),
         root,
-        config: echoJudge,
+        config: echoReviewer,
       });
 
       expect(usage).toEqual({ promptTokens: 7, completionTokens: 3, costUsd: 0.0001 });
@@ -534,7 +534,7 @@ describe("requestVerdict", () => {
         evaluate({
           targetPath: abs("docs/guide.md"),
           root,
-          config: echoJudge,
+          config: echoReviewer,
           cache: new CacheManager({ projectRoot: root }),
         });
 
@@ -553,7 +553,7 @@ describe("requestVerdict", () => {
       const review = evaluate({
         targetPath: abs("docs/guide.md"),
         root,
-        config: echoJudge,
+        config: echoReviewer,
       });
 
       await expect(review).rejects.toThrow('Reviewer provider "flaky" failed: socket hang up');

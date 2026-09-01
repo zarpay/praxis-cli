@@ -363,7 +363,7 @@ export class EvalCommand extends PraxisProjectBase {
   private displaySummary(summary: EvalSummary): void {
     // Reviewers are separate instruments — with more than one, their
     // series render separately and are never pooled into one number.
-    const reviewerNames = Object.keys(summary.byJudge);
+    const reviewerNames = Object.keys(summary.byReviewer);
 
     this.out.print([
       "",
@@ -387,7 +387,7 @@ export class EvalCommand extends PraxisProjectBase {
             "",
             "By reviewer:",
             ...reviewerNames.map((name) => {
-              const stats = summary.byJudge[name];
+              const stats = summary.byReviewer[name];
               return `  ${name}: ${chalk.green(String(stats.compliant))} pass, ${chalk.yellow(String(stats.warnings))} warn, ${chalk.red(String(stats.errors))} fail`;
             }),
           ]
