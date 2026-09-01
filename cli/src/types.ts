@@ -51,6 +51,27 @@ export interface HeaderEntry {
  */
 export type DisplayEntry = string | TextEntry | BadgeEntry | HeaderEntry | null | false | undefined;
 
+/**
+ * One line of a rendered report, naming the channel it belongs to.
+ *
+ * A report interleaves stderr diagnostics with stdout content — a
+ * heading, then the block it introduces — and a view cannot express
+ * that with `DisplayEntry` alone, which only describes stdout. This
+ * lets a view return the whole report, in order, and leaves the command
+ * with nothing to decide.
+ */
+export type ReportLine =
+  /** An [INFO] heading on stderr. */
+  | { channel: "heading"; text: string }
+  /** A [WARN] heading on stderr, for a block of findings. */
+  | { channel: "warning"; text: string }
+  /** An [OK] line on stderr. */
+  | { channel: "success"; text: string }
+  /** Content on stdout. */
+  | { channel: "content"; entries: DisplayEntry[] }
+  /** A blank separating line on stdout. */
+  | { channel: "blank" };
+
 // ---------------------------------------------------------------------------
 // Errors (core/errors.ts)
 // ---------------------------------------------------------------------------

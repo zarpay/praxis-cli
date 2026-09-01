@@ -1,5 +1,5 @@
 import type { StatusReport } from "@/domains/workspace/types.js";
-import type { BadgeEntry, DisplayEntry } from "@/types.js";
+import type { BadgeEntry, DisplayEntry, ReportLine } from "@/types.js";
 
 import { verdictTally } from "@/views/badges.js";
 import { statLines } from "@/views/stats.js";
@@ -75,4 +75,54 @@ export function issueBlocks(report: StatusReport): { heading: string; items: str
  */
 export function nextStepsEntries(steps: string[]): DisplayEntry[] {
   return ["", "Next steps:", ...steps];
+}
+
+/**
+ * The whole health report, in order, ready to print.
+ *
+ * Framework health only renders when the spec-layer compiler is in use:
+ * an eval-only project has no taxonomy to be asked about, so it gets
+ * review state and nothing else.
+ *
+ * The closing line is the verdict on the project — "no issues found",
+ * or a count — and it is the same count the command maps to its exit
+ * code, so what a reader sees and what CI does can never disagree.
+ */
+export function statusReport(report: StatusReport): ReportLine[] {
+  const lines: ReportLine[] = [{ channel: "heading", text: "Praxis Project Status" }];
+
+  if (report.compilerInUse) {
+    lines.push({ channel: "content", entries: ["", ...countLines(report.counts)] });
+  }
+
+  for (const { reviewer, badges } of validationBlocks(report.validation)) {
+    lines.push(
+      { channel: "blank" },
+      { channel: "heading", text: `Validation (reviewer: ${reviewer})` },
+      { channel: "content", entries: badges },
+    );
+  }
+
+  if (!report.compilerInUse) return lines;
+
+  const blocks = issueBlocks(report);
+
+  for (const { heading, items } of blocks) {
+    lines.push(
+      { channel: "blank" },
+      { channel: "warning", text: heading },
+      { channel: "content", entries: items.map((item) => `  ${item}`) },
+    );
+  }
+
+  const issues = blocks.reduce((total, block) => total + block.items.length, 0);
+
+  lines.push({ channel: "blank" });
+  lines.push(
+    issues === 0
+      ? { channel: "success", text: "No issues found" }
+      : { channel: "heading", text: `${issues} issue(s) found` },
+  );
+
+  return lines;
 }

@@ -2,7 +2,12 @@ import type { StatusReport } from "@/domains/workspace/types.js";
 
 import { describe, expect, it } from "vitest";
 
-import { countLines, issueBlocks, validationBlocks } from "@/domains/workspace/views/status.js";
+import {
+  countLines,
+  issueBlocks,
+  statusReport,
+  validationBlocks,
+} from "@/domains/workspace/views/status.js";
 
 /** A clean report, with only the fields a test cares about overridden. */
 function report(fields: Partial<StatusReport> = {}): StatusReport {
@@ -150,5 +155,71 @@ describe("issueBlocks", () => {
     const total = blocks.reduce((sum, block) => sum + block.items.length, 0);
 
     expect(total).toBe(3);
+  });
+});
+
+describe("statusReport", () => {
+  /** The channels a report emits, in order. */
+  function channels(report: StatusReport): string[] {
+    return statusReport(report).map((line) => line.channel);
+  }
+
+  /** Every heading and warning text in a report, in order. */
+  function headings(report: StatusReport): string[] {
+    return statusReport(report)
+      .filter((line) => line.channel === "heading" || line.channel === "warning")
+      .map((line) => (line as { text: string }).text);
+  }
+
+  it("opens with the title", () => {
+    expect(headings(report())[0]).toBe("Praxis Project Status");
+  });
+
+  it("closes with success when nothing is wrong", () => {
+    const lines = statusReport(report());
+
+    expect(lines.at(-1)).toEqual({ channel: "success", text: "No issues found" });
+  });
+
+  it("closes with the count when something is", () => {
+    const lines = statusReport(report({ orphanedPractices: ["a.md", "b.md"] }));
+
+    expect(lines.at(-1)).toEqual({ channel: "heading", text: "2 issue(s) found" });
+  });
+
+  it("counts a malformed expert in the closing line, matching the exit code", () => {
+    const lines = statusReport(
+      report({ invalidExperts: [{ expert: "broken.md", reason: "missing alias" }] }),
+    );
+
+    expect(lines.at(-1)).toEqual({ channel: "heading", text: "1 issue(s) found" });
+  });
+
+  it("omits counts and findings for an eval-only project", () => {
+    const lines = statusReport(report({ compilerInUse: false }));
+
+    expect(lines).toEqual([{ channel: "heading", text: "Praxis Project Status" }]);
+  });
+
+  it("still reports review state for an eval-only project", () => {
+    const lines = statusReport(
+      report({ compilerInUse: false, validation: [tally({ reviewer: "flash", pass: 2 })] }),
+    );
+
+    expect(
+      headings({
+        ...report(),
+        compilerInUse: false,
+        validation: [tally({ reviewer: "flash", pass: 2 })],
+      }),
+    ).toContain("Validation (reviewer: flash)");
+    expect(lines.some((line) => line.channel === "content")).toBe(true);
+  });
+
+  it("introduces each findings block with a warning, then its items", () => {
+    const seen = channels(report({ orphanedPractices: ["stray.md"] }));
+
+    expect(seen).toContain("warning");
+    expect(seen.indexOf("warning")).toBeLessThan(seen.lastIndexOf("content"));
   });
 });
