@@ -10,8 +10,12 @@
  * the staleness check in VerdictReporter — resolves identically.
  */
 
-import type { AssistFileRecord, AssistInputs } from "@/domains/eval/types.js";
-import type { AssistFile } from "@/domains/eval/types.js";
+import type {
+  AssistFile,
+  AssistFileRecord,
+  AssistInputs,
+  ResolveAssistInputsInput,
+} from "@/domains/eval/types.js";
 
 import fg from "fast-glob";
 import { createHash } from "node:crypto";
@@ -34,12 +38,7 @@ export function resolveAssistInputs({
   specContent,
   specPath,
   root,
-}: {
-  specContent: string;
-  /** Used only for the error message when root is missing. */
-  specPath: string;
-  root?: string;
-}): AssistInputs {
+}: ResolveAssistInputsInput): AssistInputs {
   const spec = SpecFile.fromContent(specContent, specPath);
 
   return {

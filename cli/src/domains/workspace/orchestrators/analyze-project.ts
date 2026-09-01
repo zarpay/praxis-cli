@@ -1,5 +1,4 @@
-import type { PraxisConfig } from "@/core/config.js";
-import type { StatusReport } from "@/domains/workspace/types.js";
+import type { AnalyzeProjectInput, StatusReport } from "@/domains/workspace/types.js";
 
 import { exists } from "@/core/files.js";
 import auditExperts from "@/domains/workspace/services/audit-experts.js";
@@ -23,10 +22,7 @@ import tallyValidation from "@/domains/workspace/services/tally-validation.js";
 export default async function analyzeProject({
   root,
   config,
-}: {
-  root: string;
-  config: PraxisConfig;
-}): Promise<StatusReport> {
+}: AnalyzeProjectInput): Promise<StatusReport> {
   const scope = {
     root,
     specFilePattern: config.specFilePattern,

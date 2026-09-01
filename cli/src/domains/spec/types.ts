@@ -144,6 +144,26 @@ export interface CompileExpertInput extends CompileScope {
   expertFile: string;
 }
 
+/**
+ * One compiled profile and where it should go.
+ *
+ * `agentProfilesOutputDir` is already resolved: null means no profile
+ * output. The raw config spells that `false`; `PraxisConfig` resolves
+ * it, and nothing past that boundary should see the other spelling.
+ */
+export interface WriteProfileOutputsInput {
+  /** The assembled profile markdown. */
+  profile: string;
+  /** Agent metadata, or null when the expert declares no description. */
+  metadata: AgentMetadata | null;
+  /** The expert's alias, which names the output file. */
+  alias: string;
+  /** Resolved profile output directory, or null to skip it. */
+  agentProfilesOutputDir: string | null;
+  /** The enabled output plugins, already constructed. */
+  plugins: CompilerPlugin[];
+}
+
 /** What compiling one expert produced. */
 export interface CompileExpertResult {
   /** The expert's alias, and the compiled file's basename. */

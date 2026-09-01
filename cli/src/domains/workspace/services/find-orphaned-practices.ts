@@ -1,3 +1,5 @@
+import type { FindOrphanedPracticesInput } from "@/domains/workspace/types.js";
+
 import { baseName, relativePath } from "@/core/paths.js";
 
 /**
@@ -12,11 +14,7 @@ export default function findOrphanedPractices({
   practiceFiles,
   referenced,
   root,
-}: {
-  practiceFiles: string[];
-  referenced: Set<string>;
-  root: string;
-}): string[] {
+}: FindOrphanedPracticesInput): string[] {
   return practiceFiles
     .filter((file) => !referenced.has(relativePath(root, file)))
     .map((file) => baseName(file));

@@ -58,6 +58,12 @@ describe("validationBlocks", () => {
     expect(blocks).toHaveLength(1);
   });
 
+  it("labels the nameless reader when no judge is configured", () => {
+    const blocks = validationBlocks([tally({ judge: null, notValidated: 3 })]);
+
+    expect(blocks[0].judge).toBe("none configured");
+  });
+
   it("carries the four buckets as badges in a fixed order", () => {
     const blocks = validationBlocks([tally({ pass: 1, warn: 2, fail: 3, notValidated: 4 })]);
     const badges = blocks[0].badges.map((badge) => [badge.badge, badge.value]);

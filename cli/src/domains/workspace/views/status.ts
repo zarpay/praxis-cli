@@ -19,13 +19,17 @@ export function countLines(counts: StatusReport["counts"]): string[] {
  *
  * A judge with no verdicts at all is dropped rather than rendered as
  * four zeros, which reads as a broken judge instead of an unused one.
+ *
+ * A project with no judges configured still has a row — its targets are
+ * all unvalidated, which is worth saying — so the nameless reader gets
+ * a label rather than rendering as "null".
  */
 export function validationBlocks(
   validation: StatusReport["validation"],
 ): { judge: string; badges: BadgeEntry[] }[] {
   return validation
     .filter((v) => v.pass + v.warn + v.fail + v.notValidated > 0)
-    .map((v) => ({ judge: v.judge, badges: verdictTally(v) }));
+    .map((v) => ({ judge: v.judge ?? "none configured", badges: verdictTally(v) }));
 }
 
 /**

@@ -1,4 +1,4 @@
-import type { StatusReport } from "@/domains/workspace/types.js";
+import type { FindUnmatchedOwnersInput, StatusReport } from "@/domains/workspace/types.js";
 
 import { baseName } from "@/core/paths.js";
 import { DocumentFile } from "@/domains/workspace/models/document-file.js";
@@ -15,10 +15,7 @@ import { DocumentFile } from "@/domains/workspace/models/document-file.js";
 export default function findUnmatchedOwners({
   practiceFiles,
   aliases,
-}: {
-  practiceFiles: string[];
-  aliases: Map<string, string>;
-}): StatusReport["unmatchedOwners"] {
+}: FindUnmatchedOwnersInput): StatusReport["unmatchedOwners"] {
   const unmatched: StatusReport["unmatchedOwners"] = [];
 
   for (const practiceFile of practiceFiles) {

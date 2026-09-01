@@ -7,6 +7,9 @@
  * CohortMode, which an expert declares and a spec honors.
  */
 
+import type { Judge } from "@/domains/eval/models/judge.js";
+import type { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
+import type { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 import type { CohortMode, JudgeConfig } from "@/types.js";
 
 // ---------------------------------------------------------------------------
@@ -346,6 +349,37 @@ export interface DiscoveryScope {
   specFilePattern?: string;
   /** Ignore patterns, already resolved to absolute paths. */
   absoluteIgnore?: string[];
+}
+
+/** A spec's assist inputs to resolve, and where to resolve them. */
+export interface ResolveAssistInputsInput {
+  /** The spec's raw content. */
+  specContent: string;
+  /** Used to name the spec when no root is available. */
+  specPath: string;
+  /** Project root the root-relative globs resolve against. */
+  root?: string;
+}
+
+/** One target to evaluate, with the judge and cache to do it. */
+export interface EvaluateTargetInput {
+  /** What is being judged, already resolved. */
+  target: JudgmentTarget;
+  /** The instrument doing the judging. */
+  judge: Judge;
+  /** Judge-namespaced cache, or null to always call the provider. */
+  cache: CacheManager | null;
+  /** Project root, for resolving a `./relative` provider. */
+  root?: string;
+}
+
+/** A verdict, and how it was obtained. */
+export interface EvaluateTargetResult {
+  verdict: Verdict;
+  /** Whether it came from cache rather than a provider call. */
+  cacheHit: boolean;
+  /** Usage from the provider call, or null on a cache hit. */
+  usage: ProviderUsage | null;
 }
 
 // ---------------------------------------------------------------------------

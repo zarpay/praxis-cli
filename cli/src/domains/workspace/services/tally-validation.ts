@@ -1,5 +1,4 @@
-import type { PraxisConfig } from "@/core/config.js";
-import type { StatusReport } from "@/domains/workspace/types.js";
+import type { StatusReport, TallyValidationInput } from "@/domains/workspace/types.js";
 
 import { joinPath } from "@/core/paths.js";
 import { cacheIdentity } from "@/domains/eval/services/judge-hash.js";
@@ -21,10 +20,7 @@ import { CacheManager } from "@/domains/eval/services/verdict-cache.js";
 export default function tallyValidation({
   root,
   config,
-}: {
-  root: string;
-  config: PraxisConfig;
-}): StatusReport["validation"] {
+}: TallyValidationInput): StatusReport["validation"] {
   const targets = listTargetPaths({
     root,
     sources: config.sources,
@@ -49,7 +45,7 @@ export default function tallyValidation({
       warn: 0,
       fail: 0,
       notValidated: 0,
-    } as StatusReport["validation"][number];
+    };
 
     for (const targetPath of targets) {
       const cached = manager.readRaw({ targetPath });

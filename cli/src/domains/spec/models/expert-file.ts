@@ -1,4 +1,5 @@
 import type { RefKey } from "@/domains/spec/types.js";
+import type { AgentMetadata } from "@/domains/spec/types.js";
 import type { CohortMode } from "@/types.js";
 
 import { errors } from "@/core/errors.js";
@@ -116,6 +117,27 @@ export class ExpertFile {
    */
   refs(key: RefKey): string[] {
     return this.references[key];
+  }
+
+  /**
+   * Agent metadata fields, as written. If none are declared, returns an empty object.
+   *
+   * @returns the subset of agent metadata fields that are declared
+   */
+  agentMetadata(): AgentMetadata | null {
+    if (!this.description) return null;
+
+    return {
+      name: this.agentName,
+      description: this.description,
+      cohort: this.cohort,
+      tools: this.agentTools,
+      model: this.agentModel,
+      excludes: this.excludes,
+      validates: this.validates,
+      exemplars: this.exemplars,
+      permissionMode: this.agentPermissionMode,
+    };
   }
 }
 

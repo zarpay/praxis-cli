@@ -99,7 +99,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
     }
 
     // name and description are both guaranteed: ExpertFile rejects an
-    // alias that slugs to nothing, and buildAgentMetadata returns null
+    // alias that slugs to nothing, and expert.agentMetadata returns null
     // rather than metadata without a description.
     const lines = ["---"];
     lines.push(`name: ${metadata.name}`);

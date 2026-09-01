@@ -5,6 +5,8 @@
  * Shapes more than one domain needs live in src/types.ts instead.
  */
 
+import type { PraxisConfig } from "@/core/config.js";
+
 // ---------------------------------------------------------------------------
 // Workspace (domains/workspace/)
 // ---------------------------------------------------------------------------
@@ -52,7 +54,8 @@ export interface StatusReport {
    * Empty when no judges are configured.
    */
   validation: {
-    judge: string;
+    /** The judge's name, or null for the un-namespaced legacy cache. */
+    judge: string | null;
     pass: number;
     warn: number;
     fail: number;
@@ -127,6 +130,32 @@ export interface DocumentCounts {
   context: number;
 }
 
+/** The practices to check for orphans, and what references exist. */
+export interface FindOrphanedPracticesInput {
+  /** Absolute paths to the practice files. */
+  practiceFiles: string[];
+  /** Project-relative paths some expert points at. */
+  referenced: Set<string>;
+  /** Project root the practice paths are made relative to. */
+  root: string;
+}
+
+/** The practices to check ownership on, and the aliases that exist. */
+export interface FindUnmatchedOwnersInput {
+  /** Absolute paths to the practice files. */
+  practiceFiles: string[];
+  /** Lowercased alias to the expert file declaring it. */
+  aliases: Map<string, string>;
+}
+
+/** A project whose cached verdicts should be counted. */
+export interface TallyValidationInput {
+  /** Project root the cache and targets resolve against. */
+  root: string;
+  /** The project's config: judges, sources, spec pattern, ignores. */
+  config: PraxisConfig;
+}
+
 /** The experts to audit, and the project they live in. */
 export interface AuditExpertsInput {
   /** Absolute paths to the expert files. */
@@ -140,6 +169,13 @@ export interface AuditExpertsInput {
 // ---------------------------------------------------------------------------
 // Orchestrator payloads (domains/workspace/orchestrators/)
 // ---------------------------------------------------------------------------
+
+export interface AnalyzeProjectInput {
+  /** Project root to analyze. */
+  root: string;
+  /** The project's config. */
+  config: PraxisConfig;
+}
 
 /** What scaffolding a new project needs to know. */
 export interface InitProjectInput {

@@ -1,7 +1,11 @@
 import type { Judge } from "@/domains/eval/models/judge.js";
 import type { JudgmentTarget } from "@/domains/eval/models/judgment-target.js";
-import type { CacheManager } from "@/domains/eval/services/verdict-cache.js";
-import type { ProviderRequest, ProviderResult, Verdict } from "@/domains/eval/types.js";
+import type {
+  EvaluateTargetInput,
+  EvaluateTargetResult,
+  ProviderRequest,
+  ProviderResult,
+} from "@/domains/eval/types.js";
 
 import { PraxisError, errors } from "@/core/errors.js";
 import judgeTools from "@/domains/eval/prompts/judge-tools.js";
@@ -72,12 +76,7 @@ export async function evaluateTarget({
   judge,
   cache,
   root,
-}: {
-  target: JudgmentTarget;
-  judge: Judge;
-  cache: CacheManager | null;
-  root?: string;
-}): Promise<{ verdict: Verdict; cacheHit: boolean; usage: ProviderResult["usage"] | null }> {
+}: EvaluateTargetInput): Promise<EvaluateTargetResult> {
   const contentHash = target.contentHash();
 
   if (cache) {

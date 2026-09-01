@@ -1,4 +1,4 @@
-import type { AgentMetadata, CompilerPlugin } from "@/domains/spec/types.js";
+import type { WriteProfileOutputsInput } from "@/domains/spec/types.js";
 
 import { writeText } from "@/core/files.js";
 import { joinPath } from "@/core/paths.js";
@@ -18,13 +18,7 @@ export default function writeProfileOutputs({
   alias,
   agentProfilesOutputDir,
   plugins,
-}: {
-  profile: string;
-  metadata: AgentMetadata | null;
-  alias: string;
-  agentProfilesOutputDir: string | null;
-  plugins: CompilerPlugin[];
-}): void {
+}: WriteProfileOutputsInput): void {
   if (agentProfilesOutputDir) {
     const targeting = metadata ? evalTargetingLines(metadata) : [];
     const content =

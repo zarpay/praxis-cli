@@ -1,7 +1,6 @@
 import type { CompileExpertInput, CompileExpertResult } from "@/domains/spec/types.js";
 
 import { ExpertFile } from "@/domains/spec/models/expert-file.js";
-import buildAgentMetadata from "@/domains/spec/services/build-agent-metadata.js";
 import buildProfile from "@/domains/spec/services/build-profile.js";
 import inlineReferences from "@/domains/spec/services/inline-references.js";
 import writeProfileOutputs from "@/domains/spec/services/write-profile-outputs.js";
@@ -35,7 +34,7 @@ export default async function compileExpert({
     inline(expert.refs("refs"), "Referenced file not found"),
   ]);
 
-  const metadata = buildAgentMetadata(expert);
+  const metadata = expert.agentMetadata();
   const warnings = [
     // An expert with no description compiles, but emits no agent
     // metadata — the profile is readable and not dispatchable.
