@@ -72,7 +72,7 @@ export function registerEvalCommand(program: Command): void {
 }
 
 /** Orders verdicts for worst-of aggregation: pass < warning < error. */
-function severityRank(verdict: Verdict): number {
+export function severityRank(verdict: Verdict): number {
   if (verdict.compliant) return 0;
 
   return verdict.severity === "warning" ? 1 : 2;

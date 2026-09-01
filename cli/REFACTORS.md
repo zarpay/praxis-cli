@@ -139,14 +139,29 @@ previously only showed up as terminal output nobody asserted on.
 
 ---
 
-## [ ] 6. Test coverage gaps
+## [x] 6. Test coverage gaps
 
-- `src/eval/judgment-input.ts` (94 loc) — **no test file.** Pure functions over
-  file contents; the easiest possible thing to test and currently untested.
-- `src/commands/eval.ts` (375 loc) — **no direct test file.** `EvalCommand` is
-  only exercised indirectly through `eval-run.test.ts`.
-- `src/prompts/*` — untested, but mostly template strings where a snapshot is
-  low-value. Lowest priority of the three.
+**Done.** Both named files now have direct test files; the suite went 477 -> 507.
+
+- `src/eval/judgment-input.ts` — **15 tests.** Resolution (sorting for
+  deterministic hashing, empty globs, the missing-root raise) and the two hash
+  helpers. The ones worth having pin what the hash serialization exists to
+  guarantee: the same file used as an exemplar versus as context serializes
+  differently, and identical content at two paths does too.
+- `src/commands/eval.ts` — **15 tests.** `severityRank` is now exported and its
+  pass < warning < error ordering is pinned, including that severity is ignored
+  on a compliant verdict. `requireJudges`' three raises (no judges, unknown
+  `--judge`, missing or empty API key) are reached through `all()`, so no
+  network is involved.
+
+`run()`'s dispatch needed msw, and the honest signal took a second attempt: the
+two branches throw the same configuration error, so asserting on it proved
+nothing. `run([])` returns a full `EvalSummary` and `run([targets])` returns only
+`{errors, warnings}` — `total` is what actually tells them apart.
+
+**Left alone deliberately:** `src/prompts/*` (template strings; a snapshot would
+pin formatting, not behavior) and `src/models/fields.ts`, which has no file of
+its own but is exercised exhaustively through the three model test files.
 
 ---
 
