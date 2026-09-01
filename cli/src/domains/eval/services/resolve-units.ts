@@ -6,7 +6,7 @@ import isTarget from "@/domains/eval/services/is-target.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
- * The review units a domain should reviewer.
+ * The review units a domain should review.
  *
  * `cohort: by_directory` yields one unit per matched directory holding
  * every member file — an empty directory yields no unit, because there

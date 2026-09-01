@@ -23,7 +23,7 @@ import reviewTarget from "@/domains/eval/services/review-target.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 
 /**
- * One `praxis eval run`: reviewer every target every reviewer covers.
+ * One `praxis eval run`: review every target every reviewer covers.
  *
  * Discovers the specs, resolves them into units, and reviews each unit
  * with each reviewer — **reviewer-major**, so one instrument's output stays
@@ -109,7 +109,7 @@ export default async function runEval({
   };
 }
 
-/** Whether a unit reviewers a set of files rather than the one at its path. */
+/** Whether a unit reviews a set of files rather than the one at its path. */
 function isCohort(unit: EvalUnit): boolean {
   return unit.files.length > 1 || unit.files[0] !== unit.path;
 }
@@ -131,7 +131,7 @@ function selectDomains(domains: ValidationDomain[], type?: string): ValidationDo
   return matching;
 }
 
-/** Reviewers one unit with one reviewer, turning any failure into an error verdict. */
+/** Reviews one unit with one reviewer, turning any failure into an error verdict. */
 async function reviewUnit({
   unit,
   specPath,

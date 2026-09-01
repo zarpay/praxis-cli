@@ -1,14 +1,14 @@
 {
   "version": "4.0",
   "verdicts": {
-    "e280f5fa:6f7a874e": {
+    "e280f5fa:4886d09e": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "6f7a874e"
+        "hash": "4886d09e"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-01T16:55:59.836Z",
+      "cached_at": "2026-09-01T20:23:21.404Z",
       "content_hash": "385839e6",
       "result": {
         "compliant": true,

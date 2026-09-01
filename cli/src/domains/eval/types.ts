@@ -383,7 +383,7 @@ export interface RunEvalInput extends DiscoveryScope {
   useCache?: boolean;
   /** Whether to stop at the first error verdict. */
   failFast?: boolean;
-  /** Reviewer only the domains of this type; omitted reviewers everything. */
+  /** Review only the domains of this type; omitted reviews everything. */
   type?: string;
   /** Called as the run progresses, for streamed output. */
   onProgress?: (event: EvalProgress) => void;

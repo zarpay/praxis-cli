@@ -8,7 +8,7 @@ import { relativePath } from "@/core/paths.js";
 const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
 
 /**
- * A spec document — the README the eval layer reviewers targets against.
+ * A spec document — the README the eval layer reviews targets against.
  *
  * Names the frontmatter keys the eval layer honors, in one place,
  * instead of leaving them as string literals scattered across

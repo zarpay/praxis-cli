@@ -20,7 +20,7 @@ import {
  *
  * Defaults are materialized here so every reader sees the same values
  * the hash was computed over. `reviewerHash` materializes the same
- * defaults independently (`services/reviewer-hash.ts`), which is what lets
+ * defaults independently (`services/hash-reviewer.ts`), which is what lets
  * an omitted setting and its explicit default hash identically.
  */
 export class Reviewer {

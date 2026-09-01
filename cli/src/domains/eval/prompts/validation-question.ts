@@ -21,7 +21,7 @@ export default function validationQuestion({
     kind === "cohort"
       ? `## FILES TO VALIDATE
 
-The following files form one unit (cohort). Reviewer them together as a
+The following files form one unit (cohort). Review them together as a
 set against the specification; each file is labeled with its path.
 
 Cohort: ${targetPath}`
