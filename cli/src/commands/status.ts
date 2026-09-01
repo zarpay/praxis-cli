@@ -1,20 +1,20 @@
 import type { Command } from "commander";
 
-import type { StatusReport } from "@/domains/workspace/types.js";
-
 import { runAction } from "@/commands/action.js";
-import { PraxisBase } from "@/core/base.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { Paths } from "@/domains/workspace/models/project-paths.js";
 import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
 import countStatusIssues from "@/domains/workspace/services/count-status-issues.js";
 import { countLines, issueBlocks, validationBlocks } from "@/domains/workspace/views/status.js";
+import { Display } from "@/views/display.js";
+import { Logger } from "@/views/logger.js";
 
 /**
  * Registers the `praxis status` command.
  *
- * Reports document counts, validation state, and structural issues.
- * Exits 1 when any structural issue is found.
+ * Reports document counts, review state, and structural issues. Exits 1
+ * when any structural issue is found, so CI fails on a project whose
+ * taxonomy has drifted.
  */
 export function registerStatusCommand(program: Command): void {
   program
@@ -25,7 +25,7 @@ export function registerStatusCommand(program: Command): void {
         const root = new Paths().root;
         const report = await analyzeProject({ root, config: new PraxisConfig(root) });
 
-        new StatusDisplay().render(report);
+        render(report);
 
         if (countStatusIssues(report) > 0) {
           process.exitCode = 1;
@@ -35,44 +35,44 @@ export function registerStatusCommand(program: Command): void {
 }
 
 /**
- * Renders a health report for the terminal.
+ * Prints a health report.
  *
  * Every decision about *what* to show lives in the workspace domain's
  * view functions; this only prints what they return.
  */
-export class StatusDisplay extends PraxisBase {
-  /** Prints the report: eval state always, framework health when the compiler is in use. */
-  render(report: StatusReport): void {
-    this.logger.info("Praxis Project Status");
+function render(report: Awaited<ReturnType<typeof analyzeProject>>): void {
+  const out = new Display();
+  const logger = new Logger();
 
-    if (report.compilerInUse) {
-      this.out.print(["", ...countLines(report.counts)]);
-    }
+  logger.info("Praxis Project Status");
 
-    for (const { reviewer, badges } of validationBlocks(report.validation)) {
-      this.out.line();
-      this.logger.info(`Validation (reviewer: ${reviewer})`);
-      this.out.print(badges);
-    }
+  if (report.compilerInUse) {
+    out.print(["", ...countLines(report.counts)]);
+  }
 
-    if (!report.compilerInUse) return;
+  for (const { reviewer, badges } of validationBlocks(report.validation)) {
+    out.line();
+    logger.info(`Validation (reviewer: ${reviewer})`);
+    out.print(badges);
+  }
 
-    const blocks = issueBlocks(report);
+  if (!report.compilerInUse) return;
 
-    for (const { heading, items } of blocks) {
-      this.out.line();
-      this.logger.warn(heading);
-      this.out.print(items.map((item) => `  ${item}`));
-    }
+  const blocks = issueBlocks(report);
 
-    const issueCount = blocks.reduce((total, block) => total + block.items.length, 0);
+  for (const { heading, items } of blocks) {
+    out.line();
+    logger.warn(heading);
+    out.print(items.map((item) => `  ${item}`));
+  }
 
-    this.out.line();
+  const issues = blocks.reduce((total, block) => total + block.items.length, 0);
 
-    if (issueCount === 0) {
-      this.logger.success("No issues found");
-    } else {
-      this.logger.info(`${issueCount} issue(s) found`);
-    }
+  out.line();
+
+  if (issues === 0) {
+    logger.success("No issues found");
+  } else {
+    logger.info(`${issues} issue(s) found`);
   }
 }

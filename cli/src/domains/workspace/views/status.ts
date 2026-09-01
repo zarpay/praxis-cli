@@ -1,5 +1,5 @@
 import type { StatusReport } from "@/domains/workspace/types.js";
-import type { BadgeEntry } from "@/types.js";
+import type { BadgeEntry, DisplayEntry } from "@/types.js";
 
 import { verdictTally } from "@/views/badges.js";
 import { statLines } from "@/views/stats.js";
@@ -65,4 +65,14 @@ export function issueBlocks(report: StatusReport): { heading: string; items: str
   ];
 
   return blocks.filter((block) => block.items.length > 0);
+}
+
+/**
+ * The guidance shown after scaffolding a project.
+ *
+ * Rendered by `praxis init`; the orchestrator decides *which* steps
+ * apply, this only frames them.
+ */
+export function nextStepsEntries(steps: string[]): DisplayEntry[] {
+  return ["", "Next steps:", ...steps];
 }

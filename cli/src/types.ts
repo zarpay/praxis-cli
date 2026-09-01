@@ -13,7 +13,6 @@
  * that module.
  */
 
-import type { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import type { Display } from "@/views/display.js";
 import type { Logger } from "@/views/logger.js";
 
@@ -158,14 +157,6 @@ export interface NormalizedConfig {
 export interface PraxisBaseOptions {
   logger?: Logger;
   out?: Display;
-}
-
-/** Options for classes bound to a Praxis project. */
-export interface PraxisProjectBaseOptions extends PraxisBaseOptions {
-  /** Project root all paths resolve against. */
-  root: string;
-  /** Pre-loaded config; resolved lazily from root when omitted. */
-  config?: PraxisConfig;
 }
 
 /** How a spec groups its targets into review units. */

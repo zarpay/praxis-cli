@@ -4,11 +4,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { AddCommand } from "@/commands/add.js";
-import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
+import addDocument from "@/domains/spec/orchestrators/add-document.js";
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 
 /** Resolved path to the scaffold directory at the project root. */
-const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "scaffold");
+const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "..", "..", "scaffold");
 
 /** Creates a fresh temporary project root with .praxis/ and content dirs. */
 function makeTmpdir(): string {
@@ -27,16 +27,23 @@ function makeTmpdir(): string {
   return dir;
 }
 
-describe("AddCommand", () => {
+describe("addDocument", () => {
   let root: string;
-  let command: AddCommand;
-  let logOutput: () => string;
+  let add: (type: "expert" | "practice", name: string) => void;
 
   beforeEach(() => {
     root = makeTmpdir();
-    const capture = createCaptureLogger();
-    logOutput = capture.output;
-    command = new AddCommand({ root, scaffoldDir: SCAFFOLD_DIR, logger: capture.logger });
+    const config = new PraxisConfig(root);
+
+    add = (type, name) =>
+      void addDocument({
+        type,
+        name,
+        root,
+        expertsDir: config.expertsDir,
+        practicesDir: config.practicesDir,
+        scaffoldDir: SCAFFOLD_DIR,
+      });
   });
 
   afterEach(() => {
@@ -44,13 +51,13 @@ describe("AddCommand", () => {
   });
 
   it("creates an expert file from template", () => {
-    command.add("expert", "code-reviewer");
+    add("expert", "code-reviewer");
 
     expect(existsSync(join(root, "content", "experts", "code-reviewer.md"))).toBe(true);
   });
 
   it("fills expert template placeholders", () => {
-    command.add("expert", "code-reviewer");
+    add("expert", "code-reviewer");
 
     const content = readFileSync(join(root, "content", "experts", "code-reviewer.md"), "utf-8");
 
@@ -60,13 +67,13 @@ describe("AddCommand", () => {
   });
 
   it("creates a practice file from template", () => {
-    command.add("practice", "review-pull-requests");
+    add("practice", "review-pull-requests");
 
     expect(existsSync(join(root, "content", "practices", "review-pull-requests.md"))).toBe(true);
   });
 
   it("fills practice template placeholders", () => {
-    command.add("practice", "review-pull-requests");
+    add("practice", "review-pull-requests");
 
     const content = readFileSync(
       join(root, "content", "practices", "review-pull-requests.md"),
@@ -81,7 +88,7 @@ describe("AddCommand", () => {
     const existing = join(root, "content", "experts", "existing.md");
     writeFileSync(existing, "# My custom content\n");
 
-    expect(() => command.add("expert", "existing")).toThrow("File already exists");
+    expect(() => add("expert", "existing")).toThrow("File already exists");
 
     // Original content preserved
     expect(readFileSync(existing, "utf-8")).toBe("# My custom content\n");
@@ -90,13 +97,22 @@ describe("AddCommand", () => {
   it("throws when the scaffold template is missing", () => {
     const emptyScaffold = join(root, "empty-scaffold");
     mkdirSync(emptyScaffold, { recursive: true });
-    const broken = new AddCommand({ root, scaffoldDir: emptyScaffold });
+    const config = new PraxisConfig(root);
+    const broken = () =>
+      addDocument({
+        type: "expert",
+        name: "anything",
+        root,
+        expertsDir: config.expertsDir,
+        practicesDir: config.practicesDir,
+        scaffoldDir: emptyScaffold,
+      });
 
-    expect(() => broken.add("expert", "anything")).toThrow("Template not found");
+    expect(broken).toThrow("Template not found");
   });
 
   it("handles multi-word hyphenated names", () => {
-    command.add("practice", "enforce-code-style-guide");
+    add("practice", "enforce-code-style-guide");
 
     const content = readFileSync(
       join(root, "content", "practices", "enforce-code-style-guide.md"),
@@ -107,9 +123,17 @@ describe("AddCommand", () => {
     expect(content).toContain("# Enforce Code Style Guide");
   });
 
-  it("logs success message", () => {
-    command.add("expert", "test-expert");
+  it("reports what it created and where, for the command to render", () => {
+    const config = new PraxisConfig(root);
+    const created = addDocument({
+      type: "expert",
+      name: "test-expert",
+      root,
+      expertsDir: config.expertsDir,
+      practicesDir: config.practicesDir,
+      scaffoldDir: SCAFFOLD_DIR,
+    });
 
-    expect(logOutput()).toContain("Created expert: content/experts/test-expert.md");
+    expect(created).toEqual({ type: "expert", path: "content/experts/test-expert.md" });
   });
 });

@@ -3,6 +3,7 @@ import type { Command } from "commander";
 import { runAction } from "@/commands/action.js";
 import { resolvePath } from "@/core/paths.js";
 import initProject from "@/domains/workspace/orchestrators/init-project.js";
+import { nextStepsEntries } from "@/domains/workspace/views/status.js";
 import { Display } from "@/views/display.js";
 import { Logger } from "@/views/logger.js";
 
@@ -37,7 +38,7 @@ export function registerInitCommand(program: Command): void {
         logger.info(
           `Initialized Praxis project: ${result.created} files created, ${result.skipped} skipped`,
         );
-        out.print(["", "Next steps:", ...result.nextSteps]);
+        out.print(nextStepsEntries(result.nextSteps));
       }),
     );
 }

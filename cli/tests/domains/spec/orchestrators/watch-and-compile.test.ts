@@ -6,7 +6,8 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { CompileCommand } from "@/commands/compile.js";
+import watchAndCompile from "@/domains/spec/orchestrators/watch-and-compile.js";
+import resolvePlugins from "@/domains/spec/services/resolve-plugins.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
@@ -16,12 +17,12 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-describe("CompileCommand.watch()", () => {
+describe("watchAndCompile", () => {
   let tmpdir: string;
   let cleanup: () => void;
   let logOutput: () => string;
   let logger: Logger;
-  let command: CompileCommand;
+  let watch: (debounceMs: number) => FSWatcher[];
   let watchers: FSWatcher[] = [];
 
   beforeEach(() => {
@@ -32,7 +33,23 @@ describe("CompileCommand.watch()", () => {
     const capture = createCaptureLogger();
     logger = capture.logger;
     logOutput = capture.output;
-    command = new CompileCommand({ root: tmpdir, config: new PraxisConfig(tmpdir), logger });
+    const config = new PraxisConfig(tmpdir);
+
+    // The command renders these events; the test captures them the same way.
+    watch = (debounceMs) =>
+      watchAndCompile({
+        root: tmpdir,
+        sources: config.sources,
+        expertsDir: config.expertsDir,
+        specFilePattern: config.specFilePattern,
+        agentProfilesOutputDir: config.agentProfilesOutputDir,
+        plugins: resolvePlugins(config.plugins, tmpdir, logger),
+        debounceMs,
+        onWatch: (dir) => logger.info(`Watching ${dir} for changes...`),
+        onRecompile: (filename) =>
+          logger.info(`Change detected${filename ? `: ${filename}` : ""}, recompiling...`),
+        onError: (message) => logger.error(message),
+      });
   });
 
   afterEach(() => {
@@ -44,7 +61,7 @@ describe("CompileCommand.watch()", () => {
   });
 
   it("returns FSWatcher instances that can be closed", () => {
-    watchers = command.watch({ debounceMs: 50 });
+    watchers = watch(50);
 
     expect(watchers.length).toBeGreaterThan(0);
     for (const watcher of watchers) {
@@ -53,14 +70,14 @@ describe("CompileCommand.watch()", () => {
   });
 
   it("logs watching message on start", () => {
-    watchers = command.watch({ debounceMs: 50 });
+    watchers = watch(50);
 
     expect(logOutput()).toContain("Watching");
     expect(logOutput()).toContain("for changes");
   });
 
   it("triggers recompile on file change", async () => {
-    watchers = command.watch({ debounceMs: 50 });
+    watchers = watch(50);
 
     // Modify a file in a source directory
     writeFileSync(
@@ -76,7 +93,7 @@ describe("CompileCommand.watch()", () => {
   });
 
   it("debounces rapid changes", async () => {
-    watchers = command.watch({ debounceMs: 100 });
+    watchers = watch(100);
 
     // Trigger 5 rapid writes
     for (let i = 0; i < 5; i++) {

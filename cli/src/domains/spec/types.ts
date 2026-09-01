@@ -193,3 +193,48 @@ export interface CompileExpertsResult {
   /** Experts that could not be compiled, with the reason. */
   skipped: { file: string; reason: string }[];
 }
+
+/** One expert to compile, named by its alias. */
+export interface CompileByAliasInput extends CompileScope {
+  /** The alias to compile, matched case-insensitively. */
+  alias: string;
+  /** Directory holding the expert markdown files. */
+  expertsDir: string;
+}
+
+/** A watch session over a project's source directories. */
+export interface WatchAndCompileInput extends CompileExpertsInput {
+  /** Source directories to watch, relative to the project root. */
+  sources: string[];
+  /** How long to wait for a burst of changes to settle. */
+  debounceMs?: number;
+  /** Called once per directory as watching begins. */
+  onWatch?: (sourceDir: string) => void;
+  /** Called when a change triggers a recompile. */
+  onRecompile?: (filename: string | null) => void;
+  /** Called when a recompile fails; the watch continues regardless. */
+  onError?: (message: string) => void;
+}
+
+/** A document to scaffold from its template. */
+export interface AddDocumentInput {
+  /** Which template to use. */
+  type: "expert" | "practice";
+  /** Kebab-case name for the new file, e.g. "code-reviewer". */
+  name: string;
+  /** Project root the reported path is relative to. */
+  root: string;
+  /** Where experts live. */
+  expertsDir: string;
+  /** Where practices live. */
+  practicesDir: string;
+  /** Scaffold source tree; defaults to the packaged one. */
+  scaffoldDir?: string;
+}
+
+/** What was created. */
+export interface AddDocumentResult {
+  type: "expert" | "practice";
+  /** The new file's path, relative to the project root. */
+  path: string;
+}
