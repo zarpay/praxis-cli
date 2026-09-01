@@ -33,7 +33,7 @@ src/
     spec/         authoring → agent profiles
     eval/         evaluating targets against specs
     workspace/    the project itself: config, paths, discovery, health
-  commands/       CLI wiring only — parse args, call an orchestrator, map exit codes
+  commands/       route declarations only — options in, one orchestrator call out
 ```
 
 **Dependencies flow one way, and ESLint enforces it:**
@@ -63,12 +63,12 @@ the two ends of it.
 
 ### The four layers inside a domain
 
-| Layer            | What belongs here                                                                                                                                                                                                |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `models/`        | Data structures and the helpers on that data. **Validate on construction** — a model that exists is a valid document. No I/O beyond reading its own file. `SpecFile`, `ExpertFile`, `Reviewer`, `ReviewSubject`. |
-| `services/`      | **One file, one default-exported function**, one input → one output. Operates on primitives and models and returns its work; no workflow. `expandGlobs`, `auditExperts`, `discoverDomains`, `requestVerdict`.    |
-| `orchestrators/` | **One file, one default-exported function.** Coordinates several services into a workflow, and is the primary interface for a command. `runEval`, `compileExperts`, `analyzeProject`.                            |
-| `views/`         | Rendering only — pure functions returning `DisplayEntry[]` or strings, never performing work. `unitHeading`, `issueBlocks`, `evalTargetingLines`.                                                                |
+| Layer            | What belongs here                                                                                                                                                                                                                            |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `models/`        | Data structures and the helpers on that data. **Validate on construction** — a model that exists is a valid document. No I/O beyond reading its own file. `SpecFile`, `ExpertFile`, `Reviewer`, `ReviewSubject`.                             |
+| `services/`      | **One file, one default-exported function**, one input → one output. Operates on primitives and models and returns its work; no workflow. `expandGlobs`, `auditExperts`, `discoverDomains`, `requestVerdict`.                                |
+| `orchestrators/` | **One file, one `export default async function (ctx, options)`.** Coordinates services into a workflow, renders the result, and returns a `CommandOutcome`. The whole of what a command does. `runEval`, `compileProject`, `analyzeProject`. |
+| `views/`         | Rendering only — pure functions returning `DisplayEntry[]` or strings, never performing work. `unitHeading`, `issueBlocks`, `evalTargetingLines`.                                                                                            |
 
 A domain's `prompts/` holds the LLM- or agent-facing text it owns: the eval domain
 has the six reviewer prompts, the spec domain the two Claude Code plugin templates.
@@ -92,11 +92,23 @@ Classes remain for four things, and only these:
   (`read-verdict`, `write-verdict`) that take it.
 - Anything else genuinely better expressed as a smart data object.
 
-**Orchestrators never print.** They take an optional `onProgress` callback and
-emit typed events (`EvalProgress`, `CompileProgress`); the command renders those
-through the domain's views. That keeps streamed output — a 39-unit run reports as
-it goes — without an orchestrator holding an output stream, and lets a test
-collect the events as data.
+**A command calls exactly one orchestrator, and does nothing with what comes
+back.** `runAction` (`commands/action.ts`) is the composition root: it builds one
+`CommandContext` per dispatch — root, paths, config, logger, and Display — and
+applies the single error policy. A command therefore imports orchestrators and
+`runAction`, and nothing else; the orchestrator owns the response, rendering
+included, and hands back only a `CommandOutcome` for the exit code.
+
+Every orchestrator is `async`, so there is one shape for `runAction` to await
+rather than a union of sync and async ones.
+
+**Because an orchestrator renders, the data it renders is assembled in a
+service.** An orchestrator that computes a report and prints it has made that
+report untestable. Push the computation down and the orchestrator becomes
+coordinate → render → signal: `build-status-report`, `review-all`,
+`review-named` and `collect-verdict-reports` are that split, and the tests point
+at them rather than at captured stdout. Long runs still stream through an
+`onProgress` callback the orchestrator supplies and renders.
 
 ### Spec Layer — Compiler Pipeline
 
@@ -166,5 +178,5 @@ Plugins implement the `CompilerPlugin` interface (`domains/spec/types.ts`): `nam
 - **File/path operations:** import from `@/core/files.js` (I/O: readText, writeText, exists, ...) and `@/core/paths.js` (composition: joinPath, baseName, ...; well-known locations: configFile, SCAFFOLD_DIR, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced). Where a _Praxis project_ keeps its files is `domains/workspace/models/project-paths.ts`, not core.
 - **Construct at invocation time, not import time:** module tops hold definitions, not work. `new Paths()` (and anything touching cwd or the filesystem) belongs in the command wiring helpers (`makeCommand()`), executed at action dispatch — never as a module-level instance or exported singleton (decided 2026-08-31: import-time cwd capture, test isolation, and `praxis init` running before `.praxis/` exists).
 - **Prompts:** every LLM/agent-facing prompt lives in its domain's `prompts/`, one prompt per file, as that file's default-export function — typed parameters wherever the prompt templates, with the parameter interfaces in the domain's `types.ts`. No prompt text inline anywhere else. The reviewer hash covers the complete reviewer-facing surface via `domains/eval/prompts/prompt-surface.ts`; rewording any of it is a reviewer-identity change (new epoch), by design.
-- **Base classes:** classes extend `PraxisBase` (`@/core/base.js`) for the shared plumbing — protected `out` (Display) and `logger` (Logger), injectable — or `PraxisProjectBase` when bound to a project, which adds protected `root` and a `config` that resolves lazily from it on first access. Don't re-declare these fields.
+- **Command context:** every orchestrator's first parameter is a `CommandContext` (`@/domains/workspace/models/command-context.js`) carrying `root`, `paths`, `config`, `logger` and `out`. `root` and `config` resolve lazily and cache, because `praxis init` runs before a `.praxis/` directory exists. It lives in workspace rather than core because it holds `PraxisConfig` and `Paths`, and core depends on no domain. Construct one only in `runAction` — or, in a test, via `testContext(root)`.
 - **Terminal output:** all output goes through the view kit — `@/views/display.js` for stdout and `@/views/logger.js` for stderr. `Display.print([...])` renders a whole stdout block as one payload of entries (plain strings; `{ text, color }`; `{ badge, color, value, indent? }`; `{ header, char?, width? }`; falsy entries skipped so conditionals inline), with `line()` for single lines; `Logger` writes stderr diagnostics. Raw `console.*` is banned outside those two modules (ESLint `no-console`). Reusable rendering — badge rows, aligned stat blocks, tables — lives in `@/views/badges.js`, `@/views/stats.js`, `@/views/table.js` rather than being hand-built at the call site.

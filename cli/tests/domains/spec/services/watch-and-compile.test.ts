@@ -6,8 +6,8 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import watchAndCompile from "@/domains/spec/orchestrators/watch-and-compile.js";
 import resolvePlugins from "@/domains/spec/services/resolve-plugins.js";
+import watchAndCompile from "@/domains/spec/services/watch-and-compile.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";

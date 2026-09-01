@@ -11,7 +11,7 @@ import { spawnSync } from "node:child_process";
  *
  * @throws when the editor could not be started at all
  */
-export default function editConfig(ctx: CommandContext): void {
+export default async function editConfig(ctx: CommandContext): Promise<void> {
   const editor = process.env["VISUAL"] ?? process.env["EDITOR"] ?? "vi";
   const result = spawnSync(editor, [ctx.paths.configFile], { stdio: "inherit" });
 

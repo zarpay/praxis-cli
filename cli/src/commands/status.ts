@@ -2,8 +2,6 @@ import type { Command } from "commander";
 
 import { runAction } from "@/commands/action.js";
 import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
-import { statusReport } from "@/domains/workspace/views/status.js";
-import { renderReport } from "@/views/report.js";
 
 /**
  * Registers the `praxis status` command.
@@ -16,13 +14,5 @@ export default function registerStatusCommand(program: Command): void {
   program
     .command("status")
     .description("Show project health dashboard")
-    .action(() =>
-      runAction(async (ctx) => {
-        const { report, issues } = await analyzeProject(ctx);
-
-        renderReport(statusReport(report));
-
-        return issues > 0 ? 1 : undefined;
-      }),
-    );
+    .action(() => runAction((ctx) => analyzeProject(ctx)));
 }

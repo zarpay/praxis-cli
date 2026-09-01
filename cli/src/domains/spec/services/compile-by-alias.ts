@@ -1,7 +1,7 @@
 import type { CompileByAliasInput, CompileExpertResult } from "@/domains/spec/types.js";
 
 import { errors } from "@/core/errors.js";
-import compileExpert from "@/domains/spec/orchestrators/compile-expert.js";
+import compileExpert from "@/domains/spec/services/compile-expert.js";
 import findExpertByAlias from "@/domains/spec/services/find-expert-by-alias.js";
 
 /**

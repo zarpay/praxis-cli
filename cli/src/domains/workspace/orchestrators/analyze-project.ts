@@ -1,93 +1,23 @@
 import type { CommandContext } from "@/domains/workspace/models/command-context.js";
-import type { AnalyzeProjectResult, StatusReport } from "@/domains/workspace/types.js";
+import type { CommandOutcome } from "@/types.js";
 
-import { exists } from "@/core/files.js";
-import auditExperts from "@/domains/workspace/services/audit-experts.js";
-import countDocumentsByType from "@/domains/workspace/services/count-documents-by-type.js";
+import buildStatusReport from "@/domains/workspace/services/build-status-report.js";
 import countStatusIssues from "@/domains/workspace/services/count-status-issues.js";
-import findOrphanedPractices from "@/domains/workspace/services/find-orphaned-practices.js";
-import findUnmatchedOwners from "@/domains/workspace/services/find-unmatched-owners.js";
-import listDocuments from "@/domains/workspace/services/list-documents.js";
-import tallyValidation from "@/domains/workspace/services/tally-validation.js";
+import { statusReport } from "@/domains/workspace/views/status.js";
+import { renderReport } from "@/views/report.js";
 
 /**
- * Assembles a project's health report.
+ * What `praxis status` does: report the project's health.
  *
- * The one workflow that reaches into both layers: framework health from
+ * The one workflow that reaches into both layers — framework health from
  * the spec layer's documents, validation state from the eval layer's
- * cache. It sequences the services and scans nothing itself.
- *
- * Framework health only applies when the spec-layer compiler is in use;
- * an eval-only project gets validation state and nothing else, because
- * it has no taxonomy to be asked about.
+ * cache. Fails when any structural issue is found, so CI fails on a
+ * project whose taxonomy has drifted.
  */
-export default async function analyzeProject(ctx: CommandContext): Promise<AnalyzeProjectResult> {
-  const { root, config } = ctx;
-  const scope = {
-    root,
-    specFilePattern: config.specFilePattern,
-    ignore: config.ignore,
-  };
-  const validation = tallyValidation({ root, config });
+export default async function analyzeProject(ctx: CommandContext): Promise<CommandOutcome> {
+  const report = await buildStatusReport({ root: ctx.root, config: ctx.config });
 
-  if (!exists(config.expertsDir)) {
-    return withIssueCount(evalOnlyReport(validation));
-  }
+  renderReport(statusReport(report), { out: ctx.out, logger: ctx.logger });
 
-  const expertFiles = await listDocuments({ ...scope, dir: config.expertsDir, recursive: false });
-  const practiceFiles = await listDocuments({
-    ...scope,
-    dir: config.practicesDir,
-    recursive: false,
-  });
-  const counts = await countDocumentsByType({ ...scope, sources: config.sources });
-  const audit = await auditExperts({
-    expertFiles,
-    root,
-    specFilePattern: config.specFilePattern,
-  });
-
-  return withIssueCount({
-    compilerInUse: true,
-    counts: {
-      experts: expertFiles.length,
-      practices: practiceFiles.length,
-      references: counts.references,
-      context: counts.context,
-    },
-    validation,
-    orphanedPractices: findOrphanedPractices({
-      practiceFiles,
-      referenced: audit.referencedPractices,
-      root,
-    }),
-    danglingRefs: audit.danglingRefs,
-    expertsMissingDescription: audit.missingDescriptions,
-    invalidExperts: audit.invalidExperts,
-    zeroMatchGlobs: audit.zeroMatchGlobs,
-    unmatchedOwners: findUnmatchedOwners({ practiceFiles, aliases: audit.aliases }),
-  });
-}
-
-/**
- * Pairs a report with the number of structural issues in it, so the
- * command can map it to an exit code without reaching for a service.
- */
-function withIssueCount(report: StatusReport): AnalyzeProjectResult {
-  return { report, issues: countStatusIssues(report) };
-}
-
-/** The report for a project with no spec layer: validation state only. */
-function evalOnlyReport(validation: StatusReport["validation"]): StatusReport {
-  return {
-    compilerInUse: false,
-    counts: { experts: 0, practices: 0, references: 0, context: 0 },
-    validation,
-    orphanedPractices: [],
-    danglingRefs: [],
-    expertsMissingDescription: [],
-    invalidExperts: [],
-    zeroMatchGlobs: [],
-    unmatchedOwners: [],
-  };
+  return countStatusIssues(report) > 0 ? "failed" : "ok";
 }

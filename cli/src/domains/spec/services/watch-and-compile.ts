@@ -3,7 +3,7 @@ import type { WatchAndCompileInput } from "@/domains/spec/types.js";
 
 import { watchDir } from "@/core/files.js";
 import { resolvePath } from "@/core/paths.js";
-import compileExperts from "@/domains/spec/orchestrators/compile-experts.js";
+import compileExperts from "@/domains/spec/services/compile-experts.js";
 
 /**
  * Recompiles every expert whenever a source directory changes.

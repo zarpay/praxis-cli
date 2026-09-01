@@ -2,6 +2,7 @@ import type { CommandContextOptions } from "@/domains/workspace/types.js";
 
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { Paths } from "@/domains/workspace/models/project-paths.js";
+import { Display } from "@/views/display.js";
 import { Logger } from "@/views/logger.js";
 
 /**
@@ -10,9 +11,9 @@ import { Logger } from "@/views/logger.js";
  *
  * This is the plumbing `PraxisBase` used to hand to a class, rebuilt for
  * a layer that is now functions. It carries what an orchestrator needs to
- * do work — root, paths, config — and a logger for diagnostics. It does
- * not carry `Display`: a command's *output* still comes back as a result
- * or arrives through `onProgress`, and a view decides what it looks like.
+ * do work — root, paths, config — and both output channels, because an
+ * orchestrator owns its command's whole response: it renders the views
+ * itself and hands the command back nothing but an outcome.
  *
  * `root` and `config` resolve lazily and are cached. `praxis init` runs
  * before a `.praxis/` directory exists, so a context must be constructible
@@ -23,11 +24,14 @@ export class CommandContext {
 
   readonly logger: Logger;
 
+  readonly out: Display;
+
   private cachedConfig?: PraxisConfig;
 
-  constructor({ paths, logger }: CommandContextOptions = {}) {
+  constructor({ paths, logger, out }: CommandContextOptions = {}) {
     this.paths = paths ?? new Paths();
     this.logger = logger ?? new Logger();
+    this.out = out ?? new Display();
   }
 
   /** The project root — the directory holding `.praxis/`. */

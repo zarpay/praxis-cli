@@ -2,8 +2,6 @@ import type { Command } from "commander";
 
 import { runAction } from "@/commands/action.js";
 import initProject from "@/domains/workspace/orchestrators/init-project.js";
-import { initReport } from "@/domains/workspace/views/status.js";
-import { renderReport } from "@/views/report.js";
 
 /**
  * Registers the `praxis init` command.
@@ -22,14 +20,6 @@ export default function registerInitCommand(program: Command): void {
       false,
     )
     .action((directory: string, options: { specLayer: boolean }) =>
-      runAction((ctx) => {
-        const result = initProject(ctx, {
-          directory,
-          specLayer: options.specLayer,
-          onFileCreated: (path) => ctx.logger.success(`Created ${path}`),
-        });
-
-        renderReport(initReport(result), { logger: ctx.logger });
-      }),
+      runAction((ctx) => initProject(ctx, { directory, specLayer: options.specLayer })),
     );
 }

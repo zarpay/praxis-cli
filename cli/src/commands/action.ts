@@ -1,27 +1,32 @@
+import type { CommandOutcome } from "@/types.js";
+
 import { CommandContext } from "@/domains/workspace/models/command-context.js";
 
 /**
- * Wraps a CLI action body with the two things every command shares: the
+ * Wraps a CLI action with the two things every command shares: the
  * context its orchestrator needs, and one error policy.
  *
  * This is the composition root. Building the context here — at action
- * dispatch, never at import time — is what lets a command hold no models
- * of its own: it registers options, hands them to an orchestrator with
- * the context, and renders what comes back.
+ * dispatch, never at import time — is what lets a command hold nothing of
+ * its own: it declares its options, hands them to one orchestrator, and
+ * is done. The orchestrator owns the response, rendering included.
  *
- * A thrown error logs to stderr and exits 1. A returned number becomes
- * the exit code; returning nothing lets the process exit naturally
- * (respecting any process.exitCode the body set).
+ * The body returns an outcome, not a payload. "failed" exits 1 — a
+ * legitimate non-zero result, like issues found or verdicts failed. A
+ * genuine error is thrown instead: it logs to stderr and also exits 1.
+ *
+ * Every orchestrator is async, so there is one shape here to await rather
+ * than a union of sync and async ones.
  */
 export async function runAction(
-  body: (ctx: CommandContext) => Promise<number | void> | number | void,
+  body: (ctx: CommandContext) => Promise<CommandOutcome | void>,
 ): Promise<void> {
   const ctx = new CommandContext();
 
   try {
-    const code = await body(ctx);
+    const outcome = await body(ctx);
 
-    if (typeof code === "number") process.exit(code);
+    if (outcome === "failed") process.exit(1);
   } catch (err) {
     ctx.logger.error(err instanceof Error ? err.message : String(err));
     process.exit(1);

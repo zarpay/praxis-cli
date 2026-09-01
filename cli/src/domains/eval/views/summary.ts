@@ -1,7 +1,7 @@
 import type {
   EvalProgress,
   EvalSummary,
-  RunEvalResult,
+  ReviewAllResult,
   Verdict,
   VerdictReport,
 } from "@/domains/eval/types.js";
@@ -114,7 +114,10 @@ export function progressEntries(event: EvalProgress): DisplayEntry[] {
  * "Hits: 0" for a `--no-cache` run would read as a cold cache rather
  * than a disabled one.
  */
-export function runReportLines(run: RunEvalResult, { cached }: { cached: boolean }): ReportLine[] {
+export function runReportLines(
+  run: ReviewAllResult,
+  { cached }: { cached: boolean },
+): ReportLine[] {
   return [
     ...(run.stoppedEarly
       ? [

@@ -3,8 +3,6 @@ import type { Command } from "commander";
 import { runAction } from "@/commands/action.js";
 import editConfig from "@/domains/workspace/orchestrators/edit-config.js";
 import showConfig from "@/domains/workspace/orchestrators/show-config.js";
-import { configEntries } from "@/domains/workspace/views/config.js";
-import { Display } from "@/views/display.js";
 
 /**
  * Registers the `praxis config` command group.
@@ -17,13 +15,7 @@ export default function registerConfigCommand(program: Command): void {
   config
     .command("show")
     .description("Print the current configuration")
-    .action(() =>
-      runAction((ctx) => {
-        const { configPath, config: shown } = showConfig(ctx);
-
-        new Display().print(configEntries(configPath, shown));
-      }),
-    );
+    .action(() => runAction((ctx) => showConfig(ctx)));
 
   config
     .command("edit")

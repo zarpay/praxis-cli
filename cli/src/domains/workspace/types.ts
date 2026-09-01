@@ -7,6 +7,7 @@
 
 import type { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import type { Paths } from "@/domains/workspace/models/project-paths.js";
+import type { Display } from "@/views/display.js";
 import type { Logger } from "@/views/logger.js";
 
 // ---------------------------------------------------------------------------
@@ -20,17 +21,13 @@ import type { Logger } from "@/views/logger.js";
 export interface CommandContextOptions {
   paths?: Paths;
   logger?: Logger;
+  out?: Display;
 }
 
-/**
- * A project's health report, with the number of structural issues in it.
- *
- * The count travels with the report so `praxis status` can set its exit
- * code from the orchestrator's answer rather than recomputing it.
- */
-export interface AnalyzeProjectResult {
-  report: StatusReport;
-  issues: number;
+/** What assembling a project's health report needs. */
+export interface BuildStatusReportInput {
+  root: string;
+  config: PraxisConfig;
 }
 
 /** What `praxis config show` renders: the file's location and its raw contents. */

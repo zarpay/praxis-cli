@@ -12,19 +12,28 @@ to services. A command has a direct relationship to the orchestrators it calls �
 if a command is doing work that is not argument parsing or rendering, that work
 belongs here.
 
-- Named `{verb}-{noun}` for what it produces: `run-eval.ts`, `compile-experts.ts`,
+- Named `{verb}-{noun}` for what it produces: `run-eval.ts`, `compile-project.ts`,
   `analyze-project.ts`, `report-verdicts.ts`.
-- Default-export a function taking one named input payload and returning one named
-  result type, both declared in the domain's `types.ts`.
+- **`export default async function (ctx: CommandContext, options)`.** Always
+  async, so `runAction` has one shape to await. `options` is the command's parsed
+  input, typed in the domain's `types.ts`; omit it when the command has none.
+  Everything about the project — root, paths, config — comes off `ctx`, never a
+  parameter.
+- **Returns a `CommandOutcome`, or nothing.** `"failed"` becomes exit 1 — a
+  legitimate result like issues found, not an error. Genuinely unusable input is
+  thrown instead. It never returns a payload: there is no caller left to consume
+  one.
 - **A class is fine when several orchestrators share real scope or behaviour** —
   a common constructor payload, a cached handle, helpers they all need. Reach for
   it when the sharing exists, not in advance; one orchestrator alone is a
   function.
 - It **sequences services**. It does no scanning, parsing, globbing or rendering
   of its own — if it is doing the work itself, that work is a missing service.
-- **Never prints.** Streamed output goes through an optional `onProgress`
-  callback emitting typed events; the command renders them. That keeps long runs
-  reporting as they go while the orchestrator holds no output stream, and lets a
-  test collect the events as data.
+- **Renders its own views**, through `ctx.out` and `ctx.logger`. It is the only
+  layer that decides a command has finished and what the user sees for it.
+- **Assembling the data it renders belongs in a service.** An orchestrator that
+  computes a report and prints it has made that report untestable; push the
+  computation down and the orchestrator becomes coordinate → render → signal.
+  `build-status-report`, `review-all` and `collect-verdict-reports` are that split.
 - Failures that should not abandon the run come back in the result (a skipped
   file, an error verdict); only a genuinely unusable input raises.

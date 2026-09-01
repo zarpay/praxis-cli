@@ -1,56 +1,29 @@
-import type { ReportVerdictsInput, ReportVerdictsResult } from "@/domains/eval/types.js";
+import type { ReportVerdictsOptions } from "@/domains/eval/types.js";
+import type { CommandContext } from "@/domains/workspace/models/command-context.js";
 
-import { errors } from "@/core/errors.js";
-import { exists } from "@/core/files.js";
-import { resolvePath } from "@/core/paths.js";
-import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
-import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
-import buildVerdictReport from "@/domains/eval/services/build-verdict-report.js";
-import readVerdictEntry from "@/domains/eval/services/read-verdict-entry.js";
+import collectVerdictReports from "@/domains/eval/services/collect-verdict-reports.js";
+import { verdictReportsLines } from "@/domains/eval/views/summary.js";
+import { renderReport } from "@/views/report.js";
 
 /**
- * What every reviewer last recorded about one target.
- *
- * What `praxis eval verdict` reads. No API call and no key: it reports
- * what is cached, staleness included, so a reader can see a verdict
- * without paying for one.
- *
- * Reviewers are still needed — not to run, but to know which cache
- * namespaces hold their entries.
+ * What `praxis eval verdict` does: show what every reviewer last recorded
+ * about one target, without an API call.
  *
  * @throws PraxisError when the target does not exist, or no reviewer is
  *   configured to have an opinion about it
  */
-export default function reportVerdicts({
-  targetPath,
-  root,
-  config,
-}: ReportVerdictsInput): ReportVerdictsResult {
-  const absolutePath = resolvePath(targetPath);
+export default async function reportVerdicts(
+  ctx: CommandContext,
+  { target, verbose = false }: ReportVerdictsOptions,
+): Promise<void> {
+  const { reports, named } = collectVerdictReports({
+    targetPath: target,
+    root: ctx.root,
+    config: ctx.config,
+  });
 
-  if (!exists(absolutePath)) {
-    throw errors.documentNotFound(targetPath);
-  }
-
-  if (config.reviewers.length === 0) {
-    throw errors.missingReviewers();
-  }
-
-  return {
-    targetPath: absolutePath,
-    // Named only when more than one reviewer could disagree.
-    named: config.reviewers.length > 1,
-    reports: config.reviewers.map((reviewer) => ({
-      reviewer: reviewer.name,
-      report: buildVerdictReport({
-        targetPath: absolutePath,
-        cacheData: readVerdictEntry({
-          cache: new VerdictCache({ projectRoot: root, reviewer: cacheIdentity(reviewer) }),
-          targetPath: absolutePath,
-        }),
-        specFilePattern: config.specFilePattern,
-        root,
-      }),
-    })),
-  };
+  renderReport(verdictReportsLines(reports, { named, verbose }), {
+    out: ctx.out,
+    logger: ctx.logger,
+  });
 }

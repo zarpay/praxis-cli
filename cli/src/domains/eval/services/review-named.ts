@@ -1,4 +1,4 @@
-import type { ReviewTargetsInput, ReviewTargetsResult } from "@/domains/eval/types.js";
+import type { ReviewNamedInput, ReviewNamedResult } from "@/domains/eval/types.js";
 
 import { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 import { Reviewer } from "@/domains/eval/models/reviewer.js";
@@ -21,7 +21,7 @@ import selectReviewers from "@/domains/eval/services/select-reviewers.js";
  *
  * @throws PraxisError when no reviewer is usable, or a target has no spec
  */
-export default async function reviewTargets({
+export default async function reviewNamed({
   targets,
   root,
   config,
@@ -29,7 +29,7 @@ export default async function reviewTargets({
   reviewer: only,
   useCache = true,
   onVerdict,
-}: ReviewTargetsInput): Promise<ReviewTargetsResult> {
+}: ReviewNamedInput): Promise<ReviewNamedResult> {
   const reviewers = selectReviewers({ configured: config.reviewers, only });
   const specPath = targets.length === 1 ? spec : undefined;
 

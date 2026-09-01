@@ -1,12 +1,7 @@
 import type { Command } from "commander";
 
-import type { AddableType } from "@/domains/workspace/types.js";
-
 import { runAction } from "@/commands/action.js";
 import addDocument from "@/domains/spec/orchestrators/add-document.js";
-import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
-import { Paths } from "@/domains/workspace/models/project-paths.js";
-import { renderReport } from "@/views/report.js";
 
 /**
  * Registers the `praxis add` command group.
@@ -20,28 +15,10 @@ export default function registerAddCommand(program: Command): void {
   add
     .command("expert <name>")
     .description("Create a new expert from template")
-    .action((name: string) => runAdd("expert", name));
+    .action((name: string) => runAction((ctx) => addDocument(ctx, { type: "expert", name })));
 
   add
     .command("practice <name>")
     .description("Create a new practice from template")
-    .action((name: string) => runAdd("practice", name));
-}
-
-/** Adds one document and reports where it landed. */
-function runAdd(type: AddableType, name: string): Promise<void> {
-  return runAction(() => {
-    const root = new Paths().root;
-    const config = new PraxisConfig(root);
-
-    const created = addDocument({
-      type,
-      name,
-      root,
-      expertsDir: config.expertsDir,
-      practicesDir: config.practicesDir,
-    });
-
-    renderReport([{ channel: "success", text: `Created ${created.type}: ${created.path}` }]);
-  });
+    .action((name: string) => runAction((ctx) => addDocument(ctx, { type: "practice", name })));
 }

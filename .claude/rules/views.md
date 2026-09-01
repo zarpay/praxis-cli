@@ -13,9 +13,9 @@ A command calls one when it has something to show.
 
 - A view formats what it is given. It never performs work, reads files, decides
   what to do, or reaches for config — hand it data already resolved.
-- Deciding *what* to show is still view logic and belongs here (`issueBlocks`
+- Deciding _what_ to show is still view logic and belongs here (`issueBlocks`
   drops empty blocks, `validationBlocks` drops reviewers with no verdicts).
-  Deciding what to *do* is not.
+  Deciding what to _do_ is not.
 - A report that interleaves stderr headings with stdout blocks returns
   `ReportLine[]` — each line names its channel — and the command prints it with
   one `renderReport()` call. Ordering and interleaving are the view's decisions,

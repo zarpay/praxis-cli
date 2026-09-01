@@ -13,9 +13,6 @@
  * that module.
  */
 
-import type { Display } from "@/views/display.js";
-import type { Logger } from "@/views/logger.js";
-
 // ---------------------------------------------------------------------------
 // Terminal output (views/)
 // ---------------------------------------------------------------------------
@@ -170,15 +167,15 @@ export interface NormalizedConfig {
   specFilePattern: string;
 }
 
-// ---------------------------------------------------------------------------
-// Base classes (core/base.ts)
-// ---------------------------------------------------------------------------
-
-/** Shared plumbing every Praxis class accepts: injectable output surfaces. */
-export interface PraxisBaseOptions {
-  logger?: Logger;
-  out?: Display;
-}
-
 /** How a spec groups its targets into review units. */
 export type CohortMode = "by_file" | "by_directory";
+
+/**
+ * All an orchestrator hands back to its command.
+ *
+ * An orchestrator owns its command's whole response — it renders its own
+ * views — so the only thing left for the route to decide is the exit
+ * code. "failed" is a legitimate non-zero outcome (issues found, verdicts
+ * failed), not an error: a genuine error is thrown, and runAction catches it.
+ */
+export type CommandOutcome = "ok" | "failed";

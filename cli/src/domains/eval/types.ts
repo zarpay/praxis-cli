@@ -376,7 +376,7 @@ export interface ReviewTargetResult {
 // ---------------------------------------------------------------------------
 
 /** What a run needs to know to review a project. */
-export interface RunEvalInput extends DiscoveryScope {
+export interface ReviewAllInput extends DiscoveryScope {
   /** The reviewers to run; every reviewer reviews every unit. */
   reviewers: ReviewerConfig[];
   /** Whether to consult the verdict cache. */
@@ -406,7 +406,7 @@ export type EvalProgress =
   | { kind: "unit-error"; message: string };
 
 /** Everything a completed run produced. */
-export interface RunEvalResult {
+export interface ReviewAllResult {
   /** One verdict per (unit, reviewer), in the order they were reviewed. */
   verdicts: TargetVerdict[];
   /** Aggregated counts across the whole run. */
@@ -462,7 +462,7 @@ export interface WriteVerdictInput {
 }
 
 /** The targets to review, and the project they live in. */
-export interface ReviewTargetsInput {
+export interface ReviewNamedInput {
   /** Absolute or cwd-relative target paths. */
   targets: string[];
   /** Project root. */
@@ -480,7 +480,7 @@ export interface ReviewTargetsInput {
 }
 
 /** What reviewing the named targets produced. */
-export interface ReviewTargetsResult {
+export interface ReviewNamedResult {
   /** Targets whose worst verdict was an error. */
   errors: number;
   /** Targets whose worst verdict was a warning. */
@@ -488,7 +488,7 @@ export interface ReviewTargetsResult {
 }
 
 /** One target to report cached verdicts for. */
-export interface ReportVerdictsInput {
+export interface CollectVerdictReportsInput {
   /** The target to report on. */
   targetPath: string;
   /** Project root. */
@@ -498,7 +498,7 @@ export interface ReportVerdictsInput {
 }
 
 /** Every reviewer's last recorded opinion of one target. */
-export interface ReportVerdictsResult {
+export interface CollectVerdictReportsResult {
   /** The resolved absolute target path. */
   targetPath: string;
   /** Whether reviewers should be named in the output. */
@@ -522,4 +522,34 @@ export interface BuildVerdictReportInput {
    * rehashed, and the staleness check is skipped rather than guessed.
    */
   root?: string;
+}
+
+/** How `praxis eval run` and `praxis eval ci` were invoked. */
+export interface RunEvalOptions {
+  /** Targets named on the command line; empty means a full run. */
+  targets?: string[];
+  /** Restrict a full run to one domain type. */
+  type?: string;
+  /** Run only this configured reviewer. */
+  reviewer?: string;
+  /** Spec path for a single named target. */
+  spec?: string;
+  /** Show each verdict's full reasoning. */
+  verbose?: boolean;
+  /** Stop a full run at the first error verdict. */
+  failFast?: boolean;
+  /** Whether to consult the verdict cache. */
+  cache?: boolean;
+  /** CI mode: a full run with CI framing. */
+  ci?: boolean;
+  /** In CI mode, count warnings as failures too. */
+  strict?: boolean;
+}
+
+/** What `praxis eval verdict` was asked for. */
+export interface ReportVerdictsOptions {
+  /** The target whose cached verdicts to show. */
+  target: string;
+  /** Show each verdict's full reasoning. */
+  verbose?: boolean;
 }

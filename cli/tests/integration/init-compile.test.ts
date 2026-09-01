@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import compileExperts from "@/domains/spec/orchestrators/compile-experts.js";
+import compileExperts from "@/domains/spec/services/compile-experts.js";
 import resolvePlugins from "@/domains/spec/services/resolve-plugins.js";
 import { CommandContext } from "@/domains/workspace/models/command-context.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
@@ -31,7 +31,7 @@ describe("init → compile integration", () => {
     dir = join(tmpdir(), `praxis-integration-${randomUUID()}`);
 
     // Scaffold the project (creates .praxis/ which Paths uses for root detection)
-    initProject(new CommandContext(), {
+    await initProject(new CommandContext(), {
       directory: dir,
       scaffoldDir: SCAFFOLD_DIR,
       specLayer: true,

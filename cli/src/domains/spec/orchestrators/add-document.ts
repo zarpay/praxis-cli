@@ -1,9 +1,11 @@
-import type { AddDocumentInput, AddDocumentResult } from "@/domains/spec/types.js";
+import type { AddDocumentOptions } from "@/domains/spec/types.js";
+import type { CommandContext } from "@/domains/workspace/models/command-context.js";
 
 import { errors } from "@/core/errors.js";
 import { exists, readText, writeText } from "@/core/files.js";
 import { joinPath, relativePath } from "@/core/paths.js";
 import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
+import { renderReport } from "@/views/report.js";
 
 /**
  * Creates a new expert or practice from its template.
@@ -16,14 +18,12 @@ import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
  *
  * @throws PraxisError when the target exists, or the template is missing
  */
-export default function addDocument({
-  type,
-  name,
-  root,
-  expertsDir,
-  practicesDir,
-  scaffoldDir = SCAFFOLD_DIR,
-}: AddDocumentInput): AddDocumentResult {
+export default async function addDocument(
+  ctx: CommandContext,
+  { type, name, scaffoldDir = SCAFFOLD_DIR }: AddDocumentOptions,
+): Promise<void> {
+  const { root, config } = ctx;
+  const { expertsDir, practicesDir } = config;
   const isExpert = type === "expert";
   const templatePath = joinPath(
     scaffoldDir,
@@ -44,7 +44,10 @@ export default function addDocument({
 
   writeText(targetFile, fillTemplate(type, name, readText(templatePath)));
 
-  return { type, path };
+  renderReport([{ channel: "success", text: `Created ${type}: ${path}` }], {
+    out: ctx.out,
+    logger: ctx.logger,
+  });
 }
 
 /**
@@ -54,7 +57,7 @@ export default function addDocument({
  * it on; a practice gets only a title. The alias is the name as typed,
  * because it is an identifier, not prose.
  */
-function fillTemplate(type: AddDocumentInput["type"], name: string, template: string): string {
+function fillTemplate(type: AddDocumentOptions["type"], name: string, template: string): string {
   const title = toTitleCase(name);
 
   if (type === "expert") {

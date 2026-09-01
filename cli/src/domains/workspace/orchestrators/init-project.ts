@@ -1,5 +1,5 @@
 import type { CommandContext } from "@/domains/workspace/models/command-context.js";
-import type { InitProjectOptions, InitProjectResult } from "@/domains/workspace/types.js";
+import type { InitProjectOptions } from "@/domains/workspace/types.js";
 
 import {
   copyFile,
@@ -12,6 +12,8 @@ import {
 import { joinPath, relativePath, resolvePath } from "@/core/paths.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
+import { initReport } from "@/domains/workspace/views/status.js";
+import { renderReport } from "@/views/report.js";
 
 /**
  * Scaffolds a new Praxis project.
@@ -25,11 +27,12 @@ import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
  * re-running with `--spec-layer` adds the taxonomy to a project that
  * started eval-only.
  */
-export default function initProject(
-  _ctx: CommandContext,
-  { directory, scaffoldDir = SCAFFOLD_DIR, specLayer = false, onFileCreated }: InitProjectOptions,
-): InitProjectResult {
+export default async function initProject(
+  ctx: CommandContext,
+  { directory, scaffoldDir = SCAFFOLD_DIR, specLayer = false }: InitProjectOptions,
+): Promise<void> {
   const targetDir = resolvePath(directory);
+  const onFileCreated = (path: string) => ctx.logger.success(`Created ${path}`);
 
   ensureDir(targetDir);
 
@@ -66,7 +69,10 @@ export default function initProject(
     skipped += result.skipped;
   }
 
-  return { created, skipped, nextSteps: nextSteps(specLayer) };
+  renderReport(initReport({ created, skipped, nextSteps: nextSteps(specLayer) }), {
+    out: ctx.out,
+    logger: ctx.logger,
+  });
 }
 
 /**

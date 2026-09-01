@@ -305,6 +305,15 @@ export default tseslint.config(
     },
   },
   {
+    // Every orchestrator is async, so runAction has one shape to await
+    // rather than a union of sync and async ones. The signature is the
+    // layer's contract, not a claim that the body does I/O.
+    files: ["src/domains/*/orchestrators/**/*.ts"],
+    rules: {
+      "@typescript-eslint/require-await": "off",
+    },
+  },
+  {
     // The config file itself is plain JS and outside the tsconfig project.
     files: ["eslint.config.js"],
     extends: [tseslint.configs.disableTypeChecked],

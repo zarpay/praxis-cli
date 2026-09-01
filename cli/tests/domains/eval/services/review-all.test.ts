@@ -3,8 +3,8 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import runEval from "@/domains/eval/orchestrators/run-eval.js";
 import listSourceDocuments from "@/domains/eval/services/list-source-documents.js";
+import reviewAll from "@/domains/eval/services/review-all.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
@@ -41,7 +41,7 @@ function useErrorFixture(): void {
   );
 }
 
-describe("runEval", () => {
+describe("reviewAll", () => {
   let tmpdir: string;
   let cleanup: () => void;
   let config: PraxisConfig;
@@ -62,7 +62,7 @@ describe("runEval", () => {
   describe("reviewers", () => {
     it("reviewers with every reviewer it is given", async () => {
       useCompliantFixture();
-      const run = await runEval({
+      const run = await reviewAll({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
@@ -76,7 +76,7 @@ describe("runEval", () => {
     it("reviewers with only the reviews it is given", async () => {
       useCompliantFixture();
       const only = config.reviewers.slice(0, 1);
-      const run = await runEval({
+      const run = await reviewAll({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
@@ -92,7 +92,7 @@ describe("runEval", () => {
     it("validates documents across all types", async () => {
       useCompliantFixture();
 
-      const run = await runEval({
+      const run = await reviewAll({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
@@ -110,7 +110,7 @@ describe("runEval", () => {
     it("reviewers only documents of the specified type", async () => {
       useCompliantFixture();
 
-      const run = await runEval({
+      const run = await reviewAll({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
@@ -123,7 +123,7 @@ describe("runEval", () => {
     });
 
     it("throws for an unknown document type", async () => {
-      const run = runEval({
+      const run = reviewAll({
         root: tmpdir,
         sources: config.sources,
         useCache: false,
@@ -139,7 +139,7 @@ describe("runEval", () => {
     it("stops on first error when fail-fast is enabled", async () => {
       useErrorFixture();
 
-      const run = await runEval({
+      const run = await reviewAll({
         root: tmpdir,
         sources: config.sources,
         failFast: true,
@@ -164,7 +164,7 @@ describe("runEval", () => {
         specFilePattern: "SPEC.md",
       });
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["roles"],
         useCache: false,
@@ -194,7 +194,7 @@ describe("runEval", () => {
         },
       });
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["specs", "docs"],
         useCache: false,
@@ -221,7 +221,7 @@ describe("runEval", () => {
         },
       });
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["specs", "docs"],
         useCache: false,
@@ -249,7 +249,7 @@ describe("runEval", () => {
         },
       });
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["roles"],
         useCache: false,
@@ -280,7 +280,7 @@ describe("runEval", () => {
 
       useCompliantFixture();
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         absoluteIgnore: [join(root, "docs/smes/**")],
@@ -310,7 +310,7 @@ describe("runEval", () => {
 
       useCompliantFixture();
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         absoluteIgnore: [join(root, "docs/smes/**")],
@@ -365,7 +365,7 @@ describe("runEval", () => {
 
       useCompliantFixture();
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         absoluteIgnore: [join(root, "docs/ignored/**")],
@@ -404,7 +404,7 @@ describe("runEval", () => {
       useCompliantFixture();
       const { root, cleanup } = cohortProject();
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -431,7 +431,7 @@ describe("runEval", () => {
       );
       const { root, cleanup } = cohortProject();
 
-      await runEval({
+      await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -457,7 +457,7 @@ describe("runEval", () => {
       );
       const { root, cleanup } = cohortProject();
 
-      await runEval({
+      await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -476,7 +476,7 @@ describe("runEval", () => {
       const { root, abs, cleanup } = cohortProject();
 
       function makeRun() {
-        return runEval({
+        return reviewAll({
           root,
           sources: ["docs"],
           reviewers: [TEST_REVIEWER],
@@ -511,7 +511,7 @@ describe("runEval", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -536,7 +536,7 @@ describe("runEval", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = runEval({
+      const run = reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -574,7 +574,7 @@ describe("runEval", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -601,7 +601,7 @@ describe("runEval", () => {
         },
       });
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -645,7 +645,7 @@ describe("runEval", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await runEval({
+      await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -682,7 +682,7 @@ describe("runEval", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -724,7 +724,7 @@ describe("runEval", () => {
       useCompliantFixture();
       const { root, cleanup } = exemplarProject();
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -751,7 +751,7 @@ describe("runEval", () => {
       );
       const { root, cleanup } = exemplarProject();
 
-      await runEval({
+      await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -796,7 +796,7 @@ describe("runEval", () => {
         specFilePattern: "*.sme.md",
       });
 
-      await runEval({
+      await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -843,7 +843,7 @@ describe("runEval", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -904,7 +904,7 @@ describe("runEval", () => {
       useCompliantFixture();
       const { root, cleanup } = twoReviewerProject();
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -922,14 +922,14 @@ describe("runEval", () => {
       useCompliantFixture();
       const { root, cleanup } = twoReviewerProject();
 
-      const first = await runEval({ root, sources: ["docs"], reviewers: [flash, strict] });
+      const first = await reviewAll({ root, sources: ["docs"], reviewers: [flash, strict] });
       expect(first.cacheStats).toEqual({ hits: 0, misses: 2 });
 
-      const second = await runEval({ root, sources: ["docs"], reviewers: [flash, strict] });
+      const second = await reviewAll({ root, sources: ["docs"], reviewers: [flash, strict] });
       expect(second.cacheStats).toEqual({ hits: 2, misses: 0 });
 
       // A reviewer with different behavioral settings gets no hits from the others.
-      const third = await runEval({
+      const third = await reviewAll({
         root,
         sources: ["docs"],
         reviewers: [{ ...flash, name: "hot", temperature: 0.9 }],
@@ -944,9 +944,9 @@ describe("runEval", () => {
       useCompliantFixture();
       const { root, cleanup } = twoReviewerProject();
 
-      await runEval({ root, sources: ["docs"], reviewers: [flash] });
+      await reviewAll({ root, sources: ["docs"], reviewers: [flash] });
 
-      const renamed = await runEval({
+      const renamed = await reviewAll({
         root,
         sources: ["docs"],
         reviewers: [{ ...flash, name: "renamed" }],
@@ -961,7 +961,7 @@ describe("runEval", () => {
       useSplitVerdicts();
       const { root, cleanup } = twoReviewerProject();
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -995,7 +995,7 @@ describe("runEval", () => {
         specFilePattern: "*.sme.md",
       });
 
-      const run = await runEval({
+      const run = await reviewAll({
         root,
         sources: ["docs"],
         useCache: false,
@@ -1017,7 +1017,7 @@ describe("runEval", () => {
     it("aggregates results correctly", async () => {
       useCompliantFixture();
 
-      const run = await runEval({
+      const run = await reviewAll({
         root: tmpdir,
         sources: config.sources,
         useCache: false,

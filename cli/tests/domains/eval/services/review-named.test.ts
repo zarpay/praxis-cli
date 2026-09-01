@@ -3,7 +3,7 @@ import type { Verdict } from "@/domains/eval/types.js";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { severityRank } from "@/domains/eval/models/verdict.js";
-import reviewTargets from "@/domains/eval/orchestrators/review-targets.js";
+import reviewNamed from "@/domains/eval/services/review-named.js";
 import selectReviewers from "@/domains/eval/services/select-reviewers.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import {
@@ -146,7 +146,7 @@ describe("run() target dispatch", () => {
     useVerdict("validation_fail");
     const { root, config, abs } = reviewingProject();
 
-    const result = await reviewTargets({
+    const result = await reviewNamed({
       targets: [abs("specs/doc.md")],
       root,
       config,
@@ -160,7 +160,7 @@ describe("run() target dispatch", () => {
     useVerdict("validation_warn");
     const { root, config, abs } = reviewingProject();
 
-    const result = await reviewTargets({
+    const result = await reviewNamed({
       targets: [abs("specs/doc.md")],
       root,
       config,
@@ -174,7 +174,7 @@ describe("run() target dispatch", () => {
     useVerdict("validation_fail");
     const { root, config, abs } = reviewingProject();
 
-    const result = await reviewTargets({
+    const result = await reviewNamed({
       targets: [abs("specs/doc.md"), abs("specs/other.md")],
       root,
       config,
@@ -188,7 +188,7 @@ describe("run() target dispatch", () => {
     useVerdict("validation_pass");
     const { root, config, abs } = reviewingProject();
 
-    const result = await reviewTargets({
+    const result = await reviewNamed({
       targets: [abs("specs/doc.md")],
       root,
       config,
@@ -203,7 +203,7 @@ describe("run() target dispatch", () => {
     const { root, config, abs } = reviewingProject();
     const seen: string[] = [];
 
-    await reviewTargets({
+    await reviewNamed({
       targets: [abs("specs/doc.md"), abs("specs/other.md")],
       root,
       config,
