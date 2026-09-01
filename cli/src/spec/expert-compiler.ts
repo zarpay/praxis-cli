@@ -140,35 +140,22 @@ export class ExpertCompiler extends PraxisProjectBase {
   }
 
   /**
-   * Resolves constitution frontmatter to glob patterns.
-   *
-   * Supports:
-   * - `constitution: "context/constitution/*.md"` (string glob pattern)
-   * - `constitution: ["context/constitution/*.md"]` (array of patterns)
-   *
-   * @returns Array of relative paths to constitution files
-   */
-  private async resolveConstitutionPatterns(fm: Frontmatter): Promise<string[]> {
-    const raw = fm.parse()["constitution"];
-
-    if (!raw) {
-      return [];
-    }
-
-    const patterns = Array.isArray(raw) ? (raw as string[]) : [raw as string];
-    return this.globExpander.expandAll(patterns);
-  }
-
-  /**
    * Reads and returns the body content of all constitution files.
+   *
+   * The `constitution:` key takes a glob pattern or an array of them;
+   * a declared constitution that matches nothing gets a warning.
    *
    * @returns Array of body strings with frontmatter stripped
    */
   private async inlineConstitution(fm: Frontmatter): Promise<string[]> {
     const raw = fm.parse()["constitution"];
-    const expanded = await this.resolveConstitutionPatterns(fm);
 
-    if (raw && expanded.length === 0) {
+    if (!raw) return [];
+
+    const patterns = Array.isArray(raw) ? (raw as string[]) : [raw as string];
+    const expanded = await this.globExpander.expandAll(patterns);
+
+    if (expanded.length === 0) {
       this.logger.warn("Constitution patterns matched zero files");
     }
 

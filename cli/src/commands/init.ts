@@ -1,5 +1,8 @@
 import type { Command } from "commander";
 
+import type { Logger } from "@/core/logger.js";
+
+import { runAction } from "@/commands/action.js";
 import { PraxisBase } from "@/core/base.js";
 import { PraxisConfig } from "@/core/config.js";
 import {
@@ -10,7 +13,6 @@ import {
   readText,
   writeText,
 } from "@/core/files.js";
-import { Logger } from "@/core/logger.js";
 import { SCAFFOLD_DIR, joinPath, relativePath, resolvePath } from "@/core/paths.js";
 
 /**
@@ -24,20 +26,16 @@ export function registerInitCommand(program: Command): void {
     .command("init")
     .description("Initialize a new Praxis project")
     .argument("[directory]", "target directory (defaults to current directory)", ".")
-    .option("--spec-layer", "also scaffold the spec-layer authoring tree (experts, practices, context)", false)
-    .action((directory: string, options: { specLayer: boolean }) => {
-      const logger = new Logger();
-      try {
-        new InitCommand({
-          targetDir: resolvePath(directory),
-          specLayer: options.specLayer,
-          logger,
-        }).init();
-      } catch (err) {
-        logger.error(err instanceof Error ? err.message : String(err));
-        process.exit(1);
-      }
-    });
+    .option(
+      "--spec-layer",
+      "also scaffold the spec-layer authoring tree (experts, practices, context)",
+      false,
+    )
+    .action((directory: string, options: { specLayer: boolean }) =>
+      runAction(() =>
+        new InitCommand({ targetDir: resolvePath(directory), specLayer: options.specLayer }).init(),
+      ),
+    );
 }
 
 /**

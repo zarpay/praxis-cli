@@ -5,6 +5,7 @@ import type { PraxisProjectBaseOptions } from "@/types.js";
 
 import fg from "fast-glob";
 
+import { runAction } from "@/commands/action.js";
 import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { watchDir } from "@/core/files.js";
@@ -25,10 +26,9 @@ export function registerCompileCommand(program: Command): void {
     .description("Compile role definitions into agent files")
     .option("--alias <name>", "compile a specific agent by alias")
     .option("--watch", "watch source directories for changes and recompile")
-    .action(async (options: { alias?: string; watch?: boolean }) => {
-      const logger = new Logger();
-
-      try {
+    .action((options: { alias?: string; watch?: boolean }) =>
+      runAction(async () => {
+        const logger = new Logger();
         const command = new CompileCommand({ root: new Paths().root, logger });
 
         if (options.alias) {
@@ -46,11 +46,8 @@ export function registerCompileCommand(program: Command): void {
         if (options.watch) {
           command.watch();
         }
-      } catch (err) {
-        logger.error(err instanceof Error ? err.message : String(err));
-        process.exit(1);
-      }
-    });
+      }),
+    );
 }
 
 /**

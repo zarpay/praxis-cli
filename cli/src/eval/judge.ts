@@ -21,11 +21,7 @@ import { joinPath, parentDir } from "@/core/paths.js";
 import { hasGlobChars } from "@/core/spec-pattern.js";
 import { CacheManager, contentHash } from "@/eval/cache-manager.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
-import {
-  assistFileRecords,
-  assistHashInput,
-  resolveAssistInputs,
-} from "@/eval/judgment-input.js";
+import { assistFileRecords, assistHashInput, resolveAssistInputs } from "@/eval/judgment-input.js";
 import { resolveProvider } from "@/eval/providers/registry.js";
 import judgeTools from "@/prompts/judge-tools.js";
 import systemPrompt from "@/prompts/system-prompt.js";
@@ -51,6 +47,7 @@ export class Judge {
   readonly targetContent: string;
   /** Spec content as read at construction time. */
   readonly specContent: string;
+
   private result: Verdict | null = null;
   private readonly cacheManager: CacheManager | null;
   private wasCacheHit = false;

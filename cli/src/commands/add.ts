@@ -1,11 +1,12 @@
 import type { Command } from "commander";
 
+import type { Logger } from "@/core/logger.js";
 import type { AddableType } from "@/types.js";
 
+import { runAction } from "@/commands/action.js";
 import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { exists, readText, writeText } from "@/core/files.js";
-import { Logger } from "@/core/logger.js";
 import { Paths, SCAFFOLD_DIR, joinPath, relativePath } from "@/core/paths.js";
 
 /**
@@ -20,27 +21,17 @@ export function registerAddCommand(program: Command): void {
   add
     .command("expert <name>")
     .description("Create a new expert from template")
-    .action((name: string) => {
-      runAdd("expert", name);
-    });
+    .action((name: string) => runAdd("expert", name));
 
   add
     .command("practice <name>")
     .description("Create a new practice from template")
-    .action((name: string) => {
-      runAdd("practice", name);
-    });
+    .action((name: string) => runAdd("practice", name));
 }
 
 /** Shared action body: build an AddCommand for the current project and run it. */
-function runAdd(type: AddableType, name: string): void {
-  const logger = new Logger();
-  try {
-    new AddCommand({ root: new Paths().root, logger }).add(type, name);
-  } catch (err) {
-    logger.error(err instanceof Error ? err.message : String(err));
-    process.exit(1);
-  }
+function runAdd(type: AddableType, name: string): Promise<void> {
+  return runAction(() => new AddCommand({ root: new Paths().root }).add(type, name));
 }
 
 /**

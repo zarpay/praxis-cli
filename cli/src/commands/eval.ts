@@ -11,10 +11,10 @@ import type {
 
 import chalk from "chalk";
 
+import { runAction } from "@/commands/action.js";
 import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { exists } from "@/core/files.js";
-import { Logger } from "@/core/logger.js";
 import { Paths, resolvePath } from "@/core/paths.js";
 import { CacheManager } from "@/eval/cache-manager.js";
 import { EvalRun } from "@/eval/eval-run.js";
@@ -43,50 +43,32 @@ export function registerEvalCommand(program: Command): void {
     .option("--verbose", "show full AI reasoning", false)
     .option("--fail-fast", "stop on first error (full run only)", false)
     .option("--no-cache", "disable the verdict cache")
-    .action(async (targets: string[], options: AllOptions & { spec?: string }) => {
-      const logger = new Logger();
-      try {
+    .action((targets: string[], options: AllOptions & { spec?: string }) =>
+      runAction(async () => {
         const summary = await makeCommand().run(targets, options);
-        process.exit(summary.errors === 0 ? 0 : 1);
-      } catch (err) {
-        logger.error(err instanceof Error ? err.message : String(err));
-        process.exit(1);
-      }
-    });
+        return summary.errors === 0 ? 0 : 1;
+      }),
+    );
 
   evalCmd
     .command("ci")
     .description("Run a full evaluation in CI mode")
     .option("--strict", "fail on warnings too", false)
-    .action(async (options: { strict: boolean }) => {
-      const logger = new Logger();
-      try {
+    .action((options: { strict: boolean }) =>
+      runAction(async () => {
         const summary = await makeCommand().ci();
-
-        if (options.strict) {
-          process.exit(summary.errors === 0 && summary.warnings === 0 ? 0 : 1);
-        } else {
-          process.exit(summary.errors === 0 ? 0 : 1);
-        }
-      } catch (err) {
-        logger.error(err instanceof Error ? err.message : String(err));
-        process.exit(1);
-      }
-    });
+        const failures = summary.errors + (options.strict ? summary.warnings : 0);
+        return failures === 0 ? 0 : 1;
+      }),
+    );
 
   evalCmd
     .command("verdict <target>")
     .description("Show the cached verdict for a target, without an API call")
     .option("--verbose", "show full AI reasoning", false)
-    .action((target: string, options: { verbose: boolean }) => {
-      const logger = new Logger();
-      try {
-        makeCommand().report(target, options);
-      } catch (err) {
-        logger.error(err instanceof Error ? err.message : String(err));
-        process.exit(1);
-      }
-    });
+    .action((target: string, options: { verbose: boolean }) =>
+      runAction(() => makeCommand().report(target, options)),
+    );
 }
 
 /** Orders verdicts for worst-of aggregation: pass < warning < error. */
@@ -110,7 +92,6 @@ function makeCommand(): EvalCommand {
  * problems are thrown as PraxisError.
  */
 export class EvalCommand extends PraxisProjectBase {
-
   /**
    * The `eval run` entry point: judges the given targets, or performs
    * a full run over every spec-covered target when none are given.

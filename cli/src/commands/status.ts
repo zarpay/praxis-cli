@@ -4,10 +4,10 @@ import type { PraxisProjectBaseOptions, StatusReport } from "@/types.js";
 
 import fg from "fast-glob";
 
+import { runAction } from "@/commands/action.js";
 import { PraxisProjectBase } from "@/core/base.js";
 import { exists } from "@/core/files.js";
 import { Frontmatter } from "@/core/frontmatter.js";
-import { Logger } from "@/core/logger.js";
 import { Paths, baseName, joinPath, relativePath, resolvePath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { CacheManager } from "@/eval/cache-manager.js";
@@ -26,21 +26,17 @@ export function registerStatusCommand(program: Command): void {
   program
     .command("status")
     .description("Show project health dashboard")
-    .action(async () => {
-      const logger = new Logger();
-      try {
-        const command = new StatusCommand({ root: new Paths().root, logger });
+    .action(() =>
+      runAction(async () => {
+        const command = new StatusCommand({ root: new Paths().root });
         const report = await command.analyze();
         command.display(report);
 
         if (StatusCommand.hasIssues(report)) {
           process.exitCode = 1;
         }
-      } catch (err) {
-        logger.error(err instanceof Error ? err.message : String(err));
-        process.exit(1);
-      }
-    });
+      }),
+    );
 }
 
 /**
@@ -78,42 +74,82 @@ export class StatusCommand extends PraxisProjectBase {
     // Framework health only applies when the spec-layer compiler is in
     // use; eval-only projects get validation state and nothing else.
     if (!exists(this.config.expertsDir)) {
-      return {
-        compilerInUse: false,
-        counts: { experts: 0, practices: 0, references: 0, context: 0 },
-        validation: this.tallyValidation(),
-        orphanedPractices: [],
-        danglingRefs: [],
-        expertsMissingDescription: [],
-        zeroMatchGlobs: [],
-        unmatchedOwners: [],
-      };
+      return this.evalOnlyReport();
     }
 
-    // Count content files by type using config-driven paths
     const expertFiles = await this.listContentFiles(this.config.expertsDir, false);
     const practiceFiles = await this.listContentFiles(this.config.practicesDir, false);
+    const typeCounts = await this.countTypedDocuments();
+    const audit = await this.auditExperts(expertFiles);
 
-    // Scan all sources for reference and context files by frontmatter type
+    return {
+      compilerInUse: true,
+      counts: {
+        experts: expertFiles.length,
+        practices: practiceFiles.length,
+        references: typeCounts.references,
+        context: typeCounts.context,
+      },
+      validation: this.tallyValidation(),
+      orphanedPractices: this.findOrphanedPractices(practiceFiles, audit.referencedPractices),
+      danglingRefs: audit.danglingRefs,
+      expertsMissingDescription: audit.missingDescriptions,
+      zeroMatchGlobs: audit.zeroMatchGlobs,
+      unmatchedOwners: this.findUnmatchedOwners(practiceFiles, audit.aliases),
+    };
+  }
+
+  /** The report for a project with no spec layer: validation state only. */
+  private evalOnlyReport(): StatusReport {
+    return {
+      compilerInUse: false,
+      counts: { experts: 0, practices: 0, references: 0, context: 0 },
+      validation: this.tallyValidation(),
+      orphanedPractices: [],
+      danglingRefs: [],
+      expertsMissingDescription: [],
+      zeroMatchGlobs: [],
+      unmatchedOwners: [],
+    };
+  }
+
+  /** Counts reference and context documents across sources by frontmatter type. */
+  private async countTypedDocuments(): Promise<{ references: number; context: number }> {
     let references = 0;
-    let contextCount = 0;
+    let context = 0;
+
     for (const source of this.config.sources) {
       const sourceDir = resolvePath(this.root, source);
       const allFiles = await this.listContentFiles(sourceDir, true);
+
       for (const file of allFiles) {
         const type = Frontmatter.fromFile(file).value("type") as string | undefined;
 
         if (type === "reference") references++;
-        else if (type === "convention" || type === "constitution") contextCount++;
+        else if (type === "convention" || type === "constitution") context++;
       }
     }
 
-    // Build role alias map and check roles
-    const expertAliases = new Map<string, string>();
-    const allReferencedPractices = new Set<string>();
+    return { references, context };
+  }
+
+  /**
+   * Audits every expert file in one pass: collects aliases and
+   * referenced practices, and flags dangling refs, zero-match globs,
+   * and missing descriptions.
+   */
+  private async auditExperts(expertFiles: string[]): Promise<{
+    aliases: Map<string, string>;
+    referencedPractices: Set<string>;
+    danglingRefs: StatusReport["danglingRefs"];
+    zeroMatchGlobs: StatusReport["zeroMatchGlobs"];
+    missingDescriptions: string[];
+  }> {
+    const aliases = new Map<string, string>();
+    const referencedPractices = new Set<string>();
     const danglingRefs: StatusReport["danglingRefs"] = [];
     const zeroMatchGlobs: StatusReport["zeroMatchGlobs"] = [];
-    const expertsMissingDescription: string[] = [];
+    const missingDescriptions: string[] = [];
 
     for (const expertFile of expertFiles) {
       const fm = Frontmatter.fromFile(expertFile);
@@ -121,14 +157,13 @@ export class StatusCommand extends PraxisProjectBase {
       const expertName = baseName(expertFile);
 
       if (alias) {
-        expertAliases.set(alias.toLowerCase(), expertName);
+        aliases.set(alias.toLowerCase(), expertName);
       }
 
       if (!fm.value("description")) {
-        expertsMissingDescription.push(expertName);
+        missingDescriptions.push(expertName);
       }
 
-      // Check all ref-type keys
       for (const key of ["practices", "context", "refs"]) {
         const patterns = fm.array(key) as string[];
 
@@ -141,58 +176,47 @@ export class StatusCommand extends PraxisProjectBase {
             }
 
             if (key === "practices") {
-              for (const m of matches) allReferencedPractices.add(m);
+              for (const m of matches) referencedPractices.add(m);
             }
           } else {
-            const fullPath = joinPath(this.root, pattern);
-
-            if (!exists(fullPath)) {
+            if (!exists(joinPath(this.root, pattern))) {
               danglingRefs.push({ expert: expertName, ref: pattern });
             }
 
             if (key === "practices") {
-              allReferencedPractices.add(pattern);
+              referencedPractices.add(pattern);
             }
           }
         }
       }
     }
 
-    // Find orphaned practices
-    const orphanedPractices: string[] = [];
-    for (const practiceFile of practiceFiles) {
-      const relPath = relativePath(this.root, practiceFile);
+    return { aliases, referencedPractices, danglingRefs, zeroMatchGlobs, missingDescriptions };
+  }
 
-      if (!allReferencedPractices.has(relPath)) {
-        orphanedPractices.push(baseName(practiceFile));
-      }
-    }
+  /** Practices no expert references, by basename. */
+  private findOrphanedPractices(practiceFiles: string[], referenced: Set<string>): string[] {
+    return practiceFiles
+      .filter((file) => !referenced.has(relativePath(this.root, file)))
+      .map((file) => baseName(file));
+  }
 
-    // Find unmatched owners
-    const unmatchedOwners: StatusReport["unmatchedOwners"] = [];
+  /** Practices whose owner: matches no expert alias. */
+  private findUnmatchedOwners(
+    practiceFiles: string[],
+    aliases: Map<string, string>,
+  ): StatusReport["unmatchedOwners"] {
+    const unmatched: StatusReport["unmatchedOwners"] = [];
+
     for (const practiceFile of practiceFiles) {
       const owner = Frontmatter.fromFile(practiceFile).value("owner") as string | undefined;
 
-      if (owner && !expertAliases.has(owner.toLowerCase())) {
-        unmatchedOwners.push({ practice: baseName(practiceFile), owner });
+      if (owner && !aliases.has(owner.toLowerCase())) {
+        unmatched.push({ practice: baseName(practiceFile), owner });
       }
     }
 
-    return {
-      compilerInUse: true,
-      counts: {
-        experts: expertFiles.length,
-        practices: practiceFiles.length,
-        references,
-        context: contextCount,
-      },
-      validation: this.tallyValidation(),
-      orphanedPractices,
-      danglingRefs,
-      expertsMissingDescription,
-      zeroMatchGlobs,
-      unmatchedOwners,
-    };
+    return unmatched;
   }
 
   /** Displays the status report: eval state always, framework health only when the compiler is in use. */

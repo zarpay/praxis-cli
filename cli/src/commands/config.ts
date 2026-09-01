@@ -3,9 +3,9 @@ import type { Command } from "commander";
 import chalk from "chalk";
 import { spawnSync } from "node:child_process";
 
+import { runAction } from "@/commands/action.js";
 import { PraxisBase } from "@/core/base.js";
 import { readJson } from "@/core/files.js";
-import { Logger } from "@/core/logger.js";
 import { Paths } from "@/core/paths.js";
 
 /** Horizontal rule used in the config header output. */
@@ -23,28 +23,12 @@ export function registerConfigCommand(program: Command): void {
   config
     .command("show")
     .description("Print the current configuration")
-    .action(() => {
-      const logger = new Logger();
-      try {
-        makeCommand().show();
-      } catch (err) {
-        logger.error(err instanceof Error ? err.message : String(err));
-        process.exit(1);
-      }
-    });
+    .action(() => runAction(() => makeCommand().show()));
 
   config
     .command("edit")
     .description("Open the configuration in your default editor")
-    .action(() => {
-      const logger = new Logger();
-      try {
-        makeCommand().edit();
-      } catch (err) {
-        logger.error(err instanceof Error ? err.message : String(err));
-        process.exit(1);
-      }
-    });
+    .action(() => runAction(() => makeCommand().edit()));
 }
 
 /** Builds a ConfigCommand for the current project's config file. */
