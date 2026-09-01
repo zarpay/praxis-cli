@@ -73,10 +73,20 @@ only by `onlyFiles`/`onlyDirectories` and a post-filter. Extract
 `globTargets(patterns, shielded, mode)` so the three-way branch reads as policy
 rather than plumbing.
 
-**Rides along:** this is prime `Frontmatter` territory. `fm.array("paths") as string[]`,
-`(fm.array("excludes") as string[]).map(...)`, and `(fm.array("exemplars") as string[]).map(...)`
-all carry the same cast-then-absolutize. A `Frontmatter.paths(key, root)` accessor
-deletes three casts here and more in `src/eval/judgment-input.ts`.
+**Rides along — done.** `array()` is now generic (`array<T = string>`), so every
+`as string[]` in the codebase is gone: `eval-run.ts` x3, `status.ts`, `expert-compiler.ts`,
+`judgment-input.ts`. The six `value(k) as string | undefined` sites moved to
+`optionalValue(k)`. `inlineConstitution` dropped its hand-rolled
+`Array.isArray(raw) ? raw : [raw]` for `array()`.
+
+The `Frontmatter.paths(key, root)` accessor I proposed here is **not worth adding.**
+Its justification was deleting casts, and generic `array()` already did that — what
+remains is `fm.array("excludes").map((p) => joinPath(this.root, p))`, one clean line
+at two call sites. A path-resolution helper on a frontmatter parser would drag
+project-root knowledge into a YAML reader to save one `.map`.
+
+Still open here: the three `fg.sync` calls themselves. Partly addressed already —
+`syncOptions` is now built once per spec and mutated per branch.
 
 ---
 
@@ -102,6 +112,37 @@ stdout.
   only exercised indirectly through `eval-run.test.ts`.
 - `src/prompts/*` — untested, but mostly template strings where a snapshot is
   low-value. Lowest priority of the three.
+
+---
+
+## [x] 7. Typed document models (`src/models/`)
+
+**Done.** `SpecFile` and `ExpertFile` — each names the frontmatter keys its
+document kind honors, so those spellings live in one place instead of as string
+literals at every reader.
+
+What moved: `readCohort` (23 lines of enum validation and a throw) left `EvalRun`
+for `SpecFile.cohort`, where it is testable against a string instead of requiring
+a project and a discovery pass. `expert-compiler` stopped passing `Frontmatter`
+through four private methods. `status.auditExperts` and `commands/compile` read
+typed fields.
+
+Both models are pure over content (`fromContent`), so their 25 tests need no
+tmpdir at all — that is the real win, not the line count.
+
+**Constraint honored:** models report absence, they never validate on
+construction. `compile.ts` skips an expert with no `alias` and `status` reports it
+as a finding; a throwing constructor would break both. `cohort` is the sole
+exception and it already threw.
+
+**Cost accepted (see `CLAUDE.md`):** `src/models/` is a shared leaf, so the eval
+layer is now _able_ to import `ExpertFile` — spec-layer taxonomy. The ESLint rule
+stops models from importing either layer, but nothing stops that direction.
+Taxonomy-free `@/eval` is convention here, not enforcement.
+
+**Still reading `Frontmatter` directly, deliberately:** `status.ts` reads `type`
+on arbitrary content files and `owner` on practices. Those want a third model
+(`PracticeFile`) or a generic document reader; neither earns its keep yet.
 
 ---
 

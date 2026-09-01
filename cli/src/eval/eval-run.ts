@@ -1,6 +1,5 @@
 import type { PraxisConfig } from "@/core/config.js";
 import type {
-  CohortMode,
   Verdict,
   EvalSummary,
   EvalUnit,
@@ -16,15 +15,12 @@ import { PraxisProjectBase } from "@/core/base.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/core/config.js";
 import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
-import { Frontmatter } from "@/core/frontmatter.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
 import { CacheManager } from "@/eval/cache-manager.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
 import { Judge } from "@/eval/judge.js";
-
-/** The accepted `cohort:` frontmatter values. */
-const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
+import { SpecFile } from "@/models/spec-file.js";
 
 /**
  * One evaluation run: everything a single `praxis eval run` invocation
@@ -350,6 +346,11 @@ export class EvalRun extends PraxisProjectBase {
   private discoverValidationDomains(): ValidationDomain[] {
     const domains: ValidationDomain[] = [];
 
+    const targetFilesFilterCallback = (f: string) => {
+      const name = baseName(f);
+      return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
+    };
+
     for (const source of this.sources) {
       const sourceAbsPath = joinPath(this.root, source);
       const specPaths = fg.sync(`**/${this.specFilePattern}`, {
@@ -363,69 +364,50 @@ export class EvalRun extends PraxisProjectBase {
         const dir = parentDir(specPath);
         const type = relativePath(this.root, dir) || baseName(dir);
 
-        const fm = Frontmatter.fromFile(specPath);
-        const pathPatterns = fm.array("paths") as string[];
-        const cohort = this.readCohort(fm, specPath);
-        const excludes = (fm.array("excludes") as string[]).map((p) => joinPath(this.root, p));
-        const exemplars = (fm.array("exemplars") as string[]).map((p) => joinPath(this.root, p));
+        const spec = SpecFile.at(specPath, this.root);
+        const pathPatterns = spec.paths;
+        const cohort = spec.cohort;
+        const excludes = spec.excludes.map((p) => joinPath(this.root, p));
+        const exemplars = spec.exemplars.map((p) => joinPath(this.root, p));
         // Exemplars are shielded from adverse judgment exactly like
         // excludes; they reach the judge only as inlined positives.
         const shielded = [...this.absoluteIgnore, ...excludes, ...exemplars];
 
+        const domain: ValidationDomain = {
+          dir,
+          specPath,
+          type,
+          cohort,
+          excludes,
+          exemplars,
+        };
+
+        const syncOptions: fg.Options = {
+          cwd: this.root,
+          absolute: true,
+          dot: true,
+          ignore: shielded,
+        };
+
         if (cohort === "by_directory") {
-          const targetDirs = fg
-            .sync(pathPatterns, {
-              cwd: this.root,
-              onlyDirectories: true,
-              absolute: true,
-              dot: true,
-              ignore: shielded,
-            })
-            .sort();
+          syncOptions.onlyDirectories = true;
 
-          domains.push({ dir, specPath, type, cohort, excludes, exemplars, targetDirs });
+          const targetDirs = fg.sync(pathPatterns, syncOptions).sort();
+
+          domain.targetDirs = targetDirs;
         } else if (pathPatterns.length > 0) {
-          const targetFiles = fg
-            .sync(pathPatterns, {
-              cwd: this.root,
-              onlyFiles: true,
-              absolute: true,
-              dot: true,
-              ignore: shielded,
-            })
-            .filter((f) => {
-              const name = baseName(f);
-              return !isSpecFile(name, this.specFilePattern) && !name.startsWith("_");
-            });
+          syncOptions.onlyFiles = true;
 
-          domains.push({ dir, specPath, type, cohort, excludes, exemplars, targetFiles });
-        } else {
-          domains.push({ dir, specPath, type, cohort, excludes, exemplars });
+          const targetFiles = fg.sync(pathPatterns, syncOptions).filter(targetFilesFilterCallback);
+
+          domain.targetFiles = targetFiles;
         }
+
+        domains.push(domain);
       }
     }
 
     return domains;
-  }
-
-  /**
-   * Reads and validates a spec's `cohort:` frontmatter value.
-   *
-   * @throws PraxisError when the value is outside the two-member enum
-   */
-  private readCohort(fm: Frontmatter, specPath: string): CohortMode {
-    const raw = fm.value("cohort");
-
-    if (raw === undefined || raw === null) {
-      return "by_file";
-    }
-
-    if (typeof raw === "string" && (COHORT_MODES as string[]).includes(raw)) {
-      return raw as CohortMode;
-    }
-
-    const shown = typeof raw === "string" ? raw : JSON.stringify(raw);
-    throw errors.invalidCohortValue(shown, relativePath(this.root, specPath));
   }
 
   /** Checks if the last result triggers fail-fast (stops on errors, not warnings). */

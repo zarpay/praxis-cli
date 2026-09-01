@@ -9,9 +9,9 @@ import { runAction } from "@/commands/action.js";
 import { PraxisProjectBase } from "@/core/base.js";
 import { errors } from "@/core/errors.js";
 import { watchDir } from "@/core/files.js";
-import { Frontmatter } from "@/core/frontmatter.js";
 import { Logger } from "@/core/logger.js";
 import { Paths, resolvePath } from "@/core/paths.js";
+import { ExpertFile } from "@/models/expert-file.js";
 import { ExpertCompiler } from "@/spec/expert-compiler.js";
 
 /**
@@ -142,8 +142,7 @@ export class CompileCommand extends PraxisProjectBase {
     });
 
     for (const expertFile of expertFiles) {
-      const fm = Frontmatter.fromFile(expertFile);
-      const alias = fm.value("alias") as string | undefined;
+      const alias = ExpertFile.at(expertFile).alias;
 
       if (alias?.toLowerCase() === targetAlias.toLowerCase()) {
         return expertFile;

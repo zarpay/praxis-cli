@@ -17,8 +17,8 @@ import { createHash } from "node:crypto";
 
 import { errors } from "@/core/errors.js";
 import { readText } from "@/core/files.js";
-import { Frontmatter } from "@/core/frontmatter.js";
 import { relativePath } from "@/core/paths.js";
+import { SpecFile } from "@/models/spec-file.js";
 
 /**
  * Resolves a spec's `exemplars:` and `context:` globs into file contents.
@@ -39,26 +39,21 @@ export function resolveAssistInputs({
   specPath: string;
   root?: string;
 }): AssistInputs {
-  const fm = Frontmatter.fromContent(specContent);
+  const spec = SpecFile.fromContent(specContent, specPath);
 
   return {
-    exemplars: resolveKey(fm, "exemplars", specPath, root),
-    context: resolveKey(fm, "context", specPath, root),
+    exemplars: resolveKey(spec, "exemplars", root),
+    context: resolveKey(spec, "context", root),
   };
 }
 
 /** Resolves one frontmatter key's globs into sorted, labeled file contents. */
-function resolveKey(
-  fm: Frontmatter,
-  key: "exemplars" | "context",
-  specPath: string,
-  root?: string,
-): AssistFile[] {
-  const patterns = fm.array(key) as string[];
+function resolveKey(spec: SpecFile, key: "exemplars" | "context", root?: string): AssistFile[] {
+  const patterns = spec.assistPatterns(key);
 
   if (patterns.length === 0) return [];
 
-  if (!root) throw errors.missingProjectRoot(key, specPath);
+  if (!root) throw errors.missingProjectRoot(key, spec.path);
 
   return fg
     .sync(patterns, { cwd: root, onlyFiles: true, absolute: true, dot: true })

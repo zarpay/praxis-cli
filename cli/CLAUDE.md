@@ -24,9 +24,10 @@ Praxis is two layers (see `praxis_v2_specs/11-spec-layer.md`), and `src/` mirror
 - **`src/eval/`** — the eval layer: judges targets against specs, caches verdicts, and (as v2 lands) writes the ledger. Taxonomy-free.
 - **`src/core/`** — shared primitives both layers use: config, errors, files, paths, logger, frontmatter, spec-pattern.
 - **`src/prompts/`** — every LLM/agent-facing prompt, one per file as a typed default-export function. A shared leaf like core: both layers import it, it imports neither (ESLint-enforced).
+- **`src/models/`** — typed readers for the project's document kinds (`SpecFile`, `ExpertFile`), each naming the frontmatter keys its kind honors so those spellings live in one place. A shared leaf like core and prompts: it imports neither layer (ESLint-enforced). **Caveat:** because it is shared, the eval layer *can* import `ExpertFile`, which is spec-layer taxonomy — nothing but review prevents it. Keep `@/eval` free of taxonomy models by convention.
 - **`src/commands/`** — CLI wiring; the only place the two layers meet.
 
-**The layers never import each other** (ESLint-enforced): the spec layer produces files the eval layer consumes as plain specs.
+**The layers never import each other** (ESLint-enforced): the spec layer produces files the eval layer consumes as plain specs. That handoff is a real contract: an expert's `validates:` is compiled out as the spec's `paths:` (`spec/output-builder.ts:evalTargetingLines` writes it, `eval/eval-run.ts:discoverValidationDomains` reads it), and `cohort:`/`excludes:`/`exemplars:` pass through under the same names. `ExpertFile` and `SpecFile` are the two ends of it.
 
 ### Spec Layer — Compiler Pipeline
 

@@ -4,9 +4,9 @@ import fg from "fast-glob";
 
 import { PraxisProjectBase } from "@/core/base.js";
 import { exists, writeText } from "@/core/files.js";
-import { Frontmatter } from "@/core/frontmatter.js";
 import { baseName, joinPath } from "@/core/paths.js";
 import { isSpecFile } from "@/core/spec-pattern.js";
+import { ExpertFile } from "@/models/expert-file.js";
 import { GlobExpander } from "@/spec/glob-expander.js";
 import { Markdown } from "@/spec/markdown.js";
 import { OutputBuilder, evalTargetingLines } from "@/spec/output-builder.js";
@@ -44,15 +44,15 @@ export class ExpertCompiler extends PraxisProjectBase {
    * @returns The role alias, or null if the role was skipped
    */
   async compile(expertFile: string): Promise<string | null> {
-    const fm = Frontmatter.fromFile(expertFile);
-    const alias = fm.value("alias") as string | undefined;
+    const expert = ExpertFile.at(expertFile);
+    const alias = expert.alias;
 
     if (!alias) {
       this.logger.warn(`No alias found in ${expertFile}, skipping`);
       return null;
     }
 
-    const { profile, metadata } = await this.buildExpertProfile(expertFile, fm, alias);
+    const { profile, metadata } = await this.buildExpertProfile(expert, alias);
     this.writeOutputs(profile, metadata, alias);
 
     this.logger.success(`Compiled ${alias.toLowerCase()}.md`);
@@ -98,19 +98,18 @@ export class ExpertCompiler extends PraxisProjectBase {
    * Builds the pure profile content and metadata for a role.
    */
   private async buildExpertProfile(
-    expertFile: string,
-    fm: Frontmatter,
+    expert: ExpertFile,
     alias: string,
   ): Promise<{ profile: string; metadata: AgentMetadata | null }> {
-    const md = new Markdown(expertFile);
-    const metadata = this.buildAgentMetadata(fm, alias);
+    const md = new Markdown(expert.path);
+    const metadata = this.buildAgentMetadata(expert, alias);
     const builder = new OutputBuilder();
 
     builder.addRole(md.body());
-    builder.addResponsibilities(await this.inlineRefs(fm, "practices"));
-    builder.addConstitution(await this.inlineConstitution(fm));
-    builder.addContext(await this.inlineRefs(fm, "context"));
-    builder.addReference(await this.inlineRefs(fm, "refs"));
+    builder.addResponsibilities(await this.inlineRefs(expert, "practices"));
+    builder.addConstitution(await this.inlineConstitution(expert));
+    builder.addContext(await this.inlineRefs(expert, "context"));
+    builder.addReference(await this.inlineRefs(expert, "refs"));
 
     return { profile: builder.buildProfile(), metadata };
   }
@@ -147,13 +146,10 @@ export class ExpertCompiler extends PraxisProjectBase {
    *
    * @returns Array of body strings with frontmatter stripped
    */
-  private async inlineConstitution(fm: Frontmatter): Promise<string[]> {
-    const raw = fm.parse()["constitution"];
+  private async inlineConstitution(expert: ExpertFile): Promise<string[]> {
+    if (!expert.declaresConstitution) return [];
 
-    if (!raw) return [];
-
-    const patterns = Array.isArray(raw) ? (raw as string[]) : [raw as string];
-    const expanded = await this.globExpander.expandAll(patterns);
+    const expanded = await this.globExpander.expandAll(expert.constitution);
 
     if (expanded.length === 0) {
       this.logger.warn("Constitution patterns matched zero files");
@@ -168,12 +164,15 @@ export class ExpertCompiler extends PraxisProjectBase {
    * Used for responsibilities, context, and refs sections. Warns on
    * glob patterns that match nothing so authors catch typos early.
    *
-   * @param fm - The parsed frontmatter
-   * @param key - The frontmatter key to read (e.g. "practices", "context", "refs")
+   * @param expert - The expert being compiled
+   * @param key - Which reference set to inline
    * @returns Array of body strings with frontmatter stripped
    */
-  private async inlineRefs(fm: Frontmatter, key: string): Promise<string[]> {
-    const patterns = fm.array(key) as string[];
+  private async inlineRefs(
+    expert: ExpertFile,
+    key: "practices" | "context" | "refs",
+  ): Promise<string[]> {
+    const patterns = expert.refs(key);
     const expanded: string[] = [];
 
     for (const pattern of patterns) {
@@ -220,13 +219,13 @@ export class ExpertCompiler extends PraxisProjectBase {
    * frontmatter stay undefined. Returns null if no `description` is
    * provided.
    */
-  private buildAgentMetadata(fm: Frontmatter, alias: string): AgentMetadata | null {
+  private buildAgentMetadata(expert: ExpertFile, alias: string): AgentMetadata | null {
     const name = alias
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
 
-    const description = fm.value("description") as string | undefined;
+    const description = expert.description;
 
     if (!description) {
       this.logger.warn("No description found in role, skipping agent metadata");
@@ -236,13 +235,13 @@ export class ExpertCompiler extends PraxisProjectBase {
     return {
       name,
       description,
-      cohort: fm.optionalValue("cohort"),
-      tools: fm.optionalValue("agent_tools"),
-      model: fm.optionalValue("agent_model"),
-      excludes: fm.optionalArray("excludes"),
-      validates: fm.optionalArray("validates"),
-      exemplars: fm.optionalArray("exemplars"),
-      permissionMode: fm.optionalValue("agent_permission_mode"),
+      cohort: expert.cohort,
+      tools: expert.agentTools,
+      model: expert.agentModel,
+      excludes: expert.excludes,
+      validates: expert.validates,
+      exemplars: expert.exemplars,
+      permissionMode: expert.agentPermissionMode,
     };
   }
 }

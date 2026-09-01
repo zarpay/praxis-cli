@@ -13,7 +13,11 @@ import { isSpecFile } from "@/core/spec-pattern.js";
 import { CacheManager } from "@/eval/cache-manager.js";
 import { EvalRun } from "@/eval/eval-run.js";
 import { cacheIdentity } from "@/eval/judge-hash.js";
+import { ExpertFile } from "@/models/expert-file.js";
 import { GlobExpander } from "@/spec/glob-expander.js";
+
+/** The reference keys an expert can point at other documents with. */
+const REF_KEYS = ["practices", "context", "refs"] as const;
 
 /**
  * Registers the `praxis status` command.
@@ -123,7 +127,7 @@ export class StatusCommand extends PraxisProjectBase {
       const allFiles = await this.listContentFiles(sourceDir, true);
 
       for (const file of allFiles) {
-        const type = Frontmatter.fromFile(file).value("type") as string | undefined;
+        const type = Frontmatter.fromFile(file).optionalValue("type");
 
         if (type === "reference") references++;
         else if (type === "convention" || type === "constitution") context++;
@@ -152,20 +156,20 @@ export class StatusCommand extends PraxisProjectBase {
     const missingDescriptions: string[] = [];
 
     for (const expertFile of expertFiles) {
-      const fm = Frontmatter.fromFile(expertFile);
-      const alias = fm.value("alias") as string | undefined;
+      const expert = ExpertFile.at(expertFile);
+      const alias = expert.alias;
       const expertName = baseName(expertFile);
 
       if (alias) {
         aliases.set(alias.toLowerCase(), expertName);
       }
 
-      if (!fm.value("description")) {
+      if (!expert.description) {
         missingDescriptions.push(expertName);
       }
 
-      for (const key of ["practices", "context", "refs"]) {
-        const patterns = fm.array(key) as string[];
+      for (const key of REF_KEYS) {
+        const patterns = expert.refs(key);
 
         for (const pattern of patterns) {
           if (this.globExpander.isGlob(pattern)) {
@@ -209,7 +213,7 @@ export class StatusCommand extends PraxisProjectBase {
     const unmatched: StatusReport["unmatchedOwners"] = [];
 
     for (const practiceFile of practiceFiles) {
-      const owner = Frontmatter.fromFile(practiceFile).value("owner") as string | undefined;
+      const owner = Frontmatter.fromFile(practiceFile).optionalValue("owner");
 
       if (owner && !aliases.has(owner.toLowerCase())) {
         unmatched.push({ practice: baseName(practiceFile), owner });

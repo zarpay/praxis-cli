@@ -74,6 +74,16 @@ describe("Frontmatter", () => {
     });
   });
 
+  describe("array() typing", () => {
+    it("returns string[] without a cast at the call site", () => {
+      const fm = Frontmatter.fromFile(join(FIXTURES_DIR, "sample-expert.md"));
+      const practices = fm.array("practices");
+      const joined = practices.join(",");
+
+      expect(joined).toBe("content/practices/sample-practice.md");
+    });
+  });
+
   describe("optionalValue()", () => {
     it("returns the value when the key is present", () => {
       const fm = Frontmatter.fromFile(join(FIXTURES_DIR, "sample-expert.md"));

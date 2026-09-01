@@ -196,6 +196,29 @@ export default tseslint.config(
     },
   },
   {
+    // Models are a shared leaf like core and prompts: typed readers for
+    // the project's document kinds, so they may import neither layer.
+    // NOTE: this makes the eval layer *able* to import spec-layer
+    // taxonomy (@/models/expert-file.js). Nothing but review stops it;
+    // the taxonomy-free guarantee for @/eval is convention here.
+    files: ["src/models/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+          ],
+          patterns: [
+            { group: ["./*", "../*", "!../package.json"], message: "Use the @/ path alias instead of relative imports." },
+            { group: ["@/eval/*", "@/spec/*"], message: "Models are a shared leaf: they must not depend on either layer." },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // Prompts are a shared leaf like core: both layers may import them,
     // so they may import neither layer (only @/core and each other).
     files: ["src/prompts/**/*.ts"],

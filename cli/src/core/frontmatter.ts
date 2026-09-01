@@ -63,9 +63,13 @@ export class Frontmatter {
    * If it's a single value, wraps it in an array.
    * If the key is missing, returns an empty array.
    *
+   * Defaults to `string[]`, the shape every caller wants; YAML is
+   * untyped, so this is the same unchecked trust the `as string[]` at
+   * each call site used to express, stated once here instead.
+   *
    * @param key - The frontmatter field name
    */
-  array(key: string): unknown[] {
+  array<T = string>(key: string): T[] {
     const val = this.parse()[key];
 
     if (val === undefined || val === null) {
@@ -73,10 +77,10 @@ export class Frontmatter {
     }
 
     if (Array.isArray(val)) {
-      return val;
+      return val as T[];
     }
 
-    return [val];
+    return [val as T];
   }
 
   /**
@@ -102,7 +106,7 @@ export class Frontmatter {
    * @param key - The frontmatter field name
    */
   optionalArray<T = string>(key: string): T[] | undefined {
-    const values = this.array(key) as T[];
+    const values = this.array<T>(key);
 
     return values.length > 0 ? values : undefined;
   }
