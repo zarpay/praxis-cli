@@ -49,14 +49,7 @@ export interface HeaderEntry {
  * value to skip — so conditional entries inline naturally
  * (`count > 0 && { badge: ... }`).
  */
-export type DisplayEntry =
-  | string
-  | TextEntry
-  | BadgeEntry
-  | HeaderEntry
-  | null
-  | false
-  | undefined;
+export type DisplayEntry = string | TextEntry | BadgeEntry | HeaderEntry | null | false | undefined;
 
 // ---------------------------------------------------------------------------
 // Errors (core/errors.ts)
@@ -118,7 +111,7 @@ export interface JudgeConfig {
   apiKeyEnvVar: string;
   /** OpenAI-compatible endpoint base; defaults to OpenRouter. */
   baseUrl?: string;
-  /** Sampling temperature for judgments; defaults to 0.1. */
+  /** Sampling temperature for judgments; defaults to 0. */
   temperature?: number;
   /**
    * Provider that executes judgments: a built-in registry name, or a

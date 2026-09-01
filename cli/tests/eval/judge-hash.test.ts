@@ -70,7 +70,7 @@ describe("judgeHash", () => {
   it("hashes omitted settings identically to their explicit defaults", () => {
     const explicit = judge({
       baseUrl: "https://openrouter.ai/api/v1",
-      temperature: 0.1,
+      temperature: 0,
       provider: "openrouter",
       options: {},
     });

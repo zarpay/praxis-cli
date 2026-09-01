@@ -112,6 +112,51 @@
         "issues": [],
         "reason": "Judgment input has 585 words."
       }
+    },
+    "dacac2eb:433458bb": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "433458bb"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-08-31T22:07:52.879Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file adheres to all three conventions: (1) Subject framing — top-level describe names the module 'rank-parlors', nested describes use when-clauses, and each it states a single observable outcome; (2) One assertion per block — every it contains exactly one expect, using toMatchObject/toEqual for compound shapes; (3) Functionality, not implementation — tests exercise only the exported run function and the injected Store collaborator, with no spies, no mocking of honest in-memory stores, no reaching into module scope, and data built fresh per test via beforeEach setup. No required criteria are violated. The assert helper and tests reference the store imported from ../src/services/rank-parlors.js, and the suite reads cleanly as sentences like 'rank-parlors, when no parlors have reviews, ranks every seeded parlor with a zero average' which is consistent with the specification. All requirements are met, so the file passes."
+      }
+    },
+    "dacac2eb:22073e9f": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "22073e9f"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-08-31T22:09:39.667Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully satisfies all criteria in the specification: proper subject framing with module name and 'when' clauses, exactly one assertion per test block, testing only public API functionality without implementation details, and proper test data isolation."
+      }
+    },
+    "dacac2eb:dfa53848": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "dfa53848"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-08-31T22:09:48.503Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 585 words."
+      }
     }
   }
 }

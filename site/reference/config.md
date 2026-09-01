@@ -158,7 +158,7 @@ The judges — named inference backends that evaluate targets against specs. **E
 | `model` | yes | Model identifier the backend understands (e.g. an [OpenRouter slug](https://openrouter.ai/models)) |
 | `apiKeyEnvVar` | yes | Environment variable holding the backend's API key |
 | `baseUrl` | no | OpenAI-compatible endpoint base; defaults to OpenRouter |
-| `temperature` | no | Sampling temperature for judgments; defaults to `0.1` |
+| `temperature` | no | Sampling temperature for judgments; defaults to `0` |
 
 Each target's cache file holds every judge's verdicts, keyed by a hash of the judge's *behavioral* settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the judging prompt. Renaming a judge or rotating a key keeps its cached verdicts; changing the model, endpoint, or temperature invalidates them.
 

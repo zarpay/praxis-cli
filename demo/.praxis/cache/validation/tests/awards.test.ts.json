@@ -112,6 +112,51 @@
         "issues": [],
         "reason": "Judgment input has 539 words."
       }
+    },
+    "dacac2eb:433458bb": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "433458bb"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-08-31T22:07:45.311Z",
+      "content_hash": "b35b5069",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The awards.test.ts file conforms to all three test conventions. Subject framing: the top-level describe names the module under test by its module name ("
+      }
+    },
+    "dacac2eb:22073e9f": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "22073e9f"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-08-31T22:09:10.756Z",
+      "content_hash": "b35b5069",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with the specification. It follows proper subject framing with module name and when clauses, maintains one assertion per test block, tests functionality through public API without implementation details, uses fresh test data setup, and avoids inappropriate mocking or spying."
+      }
+    },
+    "dacac2eb:dfa53848": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "dfa53848"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-08-31T22:09:48.499Z",
+      "content_hash": "b35b5069",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 539 words."
+      }
     }
   }
 }

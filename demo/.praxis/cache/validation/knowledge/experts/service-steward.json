@@ -84,6 +84,51 @@
         "issues": [],
         "reason": "Judgment input has 286 words."
       }
+    },
+    "244fa7f3:433458bb": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "433458bb"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-08-31T22:07:29.323Z",
+      "content_hash": "9345eb3c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies every criterion in the specification. Frontmatter includes title (string), type set to 'expert', alias, and description. The body opens with a level-1 heading naming the expert and its alias (# Service Steward (a.k.a **Scooper**)), and states in prose what the expert is the subject-matter expert on ('The subject-matter expert on how Scoop Society services are written'). No placeholder text (TODO, TBD, lorem ipsum) is present. The extra frontmatter fields (constitution, context, practices, refs, validates, excludes, exemplars) are not prohibited by the spec."
+      }
+    },
+    "244fa7f3:22073e9f": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "22073e9f"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-08-31T22:08:11.758Z",
+      "content_hash": "9345eb3c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification. It includes all required frontmatter fields (title, type, alias, description), opens with the required level-1 heading naming the expert and alias, clearly states what the expert is the subject-matter expert on, and contains no prohibited placeholder text."
+      }
+    },
+    "244fa7f3:dfa53848": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "dfa53848"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-08-31T22:09:48.483Z",
+      "content_hash": "9345eb3c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 286 words."
+      }
     }
   }
 }

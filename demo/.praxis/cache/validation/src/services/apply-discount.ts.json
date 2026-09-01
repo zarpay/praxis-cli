@@ -144,6 +144,89 @@
           "hash": "a1beb8f5"
         }
       ]
+    },
+    "0311531a:433458bb": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "433458bb"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-08-31T22:07:42.328Z",
+      "content_hash": "436b0f1f",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Structure criterion: the module does not export a function named `run`; it exports `applyDiscount` instead. The service must export exactly one entry point named `run` taking the `Store` first and a single input object, returning a `Result<T>`.",
+          "Structure criterion: the function returns `number` rather than `Result<T>` from the domain types; it must return `{ ok: true, value }` / `{ ok: false, error }`.",
+          "Structure criterion: the module name `apply-discount.ts` is verb-first kebab-case and acceptable, but the exported function name must still be `run` per the structure rule.",
+          "Behavior criterion (domain failures are values): `throw new Error(...)` is used for domain failures (bad code, unknown parlor). These must be returned as `{ ok: false, error }` values instead; `throw` is reserved for programmer error.",
+          "Behavior criterion (error messages for the API consumer): messages like 'invalid input' and 'error' must name what was wrong and what would be accepted instead (e.g., which codes are valid, what a valid parlor id looks like).",
+          "Behavior criterion (no I/O except through the injected Store): `console.log` performs I/O outside the Store and must be removed; audit logging is not permitted here.",
+          "Behavior criterion (services do one thing): the service performs discount application plus audit logging, a second responsibility; audit logging must be extracted to a second service or removed.",
+          "Behavior criterion (input validated before any work): while the code validates the code first, the store look-up and console output should follow a validation block that reads top-to-bottom before the happy path; also all inputs (parlor existence) should be validated before any side effect occurs.",
+          "Documentation criterion: the module has no doc comment stating its purpose in one sentence and enumerating its domain failure modes; it must document its failure modes so callers can handle every `error` without reading the body."
+        ],
+        "reason": "The file deliberately violates nearly every service convention: wrong entry-point shape (not `run`, returns a bare number instead of `Result<T>`), throws for domain failures, vague error messages, console I/O, a second responsibility (audit logging), and no doc comment."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:22073e9f": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "22073e9f"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-08-31T22:08:58.753Z",
+      "content_hash": "436b0f1f",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Violates 'Domain failures are values, never exceptions' criterion: Uses throw statements for domain failures instead of returning { ok: false, error }",
+          "Violates 'Error messages are written for the API consumer' criterion: Error messages are vague ('invalid input', 'error') instead of naming what was wrong and what would be accepted",
+          "Violates 'No I/O except through the injected Store' criterion: Uses console.log for audit logging",
+          "Violates 'Services do one thing' criterion: Has a second responsibility (audit logging) in addition to applying discount",
+          "Violates 'Every service has a doc comment' criterion: No doc comment stating purpose and enumerating domain failure modes",
+          "Violates 'exports exactly one entry point: a function named run' criterion: Exports function named applyDiscount instead of run",
+          "Violates 'Input is validated before any work happens' criterion: Validation is incomplete (doesn't validate parlorId before using it) and mixed with business logic"
+        ],
+        "reason": "The file violates multiple required criteria in the Service Conventions specification."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:dfa53848": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "dfa53848"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-08-31T22:09:48.495Z",
+      "content_hash": "436b0f1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 581 words."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
     }
   }
 }

@@ -215,7 +215,7 @@ describe("Judge", () => {
       expect(hit).toBe(true);
     });
 
-    it("sends the judge's temperature, defaulting to 0.1", async () => {
+    it("sends the judge's temperature, defaulting to 0", async () => {
       const temperatures: number[] = [];
       server.use(
         http.post(OPENROUTER_URL, async ({ request }) => {
@@ -237,7 +237,7 @@ describe("Judge", () => {
         config: { name: "cool", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" },
       }).validate();
 
-      expect(temperatures).toEqual([0.9, 0.1]);
+      expect(temperatures).toEqual([0.9, 0]);
     });
   });
 

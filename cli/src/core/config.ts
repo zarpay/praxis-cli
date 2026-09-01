@@ -20,7 +20,7 @@ export const DEFAULT_JUDGE_BASE_URL = "https://openrouter.ai/api/v1";
 export const DEFAULT_JUDGE_PROVIDER = "openrouter";
 
 /** Default sampling temperature when a judge declares none. */
-export const DEFAULT_JUDGE_TEMPERATURE = 0.1;
+export const DEFAULT_JUDGE_TEMPERATURE = 0.0;
 
 /** Defaults used when the config file is absent or fields are omitted. */
 const DEFAULT_CONFIG: NormalizedConfig = {

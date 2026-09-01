@@ -188,6 +188,81 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:433458bb": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "433458bb"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-08-31T22:07:32.458Z",
+      "content_hash": "486559a7",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "All criteria satisfied. Structure: single entry point index.ts re-exports the public API (run/PickWinnersInput and Award); types live in dedicated awards-types.ts named <feature>-types.ts; logic file pick-winners.ts is verb-first kebab-case, follows service conventions (one exported run, returns the domain Result with consumer-grade error messages). Cohesion: no orphaned files (index.ts imports both pick-winners.ts and award-types.ts, and pick-winners.ts imports award-types.ts), the feature serves one capability (picking yearly awards), and the name 'awards' describes the capability, not the implementation. The context files are only referenced correctly via imports, not critiqued."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:22073e9f": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "22073e9f"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-08-31T22:08:27.728Z",
+      "content_hash": "486559a7",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The awards feature module satisfies all criteria defined in the specification: it has exactly one entry point (index.ts), types in a dedicated award-types.ts file, logic files follow verb-first kebab-case naming with proper service conventions, and all files are cohesive and reachable from the entry point."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:dfa53848": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "dfa53848"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-08-31T22:09:48.489Z",
+      "content_hash": "486559a7",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 948 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

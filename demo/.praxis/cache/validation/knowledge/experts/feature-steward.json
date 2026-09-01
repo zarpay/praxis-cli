@@ -80,6 +80,51 @@
         "issues": [],
         "reason": "Judgment input has 294 words."
       }
+    },
+    "244fa7f3:433458bb": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "433458bb"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-08-31T22:07:27.781Z",
+      "content_hash": "268389a1",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "file satisfies all criteria"
+      }
+    },
+    "244fa7f3:22073e9f": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "22073e9f"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-08-31T22:08:04.494Z",
+      "content_hash": "268389a1",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file fully complies with the expert document specification. All required frontmatter fields are present and correctly formatted, the content opens with the required level-1 heading naming the expert and its alias, the body clearly states what the expert is the subject-matter expert on, and there are no placeholder texts."
+      }
+    },
+    "244fa7f3:dfa53848": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "dfa53848"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-08-31T22:09:48.481Z",
+      "content_hash": "268389a1",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 294 words."
+      }
     }
   }
 }

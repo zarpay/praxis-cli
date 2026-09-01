@@ -155,6 +155,69 @@
           "hash": "a1beb8f5"
         }
       ]
+    },
+    "0311531a:433458bb": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "433458bb"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-08-31T22:07:43.950Z",
+      "content_hash": "e60d77e5",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "rank-parlors.ts satisfies every criterion in the Service Conventions spec: it exports a single run function taking the Store first and one input object, returns Result<RankedParlor[]> from domain types; the module name is verb-first kebab-case describing the action; domain failures are returned as values ({ ok: false, error }) rather than thrown; the error message names what was wrong and what is acceptable; input validation happens before any work and reads top-to-bottom; the service does one thing (rank parlors); no I/O except through the injected Store; and the doc comment states its purpose in one sentence and enumerates its domain failure modes."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:22073e9f": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "22073e9f"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-08-31T22:09:01.623Z",
+      "content_hash": "e60d77e5",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification. It follows the required structure, implements proper validation, handles domain failures as values, and includes appropriate documentation."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:dfa53848": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "dfa53848"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-08-31T22:09:48.497Z",
+      "content_hash": "e60d77e5",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 642 words."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
     }
   }
 }

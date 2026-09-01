@@ -182,6 +182,81 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:433458bb": {
+      "judge": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "433458bb"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-08-31T22:07:38.676Z",
+      "content_hash": "c2dc0a8a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Yes, the file satisfies the specification. Let me verify each criterion:\n\n- Exactly one entry point index.ts that re-exports the feature's entire public API (buildMenu, BuildMenuInput, TastingMenu, TastingStop): ✓\n- Types live in a dedicated tasting-menu-types.ts: ✓\n- Logic file build-menu.ts is verb-first kebab-case and follows service conventions: one exported run, Result over exceptions, consumer-grade error message: ✓\n- No orphaned files: index.ts imports build-menu.ts and tasting-menu-types.ts; build-menu.ts imports tasting-menu-types.ts. All files reachable: ✓\n- One capability per feature: all files serve tasting menu building: ✓\n- Feature name describes the capability (tasting-menu), not implementation: ✓\n\nAll criteria satisfied. The only minor observation would be the error message uses `1 or more` instead of `at least 1` but that is a style choice, not a spec violation — the message is still consumer-grade and actionable."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:22073e9f": {
+      "judge": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "22073e9f"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-08-31T22:08:51.602Z",
+      "content_hash": "c2dc0a8a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The tasting-menu feature directory fully satisfies all criteria in the specification: it has exactly one entry point (index.ts), types are in a dedicated tasting-menu-types.ts file, logic files follow verb-first kebab-case naming with proper service conventions, all files are reachable from the entry point, the feature serves a single cohesive capability, and the name describes the capability rather than implementation."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:dfa53848": {
+      "judge": {
+        "name": "counter",
+        "model": "none",
+        "hash": "dfa53848"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-08-31T22:09:48.493Z",
+      "content_hash": "c2dc0a8a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Judgment input has 883 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }
