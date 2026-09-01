@@ -80,6 +80,34 @@ export class Frontmatter {
   }
 
   /**
+   * Returns a single frontmatter value, or undefined when the key is absent.
+   *
+   * The optional-field counterpart to `value()`: the same lookup, typed
+   * for the common case of assigning straight into an optional field
+   * without a cast at the call site.
+   *
+   * @param key - The frontmatter field name
+   */
+  optionalValue<T = string>(key: string): T | undefined {
+    return this.parse()[key] as T | undefined;
+  }
+
+  /**
+   * Returns a frontmatter value as an array, or undefined when the key
+   * is absent or holds nothing.
+   *
+   * The optional-field counterpart to `array()`: a caller writing into
+   * an optional field wants the key omitted rather than set to `[]`.
+   *
+   * @param key - The frontmatter field name
+   */
+  optionalArray<T = string>(key: string): T[] | undefined {
+    const values = this.array(key) as T[];
+
+    return values.length > 0 ? values : undefined;
+  }
+
+  /**
    * Returns the raw YAML string between delimiters, without parsing.
    *
    * Useful for debugging or re-serialization. Returns an empty string

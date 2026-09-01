@@ -74,6 +74,52 @@ describe("Frontmatter", () => {
     });
   });
 
+  describe("optionalValue()", () => {
+    it("returns the value when the key is present", () => {
+      const fm = Frontmatter.fromFile(join(FIXTURES_DIR, "sample-expert.md"));
+      const alias = fm.optionalValue("alias");
+
+      expect(alias).toBe("Sample");
+    });
+
+    it("returns undefined for missing keys", () => {
+      const fm = Frontmatter.fromFile(join(FIXTURES_DIR, "sample-expert.md"));
+      const missing = fm.optionalValue("nonexistent");
+
+      expect(missing).toBeUndefined();
+    });
+  });
+
+  describe("optionalArray()", () => {
+    it("returns the values when the key is present", () => {
+      const fm = Frontmatter.fromFile(join(FIXTURES_DIR, "sample-expert.md"));
+      const context = fm.optionalArray("context");
+
+      expect(context).toEqual(["content/context/conventions/documentation.md"]);
+    });
+
+    it("wraps single values in an array", () => {
+      const fm = Frontmatter.fromFile(join(FIXTURES_DIR, "sample-expert.md"));
+      const manager = fm.optionalArray("manager");
+
+      expect(manager).toEqual(["test@example.com"]);
+    });
+
+    it("returns undefined for missing keys, not an empty array", () => {
+      const fm = Frontmatter.fromFile(join(FIXTURES_DIR, "sample-expert.md"));
+      const missing = fm.optionalArray("nonexistent");
+
+      expect(missing).toBeUndefined();
+    });
+
+    it("returns undefined when the key holds an empty list", () => {
+      const fm = Frontmatter.fromContent(["---", "excludes: []", "---", "# Body"].join("\n"));
+      const excludes = fm.optionalArray("excludes");
+
+      expect(excludes).toBeUndefined();
+    });
+  });
+
   describe("rawYaml()", () => {
     it("returns the raw YAML string between delimiters", () => {
       const fm = Frontmatter.fromFile(join(FIXTURES_DIR, "sample-expert.md"));

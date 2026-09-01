@@ -225,6 +225,53 @@ describe("ExpertCompiler", () => {
     });
   });
 
+  describe("agent_* frontmatter", () => {
+    it("compiles agent_tools, agent_model and agent_permission_mode into the agent frontmatter", async () => {
+      const expertFile = join(expertsDir, "tuned-expert.md");
+      writeFileSync(
+        expertFile,
+        [
+          "---",
+          "alias: Tuned",
+          "description: an expert with agent settings",
+          "agent_tools: Read, Glob, Grep",
+          "agent_model: opus",
+          "agent_permission_mode: plan",
+          "---",
+          "# Tuned",
+        ].join("\n"),
+      );
+
+      await compiler.compile(expertFile);
+      const agent = readFileSync(join(agentsOutputDir, "tuned.md"), "utf-8");
+
+      expect(agent).toContain("tools: Read, Glob, Grep");
+      expect(agent).toContain("model: opus");
+      expect(agent).toContain("permissionMode: plan");
+    });
+
+    it("omits the agent settings absent from the frontmatter", async () => {
+      const expertFile = join(expertsDir, "plain-expert.md");
+      writeFileSync(
+        expertFile,
+        [
+          "---",
+          "alias: Plain",
+          "description: an expert with no agent settings",
+          "---",
+          "# Plain",
+        ].join("\n"),
+      );
+
+      await compiler.compile(expertFile);
+      const agent = readFileSync(join(agentsOutputDir, "plain.md"), "utf-8");
+
+      expect(agent).not.toContain("tools:");
+      expect(agent).not.toContain("model:");
+      expect(agent).not.toContain("permissionMode:");
+    });
+  });
+
   describe("template skipping", () => {
     it("never compiles underscore-prefixed files, whatever their name", async () => {
       const templateFile = join(expertsDir, "_expert-template.md");

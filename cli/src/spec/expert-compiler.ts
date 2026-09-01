@@ -215,9 +215,10 @@ export class ExpertCompiler extends PraxisProjectBase {
   /**
    * Builds agent metadata from role frontmatter.
    *
-   * Extracts the agent name (from alias), description, and optional
-   * fields (tools, model, permission mode). Returns null if no
-   * `description` is provided.
+   * Extracts the agent name (from alias) and description, plus every
+   * optional field the frontmatter declares; keys absent from the
+   * frontmatter stay undefined. Returns null if no `description` is
+   * provided.
    */
   private buildAgentMetadata(fm: Frontmatter, alias: string): AgentMetadata | null {
     const name = alias
@@ -232,36 +233,16 @@ export class ExpertCompiler extends PraxisProjectBase {
       return null;
     }
 
-    const metadata: AgentMetadata = { name, description };
-
-    const tools = fm.value("agent_tools") as string | undefined;
-
-    if (tools) metadata.tools = tools;
-
-    const model = fm.value("agent_model") as string | undefined;
-
-    if (model) metadata.model = model;
-
-    const permissionMode = fm.value("agent_permission_mode") as string | undefined;
-
-    if (permissionMode) metadata.permissionMode = permissionMode;
-
-    const validates = fm.array("validates") as string[];
-
-    if (validates.length > 0) metadata.validates = validates;
-
-    const cohort = fm.value("cohort") as string | undefined;
-
-    if (cohort) metadata.cohort = cohort;
-
-    const excludes = fm.array("excludes") as string[];
-
-    if (excludes.length > 0) metadata.excludes = excludes;
-
-    const exemplars = fm.array("exemplars") as string[];
-
-    if (exemplars.length > 0) metadata.exemplars = exemplars;
-
-    return metadata;
+    return {
+      name,
+      description,
+      cohort: fm.optionalValue("cohort"),
+      tools: fm.optionalValue("agent_tools"),
+      model: fm.optionalValue("agent_model"),
+      excludes: fm.optionalArray("excludes"),
+      validates: fm.optionalArray("validates"),
+      exemplars: fm.optionalArray("exemplars"),
+      permissionMode: fm.optionalValue("agent_permission_mode"),
+    };
   }
 }
