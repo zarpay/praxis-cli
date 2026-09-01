@@ -5,8 +5,8 @@ import { exists } from "@/core/files.js";
 import { resolvePath } from "@/core/paths.js";
 import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
 import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
+import buildVerdictReport from "@/domains/eval/services/build-verdict-report.js";
 import readVerdictEntry from "@/domains/eval/services/read-verdict-entry.js";
-import { VerdictReporter } from "@/domains/eval/views/verdict-report.js";
 
 /**
  * What every reviewer last recorded about one target.
@@ -36,21 +36,21 @@ export default function reportVerdicts({
     throw errors.missingReviewers();
   }
 
-  const reporter = new VerdictReporter({ specFilePattern: config.specFilePattern, root });
-
   return {
     targetPath: absolutePath,
     // Named only when more than one reviewer could disagree.
     named: config.reviewers.length > 1,
     reports: config.reviewers.map((reviewer) => ({
       reviewer: reviewer.name,
-      report: reporter.build(
-        absolutePath,
-        readVerdictEntry({
+      report: buildVerdictReport({
+        targetPath: absolutePath,
+        cacheData: readVerdictEntry({
           cache: new VerdictCache({ projectRoot: root, reviewer: cacheIdentity(reviewer) }),
           targetPath: absolutePath,
         }),
-      ),
+        specFilePattern: config.specFilePattern,
+        root,
+      }),
     })),
   };
 }

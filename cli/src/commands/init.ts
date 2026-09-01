@@ -3,15 +3,15 @@ import type { Command } from "commander";
 import { runAction } from "@/commands/action.js";
 import { resolvePath } from "@/core/paths.js";
 import initProject from "@/domains/workspace/orchestrators/init-project.js";
-import { nextStepsEntries } from "@/domains/workspace/views/status.js";
-import { Display } from "@/views/display.js";
+import { initReport } from "@/domains/workspace/views/status.js";
 import { Logger } from "@/views/logger.js";
+import { renderReport } from "@/views/report.js";
 
 /**
  * Registers the `praxis init` command.
  *
- * Scaffolds a new Praxis project by copying core framework files and
- * plugin-specific files based on config into the target directory.
+ * Scaffolds a new Praxis project: the minimal `.praxis/` tree by
+ * default, and the spec-layer authoring taxonomy on request.
  */
 export function registerInitCommand(program: Command): void {
   program
@@ -26,7 +26,6 @@ export function registerInitCommand(program: Command): void {
     .action((directory: string, options: { specLayer: boolean }) =>
       runAction(() => {
         const logger = new Logger();
-        const out = new Display();
 
         const result = initProject({
           targetDir: resolvePath(directory),
@@ -34,11 +33,7 @@ export function registerInitCommand(program: Command): void {
           onFileCreated: (path) => logger.success(`Created ${path}`),
         });
 
-        out.line();
-        logger.info(
-          `Initialized Praxis project: ${result.created} files created, ${result.skipped} skipped`,
-        );
-        out.print(nextStepsEntries(result.nextSteps));
+        renderReport(initReport(result), { logger });
       }),
     );
 }

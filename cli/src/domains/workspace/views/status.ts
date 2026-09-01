@@ -1,5 +1,5 @@
 import type { StatusReport } from "@/domains/workspace/types.js";
-import type { BadgeEntry, DisplayEntry, ReportLine } from "@/types.js";
+import type { BadgeEntry, ReportLine } from "@/types.js";
 
 import { verdictTally } from "@/views/badges.js";
 import { statLines } from "@/views/stats.js";
@@ -68,13 +68,29 @@ export function issueBlocks(report: StatusReport): { heading: string; items: str
 }
 
 /**
- * The guidance shown after scaffolding a project.
+ * What `praxis init` reports once a project is scaffolded.
  *
- * Rendered by `praxis init`; the orchestrator decides *which* steps
- * apply, this only frames them.
+ * The orchestrator decides which next steps apply — they differ for an
+ * eval-only project and one with the authoring taxonomy — and this only
+ * frames them.
  */
-export function nextStepsEntries(steps: string[]): DisplayEntry[] {
-  return ["", "Next steps:", ...steps];
+export function initReport({
+  created,
+  skipped,
+  nextSteps,
+}: {
+  created: number;
+  skipped: number;
+  nextSteps: string[];
+}): ReportLine[] {
+  return [
+    { channel: "blank" },
+    {
+      channel: "heading",
+      text: `Initialized Praxis project: ${created} files created, ${skipped} skipped`,
+    },
+    { channel: "content", entries: ["", "Next steps:", ...nextSteps] },
+  ];
 }
 
 /**

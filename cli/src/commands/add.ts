@@ -6,7 +6,7 @@ import { runAction } from "@/commands/action.js";
 import addDocument from "@/domains/spec/orchestrators/add-document.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { Paths } from "@/domains/workspace/models/project-paths.js";
-import { Logger } from "@/views/logger.js";
+import { renderReport } from "@/views/report.js";
 
 /**
  * Registers the `praxis add` command group.
@@ -42,6 +42,6 @@ function runAdd(type: AddableType, name: string): Promise<void> {
       practicesDir: config.practicesDir,
     });
 
-    new Logger().success(`Created ${created.type}: ${created.path}`);
+    renderReport([{ channel: "success", text: `Created ${created.type}: ${created.path}` }]);
   });
 }

@@ -506,3 +506,20 @@ export interface ReportVerdictsResult {
   /** One report per configured reviewer, in config order. */
   reports: { reviewer: string; report: VerdictReport }[];
 }
+
+/** A cached verdict to classify. */
+export interface BuildVerdictReportInput {
+  /** The target the verdict is about. */
+  targetPath: string;
+  /** What the cache holds, or null when it holds nothing. */
+  cacheData: CacheFileData | null;
+  /** Filename or glob identifying spec files. */
+  specFilePattern: string;
+  /**
+   * Project root the spec's assist globs resolve against.
+   *
+   * Without it, a spec declaring `context:` or `exemplars:` cannot be
+   * rehashed, and the staleness check is skipped rather than guessed.
+   */
+  root?: string;
+}
