@@ -1,7 +1,7 @@
 import type { RunEvalOptions } from "@/domains/eval/types.js";
 import type { CommandRegistrar } from "@/types.js";
 
-import { runAction } from "@/commands/action.js";
+import { handle } from "@/commands/action.js";
 import reportVerdicts from "@/domains/eval/orchestrators/report-verdicts.js";
 import runEval from "@/domains/eval/orchestrators/run-eval.js";
 
@@ -11,7 +11,7 @@ import runEval from "@/domains/eval/orchestrators/run-eval.js";
  * `eval run` writes (invokes reviewers); every other subcommand reads
  * existing results.
  */
-const registerEvalCommand: CommandRegistrar = (program) => {
+const command: CommandRegistrar = (program) => {
   const evalCmd = program.command("eval").description("Review targets against their specs");
 
   evalCmd
@@ -23,25 +23,31 @@ const registerEvalCommand: CommandRegistrar = (program) => {
     .option("--verbose", "show full AI reasoning", false)
     .option("--fail-fast", "stop on first error (full run only)", false)
     .option("--no-cache", "disable the verdict cache")
-    .action((targets: string[], options: RunEvalOptions) =>
-      runAction((ctx) => runEval(ctx, { ...options, targets })),
+    .action(
+      handle((ctx, targets: string[], options: RunEvalOptions) =>
+        runEval(ctx, { ...options, targets }),
+      ),
     );
 
   evalCmd
     .command("ci")
     .description("Run a full review in CI mode")
     .option("--strict", "fail on warnings too", false)
-    .action((options: { strict: boolean }) =>
-      runAction((ctx) => runEval(ctx, { ci: true, strict: options.strict })),
+    .action(
+      handle((ctx, options: { strict: boolean }) =>
+        runEval(ctx, { ci: true, strict: options.strict }),
+      ),
     );
 
   evalCmd
     .command("verdict <target>")
     .description("Show the cached verdict for a target, without an API call")
     .option("--verbose", "show full AI reasoning", false)
-    .action((target: string, options: { verbose: boolean }) =>
-      runAction((ctx) => reportVerdicts(ctx, { target, verbose: options.verbose })),
+    .action(
+      handle((ctx, target: string, options: { verbose: boolean }) =>
+        reportVerdicts(ctx, { target, verbose: options.verbose }),
+      ),
     );
 };
 
-export default registerEvalCommand;
+export default command;

@@ -17,7 +17,7 @@ then hands them to one orchestrator. Nothing else. Nothing imports `commands/`.
   default export loses it in stack traces. `index.ts` is the only caller.
 - **One command, one orchestrator, called once.** The action body is a single
   `orchestrator(ctx, options)` call and nothing else. A command imports
-  orchestrators and `runAction` — never a model, a service, or a view.
+  orchestrators and `handle` — never a model, a service, or a view.
 - **The orchestrator owns the whole response, rendering included.** It hands back
   an outcome, not a payload: `"failed"` exits 1, anything else is success. If you
   find yourself doing something with a return value here, it belongs one layer
@@ -25,7 +25,10 @@ then hands them to one orchestrator. Nothing else. Nothing imports `commands/`.
 - **Options pass through as the user typed them.** Projecting them into what an
   orchestrator needs is the orchestrator's job, not a helper function here. A
   local helper in a command file means work has leaked upward.
-- `runAction` (`commands/action.ts`) is the composition root. It builds the
-  `CommandContext` at dispatch — never at module load — and applies the one error
-  policy: a thrown error logs to stderr and exits 1. Don't hand-roll try/catch
-  around an action body, and don't construct a context yourself.
+- `handle` (`commands/action.ts`) is the composition root, and it _returns_ the
+  handler: `.action(handle((ctx, …args) => orchestrator(ctx, options)))`. The
+  command's parsed arguments arrive in the same parameter list as the context, so
+  there is one closure per command rather than a lambda wrapping a lambda. It
+  builds the `CommandContext` at dispatch — never at module load — and applies the
+  one error policy: a thrown error logs to stderr and exits 1. Don't hand-roll
+  try/catch around an action body, and don't construct a context yourself.

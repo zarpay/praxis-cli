@@ -192,6 +192,6 @@ export type CommandRegistrar = (program: Command) => void;
  * An orchestrator owns its command's whole response — it renders its own
  * views — so the only thing left for the route to decide is the exit
  * code. "failed" is a legitimate non-zero outcome (issues found, verdicts
- * failed), not an error: a genuine error is thrown, and runAction catches it.
+ * failed), not an error: a genuine error is thrown, and `handle` catches it.
  */
 export type CommandOutcome = "ok" | "failed";

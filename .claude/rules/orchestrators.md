@@ -23,7 +23,7 @@ belongs here.
   implementation may omit the parameter; the call site may not. `Options` is the
   command's parsed input, typed in the domain's `types.ts`; everything about the
   project — root, paths, config — comes off `ctx`, never a parameter.
-- **Always `async`**, so `runAction` has one shape to await _and_ one channel for
+- **Always `async`**, so `handle` has one shape to await _and_ one channel for
   failures. A non-async function returning `Promise.resolve()` throws
   synchronously, which is a second signature in disguise.
 - **Returns a `CommandOutcome`, or nothing.** `"failed"` becomes exit 1 — a
