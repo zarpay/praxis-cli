@@ -14,7 +14,7 @@ const command: CommandRegistrar = (program) => {
   program
     .command("status")
     .description("Show project health dashboard")
-    .action(handle((ctx) => analyzeProject(ctx, {})));
+    .action(handle(analyzeProject));
 };
 
 export default command;

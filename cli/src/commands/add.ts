@@ -15,12 +15,12 @@ const command: CommandRegistrar = (program) => {
   add
     .command("expert <name>")
     .description("Create a new expert from template")
-    .action(handle((ctx, name: string) => addDocument(ctx, { type: "expert", name })));
+    .action(handle(addDocument, { type: "expert" }));
 
   add
     .command("practice <name>")
     .description("Create a new practice from template")
-    .action(handle((ctx, name: string) => addDocument(ctx, { type: "practice", name })));
+    .action(handle(addDocument, { type: "practice" }));
 };
 
 export default command;

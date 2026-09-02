@@ -94,7 +94,12 @@ Classes remain for four things, and only these:
 **A command calls exactly one orchestrator, and does nothing with what comes
 back.** `handle` (`commands/action.ts`) is the composition root: it returns the commander
 handler, building one `CommandContext` per dispatch — root, paths, config, logger,
-and Display — and applying the single error policy. A command therefore imports orchestrators and
+and Display — and applying the single error policy. Because both sides have a
+fixed shape, it also derives the orchestrator's `options` from commander's own
+`registeredArguments` and `opts()`, so a command names its orchestrator rather
+than calling it: `.action(handle(runEval))`. Name a command's flags and arguments
+to match its `Options` type and the wiring writes itself; a second argument
+supplies only what the CLI cannot, like `{ ci: true }`. A command therefore imports orchestrators and
 `handle`, and nothing else; the orchestrator owns the response, rendering
 included, and hands back only a `CommandOutcome` for the exit code.
 

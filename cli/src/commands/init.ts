@@ -19,11 +19,7 @@ const command: CommandRegistrar = (program) => {
       "also scaffold the spec-layer authoring tree (experts, practices, context)",
       false,
     )
-    .action(
-      handle((ctx, directory: string, options: { specLayer: boolean }) =>
-        initProject(ctx, { directory, specLayer: options.specLayer }),
-      ),
-    );
+    .action(handle(initProject));
 };
 
 export default command;

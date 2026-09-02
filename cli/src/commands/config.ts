@@ -12,15 +12,12 @@ import showConfig from "@/domains/workspace/orchestrators/show-config.js";
 const command: CommandRegistrar = (program) => {
   const config = program.command("config").description("View or edit the project configuration");
 
-  config
-    .command("show")
-    .description("Print the current configuration")
-    .action(handle((ctx) => showConfig(ctx, {})));
+  config.command("show").description("Print the current configuration").action(handle(showConfig));
 
   config
     .command("edit")
     .description("Open the configuration in your default editor")
-    .action(handle((ctx) => editConfig(ctx, {})));
+    .action(handle(editConfig));
 };
 
 export default command;

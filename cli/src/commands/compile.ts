@@ -15,9 +15,7 @@ const command: CommandRegistrar = (program) => {
     .description("Compile expert definitions into agent files")
     .option("--alias <name>", "compile a specific agent by alias")
     .option("--watch", "watch source directories for changes and recompile")
-    .action(
-      handle((ctx, options: { alias?: string; watch?: boolean }) => compileProject(ctx, options)),
-    );
+    .action(handle(compileProject));
 };
 
 export default command;
