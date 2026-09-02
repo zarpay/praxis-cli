@@ -1,8 +1,8 @@
 import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import buildStatusReport from "@/services/build-status-report-service.js";
-import countStatusIssues from "@/services/count-status-issues-service.js";
+import buildStatusReportService from "@/services/build-status-report-service.js";
+import countStatusIssuesService from "@/services/count-status-issues-service.js";
 import statusView from "@/views/status-view.js";
 
 /**
@@ -14,12 +14,12 @@ import statusView from "@/views/status-view.js";
  * project whose taxonomy has drifted.
  */
 export const analyzeProjectOrchestrator: Orchestrator = async (ctx) => {
-  const report = await buildStatusReport({ root: ctx.root, config: ctx.config });
+  const report = await buildStatusReportService({ root: ctx.root, config: ctx.config });
 
   const view = statusView(report);
   ctx.render(view);
 
-  return countStatusIssues(report) > 0 ? "failed" : "ok";
+  return countStatusIssuesService(report) > 0 ? "failed" : "ok";
 };
 
 export default prepareOrchestrator(analyzeProjectOrchestrator);

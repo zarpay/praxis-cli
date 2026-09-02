@@ -6,7 +6,7 @@ import { PraxisError, errors } from "@/helpers/errors-helper.js";
 import reviewTools from "@/prompts/review-tools.js";
 import systemPrompt from "@/prompts/system-prompt.js";
 import validationQuestion from "@/prompts/validation-question.js";
-import resolveProvider from "@/services/resolve-provider-service.js";
+import resolveProviderService from "@/services/resolve-provider-service.js";
 
 /**
  * Obtains one verdict for one target from one reviewer.
@@ -26,7 +26,7 @@ export default async function requestVerdict(
   reviewer: Reviewer,
   root?: string,
 ): Promise<ProviderResult> {
-  const provider = await resolveProvider(reviewer.provider, root);
+  const provider = await resolveProviderService(reviewer.provider, root);
 
   const request: ProviderRequest = {
     systemPrompt: systemPrompt(),

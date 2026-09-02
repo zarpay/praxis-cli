@@ -3,7 +3,7 @@ import type { ExpandGlobsInput, InlineReferencesResult } from "@/types.js";
 import { exists } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { MarkdownFile } from "@/models/markdown-file.js";
-import expandGlobs from "@/services/expand-globs-service.js";
+import expandGlobsService from "@/services/expand-globs-service.js";
 
 /**
  * Resolves declared patterns and reads the body of every file they name.
@@ -29,7 +29,7 @@ export default async function inlineReferences({
   const bodies: string[] = [];
   const warnings: string[] = [];
 
-  const expansions = await expandGlobs({ patterns, root, specFilePattern });
+  const expansions = await expandGlobsService({ patterns, root, specFilePattern });
 
   for (const { pattern, isGlob, matches } of expansions) {
     if (isGlob && matches.length === 0) {

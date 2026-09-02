@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { OpenRouterProvider } from "@/providers/openrouter.js";
-import resolveProvider from "@/services/resolve-provider-service.js";
+import resolveProviderService from "@/services/resolve-provider-service.js";
 
 /** A well-formed local provider module returning a canned verdict. */
 const ECHO_PROVIDER_SOURCE = `export default function echoProvider() {
@@ -21,7 +21,7 @@ const ECHO_PROVIDER_SOURCE = `export default function echoProvider() {
 }
 `;
 
-describe("resolveProvider", () => {
+describe("resolveProviderService", () => {
   const dirs: string[] = [];
 
   /** A fresh project root holding the given provider module source. */
@@ -39,14 +39,14 @@ describe("resolveProvider", () => {
   });
 
   it("resolves the built-in openrouter provider by name", async () => {
-    const provider = await resolveProvider("openrouter");
+    const provider = await resolveProviderService("openrouter");
 
     expect(provider).toBeInstanceOf(OpenRouterProvider);
     expect(provider.name).toBe("openrouter");
   });
 
   it("rejects an unknown provider name, listing the built-ins", async () => {
-    const resolution = resolveProvider("bogus");
+    const resolution = resolveProviderService("bogus");
 
     await expect(resolution).rejects.toThrow(
       'Unknown reviewer provider: "bogus". Built-in providers: openrouter',
@@ -56,7 +56,7 @@ describe("resolveProvider", () => {
   it("loads a local provider module from a relative path", async () => {
     const root = makeProjectWithModule(ECHO_PROVIDER_SOURCE);
 
-    const provider = await resolveProvider("./praxis-providers/echo.mjs", root);
+    const provider = await resolveProviderService("./praxis-providers/echo.mjs", root);
     const result = await provider.review({
       systemPrompt: "s",
       userPrompt: "u",
@@ -73,7 +73,7 @@ describe("resolveProvider", () => {
   });
 
   it("rejects a relative path when no project root is available", async () => {
-    const resolution = resolveProvider("./praxis-providers/echo.mjs");
+    const resolution = resolveProviderService("./praxis-providers/echo.mjs");
 
     await expect(resolution).rejects.toThrow("Failed to load reviewer provider");
   });
@@ -81,7 +81,7 @@ describe("resolveProvider", () => {
   it("rejects a module that cannot be imported", async () => {
     const root = makeProjectWithModule(ECHO_PROVIDER_SOURCE);
 
-    const resolution = resolveProvider("./praxis-providers/missing.mjs", root);
+    const resolution = resolveProviderService("./praxis-providers/missing.mjs", root);
 
     await expect(resolution).rejects.toThrow(
       'Failed to load reviewer provider "./praxis-providers/missing.mjs"',
@@ -91,7 +91,7 @@ describe("resolveProvider", () => {
   it("rejects a module whose default export is not a function", async () => {
     const root = makeProjectWithModule("export default { not: 'a factory' };\n");
 
-    const resolution = resolveProvider("./praxis-providers/echo.mjs", root);
+    const resolution = resolveProviderService("./praxis-providers/echo.mjs", root);
 
     await expect(resolution).rejects.toThrow("default export is not a factory function");
   });
@@ -99,7 +99,7 @@ describe("resolveProvider", () => {
   it("rejects a factory whose result does not implement the contract", async () => {
     const root = makeProjectWithModule("export default () => ({ name: 'broken' });\n");
 
-    const resolution = resolveProvider("./praxis-providers/echo.mjs", root);
+    const resolution = resolveProviderService("./praxis-providers/echo.mjs", root);
 
     await expect(resolution).rejects.toThrow("factory returned an object without a review()");
   });

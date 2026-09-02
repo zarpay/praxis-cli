@@ -4,7 +4,7 @@ import { ensureDir } from "@/helpers/files-helper.js";
 import { joinPath, resolvePath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import { SCAFFOLD_DIR } from "@/models/project-paths.js";
-import copyScaffold from "@/services/copy-scaffold-service.js";
+import copyScaffoldService from "@/services/copy-scaffold-service.js";
 import initView from "@/views/init-view.js";
 
 /**
@@ -28,7 +28,7 @@ export const initProjectOrchestrator: Orchestrator<InitProjectOptions> = async (
 
   // "eval" holds the minimal .praxis/ tree; "core" adds the spec-layer
   // authoring taxonomy (experts, practices, context).
-  const { created, skipped } = copyScaffold({
+  const { created, skipped } = copyScaffoldService({
     sourceDir: joinPath(scaffoldDir, specLayer ? "core" : "eval"),
     targetDir,
   });

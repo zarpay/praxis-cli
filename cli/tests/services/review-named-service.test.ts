@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
-import reviewNamed from "@/services/review-named-service.js";
+import reviewNamedService from "@/services/review-named-service.js";
 import {
   OPENROUTER_URL,
   createOpenRouterServer,
@@ -45,7 +45,7 @@ function useVerdict(tool: "validation_pass" | "validation_warn" | "validation_fa
 
 const KEYED = { name: "flash", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" };
 
-describe("reviewNamed", () => {
+describe("reviewNamedService", () => {
   /** A project with one keyed reviewer and two documents to review. */
   function reviewingProject(): {
     root: string;
@@ -70,7 +70,7 @@ describe("reviewNamed", () => {
     useVerdict("validation_fail");
     const { root, config, abs } = reviewingProject();
 
-    const result = await reviewNamed({
+    const result = await reviewNamedService({
       targets: [abs("specs/doc.md")],
       root,
       config,
@@ -84,7 +84,7 @@ describe("reviewNamed", () => {
     useVerdict("validation_warn");
     const { root, config, abs } = reviewingProject();
 
-    const result = await reviewNamed({
+    const result = await reviewNamedService({
       targets: [abs("specs/doc.md")],
       root,
       config,
@@ -98,7 +98,7 @@ describe("reviewNamed", () => {
     useVerdict("validation_fail");
     const { root, config, abs } = reviewingProject();
 
-    const result = await reviewNamed({
+    const result = await reviewNamedService({
       targets: [abs("specs/doc.md"), abs("specs/other.md")],
       root,
       config,
@@ -112,7 +112,7 @@ describe("reviewNamed", () => {
     useVerdict("validation_pass");
     const { root, config, abs } = reviewingProject();
 
-    const result = await reviewNamed({
+    const result = await reviewNamedService({
       targets: [abs("specs/doc.md")],
       root,
       config,
@@ -144,7 +144,7 @@ describe("reviewNamed", () => {
     });
     cleanups.push(cleanup);
 
-    const result = await reviewNamed({
+    const result = await reviewNamedService({
       targets: [abs("specs/doc.md")],
       root,
       config: new PraxisConfig(root),
@@ -160,7 +160,7 @@ describe("reviewNamed", () => {
     const { root, config, abs } = reviewingProject();
     const seen: string[] = [];
 
-    await reviewNamed({
+    await reviewNamedService({
       targets: [abs("specs/doc.md"), abs("specs/other.md")],
       root,
       config,
@@ -192,7 +192,7 @@ describe("reviewNamed", () => {
       useVerdict("validation_fail");
       const { root, config, abs } = reviewingProject();
 
-      await reviewNamed({ targets: [abs("specs/doc.md")], root, config, useCache: false });
+      await reviewNamedService({ targets: [abs("specs/doc.md")], root, config, useCache: false });
 
       const runs = ledgerRuns(root);
 
@@ -206,7 +206,7 @@ describe("reviewNamed", () => {
       useVerdict("validation_pass");
       const { root, config, abs } = reviewingProject();
 
-      await reviewNamed({
+      await reviewNamedService({
         targets: [abs("specs/doc.md")],
         root,
         config,

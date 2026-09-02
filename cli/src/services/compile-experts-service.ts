@@ -4,7 +4,7 @@ import fg from "fast-glob";
 
 import { matchesFilename } from "@/helpers/files-helper.js";
 import { baseName } from "@/helpers/paths-helper.js";
-import compileExpert from "@/services/compile-expert-service.js";
+import compileExpertService from "@/services/compile-expert-service.js";
 
 /**
  * Compiles every expert in a directory.
@@ -37,7 +37,7 @@ export default async function compileExperts({
     }
 
     try {
-      const result = await compileExpert({
+      const result = await compileExpertService({
         expertFile,
         root,
         specFilePattern,

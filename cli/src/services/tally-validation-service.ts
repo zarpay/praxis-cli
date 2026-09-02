@@ -3,8 +3,8 @@ import type { StatusReport, TallyValidationInput } from "@/types.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { Reviewer } from "@/models/reviewer.js";
 import { VerdictCache } from "@/models/verdict-cache.js";
-import listTargetPaths from "@/services/list-target-paths-service.js";
-import readVerdictEntry from "@/services/read-verdict-entry-service.js";
+import listTargetPathsService from "@/services/list-target-paths-service.js";
+import readVerdictEntryService from "@/services/read-verdict-entry-service.js";
 
 /**
  * Counts each reviewer's cached verdicts across every spec target.
@@ -22,7 +22,7 @@ export default function tallyValidation({
   root,
   config,
 }: TallyValidationInput): StatusReport["validation"] {
-  const targets = listTargetPaths({
+  const targets = listTargetPathsService({
     root,
     sources: config.sources,
     specFilePattern: config.specFilePattern,
@@ -52,7 +52,7 @@ export default function tallyValidation({
     };
 
     for (const targetPath of targets) {
-      const cached = readVerdictEntry({ cache, targetPath });
+      const cached = readVerdictEntryService({ cache, targetPath });
 
       if (!cached) {
         row.notValidated++;

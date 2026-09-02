@@ -1,6 +1,6 @@
 import type { ReadVerdictInput, Verdict } from "@/types.js";
 
-import readCacheFile from "@/services/read-cache-file-service.js";
+import readCacheFileService from "@/services/read-cache-file-service.js";
 
 /**
  * A reviewer's cached verdict for a (target, spec) pair, if still current.
@@ -19,7 +19,7 @@ export default function readVerdict({
   specPath,
   contentHash,
 }: ReadVerdictInput): Verdict | null {
-  const file = readCacheFile({ path: cache.pathFor(targetPath), discardCorrupt: true });
+  const file = readCacheFileService({ path: cache.pathFor(targetPath), discardCorrupt: true });
 
   if (!file) return null;
 

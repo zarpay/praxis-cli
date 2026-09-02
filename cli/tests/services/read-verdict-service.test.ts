@@ -5,10 +5,10 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { VerdictCache } from "@/models/verdict-cache.js";
-import readVerdict from "@/services/read-verdict-service.js";
-import writeVerdict from "@/services/write-verdict-service.js";
+import readVerdictService from "@/services/read-verdict-service.js";
+import writeVerdictService from "@/services/write-verdict-service.js";
 
-describe("readVerdict", () => {
+describe("readVerdictService", () => {
   let projectRoot: string;
   let cacheRoot: string;
   let cache: VerdictCache;
@@ -29,12 +29,12 @@ describe("readVerdict", () => {
   it("returns null when no cache entry exists", () => {
     const targetPath = join(projectRoot, "roles", "test-expert.md");
 
-    expect(readVerdict({ cache, targetPath, contentHash: "nonexist", specPath })).toBeNull();
+    expect(readVerdictService({ cache, targetPath, contentHash: "nonexist", specPath })).toBeNull();
   });
 
   it("returns null when the content hash does not match — editing invalidates", () => {
     const targetPath = join(projectRoot, "roles", "test-expert.md");
-    writeVerdict({
+    writeVerdictService({
       cache,
       targetPath,
       contentHash: "abcd1234",
@@ -42,12 +42,14 @@ describe("readVerdict", () => {
       specPath,
     });
 
-    expect(readVerdict({ cache, targetPath, contentHash: "different", specPath })).toBeNull();
+    expect(
+      readVerdictService({ cache, targetPath, contentHash: "different", specPath }),
+    ).toBeNull();
   });
 
   it("returns null when the spec does not match any cached entry", () => {
     const targetPath = join(projectRoot, "docs", "guide.md");
-    writeVerdict({
+    writeVerdictService({
       cache,
       targetPath,
       contentHash: "hash1",
@@ -56,7 +58,7 @@ describe("readVerdict", () => {
     });
 
     expect(
-      readVerdict({
+      readVerdictService({
         cache,
         targetPath,
         contentHash: "hash1",
@@ -67,7 +69,7 @@ describe("readVerdict", () => {
 
   it("answers identically on repeated reads", () => {
     const targetPath = join(projectRoot, "docs", "guide.md");
-    writeVerdict({
+    writeVerdictService({
       cache,
       targetPath,
       contentHash: "stablehash",
@@ -75,8 +77,8 @@ describe("readVerdict", () => {
       specPath,
     });
 
-    const first = readVerdict({ cache, targetPath, contentHash: "stablehash", specPath });
-    const second = readVerdict({ cache, targetPath, contentHash: "stablehash", specPath });
+    const first = readVerdictService({ cache, targetPath, contentHash: "stablehash", specPath });
+    const second = readVerdictService({ cache, targetPath, contentHash: "stablehash", specPath });
 
     expect(first).toEqual(second);
     expect(first).not.toBeNull();
@@ -95,7 +97,7 @@ describe("readVerdict", () => {
     });
     const targetPath = join(projectRoot, "roles", "shared.md");
 
-    writeVerdict({
+    writeVerdictService({
       cache: cacheA,
       targetPath,
       contentHash: "hash1234",
@@ -104,10 +106,10 @@ describe("readVerdict", () => {
     });
 
     expect(
-      readVerdict({ cache: cacheB, targetPath, contentHash: "hash1234", specPath }),
+      readVerdictService({ cache: cacheB, targetPath, contentHash: "hash1234", specPath }),
     ).toBeNull();
     expect(
-      readVerdict({ cache: cacheA, targetPath, contentHash: "hash1234", specPath })?.reason,
+      readVerdictService({ cache: cacheA, targetPath, contentHash: "hash1234", specPath })?.reason,
     ).toBe("reviewer A verdict");
   });
 
@@ -117,7 +119,7 @@ describe("readVerdict", () => {
     mkdirSync(join(cachePath, ".."), { recursive: true });
     writeFileSync(cachePath, "not valid json{{{");
 
-    expect(readVerdict({ cache, targetPath, contentHash: "anyhash1", specPath })).toBeNull();
+    expect(readVerdictService({ cache, targetPath, contentHash: "anyhash1", specPath })).toBeNull();
     expect(existsSync(cachePath)).toBe(false);
   });
 
@@ -127,6 +129,6 @@ describe("readVerdict", () => {
     mkdirSync(join(cachePath, ".."), { recursive: true });
     writeFileSync(cachePath, JSON.stringify({ version: "99.0", something: "else" }));
 
-    expect(readVerdict({ cache, targetPath, contentHash: "anyhash1", specPath })).toBeNull();
+    expect(readVerdictService({ cache, targetPath, contentHash: "anyhash1", specPath })).toBeNull();
   });
 });

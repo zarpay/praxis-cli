@@ -5,10 +5,10 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { VerdictCache } from "@/models/verdict-cache.js";
-import readVerdictEntry from "@/services/read-verdict-entry-service.js";
-import writeVerdict from "@/services/write-verdict-service.js";
+import readVerdictEntryService from "@/services/read-verdict-entry-service.js";
+import writeVerdictService from "@/services/write-verdict-service.js";
 
-describe("readVerdictEntry", () => {
+describe("readVerdictEntryService", () => {
   let projectRoot: string;
   let cacheRoot: string;
   let cache: VerdictCache;
@@ -30,9 +30,9 @@ describe("readVerdictEntry", () => {
 
   it("returns the full entry without hash validation, for reporting", () => {
     const targetPath = join(projectRoot, "roles", "test-expert.md");
-    writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+    writeVerdictService({ cache, targetPath, contentHash: hash, result, specPath });
 
-    const cached = readVerdictEntry({ cache, targetPath, specPath });
+    const cached = readVerdictEntryService({ cache, targetPath, specPath });
 
     expect(cached).not.toBeNull();
     expect(cached!.version).toBe("4.0");
@@ -45,22 +45,22 @@ describe("readVerdictEntry", () => {
 
   it("returns the first entry when specPath is omitted", () => {
     const targetPath = join(projectRoot, "roles", "test-expert.md");
-    writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+    writeVerdictService({ cache, targetPath, contentHash: hash, result, specPath });
 
-    expect(readVerdictEntry({ cache, targetPath })?.result).toEqual(result);
+    expect(readVerdictEntryService({ cache, targetPath })?.result).toEqual(result);
   });
 
   it("returns null when no cache file exists", () => {
     expect(
-      readVerdictEntry({ cache, targetPath: join(projectRoot, "roles", "none.md") }),
+      readVerdictEntryService({ cache, targetPath: join(projectRoot, "roles", "none.md") }),
     ).toBeNull();
   });
 
   it("still answers when the stored hash is stale — staleness is the reporter's call", () => {
     const targetPath = join(projectRoot, "roles", "test-expert.md");
-    writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+    writeVerdictService({ cache, targetPath, contentHash: hash, result, specPath });
 
-    const entry = readVerdictEntry({ cache, targetPath, specPath });
+    const entry = readVerdictEntryService({ cache, targetPath, specPath });
 
     expect(entry!.content_hash).toBe(hash);
   });
@@ -78,7 +78,7 @@ describe("readVerdictEntry", () => {
     });
     const targetPath = join(projectRoot, "roles", "shared.md");
 
-    writeVerdict({
+    writeVerdictService({
       cache: cacheA,
       targetPath,
       contentHash: hash,
@@ -86,8 +86,8 @@ describe("readVerdictEntry", () => {
       specPath,
     });
 
-    expect(readVerdictEntry({ cache: cacheB, targetPath })).toBeNull();
-    expect(readVerdictEntry({ cache: cacheA, targetPath })?.result.reason).toBe(
+    expect(readVerdictEntryService({ cache: cacheB, targetPath })).toBeNull();
+    expect(readVerdictEntryService({ cache: cacheA, targetPath })?.result.reason).toBe(
       "reviewer A verdict",
     );
   });
@@ -98,7 +98,7 @@ describe("readVerdictEntry", () => {
     mkdirSync(join(cachePath, ".."), { recursive: true });
     writeFileSync(cachePath, "not valid json{{{");
 
-    expect(readVerdictEntry({ cache, targetPath })).toBeNull();
+    expect(readVerdictEntryService({ cache, targetPath })).toBeNull();
     expect(existsSync(cachePath)).toBe(true);
   });
 });

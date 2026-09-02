@@ -2,7 +2,7 @@ import type { CountDocumentsInput, DocumentCounts } from "@/types.js";
 
 import { resolvePath } from "@/helpers/paths-helper.js";
 import { DocumentFile } from "@/models/document-file.js";
-import listDocuments from "@/services/list-documents-service.js";
+import listDocumentsService from "@/services/list-documents-service.js";
 
 /**
  * Counts the reference and context documents across the source trees.
@@ -24,7 +24,7 @@ export default async function countDocumentsByType({
   let context = 0;
 
   for (const source of sources) {
-    const files = await listDocuments({
+    const files = await listDocumentsService({
       dir: resolvePath(root, source),
       recursive: true,
       root,

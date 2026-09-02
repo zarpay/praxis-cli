@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import resolveAssistInputs from "@/services/resolve-assist-inputs-service.js";
+import resolveAssistInputsService from "@/services/resolve-assist-inputs-service.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 const cleanups: (() => void)[] = [];
@@ -21,9 +21,9 @@ function spec(lines: string[]): string {
   return ["---", ...lines, "---", "", "# Spec"].join("\n");
 }
 
-describe("resolveAssistInputs", () => {
+describe("resolveAssistInputsService", () => {
   it("resolves nothing for a spec declaring neither key", () => {
-    const assist = resolveAssistInputs({
+    const assist = resolveAssistInputsService({
       specContent: spec(["paths:", '  - "src/*.ts"']),
       specPath: "specs/README.md",
       root: project({}),
@@ -34,7 +34,7 @@ describe("resolveAssistInputs", () => {
 
   it("resolves an exemplar glob to its file contents", () => {
     const root = project({ "src/good.ts": "export const good = 1;" });
-    const assist = resolveAssistInputs({
+    const assist = resolveAssistInputsService({
       specContent: spec(["exemplars:", '  - "src/*.ts"']),
       specPath: "specs/README.md",
       root,
@@ -45,7 +45,7 @@ describe("resolveAssistInputs", () => {
 
   it("keeps exemplars and context in separate lists", () => {
     const root = project({ "src/good.ts": "good", "docs/why.md": "why" });
-    const assist = resolveAssistInputs({
+    const assist = resolveAssistInputsService({
       specContent: spec(["exemplars:", '  - "src/*.ts"', "context:", '  - "docs/*.md"']),
       specPath: "specs/README.md",
       root,
@@ -57,7 +57,7 @@ describe("resolveAssistInputs", () => {
 
   it("sorts resolved files so the hash is deterministic", () => {
     const root = project({ "src/c.ts": "c", "src/a.ts": "a", "src/b.ts": "b" });
-    const assist = resolveAssistInputs({
+    const assist = resolveAssistInputsService({
       specContent: spec(["exemplars:", '  - "src/*.ts"']),
       specPath: "specs/README.md",
       root,
@@ -67,7 +67,7 @@ describe("resolveAssistInputs", () => {
   });
 
   it("resolves a glob matching nothing to an empty list", () => {
-    const assist = resolveAssistInputs({
+    const assist = resolveAssistInputsService({
       specContent: spec(["exemplars:", '  - "src/nope-*.ts"']),
       specPath: "specs/README.md",
       root: project({}),
@@ -78,7 +78,7 @@ describe("resolveAssistInputs", () => {
 
   it("raises when a key is declared and no root can resolve it", () => {
     const resolve = () =>
-      resolveAssistInputs({
+      resolveAssistInputsService({
         specContent: spec(["exemplars:", '  - "src/*.ts"']),
         specPath: "specs/README.md",
       });
@@ -87,7 +87,7 @@ describe("resolveAssistInputs", () => {
   });
 
   it("does not raise without a root when neither key is declared", () => {
-    const assist = resolveAssistInputs({
+    const assist = resolveAssistInputsService({
       specContent: spec(["paths:", '  - "src/*.ts"']),
       specPath: "specs/README.md",
     });

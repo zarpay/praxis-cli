@@ -8,8 +8,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { CommandContext } from "@/models/command-context.js";
 import { PraxisConfig } from "@/models/praxis-config.js";
 import { initProjectOrchestrator } from "@/orchestrators/init-project-orchestrator.js";
-import compileExperts from "@/services/compile-experts-service.js";
-import resolvePlugins from "@/services/resolve-plugins-service.js";
+import compileExpertsService from "@/services/compile-experts-service.js";
+import resolvePluginsService from "@/services/resolve-plugins-service.js";
 import { Logger } from "@framework/views/logger.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 
@@ -51,12 +51,12 @@ describe("init → compile integration", () => {
 
     // Compile all roles
     const config = new PraxisConfig(dir);
-    await compileExperts({
+    await compileExpertsService({
       root: dir,
       expertsDir: config.expertsDir,
       specFilePattern: config.specFilePattern,
       agentProfilesOutputDir: config.agentProfilesOutputDir,
-      plugins: resolvePlugins(config.plugins, dir, logger),
+      plugins: resolvePluginsService(config.plugins, dir, logger),
     });
   });
 

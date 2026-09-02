@@ -5,10 +5,10 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { VerdictCache } from "@/models/verdict-cache.js";
-import readVerdict from "@/services/read-verdict-service.js";
-import writeVerdict from "@/services/write-verdict-service.js";
+import readVerdictService from "@/services/read-verdict-service.js";
+import writeVerdictService from "@/services/write-verdict-service.js";
 
-describe("writeVerdict", () => {
+describe("writeVerdictService", () => {
   let projectRoot: string;
   let cacheRoot: string;
   let cache: VerdictCache;
@@ -31,9 +31,9 @@ describe("writeVerdict", () => {
     const targetPath = join(projectRoot, "roles", "test-expert.md");
     const result = { compliant: true, issues: [], reason: "All good" };
 
-    writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+    writeVerdictService({ cache, targetPath, contentHash: hash, result, specPath });
 
-    expect(readVerdict({ cache, targetPath, contentHash: hash, specPath })).toEqual(result);
+    expect(readVerdictService({ cache, targetPath, contentHash: hash, specPath })).toEqual(result);
   });
 
   it("preserves the severity field through serialization", () => {
@@ -45,9 +45,9 @@ describe("writeVerdict", () => {
       severity: "error" as const,
     };
 
-    writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+    writeVerdictService({ cache, targetPath, contentHash: hash, result, specPath });
 
-    const cached = readVerdict({ cache, targetPath, contentHash: hash, specPath });
+    const cached = readVerdictService({ cache, targetPath, contentHash: hash, specPath });
 
     expect(cached?.severity).toBe("error");
   });
@@ -62,14 +62,14 @@ describe("writeVerdict", () => {
       severity: "error" as const,
     };
 
-    writeVerdict({
+    writeVerdictService({
       cache,
       targetPath,
       contentHash: "hash1",
       result: passA,
       specPath: "specs/README.md",
     });
-    writeVerdict({
+    writeVerdictService({
       cache,
       targetPath,
       contentHash: "hash2",
@@ -78,10 +78,10 @@ describe("writeVerdict", () => {
     });
 
     expect(
-      readVerdict({ cache, targetPath, contentHash: "hash1", specPath: "specs/README.md" }),
+      readVerdictService({ cache, targetPath, contentHash: "hash1", specPath: "specs/README.md" }),
     ).toEqual(passA);
     expect(
-      readVerdict({ cache, targetPath, contentHash: "hash2", specPath: "other/README.md" }),
+      readVerdictService({ cache, targetPath, contentHash: "hash2", specPath: "other/README.md" }),
     ).toEqual(failB);
   });
 
@@ -98,14 +98,14 @@ describe("writeVerdict", () => {
     });
     const targetPath = join(projectRoot, "roles", "shared.md");
 
-    writeVerdict({
+    writeVerdictService({
       cache: cacheA,
       targetPath,
       contentHash: hash,
       result: { compliant: true, issues: [], reason: "reviewer A verdict" },
       specPath,
     });
-    writeVerdict({
+    writeVerdictService({
       cache: cacheB,
       targetPath,
       contentHash: hash,
@@ -113,7 +113,7 @@ describe("writeVerdict", () => {
       specPath,
     });
 
-    const fromA = readVerdict({ cache: cacheA, targetPath, contentHash: hash, specPath });
+    const fromA = readVerdictService({ cache: cacheA, targetPath, contentHash: hash, specPath });
 
     expect(fromA?.reason).toBe("reviewer A verdict");
   });
@@ -124,7 +124,7 @@ describe("writeVerdict", () => {
     mkdirSync(join(cachePath, ".."), { recursive: true });
     writeFileSync(cachePath, "not valid json{{{");
 
-    writeVerdict({
+    writeVerdictService({
       cache,
       targetPath,
       contentHash: "newhash1",
@@ -132,7 +132,7 @@ describe("writeVerdict", () => {
       specPath,
     });
 
-    const cached = readVerdict({ cache, targetPath, contentHash: "newhash1", specPath });
+    const cached = readVerdictService({ cache, targetPath, contentHash: "newhash1", specPath });
 
     expect(cached?.reason).toBe("recovered");
   });
@@ -147,9 +147,9 @@ describe("writeVerdict", () => {
         severity: "error" as const,
       };
 
-      writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+      writeVerdictService({ cache, targetPath, contentHash: hash, result, specPath });
 
-      const cached = readVerdict({ cache, targetPath, contentHash: hash, specPath });
+      const cached = readVerdictService({ cache, targetPath, contentHash: hash, specPath });
 
       expect(cached).not.toBeNull();
       expect(cached!.reason).not.toContain("\x00");
@@ -164,9 +164,9 @@ describe("writeVerdict", () => {
       const targetPath = join(projectRoot, "roles", "test-expert.md");
       const result = { compliant: true, issues: [], reason: "Yes\n\tAll good\nNo issues" };
 
-      writeVerdict({ cache, targetPath, contentHash: hash, result, specPath });
+      writeVerdictService({ cache, targetPath, contentHash: hash, result, specPath });
 
-      const cached = readVerdict({ cache, targetPath, contentHash: hash, specPath });
+      const cached = readVerdictService({ cache, targetPath, contentHash: hash, specPath });
 
       expect(cached!.reason).toContain("\n");
       expect(cached!.reason).toContain("\t");

@@ -10,7 +10,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import { VerdictCache } from "@/models/verdict-cache.js";
-import reviewTarget from "@/services/review-target-service.js";
+import reviewTargetService from "@/services/review-target-service.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,
@@ -46,7 +46,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-describe("reviewTarget", () => {
+describe("reviewTargetService", () => {
   let tmpdir: string;
   let cleanup: () => void;
 
@@ -85,7 +85,7 @@ describe("reviewTarget", () => {
       root,
     });
 
-    return reviewTarget({ target, reviewer: Reviewer.fromConfig(config), cache, root });
+    return reviewTargetService({ target, reviewer: Reviewer.fromConfig(config), cache, root });
   }
 
   describe("verdicts", () => {

@@ -7,7 +7,7 @@ import {
   DEFAULT_REVIEWER_PROVIDER,
   DEFAULT_REVIEWER_TEMPERATURE,
 } from "@/models/praxis-config.js";
-import reviewerHash from "@/services/hash-reviewer-service.js";
+import hashReviewerService from "@/services/hash-reviewer-service.js";
 
 /**
  * A configured reviewer: who is reviewing, and with what settings.
@@ -18,7 +18,7 @@ import reviewerHash from "@/services/hash-reviewer-service.js";
  * taking a Reviewer as its instrument.
  *
  * Defaults are materialized here so every reader sees the same values
- * the hash was computed over. `reviewerHash` materializes the same
+ * the hash was computed over. `hashReviewerService` materializes the same
  * defaults independently (`services/hash-reviewer.ts`), which is what lets
  * an omitted setting and its explicit default hash identically.
  */
@@ -65,7 +65,7 @@ export class Reviewer {
    * are written under the new key.
    */
   hash(): string {
-    return reviewerHash(this.config);
+    return hashReviewerService(this.config);
   }
 
   /** The identity recorded alongside this reviewer's cached verdicts. */

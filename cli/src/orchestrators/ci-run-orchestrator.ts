@@ -2,7 +2,7 @@ import type { CiRunOptions } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import reviewProject from "@/services/review-project-service.js";
+import reviewProjectService from "@/services/review-project-service.js";
 import evalHeadlineView from "@/views/eval-headline-view.js";
 import runProgressView from "@/views/run-progress-view.js";
 import runReportView from "@/views/run-report-view.js";
@@ -28,7 +28,7 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
     ctx.render(progressView);
   };
 
-  const run = await reviewProject({
+  const run = await reviewProjectService({
     root,
     config,
     // CI verifies without writing (12): the branch's own runs are the evidence.

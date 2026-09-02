@@ -1,14 +1,14 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import expandGlobs from "@/services/expand-globs-service.js";
+import expandGlobsService from "@/services/expand-globs-service.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "..", "fixtures");
 
-describe("expandGlobs", () => {
+describe("expandGlobsService", () => {
   /** Expands one pattern against the fixture tree, returning its matches. */
   async function matches(pattern: string): Promise<string[]> {
-    const [expansion] = await expandGlobs({ patterns: [pattern], root: FIXTURES_DIR });
+    const [expansion] = await expandGlobsService({ patterns: [pattern], root: FIXTURES_DIR });
     return expansion.matches;
   }
 
@@ -70,7 +70,7 @@ describe("expandGlobs", () => {
   describe("several patterns", () => {
     it("expands multiple patterns and flattens results", async () => {
       const patterns = ["content/context/constitution/*.md", "content/context/conventions/*.md"];
-      const expansions = await expandGlobs({ patterns, root: FIXTURES_DIR });
+      const expansions = await expandGlobsService({ patterns, root: FIXTURES_DIR });
       const result = expansions.flatMap((e) => e.matches);
 
       expect(result).toContain("content/context/constitution/identity.md");
@@ -82,7 +82,7 @@ describe("expandGlobs", () => {
         "content/context/constitution/*.md",
         "content/context/conventions/documentation.md",
       ];
-      const expansions = await expandGlobs({ patterns, root: FIXTURES_DIR });
+      const expansions = await expandGlobsService({ patterns, root: FIXTURES_DIR });
       const result = expansions.flatMap((e) => e.matches);
 
       expect(result).toContain("content/context/constitution/identity.md");
@@ -90,7 +90,7 @@ describe("expandGlobs", () => {
     });
 
     it("handles empty array", async () => {
-      const expansions = await expandGlobs({ patterns: [], root: FIXTURES_DIR });
+      const expansions = await expandGlobsService({ patterns: [], root: FIXTURES_DIR });
 
       expect(expansions).toEqual([]);
     });
@@ -98,7 +98,7 @@ describe("expandGlobs", () => {
 
   describe("the isGlob flag", () => {
     it("marks a wildcard pattern as a glob", async () => {
-      const [expansion] = await expandGlobs({
+      const [expansion] = await expandGlobsService({
         patterns: ["content/context/**/*.md"],
         root: FIXTURES_DIR,
       });
@@ -107,7 +107,7 @@ describe("expandGlobs", () => {
     });
 
     it("marks a plain path as not a glob, matching only itself", async () => {
-      const [expansion] = await expandGlobs({
+      const [expansion] = await expandGlobsService({
         patterns: ["content/context/conventions/documentation.md"],
         root: FIXTURES_DIR,
       });

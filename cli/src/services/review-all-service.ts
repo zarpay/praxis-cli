@@ -17,11 +17,11 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import { VerdictCache } from "@/models/verdict-cache.js";
-import discoverDomains from "@/services/discover-domains-service.js";
-import listSourceDocuments from "@/services/list-source-documents-service.js";
-import resolveUnits from "@/services/resolve-units-service.js";
-import reviewTarget from "@/services/review-target-service.js";
-import writeLedgerRun from "@/services/write-ledger-run-service.js";
+import discoverDomainsService from "@/services/discover-domains-service.js";
+import listSourceDocumentsService from "@/services/list-source-documents-service.js";
+import resolveUnitsService from "@/services/resolve-units-service.js";
+import reviewTargetService from "@/services/review-target-service.js";
+import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 
 /**
  * One `praxis eval run`: review every target every reviewer covers.
@@ -55,7 +55,7 @@ export default async function reviewAll({
   onProgress,
 }: ReviewAllInput): Promise<ReviewAllResult> {
   const scope = { root, sources, specFilePattern, absoluteIgnore };
-  const domains = selectDomains(discoverDomains(scope), type);
+  const domains = selectDomains(discoverDomainsService(scope), type);
 
   // Each reviewer gets its own cache bound to its identity: verdicts share
   // one file per target, keyed by (spec, reviewer) so they never collide.
@@ -69,12 +69,16 @@ export default async function reviewAll({
   );
 
   const queue = domains.flatMap((domain) =>
-    resolveUnits({ domain, specFilePattern, absoluteIgnore }).map((unit) => ({ unit, domain })),
+    resolveUnitsService({ domain, specFilePattern, absoluteIgnore }).map((unit) => ({
+      unit,
+      domain,
+    })),
   );
 
   const verdicts: TargetVerdict[] = [];
   const cacheStats = { hits: 0, misses: 0 };
   const total = queue.length * reviewers.length;
+
   let index = 0;
   let stoppedEarly = false;
 
@@ -119,7 +123,7 @@ export default async function reviewAll({
     }
 
     if (ledger && entries.length > 0) {
-      writeLedgerRun({
+      writeLedgerRunService({
         root,
         reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
         trigger: "manual",
@@ -133,7 +137,7 @@ export default async function reviewAll({
     verdicts,
     cacheStats,
     stoppedEarly,
-    summary: summarize(verdicts, listSourceDocuments(scope)),
+    summary: summarize(verdicts, listSourceDocumentsService(scope)),
   };
 }
 
@@ -199,7 +203,7 @@ async function reviewUnit({
       root,
     });
 
-    const { verdict, cacheHit, usage } = await reviewTarget({
+    const { verdict, cacheHit, usage } = await reviewTargetService({
       target,
       reviewer: Reviewer.fromConfig(reviewerConfig),
       cache,

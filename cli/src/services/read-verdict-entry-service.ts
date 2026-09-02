@@ -1,7 +1,7 @@
 import type { CacheFileData, ReadVerdictEntryInput, VerdictEntry } from "@/types.js";
 
 import { CACHE_VERSION, CacheFile } from "@/models/cache-file.js";
-import readCacheFile from "@/services/read-cache-file-service.js";
+import readCacheFileService from "@/services/read-cache-file-service.js";
 
 /**
  * One stored verdict, without checking whether it is still current.
@@ -19,7 +19,7 @@ export default function readVerdictEntry({
   targetPath,
   specPath,
 }: ReadVerdictEntryInput): CacheFileData | null {
-  const file = readCacheFile({ path: cache.pathFor(targetPath) });
+  const file = readCacheFileService({ path: cache.pathFor(targetPath) });
 
   if (!file) return null;
 

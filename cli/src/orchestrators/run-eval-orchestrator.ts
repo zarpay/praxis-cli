@@ -2,8 +2,8 @@ import type { RunEvalOptions } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import reviewNamed from "@/services/review-named-service.js";
-import reviewProject from "@/services/review-project-service.js";
+import reviewNamedService from "@/services/review-named-service.js";
+import reviewProjectService from "@/services/review-project-service.js";
 import evalHeadlineView from "@/views/eval-headline-view.js";
 import reviewedTargetView from "@/views/reviewed-target-view.js";
 import runProgressView from "@/views/run-progress-view.js";
@@ -29,7 +29,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
   if (targets.length > 0) {
     ctx.render(evalHeadlineView({ targets }));
 
-    const { errors } = await reviewNamed({
+    const { errors } = await reviewNamedService({
       targets,
       root,
       config,
@@ -45,7 +45,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 
   ctx.render(evalHeadlineView({ type: options.type }));
 
-  const run = await reviewProject({
+  const run = await reviewProjectService({
     root,
     config,
     reviewer: options.reviewer,

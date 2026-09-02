@@ -7,8 +7,8 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
-import resolvePlugins from "@/services/resolve-plugins-service.js";
-import watchAndCompile from "@/services/watch-and-compile-service.js";
+import resolvePluginsService from "@/services/resolve-plugins-service.js";
+import watchAndCompileService from "@/services/watch-and-compile-service.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 
@@ -17,7 +17,7 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-describe("watchAndCompile", () => {
+describe("watchAndCompileService", () => {
   let tmpdir: string;
   let cleanup: () => void;
   let logOutput: () => string;
@@ -37,13 +37,13 @@ describe("watchAndCompile", () => {
 
     // The command renders these events; the test captures them the same way.
     watch = (debounceMs) =>
-      watchAndCompile({
+      watchAndCompileService({
         root: tmpdir,
         sources: config.sources,
         expertsDir: config.expertsDir,
         specFilePattern: config.specFilePattern,
         agentProfilesOutputDir: config.agentProfilesOutputDir,
-        plugins: resolvePlugins(config.plugins, tmpdir, logger),
+        plugins: resolvePluginsService(config.plugins, tmpdir, logger),
         debounceMs,
         onWatch: (dir) => logger.info(`Watching ${dir} for changes...`),
         onRecompile: (filename) =>

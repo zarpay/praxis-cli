@@ -1,11 +1,11 @@
 import type { BuildStatusReportInput, StatusReport } from "@/types.js";
 
 import { exists } from "@/helpers/files-helper.js";
-import auditExperts from "@/services/audit-experts-service.js";
-import countDocumentsByType from "@/services/count-documents-by-type-service.js";
-import findOrphanedPractices from "@/services/find-orphaned-practices-service.js";
-import listDocuments from "@/services/list-documents-service.js";
-import tallyValidation from "@/services/tally-validation-service.js";
+import auditExpertsService from "@/services/audit-experts-service.js";
+import countDocumentsByTypeService from "@/services/count-documents-by-type-service.js";
+import findOrphanedPracticesService from "@/services/find-orphaned-practices-service.js";
+import listDocumentsService from "@/services/list-documents-service.js";
+import tallyValidationService from "@/services/tally-validation-service.js";
 
 /**
  * Assembles a project's health report.
@@ -27,20 +27,24 @@ export default async function buildStatusReport({
     specFilePattern: config.specFilePattern,
     ignore: config.ignore,
   };
-  const validation = tallyValidation({ root, config });
+  const validation = tallyValidationService({ root, config });
 
   if (!exists(config.expertsDir)) {
     return evalOnlyReport(validation);
   }
 
-  const expertFiles = await listDocuments({ ...scope, dir: config.expertsDir, recursive: false });
-  const practiceFiles = await listDocuments({
+  const expertFiles = await listDocumentsService({
+    ...scope,
+    dir: config.expertsDir,
+    recursive: false,
+  });
+  const practiceFiles = await listDocumentsService({
     ...scope,
     dir: config.practicesDir,
     recursive: false,
   });
-  const counts = await countDocumentsByType({ ...scope, sources: config.sources });
-  const audit = await auditExperts({
+  const counts = await countDocumentsByTypeService({ ...scope, sources: config.sources });
+  const audit = await auditExpertsService({
     expertFiles,
     root,
     specFilePattern: config.specFilePattern,
@@ -55,7 +59,7 @@ export default async function buildStatusReport({
       context: counts.context,
     },
     validation,
-    orphanedPractices: findOrphanedPractices({
+    orphanedPractices: findOrphanedPracticesService({
       practiceFiles,
       referenced: audit.referencedPractices,
       root,

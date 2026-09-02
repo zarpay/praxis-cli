@@ -3,16 +3,17 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
-import buildStatusReport from "@/services/build-status-report-service.js";
-import countStatusIssues from "@/services/count-status-issues-service.js";
+import buildStatusReportService from "@/services/build-status-report-service.js";
+import countStatusIssuesService from "@/services/count-status-issues-service.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
-describe("buildStatusReport", () => {
+describe("buildStatusReportService", () => {
   let tmpdir: string;
   let cleanup: () => void;
   /** The report for a project root, read fresh from its config file. */
-  const reportFor = (root: string) => buildStatusReport({ root, config: new PraxisConfig(root) });
+  const reportFor = (root: string) =>
+    buildStatusReportService({ root, config: new PraxisConfig(root) });
 
   beforeEach(() => {
     const dir = createCompilerTmpdir();
@@ -89,7 +90,7 @@ describe("buildStatusReport", () => {
 
     // It is reported in the output, so it must also fail the exit code —
     // otherwise CI passes on a project the compiler cannot read.
-    expect(countStatusIssues(report)).toBeGreaterThan(0);
+    expect(countStatusIssuesService(report)).toBeGreaterThan(0);
   });
 
   it("reports a malformed expert instead of dying on it", async () => {
@@ -211,7 +212,7 @@ describe("buildStatusReport", () => {
       expect(report.compilerInUse).toBe(false);
       expect(report.counts).toEqual({ experts: 0, practices: 0, references: 0, context: 0 });
       expect(report.orphanedPractices).toEqual([]);
-      expect(countStatusIssues(report)).toBe(0);
+      expect(countStatusIssuesService(report)).toBe(0);
 
       cleanup();
     });

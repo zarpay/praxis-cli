@@ -2,7 +2,7 @@ import type { ReportVerdictsOptions } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import collectVerdictReports from "@/services/collect-verdict-reports-service.js";
+import collectVerdictReportsService from "@/services/collect-verdict-reports-service.js";
 import verdictReportsView from "@/views/verdict-reports-view.js";
 
 /**
@@ -16,7 +16,7 @@ export const reportVerdictsOrchestrator: Orchestrator<ReportVerdictsOptions> = a
   ctx,
   { target, verbose = false },
 ) => {
-  const { reports, named } = collectVerdictReports({
+  const { reports, named } = collectVerdictReportsService({
     targetPath: target,
     root: ctx.root,
     config: ctx.config,

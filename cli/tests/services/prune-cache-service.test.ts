@@ -8,8 +8,8 @@ import { PraxisConfig } from "@/models/praxis-config.js";
 import { Reviewer } from "@/models/reviewer.js";
 import { VerdictCache } from "@/models/verdict-cache.js";
 import pruneCacheService from "@/services/prune-cache-service.js";
-import readVerdict from "@/services/read-verdict-service.js";
-import writeVerdict from "@/services/write-verdict-service.js";
+import readVerdictService from "@/services/read-verdict-service.js";
+import writeVerdictService from "@/services/write-verdict-service.js";
 
 const LIVE = { name: "live", model: "live-model", apiKeyEnvVar: "KEY" };
 const RESULT = { compliant: true, issues: [], reason: "ok" };
@@ -47,27 +47,33 @@ describe("pruneCacheService", () => {
   it("keeps entries whose reviewer is still configured", () => {
     const cache = cacheFor(liveIdentity());
     const targetPath = join(root, "docs", "guide.md");
-    writeVerdict({ cache, targetPath, contentHash: "abcd1234", result: RESULT, specPath: SPEC });
+    writeVerdictService({
+      cache,
+      targetPath,
+      contentHash: "abcd1234",
+      result: RESULT,
+      specPath: SPEC,
+    });
 
     const result = pruneCacheService({ root, config });
 
     expect(result).toEqual({ entriesPruned: 0, filesRemoved: 0 });
-    expect(readVerdict({ cache, targetPath, contentHash: "abcd1234", specPath: SPEC })).toEqual(
-      RESULT,
-    );
+    expect(
+      readVerdictService({ cache, targetPath, contentHash: "abcd1234", specPath: SPEC }),
+    ).toEqual(RESULT);
   });
 
   it("drops an epoch-rolled entry but keeps the current one in the same file", () => {
     const targetPath = join(root, "docs", "guide.md");
     const stale = { name: "live", model: "live-model", hash: "0ldep0ch" };
-    writeVerdict({
+    writeVerdictService({
       cache: cacheFor(stale),
       targetPath,
       contentHash: "aaaa1111",
       result: RESULT,
       specPath: SPEC,
     });
-    writeVerdict({
+    writeVerdictService({
       cache: cacheFor(liveIdentity()),
       targetPath,
       contentHash: "bbbb2222",
@@ -79,7 +85,7 @@ describe("pruneCacheService", () => {
 
     expect(result).toEqual({ entriesPruned: 1, filesRemoved: 0 });
     expect(
-      readVerdict({
+      readVerdictService({
         cache: cacheFor(liveIdentity()),
         targetPath,
         contentHash: "bbbb2222",
@@ -92,7 +98,13 @@ describe("pruneCacheService", () => {
     const targetPath = join(root, "docs", "gone.md");
     const retired = { name: "retired", model: "old-model", hash: "deadbeef" };
     const cache = cacheFor(retired);
-    writeVerdict({ cache, targetPath, contentHash: "aaaa1111", result: RESULT, specPath: SPEC });
+    writeVerdictService({
+      cache,
+      targetPath,
+      contentHash: "aaaa1111",
+      result: RESULT,
+      specPath: SPEC,
+    });
 
     const result = pruneCacheService({ root, config });
 

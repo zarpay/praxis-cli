@@ -3,9 +3,9 @@ import type { LedgerEntry, ReviewNamedInput, ReviewNamedResult, Verdict } from "
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import { VerdictCache } from "@/models/verdict-cache.js";
-import reviewTarget from "@/services/review-target-service.js";
-import selectReviewers from "@/services/select-reviewers-service.js";
-import writeLedgerRun from "@/services/write-ledger-run-service.js";
+import reviewTargetService from "@/services/review-target-service.js";
+import selectReviewersService from "@/services/select-reviewers-service.js";
+import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 
 /**
  * Reviews the named targets, each against its own spec.
@@ -33,7 +33,7 @@ export default async function reviewNamed({
   ledger = true,
   onVerdict,
 }: ReviewNamedInput): Promise<ReviewNamedResult> {
-  const reviewers = selectReviewers({ configured: config.reviewers, only });
+  const reviewers = selectReviewersService({ configured: config.reviewers, only });
   const specPath = targets.length === 1 ? spec : undefined;
   const entriesByReviewer = new Map<string, LedgerEntry[]>();
 
@@ -51,7 +51,7 @@ export default async function reviewNamed({
     const verdicts = [];
 
     for (const reviewerConfig of reviewers) {
-      const { verdict, cacheHit, usage } = await reviewTarget({
+      const { verdict, cacheHit, usage } = await reviewTargetService({
         target: subject,
         reviewer: Reviewer.fromConfig(reviewerConfig),
         cache: useCache
@@ -98,7 +98,7 @@ export default async function reviewNamed({
 
       if (!entries || entries.length === 0) continue;
 
-      writeLedgerRun({
+      writeLedgerRunService({
         root,
         reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
         trigger: "manual",

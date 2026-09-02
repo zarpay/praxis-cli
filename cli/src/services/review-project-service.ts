@@ -1,14 +1,14 @@
 import type { ReviewAllResult, ReviewProjectInput } from "@/types.js";
 
-import buildReviewScope from "@/services/build-review-scope-service.js";
-import reviewAll from "@/services/review-all-service.js";
-import selectReviewers from "@/services/select-reviewers-service.js";
+import buildReviewScopeService from "@/services/build-review-scope-service.js";
+import reviewAllService from "@/services/review-all-service.js";
+import selectReviewersService from "@/services/select-reviewers-service.js";
 
 /**
  * Reviews everything a project's config covers.
  *
  * The projection every full run needs, in one place: config to scope,
- * configured reviewers to the selected ones. `reviewAll` stays the engine
+ * configured reviewers to the selected ones. `reviewAllService` stays the engine
  * and keeps taking a scope and reviewers outright, so a test can fan out
  * across arbitrary reviewers without writing a config file.
  *
@@ -25,9 +25,9 @@ export default async function reviewProjectService({
   ledger = true,
   onProgress,
 }: ReviewProjectInput): Promise<ReviewAllResult> {
-  return reviewAll({
-    ...buildReviewScope({ root, config }),
-    reviewers: selectReviewers({ configured: config.reviewers, only: reviewer }),
+  return reviewAllService({
+    ...buildReviewScopeService({ root, config }),
+    reviewers: selectReviewersService({ configured: config.reviewers, only: reviewer }),
     type,
     failFast,
     useCache,

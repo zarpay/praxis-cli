@@ -14,6 +14,11 @@ paths:
 - **One file, one `export default function`.** A second export means a second
   service and a second file. Where a service does have a named export, it is the
   filename in camelCase — the same rule commands and orchestrators follow.
+- **Importers bind the default to the filename in camelCase, suffix included** —
+  `import reviewProjectService from "@/services/review-project-service.js"`,
+  never `reviewProject`. The suffix is what lets a reader of an orchestrator or
+  another service tell a service call from an in-file helper at the call site,
+  the same way `…Orchestrator` and `…View` bindings already do.
 - One input payload in, one result out. Both are named types declared in the
   `src/types.ts` — never an inline object literal in the signature, which is
   what lets a payload drift from the type it was supposed to match.

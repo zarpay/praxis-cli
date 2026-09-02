@@ -7,12 +7,12 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { ReviewSubject } from "@/models/review-subject.js";
-import buildVerdictReport from "@/services/build-verdict-report-service.js";
+import buildVerdictReportService from "@/services/build-verdict-report-service.js";
 
 const DOC_CONTENT = "# Guide\nA target under report.";
 const SPEC_CONTENT = "# Spec\nGuides need a title.";
 
-describe("buildVerdictReport", () => {
+describe("buildVerdictReportService", () => {
   let dir: string;
   let targetPath: string;
   let build: (cacheData: CacheFileData | null, specFilePattern?: string) => VerdictReport;
@@ -42,7 +42,7 @@ describe("buildVerdictReport", () => {
       root: dir,
     }).contentHash();
     build = (cacheData, specFilePattern = "README.md") =>
-      buildVerdictReport({ targetPath, cacheData, specFilePattern, root: dir });
+      buildVerdictReportService({ targetPath, cacheData, specFilePattern, root: dir });
   });
 
   afterEach(() => {
@@ -123,7 +123,7 @@ describe("buildVerdictReport", () => {
     });
 
     it("returns a null hash when the target does not exist", () => {
-      const report = buildVerdictReport({
+      const report = buildVerdictReportService({
         targetPath: join(dir, "missing.md"),
         cacheData: null,
         specFilePattern: "README.md",
@@ -165,7 +165,7 @@ describe("buildVerdictReport", () => {
       writeFileSync(join(dir, "README.md"), specContent);
 
       // No root at all: the spec's context glob cannot be resolved.
-      const report = buildVerdictReport({
+      const report = buildVerdictReportService({
         targetPath,
         cacheData: freshCacheData(),
         specFilePattern: "README.md",

@@ -7,7 +7,7 @@ import { errors } from "@/helpers/errors-helper.js";
 import { exists, hasGlobChars, readText } from "@/helpers/files-helper.js";
 import { joinPath, parentDir } from "@/helpers/paths-helper.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
-import resolveAssistInputs from "@/services/resolve-assist-inputs-service.js";
+import resolveAssistInputsService from "@/services/resolve-assist-inputs-service.js";
 
 /**
  * Everything a reviewer is shown about one target: the target itself, the
@@ -83,7 +83,7 @@ export class ReviewSubject {
       targetContent: targetContent ?? readText(targetPath),
       specContent,
       kind,
-      assist: resolveAssistInputs({ specContent, specPath: resolvedSpec, root }),
+      assist: resolveAssistInputsService({ specContent, specPath: resolvedSpec, root }),
     });
   }
 

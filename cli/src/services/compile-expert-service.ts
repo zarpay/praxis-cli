@@ -1,9 +1,9 @@
 import type { CompileExpertInput, CompileExpertResult } from "@/types.js";
 
 import { ExpertFile } from "@/models/expert-file.js";
-import buildProfile from "@/services/build-profile-service.js";
-import inlineReferences from "@/services/inline-references-service.js";
-import writeProfileOutputs from "@/services/write-profile-outputs-service.js";
+import buildProfileService from "@/services/build-profile-service.js";
+import inlineReferencesService from "@/services/inline-references-service.js";
+import writeProfileOutputsService from "@/services/write-profile-outputs-service.js";
 
 /**
  * Compiles one expert into its profile and every configured output.
@@ -25,7 +25,7 @@ export default async function compileExpert({
   const expert = ExpertFile.at(expertFile);
 
   const inline = (patterns: string[], missingLabel: string) =>
-    inlineReferences({ patterns, root, specFilePattern, missingLabel });
+    inlineReferencesService({ patterns, root, specFilePattern, missingLabel });
 
   const [responsibilities, constitution, context, reference] = await Promise.all([
     inline(expert.refs("practices"), "Referenced file not found"),
@@ -46,7 +46,7 @@ export default async function compileExpert({
     ...reference.warnings,
   ];
 
-  const profile = buildProfile({
+  const profile = buildProfileService({
     role: expert.body(),
     responsibilities: responsibilities.bodies,
     constitution: constitution.bodies,
@@ -54,7 +54,7 @@ export default async function compileExpert({
     reference: reference.bodies,
   });
 
-  writeProfileOutputs({
+  writeProfileOutputsService({
     profile,
     metadata,
     alias: expert.alias,

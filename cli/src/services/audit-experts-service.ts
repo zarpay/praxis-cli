@@ -4,7 +4,7 @@ import type { AuditExpertsInput, ExpertAudit } from "@/types.js";
 import { exists } from "@/helpers/files-helper.js";
 import { baseName, joinPath } from "@/helpers/paths-helper.js";
 import { ExpertFile } from "@/models/expert-file.js";
-import expandGlobs from "@/services/expand-globs-service.js";
+import expandGlobsService from "@/services/expand-globs-service.js";
 
 /** The reference keys an expert can point at other documents with. */
 const REF_KEYS: readonly RefKey[] = ["practices", "context", "refs"];
@@ -55,7 +55,7 @@ export default async function auditExperts({
     }
 
     for (const key of REF_KEYS) {
-      const expansions = await expandGlobs({
+      const expansions = await expandGlobsService({
         patterns: parsed.refs(key),
         root,
         specFilePattern,

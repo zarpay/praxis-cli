@@ -1,7 +1,7 @@
 import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import pruneCache from "@/services/prune-cache-service.js";
+import pruneCacheService from "@/services/prune-cache-service.js";
 import pruneView from "@/views/prune-view.js";
 
 /**
@@ -10,7 +10,7 @@ import pruneView from "@/views/prune-view.js";
  * reviewers, and rolled epochs.
  */
 export const pruneCacheOrchestrator: Orchestrator = async (ctx) => {
-  const result = pruneCache({ root: ctx.root, config: ctx.config });
+  const result = pruneCacheService({ root: ctx.root, config: ctx.config });
 
   ctx.render(pruneView(result));
 

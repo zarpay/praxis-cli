@@ -2,7 +2,7 @@ import type { VerdictEntry, WriteVerdictInput } from "@/types.js";
 
 import { exists, removeFile, writeText } from "@/helpers/files-helper.js";
 import { CacheFile } from "@/models/cache-file.js";
-import readCacheFile from "@/services/read-cache-file-service.js";
+import readCacheFileService from "@/services/read-cache-file-service.js";
 
 /**
  * Stores a reviewer's verdict for a (target, spec) pair.
@@ -25,7 +25,7 @@ export default function writeVerdict({
   contextFiles,
 }: WriteVerdictInput): void {
   const path = cache.pathFor(targetPath);
-  const file = readCacheFile({ path }) ?? CacheFile.empty();
+  const file = readCacheFileService({ path }) ?? CacheFile.empty();
 
   const entry: VerdictEntry = {
     reviewer: cache.reviewer,

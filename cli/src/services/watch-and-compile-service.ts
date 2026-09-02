@@ -3,7 +3,7 @@ import type { WatchAndCompileInput } from "@/types.js";
 
 import { watchDir } from "@/helpers/files-helper.js";
 import { resolvePath } from "@/helpers/paths-helper.js";
-import compileExperts from "@/services/compile-experts-service.js";
+import compileExpertsService from "@/services/compile-experts-service.js";
 
 /**
  * Recompiles every expert whenever a source directory changes.
@@ -37,7 +37,7 @@ export default function watchAndCompile({
       timer = setTimeout(async () => {
         try {
           onRecompile?.(filename);
-          await compileExperts(compile);
+          await compileExpertsService(compile);
         } catch (err) {
           onError?.(err instanceof Error ? err.message : String(err));
         }

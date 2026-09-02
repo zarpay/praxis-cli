@@ -2,10 +2,10 @@ import type { CompileProgress, CompileProjectOptions } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import compileByAlias from "@/services/compile-by-alias-service.js";
-import compileExperts from "@/services/compile-experts-service.js";
-import resolvePlugins from "@/services/resolve-plugins-service.js";
-import watchAndCompile from "@/services/watch-and-compile-service.js";
+import compileByAliasService from "@/services/compile-by-alias-service.js";
+import compileExpertsService from "@/services/compile-experts-service.js";
+import resolvePluginsService from "@/services/resolve-plugins-service.js";
+import watchAndCompileService from "@/services/watch-and-compile-service.js";
 import compileProgressView from "@/views/compile-progress-view.js";
 import compileResultView from "@/views/compile-result-view.js";
 import watchView from "@/views/watch-view.js";
@@ -32,14 +32,14 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
     expertsDir: config.expertsDir,
     specFilePattern: config.specFilePattern,
     agentProfilesOutputDir: config.agentProfilesOutputDir,
-    plugins: resolvePlugins(config.plugins, root, logger),
+    plugins: resolvePluginsService(config.plugins, root, logger),
     onProgress: (event: CompileProgress) => ctx.render(compileProgressView(event)),
   };
 
   // When an alias is given, compile only that expert and skip the watch mode.
   // Otherwise, compile every expert and optionally watch for changes.
   if (alias) {
-    const result = await compileByAlias({ ...input, alias, expertsDir: config.expertsDir });
+    const result = await compileByAliasService({ ...input, alias, expertsDir: config.expertsDir });
 
     const view = compileResultView(result);
     ctx.render(view);
@@ -49,7 +49,7 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
     return "ok";
   }
 
-  const { compiled } = await compileExperts(input);
+  const { compiled } = await compileExpertsService(input);
 
   const view = compileResultView({ compiled });
   ctx.render(view);
@@ -74,7 +74,7 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
     ctx.render(view);
   };
 
-  watchAndCompile({
+  watchAndCompileService({
     ...input,
     onWatch,
     onRecompile,
