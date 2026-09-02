@@ -8,12 +8,42 @@
         "hash": "f524adbc"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T22:04:45.424Z",
-      "content_hash": "1d27ad5e",
+      "cached_at": "2026-09-02T22:40:22.121Z",
+      "content_hash": "8f4607af",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 479 words."
+        "reason": "Review input has 880 words."
+      }
+    },
+    "dacac2eb:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T22:38:03.252Z",
+      "content_hash": "8f4607af",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The tasting-menu.test.ts file conforms to the Test Conventions specification. The top-level describe names the unit under test by module name ('tasting-menu'), nested describes frame situations as when clauses, and each it reads as a complete sentence of an observable outcome with exactly one expect per block. Test data is built fresh in beforeEach via createMemoryStore, so suites do not depend on cross-test state. All axioms (AX-371742, AX-635eb9, AX-9a7dd5, AX-dca8ca) are satisfied: nested describes communicate context, fresh data is established per scenario, it descriptions state specific behaviors, and distinct outcomes are separated into separate blocks with single expects. No internal implementation, spies, or cross-suite dependencies are present."
+      }
+    },
+    "dacac2eb:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T22:40:22.097Z",
+      "content_hash": "8f4607af",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file fully satisfies all criteria defined in the specification. It follows the three rules for test conventions: subject framing with nested describe blocks for different situations, one assertion per it block, and functionality-focused testing without implementation details. The file also complies with all axioms in the checklist."
       }
     }
   }

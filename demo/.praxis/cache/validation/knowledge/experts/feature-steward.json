@@ -15,6 +15,36 @@
         "issues": [],
         "reason": "Review input has 294 words."
       }
+    },
+    "244fa7f3:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T22:23:49.682Z",
+      "content_hash": "7de401cd",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file conforms to the experts.sme.md specification. Frontmatter includes the four required keys (title, type, alias, description) with correct types; type equals 'expert'. The body opens with a level-1 heading naming the expert and its alias ('Feature Steward (a.k.a **Sundae**)'), and states in prose what the expert is the subject-matter expert on (how Scoop Society features are composed, reviewed as one assembly). No placeholder text appears. No violations to report either via the checklist (none provided) or the open channel. Mechanical frontmatter checks are outside my scope, and no reading-comprehension violations exist."
+      }
+    },
+    "244fa7f3:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T22:24:26.088Z",
+      "content_hash": "7de401cd",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification: it contains all required frontmatter fields (title, type, alias, description) with appropriate values, opens with a level-1 heading naming the expert and its alias, states in prose what the expert is the subject-matter expert on, and contains no placeholder text."
+      }
     }
   }
 }

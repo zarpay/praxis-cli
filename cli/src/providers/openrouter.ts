@@ -109,7 +109,7 @@ export class OpenRouterProvider implements ReviewProvider {
 
     return {
       toolName: toolCall.function.name,
-      args: JSON.parse(toolCall.function.arguments) as unknown,
+      args: this.parseArguments(toolCall, data),
       usage: this.normalizeUsage(data.usage),
     };
   }
@@ -157,6 +157,32 @@ export class OpenRouterProvider implements ReviewProvider {
         return { compliant: false, severity: "error", issues: critiques, reason };
       default:
         throw errors.unexpectedToolCall(toolCall.function.name);
+    }
+  }
+
+  /**
+   * The tool call's arguments, parsed — with an instructive failure.
+   *
+   * Some backends return truncated or empty argument strings (a
+   * completion cut off at max_tokens, or a model quirk); naming the
+   * finish_reason and showing the tail turns a bare "unexpected end of
+   * JSON" into something a config edit can fix.
+   */
+  private parseArguments(toolCall: ToolCall, data: ChatCompletionResponse): unknown {
+    const raw = toolCall.function.arguments;
+
+    try {
+      return JSON.parse(raw) as unknown;
+    } catch {
+      const finishReason =
+        (data.choices[0] as { finish_reason?: string }).finish_reason ?? "unknown";
+      const tail = raw.length > 80 ? `…${raw.slice(-80)}` : raw;
+
+      throw errors.reviewerApiError(
+        this.name,
+        200,
+        `tool call arguments are not valid JSON (finish_reason: ${finishReason}, ${raw.length} chars, tail: "${tail}") — if truncated, raise max_tokens in the model's options`,
+      );
     }
   }
 

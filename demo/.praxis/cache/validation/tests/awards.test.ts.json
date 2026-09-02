@@ -8,12 +8,49 @@
         "hash": "f524adbc"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T22:04:45.423Z",
-      "content_hash": "61183485",
+      "cached_at": "2026-09-02T22:40:22.118Z",
+      "content_hash": "f7a93f52",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 539 words."
+        "reason": "Review input has 940 words."
+      }
+    },
+    "dacac2eb:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T22:37:53.509Z",
+      "content_hash": "f7a93f52",
+      "result": {
+        "compliant": false,
+        "severity": "warning",
+        "issues": [
+          {
+            "text": "The test file frames the unit under test by the feature name 'awards' rather than its module name. The specification's subject-framing rule states the top-level describe must name the unit under test by its module name (e.g. describe('create-review', ...)). The module under test here is the pickWinners module in ../src/features/awards/index.js; the convention appears modeled on naming by module name such as 'create-review', not the feature folder 'awards'. The file must name the top-level describe by the module name of the unit under test. (Note: mechanical naming patterns are out of scope per the judgment boundary, but this is about the semantic framing of the subject, which requires reading comprehension.)",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The test suite largely follows the specification: nested describes frame situations as when clauses, each it reads as a sentence, each block has one expect, tests exercise the public API and fresh per-suite state via beforeEach. The only deviation I can support is the subject framing naming the unit by the feature folder 'awards' instead of by the module name of the unit under test, which the spec's rule explicitly states."
+      }
+    },
+    "dacac2eb:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T22:39:29.611Z",
+      "content_hash": "f7a93f52",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully satisfies all criteria in the specification and complies with all axioms in the checklist. It demonstrates proper test structure, fresh test data creation, clear descriptive language, and separation of distinct outcomes."
       }
     }
   }

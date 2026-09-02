@@ -8,12 +8,91 @@
         "hash": "f524adbc"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T22:04:45.423Z",
-      "content_hash": "18a6ed1a",
+      "cached_at": "2026-09-02T22:40:22.120Z",
+      "content_hash": "4d51c3d1",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 345 words."
+        "reason": "Review input has 746 words."
+      }
+    },
+    "dacac2eb:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T22:38:00.079Z",
+      "content_hash": "4d51c3d1",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "The suite has no nested describe blocks. The single describe is named 'newsletter stuff' rather than the module name 'send-newsletter', and there are no nested describe('when ...') blocks framing the different situations (valid subject, empty subject, store populated). It must structure tests with nested describes naming each scenario.",
+            "axiomId": "AX-371742",
+            "axiomVersion": 1
+          },
+          {
+            "text": "Test data is not built inside its test or describe setup to scope each scenario independently. The single test asserts the store ends up containing parlors, but no fresh data setup establishes that state for that assertion; the store is only created and asserted against, mixing observer state with the run. Each scenario (e.g., when subject is empty) must set up its own required data independently rather than relying on the shared single test flow.",
+            "axiomId": "AX-635eb9",
+            "axiomVersion": 1
+          },
+          {
+            "text": "The it description is 'works', a vague placeholder that does not read with its describe context as a sentence stating one observable outcome. It must describe the specific outcome, e.g. 'returns true', 'adds a newsletter to the store', 'throws an error for an empty subject'.",
+            "axiomId": "AX-9a7dd5",
+            "axiomVersion": 1
+          },
+          {
+            "text": "A single it block mixes three distinct outcomes in one block: the return value (toBe(true)), observable store state (store.listParlors().length greater than 0), and an error case (toThrow). These must be separated into distinct it blocks under appropriate nested describes, each with one expect.",
+            "axiomId": "AX-dca8ca",
+            "axiomVersion": 1
+          }
+        ],
+        "reason": "The single test file violates every axiom: no nested describe framing (AX-371742), no fresh scenario-specific test data setup (AX-635eb9), a vague 'works' description (AX-9a7dd5), and multiple expects mixing return values, store state, and error cases in one block (AX-dca8ca)."
+      }
+    },
+    "dacac2eb:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T22:40:07.582Z",
+      "content_hash": "4d51c3d1",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "The test suite does not use nested describe blocks to frame different situations or scenarios. The top-level describe names the unit vaguely as 'newsletter stuff' instead of the module name, and there are no nested describe blocks for different scenarios like valid vs. invalid subjects.",
+            "axiomId": "AX-371742",
+            "axiomVersion": 1
+          },
+          {
+            "text": "The it block description 'works' is vague placeholder text that does not read as a complete sentence describing specific behavior when combined with its describe context. It should use plain language communicating observable outcomes.",
+            "axiomId": "AX-9a7dd5",
+            "axiomVersion": 1
+          },
+          {
+            "text": "The single it block contains multiple distinct observable outcomes (return value, store state, error case) that should be separated into separate it blocks. It mixes testing valid subject case, store state verification, and empty subject error case.",
+            "axiomId": "AX-dca8ca",
+            "axiomVersion": 1
+          },
+          {
+            "text": "The test violates the 'One assertion per block' rule by having three expect statements in one it block. Each distinct outcome should be in its own it block under appropriate describe contexts.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "The test violates 'Functionality, not implementation' by not using the unit's public API properly. The specification states tests should exercise the exported 'run' function for services, but this test directly calls sendNewsletter without following the service pattern.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The file violates multiple required criteria from the specification, including critical axioms about test structure, organization, and assertion patterns."
       }
     }
   }

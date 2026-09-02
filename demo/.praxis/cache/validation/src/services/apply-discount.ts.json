@@ -8,12 +8,68 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T22:04:45.422Z",
-      "content_hash": "a54c5a51",
+      "cached_at": "2026-09-02T22:40:22.116Z",
+      "content_hash": "d3af14cf",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 685 words."
+        "reason": "Review input has 907 words."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T22:37:45.972Z",
+      "content_hash": "d3af14cf",
+      "result": {
+        "compliant": false,
+        "severity": "warning",
+        "issues": [
+          {
+            "text": "...",
+            "axiomId": "AX-a108ea",
+            "axiomVersion": 1
+          }
+        ],
+        "reason": "..."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T22:39:11.528Z",
+      "content_hash": "d3af14cf",
+      "result": {
+        "compliant": false,
+        "severity": "warning",
+        "issues": [
+          {
+            "text": "Configuration data (ACTIVE_CODES constant) is hardcoded within the service module instead of being isolated in a single obvious place or injected via the Store. The comment acknowledges this is temporary, but according to the specification, configuration data that could vary or be maintained separately must be isolated to prevent silent coupling and drift between code and data.",
+            "axiomId": "AX-a108ea",
+            "axiomVersion": 1
+          }
+        ],
+        "reason": "The file satisfies all core requirements but violates a warning-level axiom about configuration data isolation."
       },
       "exemplar_files": [
         {

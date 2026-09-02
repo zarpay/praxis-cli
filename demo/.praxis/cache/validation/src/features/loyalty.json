@@ -8,12 +8,62 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T22:04:45.420Z",
-      "content_hash": "60a083d7",
+      "cached_at": "2026-09-02T22:40:22.113Z",
+      "content_hash": "98c8a57c",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 815 words."
+        "reason": "Review input has 903 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T22:37:40.976Z",
+      "content_hash": "98c8a57c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The loyalty feature directory conforms to the Feature Module Conventions. It has exactly one entry point (index.ts) that re-exports the entire public API — the two types via export type and the run function as trackPunches — satisfying AX-96ff9c. The types live in the dedicated loyalty-types.ts file, the logic file is verb-first kebab-case (track-punches.ts) with a single exported run returning a Result and a consumer-grade error message. Every file in the directory is reachable from index.ts (loyalty-types.ts and track-punches.ts are both imported), the feature serves one capability (loyalty standing), and the name 'loyalty' describes the capability rather than implementation. All cohesion and structural rules are met."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T22:38:42.441Z",
+      "content_hash": "98c8a57c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The loyalty feature module satisfies all specification requirements. It has exactly one entry point (index.ts) that re-exports the entire public API (types and the trackPunches function), types are in a dedicated loyalty-types.ts file, logic files follow verb-first kebab-case naming and service conventions, all files are reachable from the entry point, and the feature maintains cohesion around a single capability (loyalty tracking)."
       },
       "context_files": [
         {

@@ -15,6 +15,36 @@
         "issues": [],
         "reason": "Review input has 288 words."
       }
+    },
+    "244fa7f3:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T22:23:51.029Z",
+      "content_hash": "3fcfd2ce",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file conforms to the expert document conventions: it has the required frontmatter (title, type: 'expert', alias, description), opens with a level-1 heading naming the expert and its alias (Service Steward / Scooper), states in prose what the expert is the subject-matter expert on (how Scoop Society services are written and reviewed), and contains no placeholder text. The extra keys (constitution, context, practices, refs, validates, excludes, exemplars) are not prohibited by the specification."
+      }
+    },
+    "244fa7f3:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T22:24:31.927Z",
+      "content_hash": "3fcfd2ce",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification. It contains all required frontmatter fields (title, type, alias, description) with correct values, opens with a level-1 heading naming the expert and its alias, clearly states what the expert is the subject-matter expert on in prose, and contains no placeholder text."
+      }
     }
   }
 }

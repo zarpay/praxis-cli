@@ -8,12 +8,62 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T22:04:45.421Z",
-      "content_hash": "cbd707ee",
+      "cached_at": "2026-09-02T22:40:22.115Z",
+      "content_hash": "35d8fb94",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 883 words."
+        "reason": "Review input has 971 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T22:37:44.908Z",
+      "content_hash": "35d8fb94",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The 'src/features/tasting-menu' directory satisfies the Feature Module Conventions specification. It has exactly one entry point (index.ts) that re-exports the feature's entire public API (the run function as buildMenu and all types), types live in the dedicated tasting-menu-types.ts file, and the logic file build-menu.ts is verb-first kebab-case with one exported run, a Result return type, and consumer-grade error messages. No file is orphaned: both build-menu.ts and tasting-menu-types.ts are reachable from index.ts through its import graph. The feature composes domain logic into one user-facing capability (curated tasting tours), its name describes the capability rather than implementation, and the set contains no unrelated purposes. The single capability is the one user-facing behavior of this directory, so AX-96ff9c and all cohesion and structure criteria hold."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T22:38:56.601Z",
+      "content_hash": "35d8fb94",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The feature module satisfies all specification requirements. It has a proper entry point that re-exports the entire public API (satisfying AX-96ff9c), follows the required structure with dedicated types file and verb-first kebab-case logic file, maintains cohesion with no orphaned files, and focuses on a single capability (building tasting menus)."
       },
       "context_files": [
         {

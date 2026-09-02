@@ -8,12 +8,42 @@
         "hash": "f524adbc"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T22:04:45.424Z",
-      "content_hash": "a1734e88",
+      "cached_at": "2026-09-02T22:40:22.121Z",
+      "content_hash": "94a05a03",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 585 words."
+        "reason": "Review input has 986 words."
+      }
+    },
+    "dacac2eb:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T22:38:01.527Z",
+      "content_hash": "94a05a03",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file conforms to all axioms. Top-level describe names the module (rank-parlors); nested describes frame situations as when clauses; each it has exactly one expect and states an observable outcome; data is built fresh in beforeEach or inside tests; tests exercise only the public run API through the honest in-memory store."
+      }
+    },
+    "dacac2eb:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T22:40:19.137Z",
+      "content_hash": "94a05a03",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully satisfies all criteria in the specification and all axioms in the checklist. It uses proper subject framing with nested describe blocks for different scenarios, maintains one assertion per test block, exercises only public API functionality, builds fresh test data for each scenario, and uses clear, complete sentence descriptions for each test case."
       }
     }
   }

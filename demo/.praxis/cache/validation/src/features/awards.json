@@ -8,12 +8,62 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T22:04:45.419Z",
-      "content_hash": "385839e6",
+      "cached_at": "2026-09-02T22:40:22.110Z",
+      "content_hash": "955f83a9",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 948 words."
+        "reason": "Review input has 1036 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T22:37:37.353Z",
+      "content_hash": "955f83a9",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The awards feature directory conforms to the specification. It has exactly one entry point (index.ts) that re-exports the entire public API (run/pickWinners, PickWinnersInput, Award). Types live in the dedicated award-types.ts file. Logic lives in pick-winners.ts, verb-first kebab-case, exposing a single run function that returns a Result with a consumer-grade error message and never throws. All files are reachable from index.ts (award-types.ts via the re-export, pick-winners.ts via the re-export, and both are in the import graph), the feature serves one capability (yearly awards), and the name 'awards' describes the capability rather than its implementation. The axiom AX-96ff9c is satisfied."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T22:38:15.745Z",
+      "content_hash": "955f83a9",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The feature module 'awards' fully complies with the specification. It has exactly one entry point (index.ts) that re-exports the entire public API (satisfying AX-96ff9c), types are in a dedicated award-types.ts file, logic files follow verb-first kebab-case naming, and the module demonstrates cohesion with no orphaned files and a single focused capability. All service conventions are followed including Results over exceptions and consumer-grade error messages."
       },
       "context_files": [
         {

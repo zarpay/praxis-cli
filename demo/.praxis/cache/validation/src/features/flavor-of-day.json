@@ -8,12 +8,91 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T22:04:45.420Z",
-      "content_hash": "67edd1dd",
+      "cached_at": "2026-09-02T22:40:22.111Z",
+      "content_hash": "f1a31d98",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 714 words."
+        "reason": "Review input has 802 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T22:37:39.346Z",
+      "content_hash": "f1a31d98",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "The feature directory 'flavor-of-day' has no index.ts entry point, so there is no file re-exporting the feature's entire public API — nothing outside the feature can import it, and the Structure rules (exactly one index.ts, types in a dedicated <feature>-types.ts file, verb-first kebab-case logic files) are unmet. The directory must add an index.ts that re-exports the public API (e.g. export { run } from ... / export * from '<feature>-types'), and the 'old-rotation.ts' file is unreachable without it.",
+            "axiomId": "AX-96ff9c",
+            "axiomVersion": 1
+          }
+        ],
+        "reason": "The flavor-of-day feature directory contains flavor.ts and old-rotation.ts but lacks the required index.ts entry point that re-exports the entire public API. It also lacks the dedicated <feature>-types.ts file and verb-first kebab-case logic file names. The missing entry point directly violates the sole ratified axiom, and the other structural requirements cannot be satisfied as the directory stands."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T22:38:32.066Z",
+      "content_hash": "f1a31d98",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "Missing required entry point index.ts file that re-exports the feature's entire public API. The feature directory contains flavor.ts and old-rotation.ts but no index.ts file to serve as the entry point.",
+            "axiomId": "AX-96ff9c",
+            "axiomVersion": 1
+          },
+          {
+            "text": "Missing required <feature>-types.ts file (should be flavor-of-day-types.ts) as specified in the Structure section.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "The logic files do not follow service conventions: they don't export a single 'run' function, don't use the Result<T> type pattern for error handling, and don't provide consumer-grade error messages as required by the Structure section.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "The old-rotation.ts file appears to be legacy/dead code ('Kept around in case we go back to the old rotation') which may violate the 'One capability per feature' cohesion principle if it's truly unrelated functionality.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The feature module violates multiple required criteria in the specification, most critically missing the required index.ts entry point."
       },
       "context_files": [
         {

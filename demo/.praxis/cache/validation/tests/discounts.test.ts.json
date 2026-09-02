@@ -8,12 +8,49 @@
         "hash": "f524adbc"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T22:04:45.423Z",
-      "content_hash": "e82dd9b3",
+      "cached_at": "2026-09-02T22:40:22.120Z",
+      "content_hash": "a9293b0e",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 503 words."
+        "reason": "Review input has 904 words."
+      }
+    },
+    "dacac2eb:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T22:37:57.085Z",
+      "content_hash": "a9293b0e",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The suite follows the specification: the top-level describe names the module under test, nested describes frame situations as 'when' clauses, each it reads with its describe as a plain-language sentence, each it contains exactly one expect, all assertions target the public run API and observable results, and each scenario builds its own fresh in-memory store (with no state carried between tests). No axiom violation or uncovered deviation is present. Mechanical aspects (file naming, test framework, matcher choice) are out of scope and correctly not evaluated."
+      }
+    },
+    "dacac2eb:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T22:39:58.581Z",
+      "content_hash": "a9293b0e",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "Test data must be built fresh inside each test or its describe setup. The tests rely on store.listParlors()[0] which assumes the memory store has pre-populated data. Each test should explicitly create its required test data (e.g., adding a parlor to the store) rather than depending on default/seed state.",
+            "axiomId": "AX-635eb9",
+            "axiomVersion": 1
+          }
+        ],
+        "reason": "The file violates the requirement for fresh test data construction, relying on pre-existing state in the memory store rather than explicitly building test data within each test or describe setup."
       }
     }
   }

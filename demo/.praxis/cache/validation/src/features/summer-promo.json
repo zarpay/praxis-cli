@@ -8,12 +8,62 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T22:04:45.420Z",
-      "content_hash": "ae35b04c",
+      "cached_at": "2026-09-02T22:40:22.114Z",
+      "content_hash": "b344f904",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 821 words."
+        "reason": "Review input has 909 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T22:37:43.002Z",
+      "content_hash": "b344f904",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The summer-promo feature conforms to the specification. It has exactly one entry point (index.ts) that re-exports the entire public API (types from summer-promo-types.ts and the run logic from build-banner.ts). Types live in the dedicated summer-promo-types.ts file, satisfying the naming convention. The logic file is verb-first kebab-case (build-banner.ts), exports a single run function, returns a Result instead of throwing, and provides a consumer-grade error message. Every file in the directory is reachable from index.ts through its import graph (no orphaned files), the files serve the single capability of building the summer banner (one capability), and the feature name 'summer-promo' describes the capability rather than its implementation. The hypothetical fragment in the context file (src/store/memory-store.ts showing text like 'import type { Parlor' ... 'Store' ... 'addReview' etc.) appears to be a rendering artifact of the context and is not among the files under review; the reviewed files are complete and compliant."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T22:38:45.763Z",
+      "content_hash": "b344f904",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The feature module satisfies all criteria defined in the specification. The entry point index.ts properly re-exports the feature's entire public API, all files are cohesive and serve a single capability, and the structure follows the required conventions."
       },
       "context_files": [
         {

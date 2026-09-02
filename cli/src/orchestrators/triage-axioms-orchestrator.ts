@@ -140,14 +140,30 @@ async function organizeAndDecide(
       continue;
     }
 
-    const organization = await organizeTriageService({
-      root: session.root,
-      curator: session.curator,
-      specPath,
-      specContent: readText(specFile),
-      critiques,
-      axioms: established,
-    });
+    let organization;
+
+    try {
+      organization = await organizeTriageService({
+        root: session.root,
+        curator: session.curator,
+        specPath,
+        specContent: readText(specFile),
+        critiques,
+        axioms: established,
+      });
+    } catch (err) {
+      // A curator failure loses one spec's session, never the decisions
+      // already made: pending is derived, so rerunning triage resumes.
+      const message = err instanceof Error ? err.message : String(err);
+      session.ctx.render([
+        {
+          channel: "warning",
+          text: `Curator failed organizing ${specPath}: ${message} — its critiques stay pending; rerun triage to retry.`,
+        },
+      ]);
+      session.skipped += critiques.length;
+      continue;
+    }
 
     addUsage(session, organization.usage);
 
@@ -269,13 +285,28 @@ async function propose(
   critiques: PendingCritique[],
   draft: AxiomDraft,
 ): Promise<void> {
-  const gate = await assessAxiomGateService({
-    root: session.root,
-    curator: session.curator,
-    statement: draft.statement,
-    violatingExample: draft.violatingExample,
-    compliantExample: draft.compliantExample,
-  });
+  let gate;
+
+  try {
+    gate = await assessAxiomGateService({
+      root: session.root,
+      curator: session.curator,
+      statement: draft.statement,
+      violatingExample: draft.violatingExample,
+      compliantExample: draft.compliantExample,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    session.ctx.render([
+      {
+        channel: "warning",
+        text: `Gate call failed: ${message} — the cluster stays pending; rerun triage to retry.`,
+      },
+    ]);
+    session.skipped += critiques.length;
+
+    return;
+  }
 
   addUsage(session, gate.usage);
 
