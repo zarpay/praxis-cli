@@ -22,8 +22,8 @@ paths:
 - No workflow. A service that calls two other services in sequence to produce an
   outcome is an orchestrator — a controller's job, not a service object's.
 
-The only classes under `services/` are the sanctioned exceptions: the
-extension-point contracts in `providers/` and `plugins/`. **Those keep their bare
-names** — `openrouter.ts`, `claude-code.ts` — because they are not services: they
-are implementations of a documented interface, and their directory already says
-so. Everything else here takes the suffix.
+Everything under `services/` is a service and takes the suffix — there are no
+exemptions, because the things that were not services have moved out.
+Extension-point implementations live in the domain's `providers/` and `plugins/`
+directories instead; a service that _selects_ one (`resolve-provider-service.ts`,
+`resolve-plugins-service.ts`) is still a service and stays here.

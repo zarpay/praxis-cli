@@ -3,7 +3,7 @@ import type { ProviderRequest } from "@/domains/eval/types.js";
 import { HttpResponse, http } from "msw";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import { OpenRouterProvider } from "@/domains/eval/services/providers/openrouter.js";
+import { OpenRouterProvider } from "@/domains/eval/providers/openrouter.js";
 import {
   OPENROUTER_URL,
   createOpenRouterServer,

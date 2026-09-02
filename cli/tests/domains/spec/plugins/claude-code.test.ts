@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { ClaudeCodePlugin } from "@/domains/spec/services/plugins/claude-code.js";
+import { ClaudeCodePlugin } from "@/domains/spec/plugins/claude-code.js";
 import { Logger } from "@/views/logger.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 

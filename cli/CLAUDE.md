@@ -30,8 +30,8 @@ src/
                   markdown-file, paths
   views/          the render kit: display, logger, badges, stats, table
   domains/        one directory per area, each owning its work end to end
-    spec/         authoring → agent profiles
-    eval/         evaluating targets against specs
+    spec/         authoring → agent profiles (plus plugins/: output formats)
+    eval/         evaluating targets against specs (plus providers/: backends)
     workspace/    the project itself: config, paths, discovery, health
   commands/       route declarations only — options in, one orchestrator call out
 ```
@@ -57,7 +57,7 @@ core, views  →  workspace/{models,types}  →  spec, eval  →  commands
 
 That handoff between the layers is a real contract: an expert's `validates:` is
 compiled out as the spec's `paths:` (`domains/spec/views/targeting.ts` writes it,
-`domains/eval/services/discover-targets.ts` reads it), and `cohort:`/`excludes:`/
+`domains/eval/services/discover-domains-service.ts` reads it), and `cohort:`/`excludes:`/
 `exemplars:` pass through under the same names. `ExpertFile` and `SpecFile` are
 the two ends of it.
 
@@ -84,7 +84,8 @@ Classes remain for four things, and only these:
 
 - **Models** — data plus helpers on that data, validated on construction.
 - **Extension-point contracts** — `CompilerPlugin`, `ReviewProvider`. A third
-  party implements these against a documented interface.
+  party implements these against a documented interface; implementations live in
+  the domain's `plugins/` and `providers/`, not under `services/`.
 - **`VerdictCache`** — where one reviewer's verdicts live and under what key,
   bound to one reviewer identity. As functions, every call would re-thread
   `{ projectRoot, reviewer }`; the reads and writes themselves are services
@@ -128,22 +129,22 @@ at them rather than at captured stdout. Long runs still stream through an
 ```
 Expert .md file (with YAML frontmatter)
   → Document parsed (core/markdown-file.ts → core/frontmatter.ts)
-  → Referenced content resolved via globs (domains/spec/services/glob-expander.ts)
+  → Referenced content resolved via globs (domains/spec/services/expand-globs-service.ts)
   → Sections assembled: Expert → Responsibilities → Constitution → Context → Reference
-      (domains/spec/services/build-profile.ts)
+      (domains/spec/services/build-profile-service.ts)
   → Pure profile written to agentProfilesOutputDir/{alias}.md
   → Each plugin receives profile + metadata and writes its own output
-      (domains/spec/services/plugin-registry.ts → plugins/*)
+      (domains/spec/services/resolve-plugins-service.ts → plugins/*)
 ```
 
-The **Claude Code plugin** (`domains/spec/services/plugins/claude-code.ts`) wraps the profile with YAML frontmatter (name, description, tools, model, permissionMode), writes to `{outputDir}/agents/{alias}.md` (default `plugins/praxis/agents/`), and creates/updates `.claude-plugin/plugin.json` in the output directory.
+The **Claude Code plugin** (`domains/spec/plugins/claude-code.ts`) wraps the profile with YAML frontmatter (name, description, tools, model, permissionMode), writes to `{outputDir}/agents/{alias}.md` (default `plugins/praxis/agents/`), and creates/updates `.claude-plugin/plugin.json` in the output directory.
 
 ### Eval Layer — Reviewer Pipeline
 
 ```
 Spec discovered (specFilePattern match, frontmatter read)
   → Units resolved: paths:/cohort: expand; excludes:/exemplars: shielded from review
-  → Assist inputs resolved: exemplars: + context: files (domains/eval/services/review-input.ts)
+  → Assist inputs resolved: exemplars: + context: files (domains/eval/services/resolve-assist-inputs-service.ts)
   → Content hash computed over the full review input: target + spec + assist (SHA256, 8-char prefix)
   → Cache checked: one file per target at .praxis/cache/validation/<target-path>.json,
       verdicts keyed <specHash>:<reviewerHash> (format 3.0)
@@ -154,7 +155,7 @@ Spec discovered (specFilePattern match, frontmatter read)
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
-Key files: `domains/eval/services/request-verdict.ts`, `domains/eval/models/` (Reviewer, ReviewSubject, SpecFile), `domains/eval/services/` (resolve-assist-inputs, verdict-cache, hash-reviewer, discover-domains, resolve-units), `domains/eval/orchestrators/run-eval.ts`, `domains/eval/views/`, `domains/eval/prompts/`.
+Key files: `domains/eval/services/request-verdict-service.ts`, `domains/eval/models/` (Reviewer, ReviewSubject, SpecFile), `domains/eval/services/` (resolve-assist-inputs, verdict-cache, hash-reviewer, discover-domains, resolve-units), `domains/eval/orchestrators/run-eval-orchestrator.ts`, `domains/eval/views/`, `domains/eval/prompts/`.
 
 ### Project Root Detection
 
@@ -169,16 +170,16 @@ Config lives at `{root}/.praxis/config.json` with these fields:
 - `practicesDir: string` — where practice `.md` files live (default: `"practices"`)
 - `agentProfilesOutputDir: string | false` — where pure profiles are written (default: `"./agent-profiles"`)
 - `plugins: (string | PluginConfigEntry)[]` — enabled plugins with optional per-plugin config (default: `[]`). String entries are normalized to `{ name: theString }`. Object entries support `name`, `outputDir`, `claudeCodePluginName`.
-- `reviewers: { name, model, apiKeyEnvVar, baseUrl?, temperature?, provider?, options? }[]` — the configured reviewers; every reviewer evaluates every target, each with its own cache namespace keyed by its behavioral hash. `provider` selects the execution backend: a built-in registry name (default `"openrouter"`) or a `./relative` ESM module path whose default export is a provider factory (`domains/eval/types.ts`); `options` passes through to the provider verbatim (`domains/eval/services/hash-reviewer.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
+- `reviewers: { name, model, apiKeyEnvVar, baseUrl?, temperature?, provider?, options? }[]` — the configured reviewers; every reviewer evaluates every target, each with its own cache namespace keyed by its behavioral hash. `provider` selects the execution backend: a built-in registry name (default `"openrouter"`) or a `./relative` ESM module path whose default export is a provider factory (`domains/eval/types.ts`); `options` passes through to the provider verbatim (`domains/eval/services/hash-reviewer-service.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
 - `specFilePattern?: string` — top-level; filename or glob for spec files (default `README.md`).
 
 ### Plugin System
 
-Plugins implement the `CompilerPlugin` interface (`domains/spec/types.ts`): `name` property and `compile(profileContent, metadata, roleAlias)` method. Registered in `domains/spec/services/plugin-registry.ts`. Enabled via `plugins` array in config. Each plugin receives a `PluginConfigEntry` with per-plugin options (e.g., `outputDir`, `claudeCodePluginName`). The Claude Code plugin writes agent files to `{outputDir}/agents/` and manages `.claude-plugin/plugin.json`.
+Plugins implement the `CompilerPlugin` interface (`domains/spec/types.ts`): `name` property and `compile(profileContent, metadata, roleAlias)` method. Registered in `domains/spec/services/resolve-plugins-service.ts`. Enabled via `plugins` array in config. Each plugin receives a `PluginConfigEntry` with per-plugin options (e.g., `outputDir`, `claudeCodePluginName`). The Claude Code plugin writes agent files to `{outputDir}/agents/` and manages `.claude-plugin/plugin.json`.
 
 ## Code Conventions
 
-- **A file's name states its layer, and its export states its name:** files under `commands/`, `orchestrators/` and `services/` end `-command.ts`, `-orchestrator.ts`, `-service.ts`, and any named (non-default) export is that filename in camelCase — `run-eval-orchestrator.ts` exports `runEvalOrchestrator`. An import statement then says what kind of thing it is pulling in. The extension-point classes under `services/providers/` and `services/plugins/` are exempt: they implement a documented interface rather than being services, and their directory already says so.
+- **A file's name states its layer, and its export states its name:** files under `commands/`, `orchestrators/` and `services/` end `-command.ts`, `-orchestrator.ts`, `-service.ts`, and any named (non-default) export is that filename in camelCase — `run-eval-orchestrator.ts` exports `runEvalOrchestrator`. An import statement then says what kind of thing it is pulling in. The extension-point classes are not services and do not live under `services/`: they have their own `providers/` and `plugins/` directories, named for what they integrate with (`openrouter.ts`, `claude-code.ts`) because that name is what a user writes in the config.
 - **Types live in a `types.ts`:** a domain's own (`domains/<name>/types.ts`) for its vocabulary, or `src/types.ts` for shapes more than one domain needs — `ReviewerConfig` (normalized by `domains/workspace/models/praxis-config.ts`) and `CohortMode` (declared by an expert, honored by a spec) are there for that reason. ESLint bans interface/type-alias declarations anywhere else in `src/`. Modules declare behavior — classes, functions, constants — never shapes. Sole exception: `core/files.ts` re-exports node's `FSWatcher`, because `node:fs` is walled into that module.
 - **Path aliases:** `@/*` → `./src/*`, `@tests/*` → `./tests/*` (tsconfig.json and vitest.config.ts). Imports always use aliases, never relative paths (ESLint-enforced; sole exception: `../package.json`).
 - **Import order:** third-party types, internal types, third-party values, internal values — blank line between groups, alphabetical within (perfectionist, autofixable)
