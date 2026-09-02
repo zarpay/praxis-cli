@@ -33,14 +33,16 @@ export const initProjectOrchestrator: Orchestrator<InitProjectOptions> = async (
     targetDir,
   });
 
-  const view = initView({ created, skipped, nextSteps: nextSteps(specLayer) });
+  const nextSteps = determineNextSteps(specLayer);
+
+  const view = initView({ created, skipped, nextSteps });
   ctx.render(view);
 
   return "ok";
 };
 
 /** Post-init guidance, matched to what was actually scaffolded. */
-function nextSteps(specLayer: boolean): string[] {
+function determineNextSteps(specLayer: boolean): string[] {
   if (specLayer) {
     return [
       "  1. Edit context/constitution/ to define your organization's identity",
