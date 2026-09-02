@@ -147,7 +147,10 @@ describe("writeLedgerRunService", () => {
         path: join(root, "docs", "guide.md"),
         compliant: false,
         severity: "error",
-        issues: ["Missing title", "No overview section"],
+        issues: [
+          { text: "Missing title", axiomId: null, axiomVersion: null },
+          { text: "No overview section", axiomId: null, axiomVersion: null },
+        ],
       },
     });
 
@@ -174,7 +177,7 @@ describe("writeLedgerRunService", () => {
         path: join(root, "docs", "guide.md"),
         compliant: false,
         severity: "warning",
-        issues: ["Thin"],
+        issues: [{ text: "Thin", axiomId: null, axiomVersion: null }],
       },
     });
 
@@ -193,7 +196,7 @@ describe("writeLedgerRunService", () => {
         path: join(root, "docs", "guide.md"),
         compliant: false,
         severity: "error",
-        issues: ["Old finding"],
+        issues: [{ text: "Old finding", axiomId: null, axiomVersion: null }],
       },
       evidence: {
         usage: null,
@@ -326,7 +329,7 @@ describe("writeLedgerRunService", () => {
         path: join(root, "docs", "guide.md"),
         compliant: false,
         severity: "error",
-        issues: ["bad \u0000 byte \u0007 here"],
+        issues: [{ text: "bad \u0000 byte \u0007 here", axiomId: null, axiomVersion: null }],
       },
     });
 

@@ -60,7 +60,10 @@ describe("verdictReportsView", () => {
     const failed = cacheData({
       result: {
         compliant: false,
-        issues: ["Missing owner field", "Missing Objective section"],
+        issues: [
+          { text: "Missing owner field", axiomId: null, axiomVersion: null },
+          { text: "Missing Objective section", axiomId: null, axiomVersion: null },
+        ],
         reason: "Nope",
         severity: "error",
       },

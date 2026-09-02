@@ -176,6 +176,58 @@ describe("contentHash", () => {
   });
 });
 
+describe("checklist (04)", () => {
+  /** One checklist axiom, version-adjustable. */
+  function checklistAxiom(version = 1) {
+    return {
+      id: "AX-aaaa11",
+      version,
+      severity: "warning" as const,
+      statement: "Titles say what the document is about.",
+      body: "Titles say what the document is about.",
+    };
+  }
+
+  /** Resolves the standard subject with the given checklist resolver. */
+  function subjectWithChecklist(checklistFor?: () => ReturnType<typeof checklistAxiom>[]) {
+    const { root, abs, cleanup } = createValidatorTmpdir({
+      sources: ["specs"],
+      files: { "specs/README.md": "# Spec", "specs/doc.md": "# Doc" },
+    });
+    cleanups.push(cleanup);
+
+    return ReviewSubject.resolve({ targetPath: abs("specs/doc.md"), root, checklistFor });
+  }
+
+  it("an empty checklist leaves the content hash exactly as before — bootstrap caches survive", () => {
+    const withoutResolver = subjectWithChecklist();
+    const withEmptyResolver = subjectWithChecklist(() => []);
+
+    expect(withEmptyResolver.contentHash()).toBe(withoutResolver.contentHash());
+  });
+
+  it("a governing axiom joins the content hash — ratification invalidates governed verdicts", () => {
+    const bare = subjectWithChecklist();
+    const governed = subjectWithChecklist(() => [checklistAxiom()]);
+
+    expect(governed.contentHash()).not.toBe(bare.contentHash());
+  });
+
+  it("a version bump changes the hash — reworded axioms re-review", () => {
+    const v1 = subjectWithChecklist(() => [checklistAxiom(1)]);
+    const v2 = subjectWithChecklist(() => [checklistAxiom(2)]);
+
+    expect(v2.contentHash()).not.toBe(v1.contentHash());
+  });
+
+  it("exposes the resolved checklist for the prompt and the findings", () => {
+    const governed = subjectWithChecklist(() => [checklistAxiom()]);
+
+    expect(governed.checklist).toHaveLength(1);
+    expect(governed.checklist[0].id).toBe("AX-aaaa11");
+  });
+});
+
 describe("ledger provenance hashes", () => {
   it("hashes target and spec separately, 8 hex chars each", () => {
     const subject = subjectWith(["paths:", '  - "specs/*.md"']);

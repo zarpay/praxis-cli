@@ -164,6 +164,28 @@ export interface AssistFile {
   content: string;
 }
 
+/**
+ * One active axiom as the reviewer's checklist carries it (04): the
+ * ratified standard with its full teaching material, so the reviewer
+ * judges against the extension, not just a label.
+ */
+export interface ChecklistAxiom {
+  id: string;
+  version: number;
+  severity: Severity;
+  /** What the axiom asserts, one line for findings surfaces. */
+  statement: string;
+  /** Statement plus both examples, as authored. */
+  body: string;
+}
+
+/** Which spec's checklist to assemble. */
+export interface ResolveChecklistInput {
+  root: string;
+  /** Absolute path of the governing spec. */
+  specPath: string;
+}
+
 /** Everything the reviewer's user prompt is built from. */
 export interface ValidationQuestionInput {
   /** The spec content the target is reviewed against. */
@@ -174,6 +196,8 @@ export interface ValidationQuestionInput {
   targetPath: string;
   /** Whether the target is one file or a pre-assembled cohort of files. */
   kind: "file" | "cohort";
+  /** The active axioms grounded in this spec — the checklist channel (04). */
+  checklist: readonly ChecklistAxiom[];
   /** Spec-blessed positive examples, inlined and never reviewed. */
   exemplars: readonly AssistFile[];
   /** Assist-only reference files, inlined and never reviewed. */
@@ -205,12 +229,27 @@ export interface AssistFileRecord {
 /** Severity level for validation issues. */
 export type Severity = "warning" | "error";
 
+/**
+ * One reported deviation: the atomic unit of evidence (vocabulary).
+ *
+ * Born on one of the reviewer's two channels (04): matched critiques
+ * carry the checklist axiom they are an instance of; open-channel
+ * critiques carry null and flow onward to triage as open codes.
+ */
+export interface Critique {
+  text: string;
+  /** The checklist axiom it was born under; null = open channel. */
+  axiomId: string | null;
+  /** The matched axiom's version at review time; null on open channel. */
+  axiomVersion: number | null;
+}
+
 /** Result of a single review, as stored in cache. */
 export interface Verdict {
   /** Whether the target satisfies its spec. */
   compliant: boolean;
   /** Specific deviations reported by the reviewer (empty when compliant). */
-  issues: string[];
+  issues: Critique[];
   /** The reviewer's overall explanation of the verdict. */
   reason: string;
   /** Present only when non-compliant: warning or error. */
@@ -648,8 +687,24 @@ export interface ReviewNamedInput {
   reviewer?: string;
   /** Whether to consult the verdict cache. */
   useCache?: boolean;
-  /** Called with each verdict as it lands, for streamed output. */
-  onVerdict?: (event: { path: string; verdict: Verdict; reviewerName?: string }) => void;
+  /** Called once per target with its deduplicated findings (08). */
+  onTarget?: (event: ReviewedTarget) => void;
+}
+
+/**
+ * One deduplicated finding (vocabulary): what a developer or agent
+ * works through. Matched critiques collapse to their axiom — one
+ * finding, corroboration counted; open-channel critiques have no shared
+ * identity yet, so each is its own finding until triage.
+ */
+export interface Finding {
+  /** The axiom violated; null = open channel (raw critique). */
+  axiomId: string | null;
+  /** The axiom's statement (matched) or the critique text (open). */
+  text: string;
+  severity: Severity;
+  /** Reviewer names that flagged it; more than one = corroboration (06). */
+  witnesses: string[];
 }
 
 /** What reviewing the named targets produced. */
@@ -1276,9 +1331,11 @@ export interface LedgerCritiqueRecord {
   severity: Severity;
   text: string;
   mode: "judgment";
-  axiom_id: null;
-  axiom_version: null;
-  assigned_by: null;
+  /** The checklist axiom the critique was born under; null = open channel. */
+  axiom_id: string | null;
+  axiom_version: number | null;
+  /** How the assignment happened; "checklist" = born matched (04-t). */
+  assigned_by: "checklist" | null;
   /** M2 writes "unknown" — never guessed (05). */
   population: "pre_spec" | "post_spec" | "unknown";
   /** M2 writes "unknown" — never guessed (02). */
@@ -1311,7 +1368,7 @@ export interface LedgerEntry {
   verdict: {
     path: string;
     compliant: boolean;
-    issues: string[];
+    issues: Critique[];
     severity?: Severity;
     unverified?: true;
   };
@@ -1382,14 +1439,17 @@ export interface FinishedRun {
   cached: boolean;
 }
 
-/** One named target's verdict, as it lands. */
+/** One named target's outcome: the worst verdict, and the finding list. */
 export interface ReviewedTarget {
   path: string;
+  /** The worst verdict across reviewers — the badge and the reason. */
   verdict: Verdict;
-  /** Set only when more than one reviewer ran. */
-  reviewerName?: string;
+  /** Deduplicated across reviewers by (axiom, text) — what to work through. */
+  findings: Finding[];
+  /** How many reviewers ran, so witness counts read as fractions. */
+  reviewerCount: number;
   /** Show the full reasoning. */
-  verbose: boolean;
+  verbose?: boolean;
 }
 
 /** Every reviewer's cached report on one target. */

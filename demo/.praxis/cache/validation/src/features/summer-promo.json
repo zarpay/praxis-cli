@@ -1,64 +1,14 @@
 {
-  "version": "4.0",
+  "version": "5.0",
   "verdicts": {
-    "e280f5fa:aa38870a": {
-      "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "aa38870a"
-      },
-      "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T21:09:44.807Z",
-      "content_hash": "ae35b04c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The cohort satisfies all criteria. Structure: exactly one index.ts re-exports the whole public API (types + run renamed buildBanner), a dedicated summer-promo-types.ts holds the types, and the verb-first kebab-case build-banner.ts file exposes one run with Results and consumer-grade error messages. Cohesion: every file is reachable from index.ts through the import graph (no orphaned files), the single capability is building the summer banner, and the feature name describes the capability rather than the implementation."
-      },
-      "context_files": [
-        {
-          "path": "src/domain/types.ts",
-          "hash": "f1d20738"
-        },
-        {
-          "path": "src/store/memory-store.ts",
-          "hash": "1f6fdfe2"
-        }
-      ]
-    },
-    "e280f5fa:e25903cb": {
-      "reviewer": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e25903cb"
-      },
-      "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T21:10:14.194Z",
-      "content_hash": "ae35b04c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The summer-promo feature module satisfies all criteria defined in the specification. It has exactly one entry point (index.ts) that re-exports the public API, a dedicated types file following the naming convention, logic files in verb-first kebab-case format following service conventions, no orphaned files, a single cohesive capability, and a descriptive feature name."
-      },
-      "context_files": [
-        {
-          "path": "src/domain/types.ts",
-          "hash": "f1d20738"
-        },
-        {
-          "path": "src/store/memory-store.ts",
-          "hash": "1f6fdfe2"
-        }
-      ]
-    },
-    "e280f5fa:4886d09e": {
+    "e280f5fa:f524adbc": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "4886d09e"
+        "hash": "f524adbc"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T21:10:37.201Z",
+      "cached_at": "2026-09-02T22:04:45.420Z",
       "content_hash": "ae35b04c",
       "result": {
         "compliant": true,

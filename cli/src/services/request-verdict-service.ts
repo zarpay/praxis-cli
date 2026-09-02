@@ -1,6 +1,6 @@
 import type { ReviewSubject } from "@/models/review-subject.js";
 import type { Reviewer } from "@/models/reviewer.js";
-import type { ProviderRequest, ProviderResult } from "@/types.js";
+import type { ChecklistAxiom, Critique, ProviderRequest, ProviderResult } from "@/types.js";
 
 import { PraxisError, errors } from "@/helpers/errors-helper.js";
 import reviewTools from "@/prompts/review-tools.js";
@@ -35,6 +35,7 @@ export default async function requestVerdict(
       targetContent: target.targetContent,
       targetPath: target.targetPath,
       kind: target.kind,
+      checklist: target.checklist,
       exemplars: target.assist.exemplars,
       context: target.assist.context,
     }),
@@ -47,10 +48,42 @@ export default async function requestVerdict(
   };
 
   try {
-    return await provider.review(request);
+    const { verdict, usage } = await provider.review(request);
+
+    return {
+      verdict: { ...verdict, issues: normalizeCritiques(verdict.issues, target.checklist) },
+      usage,
+    };
   } catch (err) {
     if (err instanceof PraxisError) throw err;
 
     throw errors.reviewProviderFailed(provider.name, (err as Error).message);
   }
+}
+
+/**
+ * Settles each critique's channel against the actual checklist.
+ *
+ * A cited id that matches a checklist axiom gets that axiom's version —
+ * the assignment provenance the ledger records (04-t). A cited id the
+ * checklist does not carry is a hallucination and demotes to the open
+ * channel: an unratified id must never enter the ledger as an
+ * assignment. A bare string (a custom provider still returning v1
+ * issues) is an open-channel critique as-is.
+ */
+function normalizeCritiques(
+  issues: readonly (Critique | string)[],
+  checklist: readonly ChecklistAxiom[],
+): Critique[] {
+  const versions = new Map(checklist.map((axiom) => [axiom.id, axiom.version]));
+
+  return issues.map((issue) => {
+    if (typeof issue === "string") return { text: issue, axiomId: null, axiomVersion: null };
+
+    const version = issue.axiomId === null ? undefined : versions.get(issue.axiomId);
+
+    if (version === undefined) return { ...issue, axiomId: null, axiomVersion: null };
+
+    return { ...issue, axiomVersion: version };
+  });
 }

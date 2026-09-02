@@ -1,19 +1,22 @@
 import type { ValidationQuestionInput } from "@/types.js";
 
 import { baseName, parentDir } from "@/helpers/paths-helper.js";
+import axiomChecklistSection from "@/prompts/axiom-checklist-section.js";
 import contextSection from "@/prompts/context-section.js";
 import exemplarSection from "@/prompts/exemplar-section.js";
 
 /**
- * The user prompt sent to the LLM for one review: specification,
- * optional exemplar/context sections, then the target under review —
- * framed per file or per cohort.
+ * The user prompt sent to the LLM for one review: specification, the
+ * axiom checklist when one governs the spec, optional exemplar/context
+ * sections, then the target under review — framed per file or per
+ * cohort.
  */
 export default function validationQuestion({
   specContent,
   targetContent,
   targetPath,
   kind,
+  checklist,
   exemplars,
   context,
 }: ValidationQuestionInput): string {
@@ -36,7 +39,7 @@ Directory: ${parentDir(targetPath)}`;
 ${specContent}
 \`\`\`
 
-${exemplarSection(exemplars)}${contextSection(context)}${subject}
+${axiomChecklistSection(checklist)}${exemplarSection(exemplars)}${contextSection(context)}${subject}
 
 \`\`\`
 ${targetContent}

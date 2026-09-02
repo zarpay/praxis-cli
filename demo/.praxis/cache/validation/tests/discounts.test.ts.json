@@ -1,64 +1,19 @@
 {
-  "version": "4.0",
+  "version": "5.0",
   "verdicts": {
-    "dacac2eb:4886d09e": {
+    "dacac2eb:f524adbc": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "4886d09e"
+        "hash": "f524adbc"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T21:10:37.205Z",
+      "cached_at": "2026-09-02T22:04:45.423Z",
       "content_hash": "e82dd9b3",
       "result": {
         "compliant": true,
         "issues": [],
         "reason": "Review input has 503 words."
-      }
-    },
-    "dacac2eb:aa38870a": {
-      "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "aa38870a"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T21:09:49.895Z",
-      "content_hash": "e82dd9b3",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies every criterion in the specification. Subject framing: the top-level describe names the module ('apply-discount'), nested describes use 'when' clauses, and each it states one observable outcome. One assertion per block: every it contains exactly one expect, and compound shapes are asserted via toEqual/toMatchObject. Functionality not implementation: tests only exercise the public run function against a memory store (an honest in-memory collaborator), assert on returned values, build data fresh in each test, and use no spies or mocks. The path tests/discounts.test.ts also matches the paths glob 'tests/*.test.ts'. The file fully conforms to the specification.\\n\\nNote: the directory shown in the prompt is demo/tests while the paths glob is tests/*.test.ts at the repo root; this appears to be a trivial prompt/directory mismatch rather than a spec issue in the file itself. If that discrepancy is considered relevant, the file otherwise fully meets all stated conventions. I am passing it because the spec's criteria about content are all satisfied.\\n\\nInvalid: false'}]}],"
-      }
-    },
-    "dacac2eb:e25903cb": {
-      "reviewer": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e25903cb"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T21:10:37.172Z",
-      "content_hash": "e82dd9b3",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file satisfies all specification criteria: proper subject framing with module name and when clauses, one assertion per test block, and testing functionality through the public API with honest implementations and fresh test data."
-      }
-    },
-    "dacac2eb:aff4904b": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "aff4904b"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T21:03:12.220Z",
-      "content_hash": "c2f1d782",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 403 words."
       }
     }
   }

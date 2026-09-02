@@ -35,7 +35,7 @@ describe("readVerdictEntryService", () => {
     const cached = readVerdictEntryService({ cache, targetPath, specPath });
 
     expect(cached).not.toBeNull();
-    expect(cached!.version).toBe("4.0");
+    expect(cached!.version).toBe("5.0");
     expect(cached!.content_hash).toBe(hash);
     expect(cached!.cached_at).toBeTruthy();
     expect(cached!.document.path).toBe(targetPath);

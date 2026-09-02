@@ -87,17 +87,26 @@ export class OpenRouterProvider implements ReviewProvider {
 
     const args = JSON.parse(toolCall.function.arguments) as {
       reason: string;
-      issues?: string[];
+      issues?: { axiom?: string | null; text?: string }[];
     };
     const { reason, issues = [] } = args;
+
+    // The wire shape is {axiom, text}; the axiom's version and validity
+    // against the actual checklist are resolved a layer up, where the
+    // checklist lives.
+    const critiques = issues.map((issue) => ({
+      text: issue.text ?? "",
+      axiomId: issue.axiom ?? null,
+      axiomVersion: null,
+    }));
 
     switch (toolCall.function.name) {
       case "validation_pass":
         return { compliant: true, issues: [], reason };
       case "validation_warn":
-        return { compliant: false, severity: "warning", issues, reason };
+        return { compliant: false, severity: "warning", issues: critiques, reason };
       case "validation_fail":
-        return { compliant: false, severity: "error", issues, reason };
+        return { compliant: false, severity: "error", issues: critiques, reason };
       default:
         throw errors.unexpectedToolCall(toolCall.function.name);
     }

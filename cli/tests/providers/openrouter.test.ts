@@ -66,7 +66,7 @@ describe("OpenRouterProvider", () => {
       expect(result.verdict).toEqual({
         compliant: false,
         severity: "warning",
-        issues: ["Minor gap"],
+        issues: [{ text: "Minor gap", axiomId: null, axiomVersion: null }],
         reason: "Meh.",
       });
     });
@@ -82,7 +82,7 @@ describe("OpenRouterProvider", () => {
       expect(result.verdict).toEqual({
         compliant: false,
         severity: "error",
-        issues: ["Broken"],
+        issues: [{ text: "Broken", axiomId: null, axiomVersion: null }],
         reason: "Bad.",
       });
     });

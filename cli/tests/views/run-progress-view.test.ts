@@ -88,7 +88,11 @@ describe("a verdict landing", () => {
   it("marks a non-compliant error as FAIL, listing its issues", () => {
     const text = rendered({
       kind: "verdict",
-      verdict: verdict({ compliant: false, severity: "error", issues: ["Missing title"] }),
+      verdict: verdict({
+        compliant: false,
+        severity: "error",
+        issues: [{ text: "Missing title", axiomId: null, axiomVersion: null }],
+      }),
     });
 
     expect(text).toContain("✗ FAIL");

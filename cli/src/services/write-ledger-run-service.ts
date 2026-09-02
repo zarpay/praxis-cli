@@ -57,11 +57,13 @@ export default function writeLedgerRunService({
         reviewer_model: reviewer.model,
         reviewer_hash: reviewer.hash,
         severity: verdict.severity ?? "error",
-        text: stripControlChars(issue),
+        text: stripControlChars(issue.text),
         mode: "judgment",
-        axiom_id: null,
-        axiom_version: null,
-        assigned_by: null,
+        // Born matched = assigned at review time by the checklist (04-t);
+        // open-channel critiques stay null until triage assigns them.
+        axiom_id: issue.axiomId,
+        axiom_version: issue.axiomVersion,
+        assigned_by: issue.axiomId === null ? null : "checklist",
         population: "unknown",
         authorship: "unknown",
         authorship_evidence: null,

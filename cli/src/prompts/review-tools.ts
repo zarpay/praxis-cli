@@ -5,9 +5,27 @@
  * assessment. Using tool calls instead of text parsing eliminates
  * fragile regex extraction and guarantees structured, typed results.
  * The descriptions are prompt text: they draw the pass/warn/fail
- * boundary, so they are part of the reviewer's behavioral surface.
+ * boundary AND teach the channel decision (04), so they are part of
+ * the reviewer's behavioral surface.
  */
 export default function reviewTools() {
+  const issueItems = {
+    type: "object",
+    properties: {
+      axiom: {
+        type: ["string", "null"],
+        description:
+          'The AXIOM CHECKLIST id (e.g. "AX-3f9c2d") this violation is squarely an instance of. Cite an id ONLY when the violation is exactly what that axiom states. For any violation the checklist does not cover — or when no checklist is present — use null: an uncovered violation is valuable evidence, never noise.',
+      },
+      text: {
+        type: "string",
+        description:
+          "The violation: the specific criterion violated, where, and what the file must do to satisfy it.",
+      },
+    },
+    required: ["axiom", "text"],
+  } as const;
+
   return [
     {
       type: "function",
@@ -42,9 +60,9 @@ export default function reviewTools() {
             },
             issues: {
               type: "array",
-              items: { type: "string" },
+              items: issueItems,
               description:
-                "Each deviation from the specification. Reference the specific criterion being missed and what would satisfy it.",
+                "Each deviation from the specification, tagged with the checklist axiom it violates, or null for open-channel deviations.",
             },
           },
           required: ["reason", "issues"],
@@ -66,9 +84,9 @@ export default function reviewTools() {
             },
             issues: {
               type: "array",
-              items: { type: "string" },
+              items: issueItems,
               description:
-                "Each violation of the specification. Reference the specific criterion being violated and what the file must do to satisfy it.",
+                "Each violation of the specification, tagged with the checklist axiom it violates, or null for open-channel violations.",
             },
           },
           required: ["reason", "issues"],

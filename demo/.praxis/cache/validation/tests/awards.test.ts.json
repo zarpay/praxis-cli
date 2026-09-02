@@ -1,60 +1,15 @@
 {
-  "version": "4.0",
+  "version": "5.0",
   "verdicts": {
-    "dacac2eb:4886d09e": {
+    "dacac2eb:f524adbc": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "4886d09e"
+        "hash": "f524adbc"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T21:19:20.542Z",
+      "cached_at": "2026-09-02T22:04:45.423Z",
       "content_hash": "61183485",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 539 words."
-      }
-    },
-    "dacac2eb:aa38870a": {
-      "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "aa38870a"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T21:18:17.800Z",
-      "content_hash": "61183485",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "he file satisfy all criteria..."
-      }
-    },
-    "dacac2eb:e25903cb": {
-      "reviewer": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e25903cb"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T21:19:20.514Z",
-      "content_hash": "61183485",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully complies with all specification requirements: proper subject framing with module name and 'when' clauses, exactly one assertion per test block, and testing functionality through public API without implementation details. All criteria are satisfied."
-      }
-    },
-    "dacac2eb:aff4904b": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "aff4904b"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T21:03:12.217Z",
-      "content_hash": "b35b5069",
       "result": {
         "compliant": true,
         "issues": [],

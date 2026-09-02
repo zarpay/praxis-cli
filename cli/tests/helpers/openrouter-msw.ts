@@ -30,9 +30,18 @@ export type ValidationToolName = "validation_pass" | "validation_warn" | "valida
  */
 export function validationToolCallResponse(
   toolName: ValidationToolName,
-  args: { reason: string; issues?: string[] },
+  args: { reason: string; issues?: (string | { axiom: string | null; text: string })[] },
   usage?: ChatCompletionUsage,
 ): object {
+  // The two-channel wire shape is {axiom, text}; a bare string is a
+  // test convenience for an open-channel critique.
+  const wireArgs = {
+    reason: args.reason,
+    ...(args.issues
+      ? { issues: args.issues.map((i) => (typeof i === "string" ? { axiom: null, text: i } : i)) }
+      : {}),
+  };
+
   return {
     choices: [
       {
@@ -43,7 +52,7 @@ export function validationToolCallResponse(
             {
               id: `call_${toolName}`,
               type: "function",
-              function: { name: toolName, arguments: JSON.stringify(args) },
+              function: { name: toolName, arguments: JSON.stringify(wireArgs) },
             },
           ],
         },

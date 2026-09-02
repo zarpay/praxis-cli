@@ -1,4 +1,4 @@
-import type { AssistFile } from "@/types.js";
+import type { AssistFile, ChecklistAxiom } from "@/types.js";
 
 import reviewTools from "@/prompts/review-tools.js";
 import systemPrompt from "@/prompts/system-prompt.js";
@@ -7,11 +7,21 @@ import validationQuestion from "@/prompts/validation-question.js";
 /** Sentinel assist file so the section templates render deterministically. */
 const SENTINEL_FILE: AssistFile = { path: "«path»", content: "«content»" };
 
+/** Sentinel checklist entry so the axiom section renders deterministically. */
+const SENTINEL_AXIOM: ChecklistAxiom = {
+  id: "AX-«id»",
+  version: 1,
+  severity: "error",
+  statement: "«statement»",
+  body: "«axiom»",
+};
+
 /** Sentinel inputs for the question template, one per variant. */
 const SENTINEL_INPUT = {
   specContent: "«spec»",
   targetContent: "«target»",
   targetPath: "«dir»/«file»",
+  checklist: [SENTINEL_AXIOM],
   exemplars: [SENTINEL_FILE],
   context: [SENTINEL_FILE],
 } as const;
