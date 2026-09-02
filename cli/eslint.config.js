@@ -81,7 +81,7 @@ export default tseslint.config(
         {
           type: "natural",
           newlinesBetween: 1,
-          internalPattern: ["^@/", "^@tests/"],
+          internalPattern: ["^@/", "^@framework/", "^@tests/"],
           groups: [
             ["type-builtin", "type-external"],
             ["type-internal", "type-tsconfig-path"],
@@ -112,7 +112,7 @@ export default tseslint.config(
     // Imports always use path aliases (@/, @tests/), never relative
     // paths. The one exception is the package manifest, which lives
     // above src/ and has no alias.
-    files: ["src/**/*.ts", "tests/**/*.ts"],
+    files: ["src/**/*.ts", "tests/**/*.ts", "packages/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -120,78 +120,8 @@ export default tseslint.config(
           patterns: [
             {
               group: ["./*", "../*", "!../package.json"],
-              message: "Use the @/ (src) or @tests/ path aliases instead of relative imports.",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    // File and path operations go through the standard core modules;
-    // node:fs and node:path are importable only inside them. Tests may
-    // use the node primitives directly to set up fixtures. (Rule
-    // configs replace rather than merge, so the relative-import ban is
-    // restated here.)
-    files: ["src/**/*.ts"],
-    ignores: ["src/framework/files.ts", "src/framework/paths.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
-          ],
-          patterns: [
-            {
-              group: ["./*", "../*", "!../package.json"],
-              message: "Use the @/ path alias instead of relative imports.",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    // Dependencies flow one way:
-    //
-    //   framework  ->  workspace/{models,types}  ->  spec, eval  ->  commands
-    //
-    // framework is the kernel: generic primitives, the render kit, and
-    // the plumbing a Praxis-shaped CLI is built from — knowing nothing
-    // about Praxis's own vocabulary and depending on no domain.
-    //
-    // workspace is the project itself, and the ONLY domain the others
-    // may reach into: spec and eval import its models and types (config,
-    // project paths, document kinds) and stay isolated from each other.
-    //
-    // The reach-in is scoped to models/ and types.ts. The health slice —
-    // audit-experts, tally-validation, analyze-project — reads *back*
-    // into spec and eval, so letting a domain import it would be a
-    // cycle. Nothing but commands imports those.
-    //
-    // These blocks come last and restate the fs/path and relative-import
-    // bans, because rule configs replace rather than merge.
-    files: ["src/framework/**/*.ts"],
-    ignores: ["src/framework/files.ts", "src/framework/paths.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
-          ],
-          patterns: [
-            {
-              group: ["./*", "../*", "!../package.json"],
-              message: "Use the @/ path alias instead of relative imports.",
-            },
-            {
-              group: ["@/eval/*", "@/spec/*", "@/workspace/*", "@/commands/*"],
               message:
-                "the framework is the kernel: it must not depend on a domain or on commands.",
+                "Use the @/ (src), @framework/ (packages/framework), or @tests/ path aliases instead of relative imports.",
             },
           ],
         },
@@ -199,89 +129,174 @@ export default tseslint.config(
     },
   },
   {
-    // templates/ is a leaf beside the framework: each file is one
-    // emitted document's body as a typed function, so it imports its
-    // parameter types and nothing else.
+    // Layers, one directory each, dependencies flowing one way:
+    //
+    //   @framework (package)  ->  helpers, templates  ->  models  ->
+    //   services  ->  orchestrators  ->  commands
+    //
+    // with views, prompts, providers and plugins as side branches that
+    // never reach forward into services or orchestrators. The old
+    // spec/eval isolation (11-spec-layer.md) is no longer expressible as
+    // a path rule after the collapse; it survives as the documented
+    // contract that the compiler writes files the eval side reads.
+    //
+    // First, the general wall: node:fs and node:path are importable only
+    // inside the two helper modules that wrap them. Tests may use the
+    // node primitives directly to set up fixtures. (Rule configs replace
+    // rather than merge, so the relative-import ban is restated in every
+    // block below.)
+    files: ["src/**/*.ts", "packages/**/*.ts"],
+    ignores: ["src/helpers/files-helper.ts", "src/helpers/paths-helper.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/helpers/files-helper.js instead." },
+            { name: "node:path", message: "Use the helpers in @/helpers/paths-helper.js instead." },
+          ],
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The framework package is 'like' a separate npm package: the
+    // machinery a CLI is built from, owning nothing of Praxis. It may
+    // not import application code at all.
+    files: ["packages/framework/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/helpers/files-helper.js instead." },
+            { name: "node:path", message: "Use the helpers in @/helpers/paths-helper.js instead." },
+          ],
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/*"],
+              message:
+                "the framework package must not import application code — it is built as if published separately.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Helpers are the reusable modules any service may lean on. They
+    // may use models, types and the framework — never the layers above
+    // them.
+    files: ["src/helpers/**/*.ts"],
+    ignores: ["src/helpers/files-helper.ts", "src/helpers/paths-helper.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/helpers/files-helper.js instead." },
+            { name: "node:path", message: "Use the helpers in @/helpers/paths-helper.js instead." },
+          ],
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: [
+                "@/services/*",
+                "@/orchestrators/*",
+                "@/views/*",
+                "@/commands/*",
+                "@/prompts/*",
+                "@/providers/*",
+                "@/plugins/*",
+                "@/templates/*",
+              ],
+              message:
+                "a helper is below every working layer: it must not import services, orchestrators, views, prompts, providers, plugins or templates.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // files-helper and paths-helper sit outside the node wall so they
+    // can wrap node:fs and node:path. That exemption must not also buy
+    // them the right to climb the stack, so the helper restriction is
+    // restated here without the node: bans.
+    files: ["src/helpers/files-helper.ts", "src/helpers/paths-helper.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: [
+                "@/services/*",
+                "@/orchestrators/*",
+                "@/views/*",
+                "@/commands/*",
+                "@/prompts/*",
+                "@/providers/*",
+                "@/plugins/*",
+                "@/templates/*",
+              ],
+              message:
+                "a helper is below every working layer: it must not import services, orchestrators, views, prompts, providers, plugins or templates.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // templates/ is a leaf: each file is one emitted document's body as
+    // a typed function, importing its parameter types and nothing else.
     files: ["src/templates/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
         {
-          patterns: [
-            {
-              group: ["./*", "../*", "!../package.json"],
-              message: "Use the @/ path alias instead of relative imports.",
-            },
-            {
-              group: ["@/eval/*", "@/spec/*", "@/workspace/*", "@/commands/*", "@/framework/*"],
-              message:
-                "a template is a body of text and its variables: it must not depend on a domain, on commands, or on the framework.",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    // files.ts and paths.ts are the two modules allowed to import
-    // node:fs and node:path, which is why they sit outside the block
-    // above. That exemption must not also buy them the right to reach
-    // into a domain, so the kernel restriction is restated here without
-    // the node: bans.
-    files: ["src/framework/files.ts", "src/framework/paths.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              group: ["./*", "../*", "!../package.json"],
-              message: "Use the @/ path alias instead of relative imports.",
-            },
-            {
-              group: ["@/eval/*", "@/spec/*", "@/workspace/*", "@/commands/*"],
-              message:
-                "the framework is the kernel: it must not depend on a domain or on commands.",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    // The two layers (11-spec-layer.md) never import each other: the
-    // spec layer produces artifacts the eval layer consumes as plain
-    // files, and the eval layer never calls back.
-    files: ["src/eval/**/*.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
           paths: [
-            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
+            { name: "node:fs", message: "Use the helpers in @/helpers/files-helper.js instead." },
+            { name: "node:path", message: "Use the helpers in @/helpers/paths-helper.js instead." },
           ],
           patterns: [
             {
               group: ["./*", "../*", "!../package.json"],
               message: "Use the @/ path alias instead of relative imports.",
-            },
-            {
-              group: ["@/spec/*"],
-              message: "The eval layer must not depend on the spec layer (11-spec-layer.md).",
             },
             {
               group: [
-                "@/workspace/services/*",
-                "@/workspace/orchestrators/*",
-                "@/workspace/views/*",
+                "@/models/*",
+                "@/services/*",
+                "@/orchestrators/*",
+                "@/views/*",
+                "@/commands/*",
+                "@/helpers/*",
+                "@/prompts/*",
+                "@/providers/*",
+                "@/plugins/*",
+                "@framework/*",
               ],
               message:
-                "Only workspace's models and types may be reached into: its services read back into spec and eval, so importing them would be a cycle.",
-            },
-            {
-              group: ["@/commands/*"],
-              message: "Domains must not depend on commands (dependencies flow one way).",
+                "a template is a body of text and its variables: it imports @/types.js and nothing else.",
             },
           ],
         },
@@ -289,14 +304,17 @@ export default tseslint.config(
     },
   },
   {
-    files: ["src/spec/**/*.ts"],
+    // Models are data plus the helpers on that data. They may delegate
+    // to a service for an algorithm (Reviewer.hash), but never reach
+    // into rendering or workflow.
+    files: ["src/models/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
         {
           paths: [
-            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
+            { name: "node:fs", message: "Use the helpers in @/helpers/files-helper.js instead." },
+            { name: "node:path", message: "Use the helpers in @/helpers/paths-helper.js instead." },
           ],
           patterns: [
             {
@@ -304,21 +322,141 @@ export default tseslint.config(
               message: "Use the @/ path alias instead of relative imports.",
             },
             {
-              group: ["@/eval/*"],
-              message: "The spec layer must not depend on the eval layer (11-spec-layer.md).",
+              group: ["@/orchestrators/*", "@/views/*", "@/commands/*"],
+              message:
+                "a model holds data and its helpers: it must not import orchestrators, views or commands.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Services do the work and return it. They never render and never
+    // coordinate each other into a command's workflow — that is the
+    // orchestrator's job.
+    files: ["src/services/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/helpers/files-helper.js instead." },
+            { name: "node:path", message: "Use the helpers in @/helpers/paths-helper.js instead." },
+          ],
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/orchestrators/*", "@/views/*", "@/commands/*"],
+              message:
+                "a service returns its work: it must not import orchestrators, views or commands.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Views render and decide nothing. Prompts, providers and plugins
+    // are likewise side branches: they may use models, helpers and
+    // templates, never the workflow layers.
+    files: [
+      "src/views/**/*.ts",
+      "src/prompts/**/*.ts",
+      "src/providers/**/*.ts",
+      "src/plugins/**/*.ts",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/helpers/files-helper.js instead." },
+            { name: "node:path", message: "Use the helpers in @/helpers/paths-helper.js instead." },
+          ],
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/services/*", "@/orchestrators/*", "@/commands/*"],
+              message:
+                "views, prompts, providers and plugins are side branches: they must not import services, orchestrators or commands.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // An orchestrator sequences services and renders views. It never
+    // imports another orchestrator — two commands that share a workflow
+    // share the services under it — and nothing imports commands.
+    // (Previously convention; a single orchestrators/ directory makes it
+    // a path rule.)
+    files: ["src/orchestrators/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/helpers/files-helper.js instead." },
+            { name: "node:path", message: "Use the helpers in @/helpers/paths-helper.js instead." },
+          ],
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/orchestrators/*"],
+              message:
+                "orchestrators never import each other: what two commands share is a service that has not been extracted yet.",
+            },
+            {
+              group: ["@/commands/*"],
+              message: "dependencies flow one way: nothing imports commands.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // A command is a route: it declares options and hands them to one
+    // prepared orchestrator. If it needs anything else, work has leaked
+    // upward.
+    files: ["src/commands/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/helpers/files-helper.js instead." },
+            { name: "node:path", message: "Use the helpers in @/helpers/paths-helper.js instead." },
+          ],
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
             },
             {
               group: [
-                "@/workspace/services/*",
-                "@/workspace/orchestrators/*",
-                "@/workspace/views/*",
+                "@/services/*",
+                "@/models/*",
+                "@/views/*",
+                "@/helpers/*",
+                "@/prompts/*",
+                "@/providers/*",
+                "@/plugins/*",
+                "@/templates/*",
               ],
               message:
-                "Only workspace's models and types may be reached into: its services read back into spec and eval, so importing them would be a cycle.",
-            },
-            {
-              group: ["@/commands/*"],
-              message: "Domains must not depend on commands (dependencies flow one way).",
+                "a command imports its orchestrators and nothing else — no model, service, view or helper.",
             },
           ],
         },
@@ -326,100 +464,45 @@ export default tseslint.config(
     },
   },
   {
-    // workspace's services and orchestrators are the health slice: they
-    // may read both layers. Its models and types may not — the block
-    // after this one narrows them, and comes later so it wins.
-    files: ["src/workspace/**/*.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
-          ],
-          patterns: [
-            {
-              group: ["./*", "../*", "!../package.json"],
-              message: "Use the @/ path alias instead of relative imports.",
-            },
-            {
-              group: ["@/commands/*"],
-              message: "Domains must not depend on commands (dependencies flow one way).",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    // workspace's models and types are the floor spec and eval stand on,
-    // so they must not reach into a domain at all.
-    files: ["src/workspace/models/**/*.ts", "src/workspace/types.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
-          ],
-          patterns: [
-            {
-              group: ["./*", "../*", "!../package.json"],
-              message: "Use the @/ path alias instead of relative imports.",
-            },
-            {
-              group: ["@/spec/*", "@/eval/*", "@/commands/*"],
-              message:
-                "workspace's models and types are what spec and eval depend on: they must not depend back.",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    // Every type and interface lives in a types.ts — the framework's for
-    // its plumbing, the root one for Praxis vocabulary more than one
-    // domain needs, a domain's own for its own. Modules declare behavior
-    // only.
-    files: ["src/**/*.ts"],
-    ignores: ["src/types.ts", "src/framework/types.ts", "src/eval/types.ts", "src/spec/types.ts", "src/workspace/types.ts"],
+    // Every type and interface lives in a types.ts: the framework
+    // package's for its machinery, src/types.ts for everything Praxis.
+    // Modules declare behavior only.
+    files: ["src/**/*.ts", "packages/**/*.ts"],
+    ignores: ["src/types.ts", "packages/framework/src/types.ts"],
     rules: {
       "no-restricted-syntax": [
         "error",
         {
           selector: "TSInterfaceDeclaration",
           message:
-            "Declare interfaces in a types.ts — the domain's own, src/framework/types.ts for plumbing, or src/types.ts when more than one domain needs it.",
+            "Declare interfaces in src/types.ts (or packages/framework/src/types.ts for framework machinery).",
         },
         {
           selector: "TSTypeAliasDeclaration",
           message:
-            "Declare type aliases in a types.ts — the domain's own, src/framework/types.ts for plumbing, or src/types.ts when more than one domain needs it.",
+            "Declare type aliases in src/types.ts (or packages/framework/src/types.ts for framework machinery).",
         },
       ],
     },
   },
   {
-    // All terminal output goes through the view kit: Display for stdout
-    // reports, Logger for stderr diagnostics. Raw console calls are
-    // allowed only inside those modules.
-    files: ["src/**/*.ts"],
-    ignores: ["src/framework/views/display.ts", "src/framework/views/logger.ts"],
+    // All terminal output goes through the framework's view kit: Display
+    // for stdout reports, Logger for stderr diagnostics. Raw console
+    // calls are allowed only inside those two modules.
+    files: ["src/**/*.ts", "packages/**/*.ts"],
+    ignores: ["packages/framework/src/views/display.ts", "packages/framework/src/views/logger.ts"],
     rules: {
       "no-console": "error",
     },
   },
   {
-    // Every orchestrator is async so runAction has exactly one shape to
-    // handle. Dropping `async` from the ones that never await looks
-    // tidier and is not: a plain function returning Promise.resolve()
-    // throws *synchronously*, so failures would arrive on two different
-    // channels depending on the orchestrator. `async` is the contract,
-    // not a claim that the body does I/O.
-    files: ["src/*/orchestrators/**/*.ts"],
+    // Every orchestrator is async so prepareOrchestrator has exactly one
+    // shape to handle. Dropping `async` from the ones that never await
+    // looks tidier and is not: a plain function returning
+    // Promise.resolve() throws *synchronously*, so failures would arrive
+    // on two different channels depending on the orchestrator. `async`
+    // is the contract, not a claim that the body does I/O.
+    files: ["src/orchestrators/**/*.ts"],
     rules: {
       "@typescript-eslint/require-await": "off",
     },

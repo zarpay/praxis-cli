@@ -1,6 +1,6 @@
-import type { CommandRegistrar } from "@/framework/types.js";
+import type { CommandRegistrar } from "@framework/types.js";
 
-import initProjectOrchestrator from "@/workspace/orchestrators/init-project-orchestrator.js";
+import initProjectOrchestrator from "@/orchestrators/init-project-orchestrator.js";
 
 /**
  * Registers the `praxis init` command.

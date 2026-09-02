@@ -1,15 +1,15 @@
 ---
-description: What belongs in a domain's providers/ and plugins/ directories
+description: What belongs in src/providers and src/plugins — the extension points
 paths:
-  - cli/src/*/providers/**
-  - cli/src/*/plugins/**
+  - cli/src/providers/**
+  - cli/src/plugins/**
 ---
 
 # Extension points
 
 **These are the two places a third party plugs into Praxis**, and the only
-directories in a domain whose contents are classes by default: `eval/providers/`
-implements `ReviewProvider` (where a review is executed), `spec/plugins/`
+directories whose contents are classes by default: `src/providers/`
+implements `ReviewProvider` (where a review is executed), `src/plugins/`
 implements `CompilerPlugin` (what a compiled profile is written as).
 
 - **They are not services, which is why they do not live under `services/`.** A
@@ -23,7 +23,7 @@ implements `CompilerPlugin` (what a compiled profile is written as).
   (`"claude-code"`, `provider: "openrouter"`).
 - **The exported class is the filename in PascalCase plus its role**:
   `OpenRouterProvider`, `ClaudeCodePlugin`. It implements the interface declared
-  in the domain's `types.ts` and adds nothing to it that a caller depends on.
+  in `src/types.ts` and adds nothing to it that a caller depends on.
 - **Selecting one is a service's job, not theirs.** `resolve-provider-service.ts`
   and `resolve-plugins-service.ts` map a config value to an instance, including
   loading a user's `./relative` module. Those are services and live with the

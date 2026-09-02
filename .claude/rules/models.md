@@ -1,7 +1,7 @@
 ---
-description: What belongs in a domain's models/ directory
+description: What belongs in src/models — data structures, valid by construction
 paths:
-  - cli/src/*/models/**
+  - cli/src/models/**
 ---
 
 # Models

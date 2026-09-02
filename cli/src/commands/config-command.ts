@@ -1,7 +1,7 @@
-import type { CommandRegistrar } from "@/framework/types.js";
+import type { CommandRegistrar } from "@framework/types.js";
 
-import editConfigOrchestrator from "@/workspace/orchestrators/edit-config-orchestrator.js";
-import showConfigOrchestrator from "@/workspace/orchestrators/show-config-orchestrator.js";
+import editConfigOrchestrator from "@/orchestrators/edit-config-orchestrator.js";
+import showConfigOrchestrator from "@/orchestrators/show-config-orchestrator.js";
 
 /**
  * Registers the `praxis config` command group.

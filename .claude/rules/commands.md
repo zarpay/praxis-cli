@@ -18,7 +18,7 @@ then hands them to one orchestrator. Nothing else. Nothing imports `commands/`.
 - **Import the orchestrator and hand it straight to `.action()`:**
 
   ```ts
-  import analyzeProject from "@/workspace/orchestrators/analyze-project.js";
+  import analyzeProject from "@/orchestrators/analyze-project-orchestrator.js";
   // …
   .action(analyzeProject);
   ```
@@ -36,12 +36,12 @@ then hands them to one orchestrator. Nothing else. Nothing imports `commands/`.
 - **Where two commands share one orchestrator**, the orchestrator's own file
   exports the prepared variants — `ciRun`, `addExpert`, `addPractice` — because
   the literal that separates them (`{ ci: true }`, `{ type: "expert" }`) is
-  domain knowledge, not routing.
+  product knowledge, not routing.
 - **The orchestrator owns the whole response, rendering included.** It hands back
   an outcome, not a payload: `"failed"` exits 1, anything else is success. If you
   find yourself doing something with a return value here, it belongs one layer
   down.
-- `prepareOrchestrator` (`workspace/prepare-orchestrator.ts`) is the
+- `prepareOrchestrator` (`helpers/prepare-orchestrator-helper.ts`) is the
   composition root, and it lives at framework level so an orchestrator can wrap
   itself. Nothing in `commands/` calls it. It builds the `CommandContext` inside
   the returned handler — per dispatch, never at module load — and carries the one

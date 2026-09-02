@@ -1,8 +1,7 @@
 ---
-description: What belongs in a views/ directory — the render kit and a domain's views
+description: What belongs in src/views — pure render functions over report data
 paths:
-  - cli/src/framework/views/**
-  - cli/src/*/views/**
+  - cli/src/views/**
 ---
 
 # Views
@@ -20,7 +19,7 @@ A command calls one when it has something to show.
   `ReportLine[]` — each line names its channel — and the command prints it with
   one `renderReport()` call. Ordering and interleaving are the view's decisions,
   not the command's.
-- `src/framework/views/` is the shared kit — `display.ts` and `logger.ts` are the only
+- The shared kit lives in the framework package (`packages/framework/src/views/`) — `display.ts` and `logger.ts` are the only
   modules allowed to call `console` (ESLint-enforced), and reusable rendering
   (`badges.ts`, `stats.ts`, `table.ts`, `report.ts`) lives there so callers stop hand-building
   badge literals and column padding.

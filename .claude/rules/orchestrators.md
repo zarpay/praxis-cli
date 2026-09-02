@@ -1,7 +1,7 @@
 ---
-description: What belongs in a domain's orchestrators/ directory
+description: What belongs in src/orchestrators — one command's whole workflow each
 paths:
-  - cli/src/*/orchestrators/**
+  - cli/src/orchestrators/**
 ---
 
 # Orchestrators
@@ -24,13 +24,13 @@ belongs here.
 - **`export const nameOrchestrator: Orchestrator<Options> = async (ctx, options) => {}`,
   with `export default prepareOrchestrator(nameOrchestrator)` beneath it.** The default export is
   the wrapped form a command hands to `.action()`; the named export is the
-  orchestrator itself, which is what a test calls. `Orchestrator` (`workspace/types.ts`) is the one signature
+  orchestrator itself, which is what a test calls. `Orchestrator` (`src/types.ts`) is the one signature
   every orchestrator has, applied to the const rather than annotating a function
   declaration — that is what makes it enforced rather than described.
 - **The `options` parameter is never dropped.** An orchestrator that takes none is
   `Orchestrator` (defaulting to `NoOptions`) and its command passes `{}`. The
   implementation may omit the parameter; the call site may not. `Options` is the
-  command's parsed input, typed in the domain's `types.ts`; everything about the
+  command's parsed input, typed in `src/types.ts`; everything about the
   project — root, paths, config — comes off `ctx`, never a parameter.
 - **Always `async`**, so `prepareOrchestrator` has one shape to await _and_ one channel for
   failures. A non-async function returning `Promise.resolve()` throws

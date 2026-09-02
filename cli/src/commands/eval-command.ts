@@ -1,8 +1,8 @@
-import type { CommandRegistrar } from "@/framework/types.js";
+import type { CommandRegistrar } from "@framework/types.js";
 
-import ciRunOrchestrator from "@/eval/orchestrators/ci-run-orchestrator.js";
-import reportVerdictsOrchestrator from "@/eval/orchestrators/report-verdicts-orchestrator.js";
-import runEvalOrchestrator from "@/eval/orchestrators/run-eval-orchestrator.js";
+import ciRunOrchestrator from "@/orchestrators/ci-run-orchestrator.js";
+import reportVerdictsOrchestrator from "@/orchestrators/report-verdicts-orchestrator.js";
+import runEvalOrchestrator from "@/orchestrators/run-eval-orchestrator.js";
 
 /**
  * Registers the `praxis eval` command group.

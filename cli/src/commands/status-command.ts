@@ -1,6 +1,6 @@
-import type { CommandRegistrar } from "@/framework/types.js";
+import type { CommandRegistrar } from "@framework/types.js";
 
-import analyzeProjectOrchestrator from "@/workspace/orchestrators/analyze-project-orchestrator.js";
+import analyzeProjectOrchestrator from "@/orchestrators/analyze-project-orchestrator.js";
 
 /**
  * Registers the `praxis status` command.

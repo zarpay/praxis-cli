@@ -1,4 +1,4 @@
-import type { ChatCompletionUsage } from "@/eval/types.js";
+import type { ChatCompletionUsage } from "@/types.js";
 import type { ReviewerConfig } from "@/types.js";
 
 import { http, HttpResponse } from "msw";

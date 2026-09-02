@@ -1,7 +1,7 @@
 ---
-description: What belongs in a domain's prompts/ directory
+description: What belongs in src/prompts — text sent to a model
 paths:
-  - cli/src/*/prompts/**
+  - cli/src/prompts/**
 ---
 
 # Prompts
