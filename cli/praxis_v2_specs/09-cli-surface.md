@@ -72,7 +72,7 @@ One CLI, two reading styles. The split is by **command default plus `--json`**, 
 ## Surface inventory (v2 additions, gathered from the other docs)
 
 - `praxis eval run [targets...] [--type] [--json]` — no targets = full run; one target = the fast loop; extended output carries axioms on matched critiques (04, 08) and epoch-boundary warnings (02)
-- `praxis eval report [--since] [--branch] [--axiom] [--json]` (07)
+- `praxis eval report [<path|glob>] [--since] [--branch] [--commit <sha>] [--commits <sha...>] [--axiom] [--json]` (07; three scope levels — files/glob, commit, PR)
 - `praxis axioms triage | ratify <id> | show <id> | list | audit` (03, 04)
 - `praxis calibrate run | status` (06)
 - `praxis debt report [--json]` (07)

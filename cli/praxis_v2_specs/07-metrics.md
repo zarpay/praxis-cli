@@ -26,6 +26,12 @@
 
 **`praxis debt report`** — the baseline and paydown surface (02), honestly named. Debt stock per axiom at baseline, paydown flow since — **attributable per author (git identity of the resolving commit) and per directory**, credit being attributable where blame is not (02) — debt concentration by directory, re-baseline deltas across epoch boundaries. This is where the current `validate all` output migrates.
 
+**Report scoping (decided 2026-09-02):** `eval report` answers at three levels, each printing the same core panel — runs counted, critiques collected, cost, files touched, and the reviewers and specs involved:
+
+1. **Files or glob** — `eval report <path|glob>`: everything the ledger knows about those targets.
+2. **Commit** — `eval report --commit <sha>`: the runs anchored to that commit. By construction this only finds clean-tree runs (12: working-tree runs carry `commit_sha: null` and are feedback, not measurement).
+3. **PR** — a set of commits (`--commits <sha...>`, or resolved from a branch range): the union of level 2 over the set, deduplicated by run.
+
 **`praxis eval report --axiom AX-0007`** — one axiom across everything: rates per population, trend, residual critiques nearby, calibration scores, removal-candidacy signals (03).
 
 ## Presentation idiom
