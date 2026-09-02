@@ -22,6 +22,10 @@ frontmatter keys are spelled.
   job, not a parser's.
 - Callers that sweep a directory catch per file and report, so one malformed
   document never takes down a batch.
+- **Every file here declares a class.** A module of loose functions over a
+  domain _type_ is not a model, however domain-ish it reads — `verdict.ts` held
+  two functions over the `Verdict` interface and is `worst-verdict-service.ts`
+  now. The test is whether there is anything to construct.
 - **A derivation from the model's own fields is a method here, not a service.**
   If a function's whole body reads nothing but one model's fields, it belongs on
   that model — `Reviewer.cacheIdentity()`, `ReviewSubject.assistProvenance()`,

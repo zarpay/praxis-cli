@@ -1,8 +1,5 @@
-import type { Verdict } from "@/domains/eval/types.js";
-
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
-import { severityRank } from "@/domains/eval/models/verdict.js";
 import reviewNamed from "@/domains/eval/services/review-named-service.js";
 import selectReviewers from "@/domains/eval/services/select-reviewers-service.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
@@ -41,11 +38,6 @@ function useVerdict(tool: "validation_pass" | "validation_warn" | "validation_fa
   );
 }
 
-/** A verdict with only the fields ranking depends on. */
-function verdict(fields: Partial<Verdict>): Verdict {
-  return { compliant: true, severity: "error", issues: [], reason: "", ...fields };
-}
-
 /** A throwaway project configured with the given reviewers. */
 function project(reviewers: { name: string; model: string; apiKeyEnvVar: string }[]): PraxisConfig {
   const { root, cleanup } = createValidatorTmpdir({
@@ -59,32 +51,6 @@ function project(reviewers: { name: string; model: string; apiKeyEnvVar: string 
 }
 
 const KEYED = { name: "flash", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" };
-
-describe("severityRank", () => {
-  it("ranks a compliant verdict lowest", () => {
-    expect(severityRank(verdict({ compliant: true }))).toBe(0);
-  });
-
-  it("ranks a warning above a pass", () => {
-    const pass = severityRank(verdict({ compliant: true }));
-    const warn = severityRank(verdict({ compliant: false, severity: "warning" }));
-
-    expect(warn).toBeGreaterThan(pass);
-  });
-
-  it("ranks an error above a warning", () => {
-    const warn = severityRank(verdict({ compliant: false, severity: "warning" }));
-    const error = severityRank(verdict({ compliant: false, severity: "error" }));
-
-    expect(error).toBeGreaterThan(warn);
-  });
-
-  it("ignores severity on a compliant verdict", () => {
-    const rank = severityRank(verdict({ compliant: true, severity: "error" }));
-
-    expect(rank).toBe(0);
-  });
-});
 
 describe("reviewer configuration", () => {
   it("raises when the project configures no reviewers", () => {

@@ -3,9 +3,9 @@ import type { ReviewNamedInput, ReviewNamedResult } from "@/domains/eval/types.j
 import { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 import { Reviewer } from "@/domains/eval/models/reviewer.js";
 import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
-import { worstVerdict } from "@/domains/eval/models/verdict.js";
 import reviewTarget from "@/domains/eval/services/review-target-service.js";
 import selectReviewers from "@/domains/eval/services/select-reviewers-service.js";
+import worstVerdict from "@/domains/eval/services/worst-verdict-service.js";
 
 /**
  * Reviews the named targets, each against its own spec.
