@@ -161,7 +161,7 @@ The **Claude Code plugin** (`plugins/claude-code.ts`) wraps the profile with YAM
 ```
 Spec discovered (specFilePattern match, frontmatter read)
   → Units resolved: paths:/cohort: expand; excludes:/exemplars: shielded from review
-  → Assist inputs resolved: exemplars: + context: files (services/resolve-assist-inputs-service.ts)
+  → Assist inputs resolved: exemplars: + context: files (ReviewSubject, at construction)
   → Content hash computed over the full review input: target + spec + assist (SHA256, 8-char prefix)
   → Cache checked: one file per target at .praxis/cache/validation/<target-path>.json,
       verdicts keyed <specHash>:<reviewerHash> (format 3.0)
@@ -176,7 +176,7 @@ Every run also appends to the ledger (`.praxis/ledger/runs/<run_id>.jsonl`, 05):
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
-Key files: `services/request-verdict-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile), `services/` (resolve-assist-inputs, verdict-cache, hash-reviewer, discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
+Key files: `services/request-verdict-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile), `services/` (verdict-cache, discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
 
 ### Project Root Detection
 
@@ -191,7 +191,7 @@ Config lives at `{root}/.praxis/config.json` with these fields:
 - `practicesDir: string` — where practice `.md` files live (default: `"practices"`)
 - `agentProfilesOutputDir: string | false` — where pure profiles are written (default: `"./agent-profiles"`)
 - `plugins: (string | PluginConfigEntry)[]` — enabled plugins with optional per-plugin config (default: `[]`). String entries are normalized to `{ name: theString }`. Object entries support `name`, `outputDir`, `claudeCodePluginName`.
-- `reviewers: { name, model, apiKeyEnvVar, baseUrl?, temperature?, provider?, options? }[]` — the configured reviewers; every reviewer evaluates every target, each with its own cache namespace keyed by its behavioral hash. `provider` selects the execution backend: a built-in registry name (default `"openrouter"`) or a `./relative` ESM module path whose default export is a provider factory (`types.ts`); `options` passes through to the provider verbatim (`services/hash-reviewer-service.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
+- `reviewers: { name, model, apiKeyEnvVar, baseUrl?, temperature?, provider?, options? }[]` — the configured reviewers; every reviewer evaluates every target, each with its own cache namespace keyed by its behavioral hash. `provider` selects the execution backend: a built-in registry name (default `"openrouter"`) or a `./relative` ESM module path whose default export is a provider factory (`types.ts`); `options` passes through to the provider verbatim (`Reviewer.hash()`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
 - `ignore?: string[]` — glob patterns, relative to the root, excluded from review (e.g. `"src/generated/**"`). Ignored files are never evaluated and never counted; spec discovery is unaffected.
 - `specFilePattern?: string` — top-level; filename or glob for spec files (default `README.md`).
 

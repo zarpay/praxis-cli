@@ -32,9 +32,11 @@ paths:
   services until the model was the only thing that could sensibly call them. The
   test: if the body reads nothing but the model's fields, it belongs to the
   model.
-- The line is the _input_, not the size. An algorithm a model happens to use —
-  `hash-reviewer-service.ts` canonicalizes a config and folds in the prompt
-  surface — is still a service, and the model delegates to it.
+- **Services act on models, never the reverse.** A model may not import a
+  service (ESLint-enforced), so an algorithm only a model needs is not a
+  service — it lives module-private beside the class. `hash-reviewer-service.ts`
+  and `resolve-assist-inputs-service.ts` sat here until the rule; they are
+  private functions in `reviewer.ts` and `review-subject.ts` now.
 - **A second caller is not a reason to keep it.** `assistHashInput` and
   `contentHash` looked shared, but the second caller was rebuilding by hand what
   the model already did; once it went through `ReviewSubject`, both had one

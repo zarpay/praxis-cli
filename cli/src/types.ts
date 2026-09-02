@@ -479,16 +479,6 @@ export interface DiscoveryScope {
   absoluteIgnore?: string[];
 }
 
-/** A spec's assist inputs to resolve, and where to resolve them. */
-export interface ResolveAssistInputsInput {
-  /** The spec's raw content. */
-  specContent: string;
-  /** Used to name the spec when no root is available. */
-  specPath: string;
-  /** Project root the root-relative globs resolve against. */
-  root?: string;
-}
-
 /** One unit of a full run: the target, its spec, and who reviews it. */
 export interface ReviewUnitInput {
   /** The unit to review — one file, or a cohort of them. */

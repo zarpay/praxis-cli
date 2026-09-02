@@ -66,6 +66,66 @@ describe("assistProvenance", () => {
   });
 });
 
+describe("assist", () => {
+  it("resolves an exemplar glob to its file contents", () => {
+    const subject = subjectWith(["exemplars:", '  - "src/*.ts"'], {
+      "src/good.ts": "export const good = 1;",
+    });
+
+    expect(subject.assist.exemplars).toEqual([
+      { path: "src/good.ts", content: "export const good = 1;" },
+    ]);
+  });
+
+  it("sorts resolved files so the content hash is deterministic", () => {
+    const subject = subjectWith(["exemplars:", '  - "src/*.ts"'], {
+      "src/c.ts": "c",
+      "src/a.ts": "a",
+      "src/b.ts": "b",
+    });
+
+    const exemplarPaths = subject.assist.exemplars.map((f) => f.path);
+
+    expect(exemplarPaths).toEqual(["src/a.ts", "src/b.ts", "src/c.ts"]);
+  });
+
+  it("resolves a glob matching nothing to an empty list", () => {
+    const subject = subjectWith(["exemplars:", '  - "src/nope-*.ts"']);
+
+    expect(subject.assist.exemplars).toEqual([]);
+  });
+
+  it("raises when a key is declared and no root can resolve it", () => {
+    const { abs, cleanup } = createValidatorTmpdir({
+      sources: ["specs"],
+      files: {
+        "specs/README.md": ["---", "exemplars:", '  - "src/*.ts"', "---", "", "# Spec"].join("\n"),
+        "specs/doc.md": "# Doc",
+      },
+    });
+    cleanups.push(cleanup);
+
+    const resolveWithoutRoot = () => ReviewSubject.resolve({ targetPath: abs("specs/doc.md") });
+
+    expect(resolveWithoutRoot).toThrow(/declares "exemplars" but no project root/);
+  });
+
+  it("does not raise without a root when neither key is declared", () => {
+    const { abs, cleanup } = createValidatorTmpdir({
+      sources: ["specs"],
+      files: {
+        "specs/README.md": "# Spec",
+        "specs/doc.md": "# Doc",
+      },
+    });
+    cleanups.push(cleanup);
+
+    const subject = ReviewSubject.resolve({ targetPath: abs("specs/doc.md") });
+
+    expect(subject.assist).toEqual({ exemplars: [], context: [] });
+  });
+});
+
 describe("contentHash", () => {
   it("is the first 8 characters of a SHA256 hex digest", () => {
     const subject = subjectWith(["paths:", '  - "specs/*.md"']);

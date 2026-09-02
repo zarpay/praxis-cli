@@ -304,9 +304,9 @@ export default tseslint.config(
     },
   },
   {
-    // Models are data plus the helpers on that data. They may delegate
-    // to a service for an algorithm (Reviewer.hash), but never reach
-    // into rendering or workflow.
+    // Models are data plus the helpers on that data. Services act on
+    // models, never the reverse: an algorithm a model needs lives
+    // module-private beside it. No rendering, no workflow.
     files: ["src/models/**/*.ts"],
     rules: {
       "no-restricted-imports": [
@@ -322,9 +322,9 @@ export default tseslint.config(
               message: "Use the @/ path alias instead of relative imports.",
             },
             {
-              group: ["@/orchestrators/*", "@/views/*", "@/commands/*"],
+              group: ["@/services/*", "@/orchestrators/*", "@/views/*", "@/commands/*"],
               message:
-                "a model holds data and its helpers: it must not import orchestrators, views or commands.",
+                "services act on models, never the reverse: a model must not import services, orchestrators, views or commands.",
             },
           ],
         },

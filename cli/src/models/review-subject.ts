@@ -5,9 +5,9 @@ import { createHash } from "node:crypto";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { exists, hasGlobChars, readText } from "@/helpers/files-helper.js";
-import { joinPath, parentDir } from "@/helpers/paths-helper.js";
+import { joinPath, parentDir, relativePath } from "@/helpers/paths-helper.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
-import resolveAssistInputsService from "@/services/resolve-assist-inputs-service.js";
+import { SpecFile } from "@/models/spec-file.js";
 
 /**
  * Everything a reviewer is shown about one target: the target itself, the
@@ -83,7 +83,7 @@ export class ReviewSubject {
       targetContent: targetContent ?? readText(targetPath),
       specContent,
       kind,
-      assist: resolveAssistInputsService({ specContent, specPath: resolvedSpec, root }),
+      assist: resolveAssist(specContent, resolvedSpec, root),
     });
   }
 
@@ -128,6 +128,47 @@ export class ReviewSubject {
       contextFiles: records(this.assist.context),
     };
   }
+}
+
+/**
+ * Resolves the spec's `exemplars:` and `context:` globs into file contents.
+ *
+ * The assist inputs a reviewer sees beyond the target itself (03): exemplars
+ * are spec-blessed positives, context is what the standard is about. Both
+ * reach the prompt, so both join the content hash — a verdict keyed only on
+ * target + spec would survive edits to inputs the reviewer actually saw.
+ *
+ * @throws PraxisError when the spec declares either key and no project root
+ *   is available to resolve the root-relative globs against
+ */
+function resolveAssist(specContent: string, specPath: string, root?: string): AssistInputs {
+  const spec = SpecFile.fromContent(specContent, specPath);
+
+  return {
+    exemplars: resolveAssistKey(spec, "exemplars", root),
+    context: resolveAssistKey(spec, "context", root),
+  };
+}
+
+/**
+ * Resolves one assist key's globs into labeled file contents, sorted so
+ * the content hash is stable across machines.
+ */
+function resolveAssistKey(
+  spec: SpecFile,
+  key: "exemplars" | "context",
+  root?: string,
+): AssistFile[] {
+  const patterns = spec.assistPatterns(key);
+
+  if (patterns.length === 0) return [];
+
+  if (!root) throw errors.missingProjectRoot(key, spec.path);
+
+  return fg
+    .sync(patterns, { cwd: root, onlyFiles: true, absolute: true, dot: true })
+    .sort()
+    .map((file) => ({ path: relativePath(root, file), content: readText(file) }));
 }
 
 /**

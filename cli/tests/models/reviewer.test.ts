@@ -49,10 +49,47 @@ describe("Reviewer", () => {
     it("hashes an omitted setting and its explicit default identically", () => {
       const explicit = Reviewer.fromConfig({
         ...CONFIG,
+        baseUrl: DEFAULT_REVIEWER_BASE_URL,
         temperature: DEFAULT_REVIEWER_TEMPERATURE,
+        provider: DEFAULT_REVIEWER_PROVIDER,
+        options: {},
       });
 
       expect(explicit.hash()).toBe(Reviewer.fromConfig(CONFIG).hash());
+    });
+
+    it("is an 8-character hex string", () => {
+      expect(Reviewer.fromConfig(CONFIG).hash()).toMatch(/^[a-f0-9]{8}$/);
+    });
+
+    it("changes when the baseUrl changes", () => {
+      const moved = Reviewer.fromConfig({ ...CONFIG, baseUrl: "https://inference.internal/v1" });
+
+      expect(moved.hash()).not.toBe(Reviewer.fromConfig(CONFIG).hash());
+    });
+
+    it("changes when the temperature changes", () => {
+      const hotter = Reviewer.fromConfig({ ...CONFIG, temperature: 0.7 });
+
+      expect(hotter.hash()).not.toBe(Reviewer.fromConfig(CONFIG).hash());
+    });
+
+    it("changes when the provider changes", () => {
+      const custom = Reviewer.fromConfig({ ...CONFIG, provider: "./praxis-providers/echo.js" });
+
+      expect(custom.hash()).not.toBe(Reviewer.fromConfig(CONFIG).hash());
+    });
+
+    it("changes when provider options change", () => {
+      const tuned = Reviewer.fromConfig({ ...CONFIG, options: { region: "us-east-1" } });
+
+      expect(tuned.hash()).not.toBe(Reviewer.fromConfig(CONFIG).hash());
+    });
+
+    it("includes future unknown fields — new settings are behavioral by default", () => {
+      const futureConfig = { ...CONFIG, maxTokens: 4096 } as unknown as typeof CONFIG;
+
+      expect(Reviewer.fromConfig(futureConfig).hash()).not.toBe(Reviewer.fromConfig(CONFIG).hash());
     });
   });
 

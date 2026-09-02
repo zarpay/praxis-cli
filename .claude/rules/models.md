@@ -30,8 +30,12 @@ frontmatter keys are spelled.
   If a function's whole body reads nothing but one model's fields, it belongs on
   that model — `Reviewer.cacheIdentity()`, `ReviewSubject.assistProvenance()`,
   `SpecFile.assistPatterns()`. A service that a model is the only sensible caller
-  of is a method wearing the wrong hat. An _algorithm_ the model uses stays a
-  service and the model delegates to it (`hash-reviewer-service.ts`).
+  of is a method wearing the wrong hat.
+- **A model never imports a service** (ESLint-enforced). Services act on models;
+  a model that calls a service has the dependency backwards. An algorithm a
+  model needs lives module-private beside the class — `Reviewer.hash()`'s
+  canonical hashing and `ReviewSubject`'s assist-glob resolution were services
+  until this rule; both are private functions in their model files now.
 
 ## `reviewer` is a noun
 
