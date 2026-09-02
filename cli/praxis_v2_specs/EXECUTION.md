@@ -20,17 +20,17 @@ this document.
 
 ## M1 — Spec layer (roadmap: largely shipped)
 
-| Req                                                                                                                                  | Sources                | Status                   |
-| ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- | ------------------------ |
-| Expert/practice compiler; `praxis compile`; SME profiles; `praxis add`                                                               | 11-a                   | ✅                       |
-| Spec targeting via `paths:`; `validates:` compiles through; profile _is_ the spec                                                    | 11-g, VO-i, VO-j       | ✅                       |
-| Scoping frontmatter honored: `excludes:`, `exemplars:`, `cohort:`, `context:`; no `scope:` key at spec layer                         | 03-i…03-n, 01-s        | ✅                       |
-| `context:` files inlined, never evaluated, join the content hash                                                                     | 03-k, 01-q, 05-b       | ✅                       |
-| Cohort = `by_file` (default) / `by_directory`; cohort hash keys the verdict; overflow → `unverified`, never truncated                | 03-j, 01-r, 03-t, VO-r | scan (overflow behavior) |
-| `init` scaffolds `.praxis/` minimal; spec layer opt-in; `status` splits eval state from framework health                             | 11-j, 11-i             | ✅                       |
-| `TargetType`/`DocumentType` retired from eval data                                                                                   | 11-h                   | ✅                       |
-| **Open gap: profiles-as-specs discovery** — `specFilePattern` cannot select compiled profiles; wants `agentProfileSuffix` or similar | roadmap M1             | —                        |
-| **Open naming: expert-level compile-through for judgment `context:`** (collides with the expert's existing `context:` key)           | roadmap M1             | —                        |
+| Req                                                                                                                                  | Sources                | Status                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Expert/practice compiler; `praxis compile`; SME profiles; `praxis add`                                                               | 11-a                   | ✅                                                                                                                                    |
+| Spec targeting via `paths:`; `validates:` compiles through; profile _is_ the spec                                                    | 11-g, VO-i, VO-j       | ✅                                                                                                                                    |
+| Scoping frontmatter honored: `excludes:`, `exemplars:`, `cohort:`, `context:`; no `scope:` key at spec layer                         | 03-i…03-n, 01-s        | ✅                                                                                                                                    |
+| `context:` files inlined, never evaluated, join the content hash                                                                     | 03-k, 01-q, 05-b       | ✅                                                                                                                                    |
+| Cohort = `by_file` (default) / `by_directory`; cohort hash keys the verdict; overflow → `unverified`, never truncated                | 03-j, 01-r, 03-t, VO-r | half: never truncates ✅, but no `unverified` state exists — overflow lands as an error _verdict_, miscounted as a violation (03-y-5) |
+| `init` scaffolds `.praxis/` minimal; spec layer opt-in; `status` splits eval state from framework health                             | 11-j, 11-i             | ✅                                                                                                                                    |
+| `TargetType`/`DocumentType` retired from eval data                                                                                   | 11-h                   | ✅                                                                                                                                    |
+| **Open gap: profiles-as-specs discovery** — `specFilePattern` cannot select compiled profiles; wants `agentProfileSuffix` or similar | roadmap M1             | —                                                                                                                                     |
+| **Open naming: expert-level compile-through for judgment `context:`** (collides with the expert's existing `context:` key)           | roadmap M1             | —                                                                                                                                     |
 
 ## M2 — Critique flow (this branch's milestone)
 
