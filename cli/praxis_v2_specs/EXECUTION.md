@@ -4,10 +4,9 @@ Built 2026-09-02 from every spec in this directory, organized on
 [13-roadmap](./13-roadmap.md)'s spine. One row per buildable requirement;
 duplicate statements across specs are collapsed with every source ID kept.
 
-**Status** — `✅` verified done (this branch), `scan` awaiting the codebase
-audit, `—` not started (no code exists for it), `deferred` schema-only by
-design. The `scan` rows get resolved by the completion audit that follows
-this document.
+**Status** — `✅` verified done, `—` not started, `half`/`mostly` partial with
+the gap named, `deferred` schema-only by design. The completion audit ran
+2026-09-02; every former `scan` row now carries its finding.
 
 ## Decisions that supersede spec text (update the specs)
 
@@ -86,15 +85,15 @@ this document.
 
 ## M5 — Diff units (git integration)
 
-| Req                                                                                                                      | Sources                | Status                                                    |
-| ------------------------------------------------------------------------------------------------------------------------ | ---------------------- | --------------------------------------------------------- |
-| Only merge-base / diff --name-only / show / log; no hooks or daemons                                                     | 12-a                   | —                                                         |
-| `eval run --diff [<base>]`: merge-base, changed-file filter, both sides reviewed, before side from cache                 | 12-f, 12-g, 01-k, 01-l | —                                                         |
-| Flow labels introduced/resolved/inherited by set-difference on (axiom_id, file); shared provenance or comparison refused | 12-i, 01-k, 01-n       | —                                                         |
-| Working-tree runs are feedback, never measurement                                                                        | 12-d                   | —                                                         |
-| Coverage statistic for uncovered changed files                                                                           | 12-h, 01-ad            | —                                                         |
-| `eval ci`: same evaluation, verifies without writing, exit code only                                                     | 12-n                   | scan (exists; write-suppression semantics pending ledger) |
-| Idempotent diff reruns; latest-per-branch reporting; SHAs opaque                                                         | 12-j, 12-k             | —                                                         |
+| Req                                                                                                                      | Sources                | Status                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Only merge-base / diff --name-only / show / log; no hooks or daemons                                                     | 12-a                   | —                                                                                                                                        |
+| `eval run --diff [<base>]`: merge-base, changed-file filter, both sides reviewed, before side from cache                 | 12-f, 12-g, 01-k, 01-l | —                                                                                                                                        |
+| Flow labels introduced/resolved/inherited by set-difference on (axiom_id, file); shared provenance or comparison refused | 12-i, 01-k, 01-n       | —                                                                                                                                        |
+| Working-tree runs are feedback, never measurement                                                                        | 12-d                   | —                                                                                                                                        |
+| Coverage statistic for uncovered changed files                                                                           | 12-h, 01-ad            | —                                                                                                                                        |
+| `eval ci`: same evaluation, verifies without writing, exit code only                                                     | 12-n                   | ❌ ci runs with the cache enabled and **writes entries on miss** into committed `.praxis/cache`; verify-without-writing is unimplemented |
+| Idempotent diff reruns; latest-per-branch reporting; SHAs opaque                                                         | 12-j, 12-k             | —                                                                                                                                        |
 
 ## M6 — Reviewer instrumentation
 
@@ -118,15 +117,15 @@ this document.
 
 ## Cross-cutting CLI contract (09) — applies to everything above
 
-| Req                                                                                                          | Sources           | Status         |
-| ------------------------------------------------------------------------------------------------------------ | ----------------- | -------------- |
-| `--json` on every read surface; stable schema; deterministic agent output, stable sorts                      | 09-n, 09-ad, RM-h | scan           |
-| Exit codes 0/1/2 (2 = usage/config error)                                                                    | 09-o              | scan           |
-| stdout data / stderr commentary                                                                              | 09-p              | ✅             |
-| Errors instruct (what is wrong + the fixing command/edit)                                                    | 09-q              | scan           |
-| No prompts on agent paths; flag equivalents; `config edit` marked human-only                                 | 09-r              | scan           |
-| Denominators on every number; fixed color semantics; `NO_COLOR`; epoch furniture; drill-down grammar; no TUI | 09-u…09-y, 09-ac  | — (mostly M4+) |
-| Help text as API docs: when-to-use + examples; top-level typical flows                                       | 09-l, 09-m        | scan           |
+| Req                                                                                                          | Sources           | Status                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--json` on every read surface; stable schema; deterministic agent output, stable sorts                      | 09-n, 09-ad, RM-h | — none exist; foundation ready (services return data, views render it, so `--json` falls out of the 07-k split)                                                                                                                                                                                                                                    |
+| Exit codes 0/1/2 (2 = usage/config error)                                                                    | 09-o              | half: 0/1 reliable; **2 never occurs** — unknown command/flag and config errors all exit 1; codes undocumented in help                                                                                                                                                                                                                             |
+| stdout data / stderr commentary                                                                              | 09-p              | ✅                                                                                                                                                                                                                                                                                                                                                 |
+| Errors instruct (what is wrong + the fixing command/edit)                                                    | 09-q              | mostly: missingReviewers prints the exact JSON block (the spec's standard), unknownPlugin/unknownReviewer/unknownDocumentType list valid values; **non-instructing: rootNotFound (no “run praxis init”), expertNotFound (no alias list), documentNotFound, specNotFound, apiKeyNotSet (its twin missingApiKey instructs; two overlapping errors)** |
+| No prompts on agent paths; flag equivalents; `config edit` marked human-only                                 | 09-r              | ✅ no interactive prompts exist; nit: `config edit` help does not say human-only                                                                                                                                                                                                                                                                   |
+| Denominators on every number; fixed color semantics; `NO_COLOR`; epoch furniture; drill-down grammar; no TUI | 09-u…09-y, 09-ac  | — (mostly M4+)                                                                                                                                                                                                                                                                                                                                     |
+| Help text as API docs: when-to-use + examples; top-level typical flows                                       | 09-l, 09-m        | — one-line descriptions only: no examples, no when-to-use, no top-level “Typical flows:” block                                                                                                                                                                                                                                                     |
 
 ## Deferred by design (schema slots only, no code)
 
