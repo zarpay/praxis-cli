@@ -1,11 +1,6 @@
 import type { CommandRegistrar } from "@/types.js";
 
-import { prepareAction } from "@/commands/action.js";
-import addDocument from "@/domains/spec/orchestrators/add-document.js";
-
-// One orchestrator, two subcommands: the type is what tells them apart.
-const expert = prepareAction(addDocument, { type: "expert" });
-const practice = prepareAction(addDocument, { type: "practice" });
+import { addExpert, addPractice } from "@/domains/spec/orchestrators/add-document.js";
 
 /**
  * Registers the `praxis add` command group.
@@ -19,12 +14,12 @@ const command: CommandRegistrar = (program) => {
   add
     .command("expert <name>")
     .description("Create a new expert from the template the compiler expects")
-    .action(expert);
+    .action(addExpert);
 
   add
     .command("practice <name>")
     .description("Create a new practice from the template the compiler expects")
-    .action(practice);
+    .action(addPractice);
 };
 
 export default command;

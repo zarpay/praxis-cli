@@ -12,6 +12,7 @@ import {
   runReportLines,
   targetsHeadline,
 } from "@/domains/eval/views/summary.js";
+import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
 import { renderReport } from "@/views/report.js";
 
 /**
@@ -25,7 +26,7 @@ import { renderReport } from "@/views/report.js";
  *
  * Fails on any error verdict — and in CI `--strict`, on warnings too.
  */
-const runEval: Orchestrator<RunEvalOptions> = async (
+export const runEval: Orchestrator<RunEvalOptions> = async (
   ctx,
   { targets = [], ci = false, strict = false, cache = true, ...options },
 ) => {
@@ -69,4 +70,7 @@ const runEval: Orchestrator<RunEvalOptions> = async (
   return errors + (strict ? warnings : 0) === 0 ? "ok" : "failed";
 };
 
-export default runEval;
+/** `praxis eval ci`: the same run, framed for CI and strict about warnings. */
+export const ciRun = prepareOrchestrator(runEval, { ci: true });
+
+export default prepareOrchestrator(runEval);

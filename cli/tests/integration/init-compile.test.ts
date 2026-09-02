@@ -9,7 +9,7 @@ import compileExperts from "@/domains/spec/services/compile-experts.js";
 import resolvePlugins from "@/domains/spec/services/resolve-plugins.js";
 import { CommandContext } from "@/domains/workspace/models/command-context.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
-import initProject from "@/domains/workspace/orchestrators/init-project.js";
+import { initProject } from "@/domains/workspace/orchestrators/init-project.js";
 import { Logger } from "@/views/logger.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 

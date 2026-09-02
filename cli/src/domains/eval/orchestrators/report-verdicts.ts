@@ -3,6 +3,7 @@ import type { Orchestrator } from "@/domains/workspace/types.js";
 
 import collectVerdictReports from "@/domains/eval/services/collect-verdict-reports.js";
 import { verdictReportsLines } from "@/domains/eval/views/summary.js";
+import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
 import { renderReport } from "@/views/report.js";
 
 /**
@@ -12,7 +13,7 @@ import { renderReport } from "@/views/report.js";
  * @throws PraxisError when the target does not exist, or no reviewer is
  *   configured to have an opinion about it
  */
-const reportVerdicts: Orchestrator<ReportVerdictsOptions> = async (
+export const reportVerdicts: Orchestrator<ReportVerdictsOptions> = async (
   ctx,
   { target, verbose = false },
 ) => {
@@ -28,4 +29,4 @@ const reportVerdicts: Orchestrator<ReportVerdictsOptions> = async (
   });
 };
 
-export default reportVerdicts;
+export default prepareOrchestrator(reportVerdicts);

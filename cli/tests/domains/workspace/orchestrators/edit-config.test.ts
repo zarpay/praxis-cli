@@ -10,7 +10,7 @@ vi.mock("node:child_process", () => ({
 import { spawnSync } from "node:child_process";
 
 import { readJson } from "@/core/files.js";
-import editConfig from "@/domains/workspace/orchestrators/edit-config.js";
+import { editConfig } from "@/domains/workspace/orchestrators/edit-config.js";
 import { configEntries } from "@/domains/workspace/views/config.js";
 import { Display } from "@/views/display.js";
 import { testContext } from "@tests/helpers/command-context.js";

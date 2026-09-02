@@ -5,6 +5,7 @@ import { errors } from "@/core/errors.js";
 import { exists, readText, writeText } from "@/core/files.js";
 import { joinPath, relativePath } from "@/core/paths.js";
 import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
+import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
 import { renderReport } from "@/views/report.js";
 
 /**
@@ -18,7 +19,7 @@ import { renderReport } from "@/views/report.js";
  *
  * @throws PraxisError when the target exists, or the template is missing
  */
-const addDocument: Orchestrator<AddDocumentOptions> = async (
+export const addDocument: Orchestrator<AddDocumentOptions> = async (
   ctx,
   { type, name, scaffoldDir = SCAFFOLD_DIR },
 ) => {
@@ -75,4 +76,11 @@ function toTitleCase(name: string): string {
     .join(" ");
 }
 
-export default addDocument;
+/**
+ * Two commands, one orchestrator: the type is the only thing separating
+ * them, and it is not something the CLI surface can supply. So this file
+ * exports the two prepared forms rather than a default.
+ */
+export const addExpert = prepareOrchestrator(addDocument, { type: "expert" });
+
+export const addPractice = prepareOrchestrator(addDocument, { type: "practice" });

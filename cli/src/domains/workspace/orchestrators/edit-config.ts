@@ -2,6 +2,8 @@ import type { Orchestrator } from "@/domains/workspace/types.js";
 
 import { spawnSync } from "node:child_process";
 
+import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
+
 /**
  * Opens the project config in the author's editor.
  *
@@ -11,7 +13,7 @@ import { spawnSync } from "node:child_process";
  *
  * @throws when the editor could not be started at all
  */
-const editConfig: Orchestrator = async (ctx) => {
+export const editConfig: Orchestrator = async (ctx) => {
   const editor = process.env["VISUAL"] ?? process.env["EDITOR"] ?? "vi";
   const result = spawnSync(editor, [ctx.paths.configFile], { stdio: "inherit" });
 
@@ -20,4 +22,4 @@ const editConfig: Orchestrator = async (ctx) => {
   }
 };
 
-export default editConfig;
+export default prepareOrchestrator(editConfig);

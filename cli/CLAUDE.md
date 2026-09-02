@@ -92,16 +92,18 @@ Classes remain for four things, and only these:
 - Anything else genuinely better expressed as a smart data object.
 
 **A command calls exactly one orchestrator, and does nothing with what comes
-back.** `prepareAction` (`commands/action.ts`) is the composition root: it returns the commander
-handler, building one `CommandContext` per dispatch — root, paths, config, logger,
+back.** `prepareOrchestrator` (`domains/workspace/prepare-orchestrator.ts`) is the composition
+root: it returns the commander handler, building one `CommandContext` per dispatch — root, paths, config, logger,
 and Display — and applying the single error policy. Because both sides have a
 fixed shape, it also derives the orchestrator's `options` from commander's own
 `registeredArguments` and `opts()`, so a command names its orchestrator rather
-than calling it: each command prepares one into a const at module top —
-`const orchestrator = prepareAction(runEval)` — and names it in `.action()`. Name a command's flags and arguments
+than calling it. An orchestrator exports itself already wrapped —
+`export default prepareOrchestrator(runEval)` — so a command imports it and hands
+it to `.action()` with nothing in between. Its named export is the unwrapped
+orchestrator, which is what tests call. Name a command's flags and arguments
 to match its `Options` type and the wiring writes itself; a second argument
 supplies only what the CLI cannot, like `{ ci: true }`. A command therefore imports orchestrators and
-`prepareAction`, and nothing else; the orchestrator owns the response, rendering
+its orchestrators, and nothing else; the orchestrator owns the response, rendering
 included, and hands back only a `CommandOutcome` for the exit code.
 
 Both layers state their signature as a named type rather than a convention, each
@@ -109,7 +111,7 @@ applied to the exported const: `CommandRegistrar` (`src/types.ts`) for a command
 file, and `Orchestrator<Options>` (`domains/workspace/types.ts`) for what it
 calls. That fixes the arity, so an orchestrator taking no options is
 still called with `{}` — `analyzeProject(ctx, {})` — and there is one call shape
-across every command. They are all `async`, which gives `prepareAction` one shape to
+across every command. They are all `async`, which gives `prepareOrchestrator` one shape to
 await and one channel for failures: a non-async function returning
 `Promise.resolve()` throws synchronously, which is a second signature in disguise.
 
@@ -189,5 +191,5 @@ Plugins implement the `CompilerPlugin` interface (`domains/spec/types.ts`): `nam
 - **File/path operations:** import from `@/core/files.js` (I/O: readText, writeText, exists, ...) and `@/core/paths.js` (composition: joinPath, baseName, ...; well-known locations: configFile, SCAFFOLD_DIR, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced). Where a _Praxis project_ keeps its files is `domains/workspace/models/project-paths.ts`, not core.
 - **Construct at invocation time, not import time:** module tops hold definitions, not work. `new Paths()` (and anything touching cwd or the filesystem) belongs in the command wiring helpers (`makeCommand()`), executed at action dispatch — never as a module-level instance or exported singleton (decided 2026-08-31: import-time cwd capture, test isolation, and `praxis init` running before `.praxis/` exists).
 - **Prompts:** every LLM/agent-facing prompt lives in its domain's `prompts/`, one prompt per file, as that file's default-export function — typed parameters wherever the prompt templates, with the parameter interfaces in the domain's `types.ts`. No prompt text inline anywhere else. The reviewer hash covers the complete reviewer-facing surface via `domains/eval/prompts/prompt-surface.ts`; rewording any of it is a reviewer-identity change (new epoch), by design.
-- **Command context:** every orchestrator's first parameter is a `CommandContext` (`@/domains/workspace/models/command-context.js`) carrying `root`, `paths`, `config`, `logger` and `out`. `root` and `config` resolve lazily and cache, because `praxis init` runs before a `.praxis/` directory exists. It lives in workspace rather than core because it holds `PraxisConfig` and `Paths`, and core depends on no domain. Construct one only in `prepareAction` — or, in a test, via `testContext(root)`.
+- **Command context:** every orchestrator's first parameter is a `CommandContext` (`@/domains/workspace/models/command-context.js`) carrying `root`, `paths`, `config`, `logger` and `out`. `root` and `config` resolve lazily and cache, because `praxis init` runs before a `.praxis/` directory exists. It lives in workspace rather than core because it holds `PraxisConfig` and `Paths`, and core depends on no domain. Construct one only in `prepareOrchestrator` — or, in a test, via `testContext(root)`.
 - **Terminal output:** all output goes through the view kit — `@/views/display.js` for stdout and `@/views/logger.js` for stderr. `Display.print([...])` renders a whole stdout block as one payload of entries (plain strings; `{ text, color }`; `{ badge, color, value, indent? }`; `{ header, char?, width? }`; falsy entries skipped so conditionals inline), with `line()` for single lines; `Logger` writes stderr diagnostics. Raw `console.*` is banned outside those two modules (ESLint `no-console`). Reusable rendering — badge rows, aligned stat blocks, tables — lives in `@/views/badges.js`, `@/views/stats.js`, `@/views/table.js` rather than being hand-built at the call site.

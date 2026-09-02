@@ -1,9 +1,6 @@
 import type { CommandRegistrar } from "@/types.js";
 
-import { prepareAction } from "@/commands/action.js";
 import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
-
-const orchestrator = prepareAction(analyzeProject);
 
 /**
  * Registers the `praxis status` command.
@@ -16,7 +13,7 @@ const command: CommandRegistrar = (program) => {
   program
     .command("status")
     .description("Show project health and review coverage")
-    .action(orchestrator);
+    .action(analyzeProject);
 };
 
 export default command;

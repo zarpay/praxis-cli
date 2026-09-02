@@ -1,6 +1,7 @@
 import type { Orchestrator } from "@/domains/workspace/types.js";
 
 import { readJson } from "@/core/files.js";
+import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
 import { configEntries } from "@/domains/workspace/views/config.js";
 
 /**
@@ -12,10 +13,10 @@ import { configEntries } from "@/domains/workspace/views/config.js";
  *
  * @throws PraxisError when the file is absent or is not valid JSON
  */
-const showConfig: Orchestrator = async (ctx) => {
+export const showConfig: Orchestrator = async (ctx) => {
   const configPath = ctx.paths.configFile;
 
   ctx.out.print(configEntries(configPath, readJson(configPath)));
 };
 
-export default showConfig;
+export default prepareOrchestrator(showConfig);

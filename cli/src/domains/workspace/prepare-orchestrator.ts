@@ -7,6 +7,9 @@ import { CommandContext } from "@/domains/workspace/models/command-context.js";
 /**
  * Wraps an orchestrator into the commander action handler that runs it.
  *
+ * Framework level, so an orchestrator can export itself already wrapped
+ * and a command has only to import it and hand it to `.action()`.
+ *
  * Both sides of this have a fixed shape — commander parses into named
  * arguments and options, an orchestrator takes `(ctx, options)` — so the
  * mapping between them is derived rather than written out per command.
@@ -21,13 +24,14 @@ import { CommandContext } from "@/domains/workspace/models/command-context.js";
  * `Options` is caught by the tests and the demo run, not the compiler.
  *
  * This is also the composition root. Preparing is a definition, not work,
- * so a command may do it at module top; the context itself is built inside
- * the returned handler, per dispatch and never at import time. The one
+ * so it happens at an orchestrator's module top; the context itself is
+ * built inside the returned handler, per dispatch and never at import
+ * time. The one
  * error policy lives here too: "failed" exits 1 — a legitimate non-zero
  * result like issues found — and a genuine error is thrown instead,
  * logging to stderr and also exiting 1.
  */
-export function prepareAction<Options>(
+export function prepareOrchestrator<Options>(
   orchestrator: Orchestrator<Options>,
   extra: Partial<Options> = {},
 ): (...args: unknown[]) => Promise<void> {

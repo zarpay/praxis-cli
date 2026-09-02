@@ -15,38 +15,34 @@ then hands them to one orchestrator. Nothing else. Nothing imports `commands/`.
   declaration — that is what makes it enforced rather than described, the same
   way `Orchestrator` is one layer down. Keep the name on the const: an anonymous
   default export loses it in stack traces. `index.ts` is the only caller.
-- **Prepare the orchestrator into a const at module top, then name it in the
-  action:**
+- **Import the orchestrator and hand it straight to `.action()`:**
 
   ```ts
-  const orchestrator = prepareAction(analyzeProject);
+  import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
   // …
-  .action(orchestrator);
+  .action(analyzeProject);
   ```
 
-  There is no lambda anywhere: both sides have a fixed shape, so
-  `prepareAction` derives the options from commander's own argument names and
-  parsed flags. A command imports orchestrators and `prepareAction` — never a
-  model, a service, or a view.
+  An orchestrator exports itself already wrapped, so there is nothing to prepare,
+  adapt or close over here. There is no lambda anywhere: both sides have a fixed
+  shape, so `prepareOrchestrator` derives the options from commander's own
+  argument names and parsed flags. A command file imports orchestrators and
+  nothing else — no model, no service, no view, no helper.
 
-- **A group declares one const per subcommand, named for it** — `show`/`edit`,
-  `expert`/`practice`, `run`/`ci`/`verdict` — since `orchestrator` can only name
-  one. Preparing is a definition, not work, so module top is the right place;
-  the context is built inside the returned handler, per dispatch.
 - **A command's flags and arguments _are_ its orchestrator's `Options`.** Name
   them to match — `<target> --verbose` yields `{ target, verbose }` — and the
   wiring writes itself. This half is not type-checked, so a rename on one side
   only is caught by the tests and the demo run, not the compiler.
-- **`prepareAction(orchestrator, extra)`** supplies only what the CLI surface cannot: a
-  literal separating two commands that share one orchestrator, like
-  `{ type: "expert" }` or `{ ci: true }`. `extra` _is_ type-checked.
+- **Where two commands share one orchestrator**, the orchestrator's own file
+  exports the prepared variants — `ciRun`, `addExpert`, `addPractice` — because
+  the literal that separates them (`{ ci: true }`, `{ type: "expert" }`) is
+  domain knowledge, not routing.
 - **The orchestrator owns the whole response, rendering included.** It hands back
   an outcome, not a payload: `"failed"` exits 1, anything else is success. If you
   find yourself doing something with a return value here, it belongs one layer
   down.
-- `prepareAction` (`commands/action.ts`) is the composition root, and it _returns_
-  the handler rather than being called inside one. Preparing is a definition, so
-  it belongs at module top; the `CommandContext` is built inside the returned
-  handler, per dispatch and never at module load. The one error policy lives
-  there too: a thrown error logs to stderr and exits 1. Don't hand-roll try/catch
-  around an action, and don't construct a context yourself.
+- `prepareOrchestrator` (`domains/workspace/prepare-orchestrator.ts`) is the
+  composition root, and it lives at framework level so an orchestrator can wrap
+  itself. Nothing in `commands/` calls it. It builds the `CommandContext` inside
+  the returned handler — per dispatch, never at module load — and carries the one
+  error policy: a thrown error logs to stderr and exits 1.

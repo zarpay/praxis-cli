@@ -6,7 +6,7 @@ import { join, relative } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { CommandContext } from "@/domains/workspace/models/command-context.js";
-import initProject from "@/domains/workspace/orchestrators/init-project.js";
+import { initProject } from "@/domains/workspace/orchestrators/init-project.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 
 /** Resolved path to the scaffold directory at the project root. */

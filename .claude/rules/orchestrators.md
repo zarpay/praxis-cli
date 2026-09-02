@@ -14,8 +14,10 @@ belongs here.
 
 - Named `{verb}-{noun}` for what it produces: `run-eval.ts`, `compile-project.ts`,
   `analyze-project.ts`, `report-verdicts.ts`.
-- **`const name: Orchestrator<Options> = async (ctx, options) => {}`, default
-  exported.** `Orchestrator` (`domains/workspace/types.ts`) is the one signature
+- **`export const name: Orchestrator<Options> = async (ctx, options) => {}`, with
+  `export default prepareOrchestrator(name)` beneath it.** The default export is
+  the wrapped form a command hands to `.action()`; the named export is the
+  orchestrator itself, which is what a test calls. `Orchestrator` (`domains/workspace/types.ts`) is the one signature
   every orchestrator has, applied to the const rather than annotating a function
   declaration — that is what makes it enforced rather than described.
 - **The `options` parameter is never dropped.** An orchestrator that takes none is
@@ -23,7 +25,7 @@ belongs here.
   implementation may omit the parameter; the call site may not. `Options` is the
   command's parsed input, typed in the domain's `types.ts`; everything about the
   project — root, paths, config — comes off `ctx`, never a parameter.
-- **Always `async`**, so `prepareAction` has one shape to await _and_ one channel for
+- **Always `async`**, so `prepareOrchestrator` has one shape to await _and_ one channel for
   failures. A non-async function returning `Promise.resolve()` throws
   synchronously, which is a second signature in disguise.
 - **Returns a `CommandOutcome`, or nothing.** `"failed"` becomes exit 1 — a

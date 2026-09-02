@@ -12,6 +12,7 @@ import {
   recompilingLine,
   watchingLine,
 } from "@/domains/spec/views/compile-progress.js";
+import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
 import { renderReport } from "@/views/report.js";
 
 /**
@@ -22,7 +23,7 @@ import { renderReport } from "@/views/report.js";
  * or every expert and then again on every change. They share the compile
  * scope, so the dispatch lives here rather than in the route.
  */
-const compileProject: Orchestrator<CompileProjectOptions> = async (
+export const compileProject: Orchestrator<CompileProjectOptions> = async (
   ctx,
   { alias, watch = false },
 ) => {
@@ -68,4 +69,4 @@ const compileProject: Orchestrator<CompileProjectOptions> = async (
   });
 };
 
-export default compileProject;
+export default prepareOrchestrator(compileProject);

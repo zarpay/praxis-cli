@@ -11,6 +11,7 @@ import {
 import { joinPath, relativePath, resolvePath } from "@/core/paths.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
+import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
 import { initReport } from "@/domains/workspace/views/status.js";
 import { renderReport } from "@/views/report.js";
 
@@ -26,7 +27,7 @@ import { renderReport } from "@/views/report.js";
  * re-running with `--spec-layer` adds the taxonomy to a project that
  * started eval-only.
  */
-const initProject: Orchestrator<InitProjectOptions> = async (
+export const initProject: Orchestrator<InitProjectOptions> = async (
   ctx,
   { directory, scaffoldDir = SCAFFOLD_DIR, specLayer = false },
 ) => {
@@ -147,4 +148,4 @@ function nextSteps(specLayer: boolean): string[] {
   ];
 }
 
-export default initProject;
+export default prepareOrchestrator(initProject);
