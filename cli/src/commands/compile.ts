@@ -1,7 +1,9 @@
 import type { CommandRegistrar } from "@/types.js";
 
-import { handle } from "@/commands/action.js";
+import { prepareAction } from "@/commands/action.js";
 import compileProject from "@/domains/spec/orchestrators/compile-project.js";
+
+const orchestrator = prepareAction(compileProject);
 
 /**
  * Registers the `praxis compile` command.
@@ -15,7 +17,7 @@ const command: CommandRegistrar = (program) => {
     .description("Compile expert definitions into agent files")
     .option("--alias <name>", "compile a specific agent by alias")
     .option("--watch", "watch source directories for changes and recompile")
-    .action(handle(compileProject));
+    .action(orchestrator);
 };
 
 export default command;

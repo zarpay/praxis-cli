@@ -1,7 +1,9 @@
 import type { CommandRegistrar } from "@/types.js";
 
-import { handle } from "@/commands/action.js";
+import { prepareAction } from "@/commands/action.js";
 import initProject from "@/domains/workspace/orchestrators/init-project.js";
+
+const orchestrator = prepareAction(initProject);
 
 /**
  * Registers the `praxis init` command.
@@ -19,7 +21,7 @@ const command: CommandRegistrar = (program) => {
       "also scaffold the spec-layer authoring tree (experts, practices, context)",
       false,
     )
-    .action(handle(initProject));
+    .action(orchestrator);
 };
 
 export default command;

@@ -1,8 +1,13 @@
 import type { CommandRegistrar } from "@/types.js";
 
-import { handle } from "@/commands/action.js";
+import { prepareAction } from "@/commands/action.js";
 import reportVerdicts from "@/domains/eval/orchestrators/report-verdicts.js";
 import runEval from "@/domains/eval/orchestrators/run-eval.js";
+
+// `run` and `ci` are the same orchestrator; `ci` only changes the framing.
+const run = prepareAction(runEval);
+const ci = prepareAction(runEval, { ci: true });
+const verdict = prepareAction(reportVerdicts);
 
 /**
  * Registers the `praxis eval` command group.
@@ -22,19 +27,19 @@ const command: CommandRegistrar = (program) => {
     .option("--verbose", "show full AI reasoning", false)
     .option("--fail-fast", "stop on first error (full run only)", false)
     .option("--no-cache", "disable the verdict cache")
-    .action(handle(runEval));
+    .action(run);
 
   evalCmd
     .command("ci")
     .description("Run a full review in CI mode")
     .option("--strict", "fail on warnings too", false)
-    .action(handle(runEval, { ci: true }));
+    .action(ci);
 
   evalCmd
     .command("verdict <target>")
     .description("Show the cached verdict for a target, without an API call")
     .option("--verbose", "show full AI reasoning", false)
-    .action(handle(reportVerdicts));
+    .action(verdict);
 };
 
 export default command;

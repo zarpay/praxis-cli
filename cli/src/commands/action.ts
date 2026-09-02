@@ -5,7 +5,7 @@ import type { Orchestrator } from "@/domains/workspace/types.js";
 import { CommandContext } from "@/domains/workspace/models/command-context.js";
 
 /**
- * Prepares a commander action handler that runs one orchestrator.
+ * Wraps an orchestrator into the commander action handler that runs it.
  *
  * Both sides of this have a fixed shape — commander parses into named
  * arguments and options, an orchestrator takes `(ctx, options)` — so the
@@ -20,12 +20,14 @@ import { CommandContext } from "@/domains/workspace/models/command-context.js";
  * half is not, so an option renamed here and not in the orchestrator's
  * `Options` is caught by the tests and the demo run, not the compiler.
  *
- * This is also the composition root: the context is built per dispatch,
- * never at import time, and the one error policy lives here. "failed"
- * exits 1 — a legitimate non-zero result like issues found. A genuine
- * error is thrown instead; it logs to stderr and also exits 1.
+ * This is also the composition root. Preparing is a definition, not work,
+ * so a command may do it at module top; the context itself is built inside
+ * the returned handler, per dispatch and never at import time. The one
+ * error policy lives here too: "failed" exits 1 — a legitimate non-zero
+ * result like issues found — and a genuine error is thrown instead,
+ * logging to stderr and also exiting 1.
  */
-export function handle<Options>(
+export function prepareAction<Options>(
   orchestrator: Orchestrator<Options>,
   extra: Partial<Options> = {},
 ): (...args: unknown[]) => Promise<void> {
