@@ -7,7 +7,7 @@
 
 1. **Coverage and conformance render together, always.** A conformance figure without its coverage denominator is not printed. Rising conformance + falling coverage renders as a warning, not a win.
 2. **Every conformance number carries a population qualifier** (01). Unqualified "conformance" does not appear in any output.
-3. **Rates over counts, with denominators shown** — violations *per applicable opportunity* (vocabulary), and the opportunity count is displayed, with small-n suppression (02): cells under the floor render as "insufficient data," never as a rate.
+3. **Rates over counts, with denominators shown** — violations _per applicable opportunity_ (vocabulary), and the opportunity count is displayed, with small-n suppression (02): cells under the floor render as "insufficient data," never as a rate.
 4. **Calibration status appears on every report** (06). Stale calibration marks affected numbers uninterpretable.
 5. **No cross-species leaderboards** (02): where the optional human/agent contrast exists at all, it renders as per-axiom diagnostic evidence, never as an overall ranking — and only after the unknown-authorship rate is displayed.
 6. **Nothing is charted across an epoch boundary** (02). Epochs — maximal intervals of stable spec hashes + reviewer config — are derived from provenance; boundaries render as named, first-class events ("model → sonnet-4.6", "events spec v3"), and each epoch opens with its baseline. Axiom version changes and removals (04) break that axiom's line the same way.
@@ -16,6 +16,7 @@
 ## Report surfaces
 
 **`praxis eval report [--since <ref>] [--branch] [--json]`** — the eval. Leads with post-spec, within-epoch results:
+
 - Coverage of post-spec diffs (how much new work was visible to any spec — and how much was invisible)
 - **Introduction rate per axiom** — the struggle signal (02): flat-while-others-decline is the harness finding
 - Violation flow: introduced vs resolved per applicable opportunity (01), against the reviewer-variance noise floor

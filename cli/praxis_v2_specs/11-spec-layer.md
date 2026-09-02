@@ -14,8 +14,7 @@ Praxis v2 is two layers. This document names them, states the contract between t
 > bridge described at the end of this section is `domains/spec/views/targeting.ts`
 > writing `paths:` and `domains/eval/services/discover-targets.ts` reading it.
 
-
-**The eval layer** — spec, scope, reviewer, cache, ledger, triage, axioms, calibration, metrics, briefs. This is what v2 *is*. Its input contract with the world is exactly three things:
+**The eval layer** — spec, scope, reviewer, cache, ledger, triage, axioms, calibration, metrics, briefs. This is what v2 _is_. Its input contract with the world is exactly three things:
 
 1. **A spec** — any file carrying direction, identified by `specFilePattern`.
 2. **A scope** — the files the spec governs, via `paths:` frontmatter or directory siblinghood.
@@ -25,7 +24,7 @@ Nothing in the eval layer knows or asks how a spec came to exist.
 
 **The spec layer** — everything about producing and maintaining specs. This is where the compiler tools live: experts, practices (v1: roles, responsibilities), constitution, conventions, reference, `praxis compile`, SME profiles, `praxis add`. The content taxonomy is a spec-layer authoring convention — one disciplined way to produce a good spec — not an eval-layer concept.
 
-The simplest path through the spec layer is no tooling at all: the thesis (README) is that specs are the developer's *existing* context files. A team that points `paths:` at its CLAUDE.md is fully participating in the eval. The compiler earns its keep for teams that want more discipline, because bundling an expert's definition + practices + context into an SME profile at compile time is precisely what creates the property the eval rests on — **the reviewer measures adherence to the exact direction the agent was given.** The SME's double duty (`validates:` makes the compiled profile *be* the spec) is the bridge between the layers, and the only place they touch.
+The simplest path through the spec layer is no tooling at all: the thesis (README) is that specs are the developer's _existing_ context files. A team that points `paths:` at its CLAUDE.md is fully participating in the eval. The compiler earns its keep for teams that want more discipline, because bundling an expert's definition + practices + context into an SME profile at compile time is precisely what creates the property the eval rests on — **the reviewer measures adherence to the exact direction the agent was given.** The SME's double duty (`validates:` makes the compiled profile _be_ the spec) is the bridge between the layers, and the only place they touch.
 
 ## The rule
 
@@ -48,4 +47,4 @@ None of these retirements removes capability. Teams using the compiler keep ever
 ## Open questions
 
 1. Does the spec layer stay in the `praxis` binary or become a separable concern (`praxis compile` as the only spec-layer command surface)? Current lean: same binary, separate command namespace — one tool, two layers, per 09's single-surface principle.
-2. Where does spec *quality* tooling belong (e.g., the axiom authoring gate from 03 advising whether direction is reviewable)? It reads like spec-layer tooling but its verdicts guard the eval layer's integrity. Likely: eval layer owns the gate, spec layer calls it.
+2. Where does spec _quality_ tooling belong (e.g., the axiom authoring gate from 03 advising whether direction is reviewable)? It reads like spec-layer tooling but its verdicts guard the eval layer's integrity. Likely: eval layer owns the gate, spec layer calls it.

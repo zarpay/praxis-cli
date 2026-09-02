@@ -7,7 +7,7 @@
 
 **Everything Praxis owns — axioms, runs, cache, calibration, config — lives under `.praxis/`. None of it bleeds into the project repo.**
 
-The repo belongs to the developer. Specs are their existing context files (READMEs, CLAUDE.md, AGENTS.md — vocabulary), which Praxis *reads and never writes*. Compiled outputs (profiles, plugin files) are out of scope here — the developer configures where those go and can point them anywhere. This document is about Praxis's *state*, and its home has a closed top level:
+The repo belongs to the developer. Specs are their existing context files (READMEs, CLAUDE.md, AGENTS.md — vocabulary), which Praxis _reads and never writes_. Compiled outputs (profiles, plugin files) are out of scope here — the developer configures where those go and can point them anywhere. This document is about Praxis's _state_, and its home has a closed top level:
 
 ```
 .praxis/
@@ -37,7 +37,7 @@ Two classes of content, and the distinction is enforced, not stylistic:
 Everything under `.praxis/` is committed, including the machine-owned dirs:
 
 - **cache/** — regenerable, but committing it shares verdicts across the team and CI: one person's validation run is everyone's cache hit. (zarpay/core already does this.) One file per target holds all reviewers' verdicts, keyed by (spec, reviewer) hashes (05); dead reviewers' keys are prunable.
-- **ledger/** — the evidence itself; committing it *is* the durability story. One file per run keeps merges conflict-free (05).
+- **ledger/** — the evidence itself; committing it _is_ the durability story. One file per run keeps merges conflict-free (05).
 - No `.gitignore` inside `.praxis/`. If something shouldn't be committed, it shouldn't be written there.
 
 ## Open questions

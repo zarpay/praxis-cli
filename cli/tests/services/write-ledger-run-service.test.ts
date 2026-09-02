@@ -88,9 +88,50 @@ describe("writeLedgerRunService", () => {
       reviewer_model: "some/model",
       reviewer_hash: "abcd1234",
       calibration_status_at_run: "uncalibrated",
-      baseline: false,
+      baseline: true,
     });
     expect(run.timestamp).toBeTruthy();
+  });
+
+  describe("the baseline flag (02)", () => {
+    it("marks the first corpus run under a hash as the epoch-opening baseline", () => {
+      const first = writeAndRead([entry()], "corpus");
+      const second = writeAndRead([entry()], "corpus");
+
+      expect(first.run.baseline).toBe(true);
+      expect(second.run.baseline).toBe(false);
+    });
+
+    it("never claims baseline for a files-scope fast loop", () => {
+      const filesRun = writeAndRead([entry()], "files");
+
+      expect(filesRun.run.baseline).toBe(false);
+    });
+
+    it("re-baselines when a new hash opens its epoch after history", () => {
+      writeAndRead([entry()], "corpus");
+
+      const { runId, path } = writeLedgerRunService({
+        root,
+        reviewer: { ...REVIEWER, hash: "ffff9999" },
+        trigger: "manual",
+        scope: "corpus",
+        entries: [entry()],
+      });
+      const firstLine = readFileSync(path, "utf8").split("\n", 1)[0];
+      const newEpochRun = JSON.parse(firstLine) as LedgerRunRecord;
+
+      expect(runId).toBeTruthy();
+      expect(newEpochRun.baseline).toBe(true);
+    });
+
+    it("lets the first full run claim the baseline a files run before it could not", () => {
+      const filesRun = writeAndRead([entry()], "files");
+      const corpusRun = writeAndRead([entry()], "corpus");
+
+      expect(filesRun.run.baseline).toBe(false);
+      expect(corpusRun.run.baseline).toBe(true);
+    });
   });
 
   it("records null git facts outside a repository, never guessing", () => {

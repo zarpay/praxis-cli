@@ -5,7 +5,7 @@
 
 ## What calibration is for
 
-The reviewer is a measuring instrument, and instruments have error. Without a measured error rate, no conformance number is interpretable: a drop in violations cannot be distinguished from a reviewer that got lenient (model swap, provider-side update, spec edit, sampling variance). Calibration is how the system knows — and *shows* — that its instrument still reads true.
+The reviewer is a measuring instrument, and instruments have error. Without a measured error rate, no conformance number is interpretable: a drop in violations cannot be distinguished from a reviewer that got lenient (model swap, provider-side update, spec edit, sampling variance). Calibration is how the system knows — and _shows_ — that its instrument still reads true.
 
 Scope note: calibration covers judgment axioms — which, under the judgment boundary (03), is all of them. The boundary is what keeps calibration's surface small: mechanical criteria never enter Praxis, so there is no reviewer error about them to measure.
 
@@ -28,7 +28,7 @@ expected.json:
 - Disputed verdicts from real runs, once a human adjudicates ("confirmed false positive" outcomes from resolution workflows like `/praxis-resolve` are exactly this).
 - Deliberately constructed minimal violations per axiom — the unit tests of the spec.
 
-Cases are frozen against a spec *content hash*. When the spec changes materially, affected cases are re-adjudicated or retired — a spec edit invalidating half the calibration set is correct behavior, and visible.
+Cases are frozen against a spec _content hash_. When the spec changes materially, affected cases are re-adjudicated or retired — a spec edit invalidating half the calibration set is correct behavior, and visible.
 
 ## Commands and outputs
 
@@ -53,16 +53,16 @@ A team that wants two models evaluating the same work configures both; every con
 
 Where code may be sent is the org's decision, made here: a reviewer is an endpoint plus a model, so an org with private inference points its reviewers at it (per-reviewer `baseUrl` for OpenAI-compatible endpoints; per-reviewer `provider` for anything else — a custom provider module implements the normalized verdict+usage contract). Praxis does not redact — a reviewer sees exactly what the axiom's scope declares, nothing else.
 
-**Nothing about the single-reviewer design changes — n reviewers are n instruments running the same protocol.** Each reviewer has its own reviewer hash, and therefore its own cache namespace (05), its own epochs (02), and its own calibration records. This is why the earlier decisions were shaped the way they were: provenance-mandatory verdicts and hash-namespaced caches were designed for reviewers changing *over time*; simultaneous reviewers are the same machinery with several namespaces live at once. Adding or removing a reviewer opens or ends that reviewer's series and touches nobody else's.
+**Nothing about the single-reviewer design changes — n reviewers are n instruments running the same protocol.** Each reviewer has its own reviewer hash, and therefore its own cache namespace (05), its own epochs (02), and its own calibration records. This is why the earlier decisions were shaped the way they were: provenance-mandatory verdicts and hash-namespaced caches were designed for reviewers changing _over time_; simultaneous reviewers are the same machinery with several namespaces live at once. Adding or removing a reviewer opens or ends that reviewer's series and touches nobody else's.
 
 Critiques from all reviewers triage into the **same axiom set** — axioms are reviewer-independent (04), and a shared taxonomy is what makes reviewers comparable at all. The reduction is the point: **adding reviewers multiplies evidence, never feedback.** A violation is an axiom-anchored finding on a file. When two reviewers flag the same axiom on the same file, that is one finding with two witnesses — corroboration recorded — not two findings. Every surface a developer or agent consumes (reports, briefs, the fast loop) shows the deduplicated finding set; the per-reviewer critique records live on in the ledger, where agreement is measured. What scales with the reviewer count is the number of independent witnesses standing behind each finding, and the cost — not the length of the list anyone has to work through.
 
 Two reviewers on the same work buy a signal frozen cases cannot provide: **inter-reviewer agreement, measured continuously on live data at no extra cost** (both verdicts are already paid for). Its two faces:
 
 - **Corroboration** — both reviewers flag the same axiom on the same file. Evidence weight in triage (04): a corroborated critique is likelier traceable at ratification.
-- **Disagreement** — one flags, the other passes. A reviewer-error signal, not a code signal, and it *locates*: axioms with persistently high disagreement rates are vaguely written or genuinely hard — the same axioms the drift protocol's variance measurement would flag, found faster.
+- **Disagreement** — one flags, the other passes. A reviewer-error signal, not a code signal, and it _locates_: axioms with persistently high disagreement rates are vaguely written or genuinely hard — the same axioms the drift protocol's variance measurement would flag, found faster.
 
-The limit is stated plainly: **agreement is a tripwire, not ground truth.** Two reviewers sharing a blind spot agree wrongly; per-reviewer calibration against frozen, human-adjudicated cases remains the only ground truth, and interpretability gating applies per reviewer — one reviewer's stale calibration marks *its* numbers uninterpretable, not its neighbor's.
+The limit is stated plainly: **agreement is a tripwire, not ground truth.** Two reviewers sharing a blind spot agree wrongly; per-reviewer calibration against frozen, human-adjudicated cases remains the only ground truth, and interpretability gating applies per reviewer — one reviewer's stale calibration marks _its_ numbers uninterpretable, not its neighbor's.
 
 ## Drift protocol
 
@@ -72,7 +72,7 @@ On any reviewer-affecting change — model swap, spec edit, prompt/tooling chang
 2. Compare per-axiom scores to the previous record (both are in the ledger).
 3. Deltas above a threshold flag the axioms whose historical rates are no longer comparable across the change; reports annotate trend lines at that boundary rather than drawing a continuous line through a discontinuity.
 
-Reviewer nondeterminism itself is measurable here: run the same calibration N times, report per-axiom variance. High-variance axioms are candidates for spec clarification or removal (03) — variance is a property of the *question*, not just the model.
+Reviewer nondeterminism itself is measurable here: run the same calibration N times, report per-axiom variance. High-variance axioms are candidates for spec clarification or removal (03) — variance is a property of the _question_, not just the model.
 
 ## Open questions
 

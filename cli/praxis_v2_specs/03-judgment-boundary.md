@@ -20,19 +20,19 @@ The authoring aphorism:
 
 ## The authoring gate
 
-The boundary is enforced at *authoring time*, not runtime — via pre-built prompts that assess every candidate axiom's appropriateness for Praxis.
+The boundary is enforced at _authoring time_, not runtime — via pre-built prompts that assess every candidate axiom's appropriateness for Praxis.
 
 `praxis axioms triage` (04) runs each proposed axiom through the assessment at ratification; `praxis axioms audit` runs it over already-active axioms (tooling capability grows — an axiom appropriate last year may be delegable now). The assessment returns one of:
 
 - **`appropriate`** — deciding requires reading comprehension: quality, intent, completeness-relative-to-meaning. Stays in Praxis.
 - **`not_appropriate`** — deterministically decidable. This belongs in static tooling, not Praxis. The axiom is not admitted. What tool picks it up is not Praxis's concern.
-- **`split`** — the candidate mixes both, which is the *common* case in real specs: "declares a `schema payload:` block with `required:`" (mechanical) and "the payload is a complete snapshot" (judgment) live in the same section of the zarpay events spec. Only the judgment half becomes the axiom.
+- **`split`** — the candidate mixes both, which is the _common_ case in real specs: "declares a `schema payload:` block with `required:`" (mechanical) and "the payload is a complete snapshot" (judgment) live in the same section of the zarpay events spec. Only the judgment half becomes the axiom.
 
 Litmus tests the prompt applies:
 
 - Could a regex or AST query decide this with zero false positives on adversarial input? → not appropriate.
 - Would two senior engineers ever disagree on a verdict? Never → probably mechanical → not appropriate.
-- Does the criterion turn on *meaning* — "descriptive," "complete," "justified," "belongs" — rather than *presence*? → appropriate.
+- Does the criterion turn on _meaning_ — "descriptive," "complete," "justified," "belongs" — rather than _presence_? → appropriate.
 
 The gate is advisory in the same sense everything else is: LLM proposes, human ratifies.
 
@@ -45,16 +45,16 @@ paths:
   - "backend/app/events/**/*.rb"
 excludes:
   - "backend/app/events/application_event.rb"
-exemplars:                       # spec-blessed positive examples
+exemplars: # spec-blessed positive examples
   - "backend/app/events/referral_verified_event.rb"
-cohort: by_directory             # by_file (default) | by_directory — see below
-context:                         # optional: inlined to assist judgment; never reviewed itself
+cohort: by_directory # by_file (default) | by_directory — see below
+context: # optional: inlined to assist judgment; never reviewed itself
   - "backend/app/services/**/*.rb"
 ```
 
-`cohort` has exactly two values. **`by_file`** (the default, so the key is usually omitted): `paths:` collects files, and each file is its own evaluation unit. **`by_directory`**: `paths:` matches *directories* — e.g. `paths: [src/services/*]` matches each first-layer directory under `src/services/` — and for each matched directory, every file it contains becomes one combined judgment input: one unit, one verdict, one cache entry keyed on the member set. `context:` files are the other kind entirely: inlined into the prompt to give the reviewer what the standard is *about*, never evaluated themselves and never producing verdicts.
+`cohort` has exactly two values. **`by_file`** (the default, so the key is usually omitted): `paths:` collects files, and each file is its own evaluation unit. **`by_directory`**: `paths:` matches _directories_ — e.g. `paths: [src/services/*]` matches each first-layer directory under `src/services/` — and for each matched directory, every file it contains becomes one combined judgment input: one unit, one verdict, one cache entry keyed on the member set. `context:` files are the other kind entirely: inlined into the prompt to give the reviewer what the standard is _about_, never evaluated themselves and never producing verdicts.
 
-**`cohort: by_directory` and `context:` are pre-axiom scope defaults for the open channel**, and they exist to close a bootstrap hole: axioms are born from critiques (04), critiques come from judgments, and per-file judgment can never *see* a relational violation — so grounded triage could never discover a cohort or file+context axiom. A spec that declares `cohort:` has its open-channel judgment run over the set; one that declares `context:` gets those files inlined. The resulting critiques make the relational standards observable, triage grounds them, and the ratified axiom then **owns its scope and overrides the spec's default**. No `scope:` key exists at the spec layer — the configuration keys are self-declaring (`cohort:` present means cohort-shaped; `context:` present means inlined context). The axiom keeps its explicit `scope:` because there it discriminates variants that carry no payload (`hunk`, `file`, `changeset`) and drives cache keying and verdict diffing.
+**`cohort: by_directory` and `context:` are pre-axiom scope defaults for the open channel**, and they exist to close a bootstrap hole: axioms are born from critiques (04), critiques come from judgments, and per-file judgment can never _see_ a relational violation — so grounded triage could never discover a cohort or file+context axiom. A spec that declares `cohort:` has its open-channel judgment run over the set; one that declares `context:` gets those files inlined. The resulting critiques make the relational standards observable, triage grounds them, and the ratified axiom then **owns its scope and overrides the spec's default**. No `scope:` key exists at the spec layer — the configuration keys are self-declaring (`cohort:` present means cohort-shaped; `context:` present means inlined context). The axiom keeps its explicit `scope:` because there it discriminates variants that carry no payload (`hunk`, `file`, `changeset`) and drives cache keying and verdict diffing.
 
 An exclusion stated in prose is an instruction the reviewer must notice and obey (observed failure: the events SME excludes `ApplicationEvent` in bold prose; the reviewer failed it with six errors while acknowledging the exclusion in its own critique text). An exclusion in frontmatter is a file the reviewer never receives. Prevention beats calibration wherever prevention is available. `exemplars` serve double duty: excluded from adverse judgment, and available as few-shot positives and calibration seed cases (06).
 
@@ -66,7 +66,7 @@ An exclusion stated in prose is an instruction the reviewer must notice and obey
 
 Defined in 01, owned here: `hunk` (decidable from the change alone; opt-in cost optimization), `file` (default), `file+context` (spec-declared extra files inlined into the judgment prompt — and into the content hash, or provenance breaks), `cohort` (relational properties of a declared set — completeness, orphans, cross-file consistency; reviewed over the whole set, keyed on a cohort hash of member list + member hashes; boundaries declared via `cohort: by_directory | glob`, never inferred), `changeset` (reviewed from the whole diff across touched files; where propagation-failure axioms live, which is where agent failure modes concentrate).
 
-**The governing rule: the reviewer's context contains exactly what the axiom is about.** Less is myopia (the `file+context` cases); more is contamination — a reviewer shown 30 files while evaluating one normalizes file B's violation against file A's pattern, or invents consistency requirements the spec never states. The same effect that is a bug for file axioms is the *feature* for cohort axioms: seeing the set together is the only way to review a relational property.
+**The governing rule: the reviewer's context contains exactly what the axiom is about.** Less is myopia (the `file+context` cases); more is contamination — a reviewer shown 30 files while evaluating one normalizes file B's violation against file A's pattern, or invents consistency requirements the spec never states. The same effect that is a bug for file axioms is the _feature_ for cohort axioms: seeing the set together is the only way to review a relational property.
 
 **Batching is prohibited for file-scoped axioms.** The tempting middle — N files, one call, structured per-file verdicts — fails on provenance, not cost: batch-mates are part of the judgment input, so a per-file cache entry extracted from a batched call is not reproducible per-file. Recording the batch-mates fixes provenance but makes cache hits require identical batches, which makes the cache useless. Prompt caching of the shared spec prefix captures the savings legitimately; per-file calls also keep the reviewer's full attention on one unit (a 30-file context invites lost-in-the-middle degradation).
 

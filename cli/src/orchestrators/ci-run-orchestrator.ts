@@ -2,7 +2,9 @@ import type { CiRunOptions } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
+import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
 import reviewProjectService from "@/services/review-project-service.js";
+import epochBoundaryView from "@/views/epoch-boundary-view.js";
 import evalHeadlineView from "@/views/eval-headline-view.js";
 import runProgressView from "@/views/run-progress-view.js";
 import runReportView from "@/views/run-report-view.js";
@@ -19,6 +21,12 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
 
   const evalView = evalHeadlineView({ ci: true });
   ctx.render(evalView);
+
+  // Announce any epoch boundary before reviewing (02): warn, never block.
+  const boundaries = detectEpochBoundariesService({ root, reviewers: config.reviewers });
+  const boundaryView = epochBoundaryView(boundaries);
+
+  ctx.render(boundaryView);
 
   // The progress event is emitted when a target is reviewed, and the
   // verdict is available. It is emitted for every target, so the view

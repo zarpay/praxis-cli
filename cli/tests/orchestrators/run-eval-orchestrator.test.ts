@@ -1,8 +1,6 @@
-import { existsSync, readdirSync } from "node:fs";
-import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
-import { ciRunOrchestrator } from "@/orchestrators/ci-run-orchestrator.js";
+import { runEvalOrchestrator } from "@/orchestrators/run-eval-orchestrator.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { seedLedgerRun } from "@tests/helpers/ledger-runs.js";
@@ -46,48 +44,38 @@ function project(): string {
   return root;
 }
 
-describe("ciRunOrchestrator", () => {
-  it("verifies without writing — no ledger records, ever (12)", async () => {
-    useOpenRouterResponse(server, validationToolCallResponse("validation_pass", { reason: "ok" }));
-    const root = project();
-
-    const outcome = await ciRunOrchestrator(testContext(root), {});
-
-    expect(outcome).toBe("ok");
-    expect(existsSync(join(root, ".praxis", "ledger"))).toBe(false);
-  });
-
-  it("fails on errors regardless of --strict", async () => {
-    useOpenRouterResponse(
-      server,
-      validationToolCallResponse("validation_fail", { reason: "no", issues: ["Bad"] }),
-    );
-
-    expect(await ciRunOrchestrator(testContext(project()), {})).toBe("failed");
-  });
-
-  it("announces an epoch boundary without blocking or writing (02, 12)", async () => {
+describe("runEvalOrchestrator", () => {
+  it("announces an epoch boundary and still completes the run — warn, never block (02)", async () => {
     useOpenRouterResponse(server, validationToolCallResponse("validation_pass", { reason: "ok" }));
     const root = project();
     seedLedgerRun(root, { name: "flash", hash: "00000000", model: "m" });
     const { logger, output } = createCaptureLogger();
 
-    const outcome = await ciRunOrchestrator(testContext(root, logger), {});
-    const runFiles = readdirSync(join(root, ".praxis", "ledger", "runs"));
+    const outcome = await runEvalOrchestrator(testContext(root, logger), {});
 
     expect(outcome).toBe("ok");
     expect(output()).toContain("Epoch boundary");
-    // Only the seeded file: CI read the ledger but wrote nothing.
-    expect(runFiles).toHaveLength(1);
+    expect(output()).toContain('reviewer "flash"');
   });
 
-  it("counts warnings as failure only under --strict", async () => {
+  it("stays silent on bootstrap — a first run is not a boundary", async () => {
+    useOpenRouterResponse(server, validationToolCallResponse("validation_pass", { reason: "ok" }));
+    const { logger, output } = createCaptureLogger();
+
+    const outcome = await runEvalOrchestrator(testContext(project(), logger), {});
+
+    expect(outcome).toBe("ok");
+    expect(output()).not.toContain("Epoch boundary");
+  });
+
+  it("fails the run on an error verdict", async () => {
     useOpenRouterResponse(
       server,
-      validationToolCallResponse("validation_warn", { reason: "meh", issues: ["Thin"] }),
+      validationToolCallResponse("validation_fail", { reason: "no", issues: ["Bad"] }),
     );
 
-    expect(await ciRunOrchestrator(testContext(project()), {})).toBe("ok");
-    expect(await ciRunOrchestrator(testContext(project()), { strict: true })).toBe("failed");
+    const outcome = await runEvalOrchestrator(testContext(project()), {});
+
+    expect(outcome).toBe("failed");
   });
 });

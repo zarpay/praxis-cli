@@ -5,7 +5,7 @@
 
 ## The loop, and where Praxis stops
 
-The point of the whole system: evidence about *which harness elements to change* — skills, rules, CLAUDE.md content, tool docs — so future generations improve. Decision taken during planning:
+The point of the whole system: evidence about _which harness elements to change_ — skills, rules, CLAUDE.md content, tool docs — so future generations improve. Decision taken during planning:
 
 **Praxis emits a brief. A coding agent drafts the change. A human ratifies the PR.**
 
@@ -20,7 +20,7 @@ Distinct from the brief (the slow loop, below): when validation runs during live
 - **Matched (checklist channel):** the critique was born attached to an established axiom → return **the axiom** — stable ID, ratified statement, violating and compliant examples, spec grounding. The agent gets the same phrasing for the same violation every time, with teaching material attached, instead of reviewer prose that varies run to run.
 - **Unmatched (open channel):** no established axiom covers it → return **the raw critique**. It is still actionable prose, and it flows onward to triage (04) like any open code — today's raw critique is tomorrow's axiom.
 
-No new matching machinery is required: the channel a critique arrived through *is* the match decision. The fast loop also writes to the ledger like any run — live corrections are still evidence.
+No new matching machinery is required: the channel a critique arrived through _is_ the match decision. The fast loop also writes to the ledger like any run — live corrections are still evidence.
 
 **Multiple reviewers (06) do not multiply the feedback list.** Matched critiques collapse to their axiom regardless of how many reviewers flagged it — one finding, corroboration noted — because the axiom ID is the dedup key and it already exists. Unmatched raw critiques have no shared identity to dedupe on yet, so each reviewer's flows through the open channel as-is; overlap among them is discovered at triage, where they land under one proposed axiom. The coding agent works a finding list, not a reviewer-by-reviewer transcript.
 
@@ -44,18 +44,19 @@ residual_summary                                    # reviewer drifting off-spec
 removal_candidates                                  # axioms that may no longer need Praxis (03): pattern-shaped critiques
 ```
 
-The diagnosis is *suggested*, not verdicted — without a reliable control arm (02), spec-vs-harness discrimination is triangulated and the final call is human:
+The diagnosis is _suggested_, not verdicted — without a reliable control arm (02), spec-vs-harness discrimination is triangulated and the final call is human:
+
 - Introduction rate high and flat across many diffs within the epoch, while other axioms decline, and resolution flow exists (violations get fixed when pointed out) → `harness_gap` — the standard is followable but the harness doesn't carry it into generation. The brief's main product.
 - High debt density + high introduction rate + paydown attempts failing re-validation, or high reviewer variance on the axiom (06 — an unanswerable question is a spec defect) → `spec_problem` — route to spec owner, not harness.
 - Critiques unassignable / self-refuting → `reviewer_noise` — route to calibration (06).
 - Below small-n floor → `insufficient_data` — say so, recommend nothing.
-- Where attribution conventions exist, the human/agent contrast enters as *additional evidence* for the first two — never as the mechanism.
+- Where attribution conventions exist, the human/agent contrast enters as _additional evidence_ for the first two — never as the mechanism.
 
 **Expectation to state plainly: the loop will point at the spec and the reviewer as often as at the agent** — in the observed zarpay data, the correct first brief would be mostly `spec_problem`/`reviewer_noise`. That is the system working, not failing: a feedback loop that can only ever conclude "tune the agent" is the vibes-based reviewer this design exists to replace.
 
 ## Closing the loop: did the change work?
 
-A ratified harness PR is an *intervention*, and interventions are what the drift machinery already measures:
+A ratified harness PR is an _intervention_, and interventions are what the drift machinery already measures:
 
 - The brief-driven PR records which axioms it targets (trailer or PR metadata).
 - Subsequent eval reports annotate those axioms' trend lines at the intervention boundary (07, rule 6 — same mechanism as reviewer changes).

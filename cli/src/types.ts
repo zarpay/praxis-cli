@@ -1333,6 +1333,32 @@ export interface WriteLedgerRunResult {
   path: string;
 }
 
+/** Whose ledger to list runs from. */
+export interface ListLedgerRunsInput {
+  root: string;
+}
+
+/** The reviewers a run is about to use, checked against the ledger. */
+export interface DetectEpochBoundariesInput {
+  root: string;
+  reviewers: ReviewerConfig[];
+}
+
+/**
+ * One reviewer whose behavioral hash the ledger has never seen — an
+ * epoch boundary (02). Named from the most recent prior run so the
+ * warning can say what changed.
+ */
+export interface EpochBoundary {
+  reviewerName: string;
+  currentHash: string;
+  currentModel: string;
+  previousHash: string;
+  previousModel: string;
+  /** Timestamp of the reviewer's most recent prior run. */
+  lastRunTimestamp: string;
+}
+
 // ---------------------------------------------------------------------------
 // View data (views/)
 // ---------------------------------------------------------------------------

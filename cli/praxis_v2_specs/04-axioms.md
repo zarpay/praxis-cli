@@ -15,17 +15,17 @@ Markdown + frontmatter in `.praxis/axioms/`, versioned in git — consistent wit
 
 ```yaml
 ---
-id: AX-0007            # stable; never reused, never renumbered
+id: AX-0007 # stable; never reused, never renumbered
 version: 2
 status: proposed | active | deprecated
-mode: judgment | agentic          # see 03; agentic is explicit opt-in
-scope: hunk | file | file+context | cohort | changeset   # see 01; declarations in 03
-context: [ ... ]                  # file+context only; joins the content hash (05)
-cohort: by_file | by_directory    # cohort only; membership boundary, never inferred
+mode: judgment | agentic # see 03; agentic is explicit opt-in
+scope: hunk | file | file+context | cohort | changeset # see 01; declarations in 03
+context: [...] # file+context only; joins the content hash (05)
+cohort: by_file | by_directory # cohort only; membership boundary, never inferred
 severity: error | warning
-grounded_in: backend/app/events/README.md#payload-schema   # spec traceability, established at ratification
+grounded_in: backend/app/events/README.md#payload-schema # spec traceability, established at ratification
 introduced: 2026-08-29
-supersedes: AX-0003               # optional
+supersedes: AX-0003 # optional
 ---
 Statement of what the axiom asserts.
 A violating example. A compliant example.
@@ -37,7 +37,7 @@ A violating example. A compliant example.
 - **Active axioms are immutable in meaning.** Clarifying wording without changing extension: version bump. Changing what counts as a violation: new ID with `supersedes`, old one deprecated. When in doubt, supersede — a version bump that quietly moves the boundary corrupts every historical rate.
 - **Every candidate passes the authoring gate** (03): `appropriate | not_appropriate | split`. An axiom that no longer earns its place is simply removed — deprecated, history frozen; where the standard went is not Praxis's concern.
 - **Deprecated axioms keep their ledger history.** Deprecation stops future evaluation; it never deletes evidence.
-- **Population clocks are per-axiom** (01, open question 1, resolved here): a unit is pre- or post-spec *relative to each axiom's `introduced` date*. Adding an axiom to an old spec does not retroactively make old code "agent failure."
+- **Population clocks are per-axiom** (01, open question 1, resolved here): a unit is pre- or post-spec _relative to each axiom's `introduced` date_. Adding an axiom to an old spec does not retroactively make old code "agent failure."
 
 ## Extraction: axioms are grounded in critiques, validated against the spec
 
@@ -46,13 +46,14 @@ Axioms are not derived from the spec's text. The workflow is: someone writes the
 1. **`praxis axioms triage` — a human review session, LLM-assisted.** Triage is deliberately interactive: it is the primary touchpoint where the team actually reads what the reviewers are saying, and one of the several points from which they go back and adjust harness, specs, and context. The division of labor is fixed: the **LLM organizes** — groups unassigned critiques, suggests which established axiom each falls under, drafts proposals that encompass clusters — and the **human decides**: fold a critique into an axiom, dismiss it, or accept a draft into `.praxis/axioms/proposed/`. Every assignment written to the ledger (`axiom_id` + version) is a human decision, LLM-suggested; `assigned_by` records both. Nothing activates without ratification. Future critiques repeat the same motion: fall under established axioms, or propose new ones.
 
    The structural reason triage is human: **assignment error corrupts per-axiom rates exactly as reviewer error does.** The reviewer's error is bounded by calibration (06); the assignment step is bounded by putting a human on it — which keeps the ledger's axiom column trustworthy without building a second calibration apparatus for a second LLM instrument. Like every interactive verb, triage scripts (`--yes`, 09) — but a team that scripts past the review is adopting the framework while keeping the habits it exists to replace, and their unreviewed assignments are exactly as trustworthy as that sounds.
-2. **Ratification is where the spec enters.** A proposed axiom must be *traceable to the spec* — the ratifier, aided by the triage output, answers: which spec criterion grounds this? Three outcomes:
+
+2. **Ratification is where the spec enters.** A proposed axiom must be _traceable to the spec_ — the ratifier, aided by the triage output, answers: which spec criterion grounds this? Three outcomes:
    - **Traceable** → ratify; the axiom records its grounding (`grounded_in`).
    - **Not traceable, but the standard is real** → the spec is incomplete; fix the spec, then ratify.
    - **Not traceable and not intended** → the reviewer invented it (observed: seven "recommended async queue" critiques for a recommendation the spec never makes). Reject; route to calibration (06) as reviewer noise.
 3. **The authoring gate applies at ratification** (03): a proposed axiom that is mechanical (`not_appropriate`) is not admitted — and is itself a signal that the reviewer is being asked mechanical questions.
 
-Why grounded rather than deductive (an earlier draft seeded axioms from spec section headings): the taxonomy should describe **observed violation categories, not theoretical document structure**. Spec sections nobody violates produce no axioms and no noise, and spec authors write prose for humans and the reviewer without their headings becoming a taxonomy. The zarpay observation — 223 critiques collapsing to ~8 clusters that mirror the spec's headings — is reinterpreted: a well-written spec causes grounded triage to *rediscover* its structure. Convergence is a health signal; divergence marks where the spec is vague or the reviewer drifts.
+Why grounded rather than deductive (an earlier draft seeded axioms from spec section headings): the taxonomy should describe **observed violation categories, not theoretical document structure**. Spec sections nobody violates produce no axioms and no noise, and spec authors write prose for humans and the reviewer without their headings becoming a taxonomy. The zarpay observation — 223 critiques collapsing to ~8 clusters that mirror the spec's headings — is reinterpreted: a well-written spec causes grounded triage to _rediscover_ its structure. Convergence is a health signal; divergence marks where the spec is vague or the reviewer drifts.
 
 ### The two-channel reviewer
 
@@ -63,7 +64,7 @@ The judgment prompt carries two channels:
 
 Bootstrap is the degenerate case: no axioms yet, everything arrives through the open channel — and the open channel's judgment shape follows the spec's pre-axiom scope defaults (`cohort:` / `context:` frontmatter, 03), which is what makes relational violations observable before any axiom exists to declare a scope.
 
-**Axioms are reviewer-independent.** Their authority comes from ratification against the spec, not from the reviewer that surfaced them — so a reviewer change (02) leaves the taxonomy intact. An epoch break resets the *metrics*, never the *axiom set*: established axioms remain the checklist under the new reviewer, and whatever the new reviewer notices that the old one didn't arrives through the open channel as proposals, like any other run. Discovery is continuous.
+**Axioms are reviewer-independent.** Their authority comes from ratification against the spec, not from the reviewer that surfaced them — so a reviewer change (02) leaves the taxonomy intact. An epoch break resets the _metrics_, never the _axiom set_: established axioms remain the checklist under the new reviewer, and whatever the new reviewer notices that the old one didn't arrives through the open channel as proposals, like any other run. Discovery is continuous.
 
 ### Residual
 

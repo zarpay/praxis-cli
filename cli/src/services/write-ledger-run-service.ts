@@ -13,6 +13,7 @@ import { randomBytes } from "node:crypto";
 
 import { writeText } from "@/helpers/files-helper.js";
 import { joinPath, relativePath } from "@/helpers/paths-helper.js";
+import listLedgerRunsService from "@/services/list-ledger-runs-service.js";
 
 /**
  * Persists one reviewer's completed run to the ledger (05).
@@ -91,7 +92,7 @@ export default function writeLedgerRunService({
     ...verdictCounts(entries),
     critique_count: critiques.length,
     calibration_status_at_run: "uncalibrated",
-    baseline: false,
+    baseline: isBaseline(root, scope, reviewer.hash),
   };
 
   const records: LedgerRecord[] = [run, ...critiques];
@@ -100,6 +101,21 @@ export default function writeLedgerRunService({
   writeText(path, records.map((record) => JSON.stringify(record)).join("\n") + "\n");
 
   return { runId, path };
+}
+
+/**
+ * Whether this run opens its reviewer's epoch (02): the first full run
+ * under a behavioral hash no prior corpus run carries. Set membership,
+ * not sequence position, so interleaved contributor runs and branch
+ * merges cannot flip it. A files-scope fast loop never claims baseline —
+ * an epoch without an opening full run has no denominator.
+ */
+function isBaseline(root: string, scope: string, reviewerHash: string): boolean {
+  if (scope !== "corpus") return false;
+
+  return !listLedgerRunsService({ root }).some(
+    (run) => run.reviewer_hash === reviewerHash && run.scope === "corpus",
+  );
 }
 
 /** Sortable, filename-safe, collision-safe: the UTC instant plus 32 random bits. */

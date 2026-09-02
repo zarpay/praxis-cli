@@ -19,7 +19,7 @@ One surface, both audiences. Where a harness package exists at all (the Claude C
 
 Agents discover CLIs the same way careful humans do: run `--help`, read it, try a command, read the output. The design consequences:
 
-**Help is the API documentation.** Every command's `--help` must be self-sufficient: what it does, *when to use it*, and concrete examples with the expected output shape. The top-level `praxis --help` names the workflows, not just the commands — an agent reading it should be able to infer the loop:
+**Help is the API documentation.** Every command's `--help` must be self-sufficient: what it does, _when to use it_, and concrete examples with the expected output shape. The top-level `praxis --help` names the workflows, not just the commands — an agent reading it should be able to infer the loop:
 
 ```
 Typical flows:
@@ -35,13 +35,13 @@ Typical flows:
 
 **stdout is data, stderr is commentary.** v1's convention (the Logger writes stderr, stdout stays clean for piping) is preserved and load-bearing: an agent capturing stdout gets parseable output, never progress noise.
 
-**Errors instruct.** v1's config error already prints the exact JSON block to add. That is the standard everywhere: an error message states what is wrong *and the command or edit that fixes it*. An instructive error costs one string; an opaque one costs an agent a wasted exploration loop.
+**Errors instruct.** v1's config error already prints the exact JSON block to add. That is the standard everywhere: an error message states what is wrong _and the command or edit that fixes it_. An instructive error costs one string; an opaque one costs an agent a wasted exploration loop.
 
 **No interactive prompts on agent-reachable paths.** Anything that would prompt must accept its answer as a flag and fail informatively without one (`config edit` opening `$EDITOR` is human-only and says so).
 
 ## The fast loop runs through the CLI
 
-The fast loop (08) needs no delivery mechanism beyond this: the coding agent (or a harness hook) runs `praxis eval run <target> --json` after editing; the output *is* the feedback — matched violations carry their axiom (ID, statement, examples, grounding), unmatched ones carry the raw critique. Whether the harness triggers that run via a hook, a rule, or the agent's own habit is the harness's business, which is exactly the point.
+The fast loop (08) needs no delivery mechanism beyond this: the coding agent (or a harness hook) runs `praxis eval run <target> --json` after editing; the output _is_ the feedback — matched violations carry their axiom (ID, statement, examples, grounding), unmatched ones carry the raw critique. Whether the harness triggers that run via a hook, a rule, or the agent's own habit is the harness's business, which is exactly the point.
 
 ## Display and interaction
 
@@ -55,7 +55,7 @@ One CLI, two reading styles. The split is by **command default plus `--json`**, 
 - **Inline progress for long runs** (`[n/total]` with per-file verdicts — v1 1.3.5) so a validation run reads as a live stream, not a silence followed by a wall.
 - **Epoch boundaries are visible furniture**: reports print the named boundary line ("── epoch: model → sonnet-4.6, 2026-08-12 ──") wherever a trend crosses one.
 - **Drill-down, not dumps.** Broad surfaces stay terse and name the next command: `status` → `validate report <path>` → `axioms show <id>`. Consistent noun-verb grammar means the next step is guessable.
-- **Bare `praxis` is the orientation screen**: counts and staleness at a glance — last run, epoch status, pending triage, calibration freshness, debt/paydown one-liner — each with the command that acts on it. The entry point for a human returning after a week *and* an agent's cheapest situational poll.
+- **Bare `praxis` is the orientation screen**: counts and staleness at a glance — last run, epoch status, pending triage, calibration freshness, debt/paydown one-liner — each with the command that acts on it. The entry point for a human returning after a week _and_ an agent's cheapest situational poll.
 
 ### Interaction
 

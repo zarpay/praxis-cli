@@ -152,6 +152,14 @@ Two things never write the ledger: `eval ci` (CI verifies without writing — th
 
 A target that cannot be reviewed at all — unreadable, or a cohort too large for the model's context window — is reported **UNVERIFIED**: counted separately, never as a violation, and the run fails so it cannot pass unseen.
 
+## Epoch boundaries
+
+A reviewer's behavioral identity — its config plus the reviewer-facing prompt text this praxis version ships — is hashed onto every run record. When a run starts with a hash the ledger has never seen for that reviewer, praxis announces an **epoch boundary**: measurements on either side of it are not comparable, and no trend line crosses it. The warning names what changed (a model swap says so; anything else is config or prompt surface) and never blocks the run.
+
+The right move after a boundary is a full `praxis eval run`: the first full run under a new hash is stamped `baseline: true` and opens the new epoch's measurement floor.
+
+Team note: the hash is content-addressed, so teammates on different praxis versions only split hashes when a release actually changed the reviewer-facing prompts. If you see a boundary with no config diff, check CLI versions across the team — and once a hash is in the ledger, teammates running the older version won't re-trigger the warning.
+
 ## How validation works
 
 1. The spec file (default: `README.md`) in the document's directory defines the validation criteria — plus any scoping frontmatter (`paths`, `cohort`, `excludes`, `exemplars`, `context`).

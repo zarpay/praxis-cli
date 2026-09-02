@@ -6,15 +6,15 @@ These are **drafts for argument**, not decisions. They are deliberately opiniona
 
 ## The thesis
 
-Agentic eval today works on the two tractable cases: benchmarks (known answer) and agentic product flows (known outcome). Agentic *development* has neither — "build me X" produces traces too long to review and outputs too subjective to score. Most teams settle for an adversarial reviewer agent with no grounding.
+Agentic eval today works on the two tractable cases: benchmarks (known answer) and agentic product flows (known outcome). Agentic _development_ has neither — "build me X" produces traces too long to review and outputs too subjective to score. Most teams settle for an adversarial reviewer agent with no grounding.
 
-Praxis holds the missing primitive. SME profiles compile from an organization's own codified standards, and `validates:` makes the compiled profile *be* the spec. That substitutes a tractable question for an intractable one:
+Praxis holds the missing primitive. SME profiles compile from an organization's own codified standards, and `validates:` makes the compiled profile _be_ the spec. That substitutes a tractable question for an intractable one:
 
 > Not "is this code good?" — but "does this satisfy the standard we wrote down?"
 
 The eval signal is company-specific by construction, which is also why nobody else can build it for you.
 
-And the specs are not a new artifact Praxis asks anyone to write. They are the developer's *existing* context files — READMEs, CLAUDE.md, AGENTS.md, whatever carries direction — the same material the agent has in context while it codes, optionally bundled into the SME at `praxis compile`. That double duty is what makes this an eval rather than a review: **the reviewer measures adherence to the exact direction the agent was given.** A violation is never "the agent didn't know" — it is "the context didn't carry it," which is precisely a harness signal.
+And the specs are not a new artifact Praxis asks anyone to write. They are the developer's _existing_ context files — READMEs, CLAUDE.md, AGENTS.md, whatever carries direction — the same material the agent has in context while it codes, optionally bundled into the SME at `praxis compile`. That double duty is what makes this an eval rather than a review: **the reviewer measures adherence to the exact direction the agent was given.** A violation is never "the agent didn't know" — it is "the context didn't carry it," which is precisely a harness signal.
 
 ## The cycle
 
@@ -46,22 +46,22 @@ Two loops share the machinery: the **fast loop** — violations feed straight ba
 
 ## Documents
 
-| Doc | Covers | Status |
-|---|---|---|
-| [vocabulary.md](./vocabulary.md) | Precise definitions everything else depends on | Draft |
-| [01-populations-and-eval-unit.md](./01-populations-and-eval-unit.md) | Three populations of code; the diff as eval unit; violation flow | Draft |
-| [02-baselines-and-debt-paydown.md](./02-baselines-and-debt-paydown.md) | Debt baselines, paydown, epochs and hard breaks; authorship demoted to optional sharpening | Draft — rewritten |
-| [03-judgment-boundary.md](./03-judgment-boundary.md) | Don't use Praxis for what static linting can do; the authoring gate | Draft — position hardened |
-| [04-axioms.md](./04-axioms.md) | Axiom identity and lifecycle; grounded triage of critiques into axioms | Early draft |
-| [05-ledger.md](./05-ledger.md) | Append-only critique store; provenance; why the cache can't be it | Early draft |
-| [06-calibration.md](./06-calibration.md) | Measuring the reviewer; drift protocol; interpretability gating; multiple reviewers | Early draft |
-| [07-metrics.md](./07-metrics.md) | Hard reporting rules; report surfaces | Early draft |
-| [08-harness-feedback.md](./08-harness-feedback.md) | Briefs, diagnosis, agent-drafted PRs, intervention tracking | Early draft |
-| [09-cli-surface.md](./09-cli-surface.md) | Fully CLI-driven; agents as first-class CLI users; display and interaction | Draft |
-| [10-workspace.md](./10-workspace.md) | `.praxis/` layout: closed top level, ownership split, commit policy | Draft |
-| [11-spec-layer.md](./11-spec-layer.md) | Two layers: taxonomy-free eval core; compiler tools as optional spec authoring | Draft |
-| [12-git-integration.md](./12-git-integration.md) | How diffs become eval units: merge-base diffs, two triggers, SHAs as opaque provenance | Draft |
-| [13-roadmap.md](./13-roadmap.md) | Build order: spec layer → critique flow → axiom flow (MVP) → measurement → diffs | Draft |
+| Doc                                                                    | Covers                                                                                     | Status                    |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------- |
+| [vocabulary.md](./vocabulary.md)                                       | Precise definitions everything else depends on                                             | Draft                     |
+| [01-populations-and-eval-unit.md](./01-populations-and-eval-unit.md)   | Three populations of code; the diff as eval unit; violation flow                           | Draft                     |
+| [02-baselines-and-debt-paydown.md](./02-baselines-and-debt-paydown.md) | Debt baselines, paydown, epochs and hard breaks; authorship demoted to optional sharpening | Draft — rewritten         |
+| [03-judgment-boundary.md](./03-judgment-boundary.md)                   | Don't use Praxis for what static linting can do; the authoring gate                        | Draft — position hardened |
+| [04-axioms.md](./04-axioms.md)                                         | Axiom identity and lifecycle; grounded triage of critiques into axioms                     | Early draft               |
+| [05-ledger.md](./05-ledger.md)                                         | Append-only critique store; provenance; why the cache can't be it                          | Early draft               |
+| [06-calibration.md](./06-calibration.md)                               | Measuring the reviewer; drift protocol; interpretability gating; multiple reviewers        | Early draft               |
+| [07-metrics.md](./07-metrics.md)                                       | Hard reporting rules; report surfaces                                                      | Early draft               |
+| [08-harness-feedback.md](./08-harness-feedback.md)                     | Briefs, diagnosis, agent-drafted PRs, intervention tracking                                | Early draft               |
+| [09-cli-surface.md](./09-cli-surface.md)                               | Fully CLI-driven; agents as first-class CLI users; display and interaction                 | Draft                     |
+| [10-workspace.md](./10-workspace.md)                                   | `.praxis/` layout: closed top level, ownership split, commit policy                        | Draft                     |
+| [11-spec-layer.md](./11-spec-layer.md)                                 | Two layers: taxonomy-free eval core; compiler tools as optional spec authoring             | Draft                     |
+| [12-git-integration.md](./12-git-integration.md)                       | How diffs become eval units: merge-base diffs, two triggers, SHAs as opaque provenance     | Draft                     |
+| [13-roadmap.md](./13-roadmap.md)                                       | Build order: spec layer → critique flow → axiom flow (MVP) → measurement → diffs           | Draft                     |
 
 Docs 01–03 are the load-bearing patterns; 04–08 capture the design conversation and should be revisited after 01–03 settle.
 
