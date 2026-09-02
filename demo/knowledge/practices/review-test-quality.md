@@ -1,7 +1,6 @@
 ---
 title: Review Test Quality
 type: practice
-owner: taster
 ---
 
 # Review Test Quality

@@ -3,9 +3,8 @@ import type { PracticeTemplateVars } from "@/types.js";
 /**
  * The document `praxis add practice <name>` writes.
  *
- * Only the display title comes from the command. `{owner_role_alias}` and
- * `{optional_schedule}` are guidance the author replaces by hand, so they
- * are literal text here rather than parameters.
+ * The title is the only variable: a practice's frontmatter carries
+ * nothing else the CLI can fill in.
  */
 export default function practiceFileTemplate({ title }: PracticeTemplateVars): string {
   return `---

@@ -7,7 +7,7 @@ import { MarkdownFile } from "@/framework/markdown-file.js";
  * it rather than for what its kind can do.
  *
  * `praxis status` sweeps whole source trees counting documents by
- * `type:` and checking practice ownership; it cannot know in advance
+ * `type:`; it cannot know in advance
  * which kind each file is, and constructing the wrong specific model
  * would raise on fields that file was never meant to carry. This is the
  * reader for that sweep — the shared fields, both optional.
@@ -15,20 +15,17 @@ import { MarkdownFile } from "@/framework/markdown-file.js";
  * Reach for `ExpertFile` or `SpecFile` whenever the kind *is* known:
  * they validate the whole document, this validates only what it reads.
  *
- * @throws PraxisError when `type` or `owner` is present but not a string
+ * @throws PraxisError when `type` is present but not a string
  */
 export class DocumentFile {
   /** Absolute path to the document. */
   readonly path: string;
   /** The document's declared kind: expert, practice, reference, … */
   readonly type: string | undefined;
-  /** The alias of the expert accountable for this document. */
-  readonly owner: string | undefined;
 
   private constructor(fields: Frontmatter, path: string) {
     this.path = path;
     this.type = fields.optionalString("type");
-    this.owner = fields.optionalString("owner");
   }
 
   /** Reads a document from disk. */

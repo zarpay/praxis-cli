@@ -1,7 +1,6 @@
 ---
 title: Review Feature Cohesion
 type: practice
-owner: sundae
 ---
 
 # Review Feature Cohesion

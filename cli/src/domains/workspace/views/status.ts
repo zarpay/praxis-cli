@@ -58,10 +58,6 @@ export function issueBlocks(report: StatusReport): { heading: string; items: str
       heading: "Glob patterns matching zero files:",
       items: report.zeroMatchGlobs.map(({ expert, pattern }) => `${expert}: ${pattern}`),
     },
-    {
-      heading: "Practices with unknown owners:",
-      items: report.unmatchedOwners.map(({ practice, owner }) => `${practice} (owner: ${owner})`),
-    },
   ];
 
   return blocks.filter((block) => block.items.length > 0);

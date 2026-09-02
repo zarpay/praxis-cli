@@ -16,7 +16,6 @@ export default function countStatusIssues(report: StatusReport): number {
     report.orphanedPractices.length +
     report.expertsMissingDescription.length +
     report.invalidExperts.length +
-    report.zeroMatchGlobs.length +
-    report.unmatchedOwners.length
+    report.zeroMatchGlobs.length
   );
 }

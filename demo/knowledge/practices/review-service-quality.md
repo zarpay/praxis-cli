@@ -1,7 +1,6 @@
 ---
 title: Review Service Quality
 type: practice
-owner: scooper
 ---
 
 # Review Service Quality

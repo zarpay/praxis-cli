@@ -105,8 +105,6 @@ export interface StatusReport {
   expertsMissingDescription: string[];
   /** Expert glob references that match no files. */
   zeroMatchGlobs: { expert: string; pattern: string }[];
-  /** Practices whose `owner` matches no expert alias. */
-  unmatchedOwners: { practice: string; owner: string }[];
 }
 
 /**
@@ -172,14 +170,6 @@ export interface FindOrphanedPracticesInput {
   referenced: Set<string>;
   /** Project root the practice paths are made relative to. */
   root: string;
-}
-
-/** The practices to check ownership on, and the aliases that exist. */
-export interface FindUnmatchedOwnersInput {
-  /** Absolute paths to the practice files. */
-  practiceFiles: string[];
-  /** Lowercased alias to the expert file declaring it. */
-  aliases: Map<string, string>;
 }
 
 /** A project whose cached verdicts should be counted. */

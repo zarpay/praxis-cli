@@ -131,20 +131,6 @@ describe("buildStatusReport", () => {
     });
   });
 
-  it("detects unmatched owners", async () => {
-    writeFileSync(
-      join(tmpdir, "content", "practices", "unmatched.md"),
-      "---\ntitle: Unmatched\ntype: practice\nowner: phantom-role\n---\n# Unmatched",
-    );
-
-    const report = await reportFor(tmpdir);
-
-    expect(report.unmatchedOwners).toContainEqual({
-      practice: "unmatched.md",
-      owner: "phantom-role",
-    });
-  });
-
   it("excludes files matching ignore patterns from source counts", async () => {
     // Baseline first: a context reads the config file lazily, so this must
     // be taken before the ignore pattern is written.
@@ -224,7 +210,6 @@ describe("buildStatusReport", () => {
 
       expect(report.compilerInUse).toBe(false);
       expect(report.counts).toEqual({ experts: 0, practices: 0, references: 0, context: 0 });
-      expect(report.unmatchedOwners).toEqual([]);
       expect(report.orphanedPractices).toEqual([]);
       expect(countStatusIssues(report)).toBe(0);
 

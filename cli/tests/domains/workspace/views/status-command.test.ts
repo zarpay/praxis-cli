@@ -20,7 +20,6 @@ function report(fields: Partial<StatusReport> = {}): StatusReport {
     expertsMissingDescription: [],
     invalidExperts: [],
     zeroMatchGlobs: [],
-    unmatchedOwners: [],
     ...fields,
   };
 }
@@ -122,18 +121,11 @@ describe("issueBlocks", () => {
     expect(blocks[0].items).toEqual(["broken.md: missing alias"]);
   });
 
-  it("formats an unmatched owner with the owner named", () => {
-    const blocks = issueBlocks(report({ unmatchedOwners: [{ practice: "p.md", owner: "Ghost" }] }));
-
-    expect(blocks[0].items).toEqual(["p.md (owner: Ghost)"]);
-  });
-
-  it("orders blocks so parse failures precede glob and owner findings", () => {
+  it("orders blocks so parse failures precede glob findings", () => {
     const blocks = issueBlocks(
       report({
         invalidExperts: [{ expert: "broken.md", reason: "missing alias" }],
         zeroMatchGlobs: [{ expert: "a.md", pattern: "nope-*.md" }],
-        unmatchedOwners: [{ practice: "p.md", owner: "Ghost" }],
       }),
     );
     const headings = blocks.map((block) => block.heading);
@@ -141,7 +133,6 @@ describe("issueBlocks", () => {
     expect(headings).toEqual([
       "Experts that failed to parse:",
       "Glob patterns matching zero files:",
-      "Practices with unknown owners:",
     ]);
   });
 

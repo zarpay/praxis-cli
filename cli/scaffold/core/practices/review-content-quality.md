@@ -1,8 +1,6 @@
 ---
 title: Review Content Quality
 type: practice
-owner: stewart
-schedule: triggered
 ---
 
 # Review Content Quality
