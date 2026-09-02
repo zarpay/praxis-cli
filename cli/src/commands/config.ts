@@ -16,9 +16,15 @@ const edit = prepareAction(editConfig);
 const command: CommandRegistrar = (program) => {
   const config = program.command("config").description("View or edit the project configuration");
 
-  config.command("show").description("Print the current configuration").action(show);
+  config
+    .command("show")
+    .description("Print the project configuration as written, with its file path")
+    .action(show);
 
-  config.command("edit").description("Open the configuration in your default editor").action(edit);
+  config
+    .command("edit")
+    .description("Open the project configuration in $VISUAL, $EDITOR, or vi")
+    .action(edit);
 };
 
 export default command;

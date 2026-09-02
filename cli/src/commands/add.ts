@@ -16,11 +16,14 @@ const practice = prepareAction(addDocument, { type: "practice" });
 const command: CommandRegistrar = (program) => {
   const add = program.command("add").description("Add new content from templates");
 
-  add.command("expert <name>").description("Create a new expert from template").action(expert);
+  add
+    .command("expert <name>")
+    .description("Create a new expert from the template the compiler expects")
+    .action(expert);
 
   add
     .command("practice <name>")
-    .description("Create a new practice from template")
+    .description("Create a new practice from the template the compiler expects")
     .action(practice);
 };
 

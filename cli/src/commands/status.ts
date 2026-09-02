@@ -13,7 +13,10 @@ const orchestrator = prepareAction(analyzeProject);
  * taxonomy has drifted.
  */
 const command: CommandRegistrar = (program) => {
-  program.command("status").description("Show project health dashboard").action(orchestrator);
+  program
+    .command("status")
+    .description("Show project health and review coverage")
+    .action(orchestrator);
 };
 
 export default command;
