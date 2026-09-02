@@ -1,4 +1,4 @@
-import type { Command } from "commander";
+import type { CommandRegistrar } from "@/types.js";
 
 import { runAction } from "@/commands/action.js";
 import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
@@ -10,9 +10,11 @@ import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js
  * when any structural issue is found, so CI fails on a project whose
  * taxonomy has drifted.
  */
-export default function registerStatusCommand(program: Command): void {
+const registerStatusCommand: CommandRegistrar = (program) => {
   program
     .command("status")
     .description("Show project health dashboard")
     .action(() => runAction((ctx) => analyzeProject(ctx, {})));
-}
+};
+
+export default registerStatusCommand;

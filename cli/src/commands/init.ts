@@ -1,4 +1,4 @@
-import type { Command } from "commander";
+import type { CommandRegistrar } from "@/types.js";
 
 import { runAction } from "@/commands/action.js";
 import initProject from "@/domains/workspace/orchestrators/init-project.js";
@@ -9,7 +9,7 @@ import initProject from "@/domains/workspace/orchestrators/init-project.js";
  * Scaffolds a new Praxis project: the minimal `.praxis/` tree by
  * default, and the spec-layer authoring taxonomy on request.
  */
-export default function registerInitCommand(program: Command): void {
+const registerInitCommand: CommandRegistrar = (program) => {
   program
     .command("init")
     .description("Initialize a new Praxis project")
@@ -22,4 +22,6 @@ export default function registerInitCommand(program: Command): void {
     .action((directory: string, options: { specLayer: boolean }) =>
       runAction((ctx) => initProject(ctx, { directory, specLayer: options.specLayer })),
     );
-}
+};
+
+export default registerInitCommand;

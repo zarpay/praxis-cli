@@ -13,6 +13,8 @@
  * that module.
  */
 
+import type { Command } from "commander";
+
 // ---------------------------------------------------------------------------
 // Terminal output (views/)
 // ---------------------------------------------------------------------------
@@ -169,6 +171,20 @@ export interface NormalizedConfig {
 
 /** How a spec groups its targets into review units. */
 export type CohortMode = "by_file" | "by_directory";
+
+// ---------------------------------------------------------------------------
+// Commands (commands/)
+// ---------------------------------------------------------------------------
+
+/**
+ * The one signature every command file has.
+ *
+ * A command registers itself onto the program and returns nothing —
+ * `index.ts` is the only caller. Applied to the exported const rather
+ * than annotating a function declaration, so the shape is enforced
+ * rather than described, the same way `Orchestrator` is.
+ */
+export type CommandRegistrar = (program: Command) => void;
 
 /**
  * All an orchestrator hands back to its command.

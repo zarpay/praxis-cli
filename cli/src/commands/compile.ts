@@ -1,4 +1,4 @@
-import type { Command } from "commander";
+import type { CommandRegistrar } from "@/types.js";
 
 import { runAction } from "@/commands/action.js";
 import compileProject from "@/domains/spec/orchestrators/compile-project.js";
@@ -9,7 +9,7 @@ import compileProject from "@/domains/spec/orchestrators/compile-project.js";
  * Compiles expert definitions into agent profiles and runs any enabled
  * plugins, per .praxis/config.json.
  */
-export default function registerCompileCommand(program: Command): void {
+const registerCompileCommand: CommandRegistrar = (program) => {
   program
     .command("compile")
     .description("Compile expert definitions into agent files")
@@ -18,4 +18,6 @@ export default function registerCompileCommand(program: Command): void {
     .action((options: { alias?: string; watch?: boolean }) =>
       runAction((ctx) => compileProject(ctx, options)),
     );
-}
+};
+
+export default registerCompileCommand;

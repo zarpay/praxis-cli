@@ -1,4 +1,4 @@
-import type { Command } from "commander";
+import type { CommandRegistrar } from "@/types.js";
 
 import { runAction } from "@/commands/action.js";
 import addDocument from "@/domains/spec/orchestrators/add-document.js";
@@ -9,7 +9,7 @@ import addDocument from "@/domains/spec/orchestrators/add-document.js";
  * Creates new experts and practices from the templates the compiler
  * expects, so an author starts from the right shape.
  */
-export default function registerAddCommand(program: Command): void {
+const registerAddCommand: CommandRegistrar = (program) => {
   const add = program.command("add").description("Add new content from templates");
 
   add
@@ -21,4 +21,6 @@ export default function registerAddCommand(program: Command): void {
     .command("practice <name>")
     .description("Create a new practice from template")
     .action((name: string) => runAction((ctx) => addDocument(ctx, { type: "practice", name })));
-}
+};
+
+export default registerAddCommand;

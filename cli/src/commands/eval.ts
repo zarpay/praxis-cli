@@ -1,6 +1,5 @@
-import type { Command } from "commander";
-
 import type { RunEvalOptions } from "@/domains/eval/types.js";
+import type { CommandRegistrar } from "@/types.js";
 
 import { runAction } from "@/commands/action.js";
 import reportVerdicts from "@/domains/eval/orchestrators/report-verdicts.js";
@@ -12,7 +11,7 @@ import runEval from "@/domains/eval/orchestrators/run-eval.js";
  * `eval run` writes (invokes reviewers); every other subcommand reads
  * existing results.
  */
-export default function registerEvalCommand(program: Command): void {
+const registerEvalCommand: CommandRegistrar = (program) => {
   const evalCmd = program.command("eval").description("Review targets against their specs");
 
   evalCmd
@@ -43,4 +42,6 @@ export default function registerEvalCommand(program: Command): void {
     .action((target: string, options: { verbose: boolean }) =>
       runAction((ctx) => reportVerdicts(ctx, { target, verbose: options.verbose })),
     );
-}
+};
+
+export default registerEvalCommand;

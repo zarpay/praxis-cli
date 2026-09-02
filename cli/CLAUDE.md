@@ -78,8 +78,7 @@ default-exported function, taking a single input payload and returning a single
 result — both declared in the domain's `types.ts`. Nothing to construct, nothing
 to inject, nothing to mock; a test calls the function with a literal. It is the
 same one-per-file rule the prompts already follow — and the commands too, each
-one an `export default function register{Name}Command(program)` that `index.ts`
-is the only caller of.
+one a default-exported `CommandRegistrar` that `index.ts` is the only caller of.
 
 Classes remain for four things, and only these:
 
@@ -99,9 +98,10 @@ applies the single error policy. A command therefore imports orchestrators and
 `runAction`, and nothing else; the orchestrator owns the response, rendering
 included, and hands back only a `CommandOutcome` for the exit code.
 
-Every orchestrator has the same signature, and it is a named type rather than a
-convention: `Orchestrator<Options>` in `domains/workspace/types.ts`, applied to
-the exported const. That fixes the arity, so an orchestrator taking no options is
+Both layers state their signature as a named type rather than a convention, each
+applied to the exported const: `CommandRegistrar` (`src/types.ts`) for a command
+file, and `Orchestrator<Options>` (`domains/workspace/types.ts`) for what it
+calls. That fixes the arity, so an orchestrator taking no options is
 still called with `{}` — `analyzeProject(ctx, {})` — and there is one call shape
 across every command. They are all `async`, which gives `runAction` one shape to
 await and one channel for failures: a non-async function returning
