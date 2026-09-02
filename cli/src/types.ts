@@ -105,6 +105,12 @@ export interface ExpertTemplateVars {
   alias: string;
 }
 
+/** What the Claude Code plugin supplies to the manifest template. */
+export interface PluginManifestVars {
+  /** The plugin's name in the manifest (`claudeCodePluginName`). */
+  name: string;
+}
+
 /** What `praxis add practice` supplies to the practice document template. */
 export interface PracticeTemplateVars {
   /** Display title, e.g. "Review Pull Requests". */
@@ -1146,10 +1152,26 @@ export interface InitProjectOptions {
   onFileCreated?: (path: string) => void;
 }
 
+/** A scaffold tree to copy into a project. */
+export interface CopyScaffoldInput {
+  /** The scaffold subtree to copy from. */
+  sourceDir: string;
+  /** The project directory to copy into. */
+  targetDir: string;
+}
+
+/** What one scaffold copy did. */
+export interface CopyScaffoldResult {
+  /** Paths written, relative to the target. */
+  created: string[];
+  /** Files left alone because they already existed. */
+  skipped: number;
+}
+
 /** What scaffolding produced. */
 export interface InitProjectResult {
-  /** Files written. */
-  created: number;
+  /** Paths written, relative to the new project. */
+  created: string[];
   /** Files left alone because they already existed. */
   skipped: number;
   /** Guidance to show the author, matched to what was scaffolded. */

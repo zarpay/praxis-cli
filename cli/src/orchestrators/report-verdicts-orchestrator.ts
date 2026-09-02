@@ -22,7 +22,9 @@ export const reportVerdictsOrchestrator: Orchestrator<ReportVerdictsOptions> = a
     config: ctx.config,
   });
 
-  ctx.render(verdictReportsView({ reports, named, verbose }));
+  const view = verdictReportsView({ reports, named, verbose });
+
+  ctx.render(view);
 
   return "ok";
 };

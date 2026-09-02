@@ -17,19 +17,31 @@ import runReportView from "@/views/run-report-view.js";
 export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { strict = false }) => {
   const { root, config } = ctx;
 
-  ctx.render(evalHeadlineView({ ci: true }));
+  const evalView = evalHeadlineView({ ci: true });
+  ctx.render(evalView);
+
+  // The progress event is emitted when a target is reviewed, and the
+  // verdict is available. It is emitted for every target, so the view
+  // can be updated in real time.
+  const onProgress = (event: Parameters<typeof runProgressView>[0]) => {
+    const progressView = runProgressView(event);
+    ctx.render(progressView);
+  };
 
   const run = await reviewProject({
     root,
     config,
-    onProgress: (event) => ctx.render(runProgressView(event)),
+    onProgress,
   });
 
-  ctx.render(runReportView({ run, cached: true }));
+  const reportView = runReportView({ run, cached: true });
+  ctx.render(reportView);
 
   const { errors, warnings } = run.summary;
 
-  return errors + (strict ? warnings : 0) === 0 ? "ok" : "failed";
+  const errorCount = errors + (strict ? warnings : 0);
+
+  return errorCount === 0 ? "ok" : "failed";
 };
 
 export default prepareOrchestrator(ciRunOrchestrator);

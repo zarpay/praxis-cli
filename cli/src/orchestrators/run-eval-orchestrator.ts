@@ -55,7 +55,9 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
     onProgress: (event) => ctx.render(runProgressView(event)),
   });
 
-  ctx.render(runReportView({ run, cached: cache }));
+  const view = runReportView({ run, cached: cache });
+
+  ctx.render(view);
 
   return run.summary.errors === 0 ? "ok" : "failed";
 };

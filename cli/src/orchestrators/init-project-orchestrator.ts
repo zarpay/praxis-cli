@@ -1,24 +1,16 @@
 import type { InitProjectOptions, Orchestrator } from "@/types.js";
 
-import {
-  copyFile,
-  ensureDir,
-  exists,
-  listFilesRecursive,
-  readText,
-  writeText,
-} from "@/helpers/files-helper.js";
-import { joinPath, relativePath, resolvePath } from "@/helpers/paths-helper.js";
+import { ensureDir } from "@/helpers/files-helper.js";
+import { joinPath, resolvePath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import { PraxisConfig } from "@/models/praxis-config.js";
 import { SCAFFOLD_DIR } from "@/models/project-paths.js";
+import copyScaffold from "@/services/copy-scaffold-service.js";
 import initView from "@/views/init-view.js";
 
 /**
  * Scaffolds a new Praxis project.
  *
- * Copies the core scaffold, then each enabled plugin's own files. The
- * spec layer is opt-in: without `--spec-layer` a project gets the
+ * The spec layer is opt-in: without `--spec-layer` a project gets the
  * minimal `.praxis/` tree and nothing else, because the eval layer is
  * what v2 *is* and the authoring taxonomy is one way to feed it.
  *
@@ -31,101 +23,21 @@ export const initProjectOrchestrator: Orchestrator<InitProjectOptions> = async (
   { directory, scaffoldDir = SCAFFOLD_DIR, specLayer = false },
 ) => {
   const targetDir = resolvePath(directory);
-  const onFileCreated = (path: string) => ctx.logger.success(`Created ${path}`);
 
   ensureDir(targetDir);
 
   // "eval" holds the minimal .praxis/ tree; "core" adds the spec-layer
   // authoring taxonomy (experts, practices, context).
-  const core = copyScaffold({
+  const { created, skipped } = copyScaffold({
     sourceDir: joinPath(scaffoldDir, specLayer ? "core" : "eval"),
     targetDir,
-    displayRoot: targetDir,
-    onFileCreated,
   });
 
-  let created = core.created;
-  let skipped = core.skipped;
-
-  // Config is read *after* the core copy: the scaffold is what puts it
-  // there on a fresh project.
-  for (const plugin of new PraxisConfig(targetDir).plugins) {
-    const sourceDir = joinPath(scaffoldDir, "plugins", plugin.name);
-
-    if (!exists(sourceDir)) continue;
-
-    const result = copyScaffold({
-      sourceDir,
-      targetDir: plugin.outputDir
-        ? resolvePath(targetDir, plugin.outputDir)
-        : joinPath(targetDir, "plugins", "praxis"),
-      displayRoot: targetDir,
-      templateVars: { claudeCodePluginName: plugin.claudeCodePluginName ?? "praxis" },
-      onFileCreated,
-    });
-
-    created += result.created;
-    skipped += result.skipped;
-  }
-
-  ctx.render(initView({ created, skipped, nextSteps: nextSteps(specLayer) }));
+  const view = initView({ created, skipped, nextSteps: nextSteps(specLayer) });
+  ctx.render(view);
 
   return "ok";
 };
-
-/**
- * Copies a scaffold tree, skipping anything already present.
- *
- * Template variables are substituted in `.json` files only, which is
- * where the plugin manifests carry them.
- */
-function copyScaffold({
-  sourceDir,
-  targetDir,
-  displayRoot,
-  templateVars = {},
-  onFileCreated,
-}: {
-  sourceDir: string;
-  targetDir: string;
-  /** Root the reported path is shown relative to. */
-  displayRoot: string;
-  templateVars?: Record<string, string>;
-  onFileCreated?: (path: string) => void;
-}): { created: number; skipped: number } {
-  let created = 0;
-  let skipped = 0;
-
-  for (const relPath of listFilesRecursive(sourceDir)) {
-    const destPath = joinPath(targetDir, relPath);
-
-    if (exists(destPath)) {
-      skipped++;
-      continue;
-    }
-
-    const srcPath = joinPath(sourceDir, relPath);
-
-    if (relPath.endsWith(".json") && Object.keys(templateVars).length > 0) {
-      writeText(destPath, applyTemplate(readText(srcPath), templateVars));
-    } else {
-      copyFile(srcPath, destPath);
-    }
-
-    onFileCreated?.(relativePath(displayRoot, destPath));
-    created++;
-  }
-
-  return { created, skipped };
-}
-
-/** Substitutes `{key}` placeholders in scaffold content. */
-function applyTemplate(content: string, vars: Record<string, string>): string {
-  return Object.entries(vars).reduce(
-    (text, [key, value]) => text.replaceAll(`{${key}}`, value),
-    content,
-  );
-}
 
 /** Post-init guidance, matched to what was actually scaffolded. */
 function nextSteps(specLayer: boolean): string[] {

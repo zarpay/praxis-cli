@@ -159,73 +159,8 @@ describe("initProjectOrchestrator", () => {
 
     await initProjectOrchestrator(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
 
-    // Default config has plugins: [], so no Claude Code files
+    // init seeds a project; plugin output (plugins/praxis) is compile's job
     expect(existsSync(join(dir, "plugins", "praxis"))).toBe(false);
-  });
-
-  it("scaffolds Claude Code files when plugin is in config as string", async () => {
-    const dir = makeTmpdir();
-    dirs.push(dir);
-
-    // Pre-create config with claude-code plugin enabled
-    mkdirSync(join(dir, ".praxis"), { recursive: true });
-    writeFileSync(
-      join(dir, ".praxis", "config.json"),
-      JSON.stringify({ agentProfilesOutputDir: "./agent-profiles", plugins: ["claude-code"] }),
-    );
-
-    await initProjectOrchestrator(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
-
-    // Default outputDir is plugins/praxis
-    expect(existsSync(join(dir, "plugins", "praxis", ".claude-plugin", "plugin.json"))).toBe(true);
-  });
-
-  it("templates {claudeCodePluginName} in plugin.json during scaffold", async () => {
-    const dir = makeTmpdir();
-    dirs.push(dir);
-
-    mkdirSync(join(dir, ".praxis"), { recursive: true });
-    writeFileSync(
-      join(dir, ".praxis", "config.json"),
-      JSON.stringify({ plugins: ["claude-code"] }),
-    );
-
-    await initProjectOrchestrator(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
-
-    const pluginJson = readJsonFile<{ name: string }>(
-      join(dir, "plugins", "praxis", ".claude-plugin", "plugin.json"),
-    );
-    // Default claudeCodePluginName is "praxis"
-    expect(pluginJson.name).toBe("praxis");
-    // Should not contain the raw template variable
-    expect(JSON.stringify(pluginJson)).not.toContain("{claudeCodePluginName}");
-  });
-
-  it("scaffolds Claude Code files to custom outputDir when specified", async () => {
-    const dir = makeTmpdir();
-    dirs.push(dir);
-
-    mkdirSync(join(dir, ".praxis"), { recursive: true });
-    writeFileSync(
-      join(dir, ".praxis", "config.json"),
-      JSON.stringify({
-        plugins: [
-          {
-            name: "claude-code",
-            outputDir: "./my-plugins/custom",
-            claudeCodePluginName: "my-org",
-          },
-        ],
-      }),
-    );
-
-    await initProjectOrchestrator(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
-
-    const pluginJsonPath = join(dir, "my-plugins", "custom", ".claude-plugin", "plugin.json");
-    expect(existsSync(pluginJsonPath)).toBe(true);
-
-    const pluginJson = readJsonFile<{ name: string }>(pluginJsonPath);
-    expect(pluginJson.name).toBe("my-org");
   });
 
   it("skips files that already exist", async () => {
@@ -312,23 +247,5 @@ describe("initProjectOrchestrator", () => {
     for (const expected of expectedDirs) {
       expect(existsSync(join(dir, expected)), `expected directory ${expected} to exist`).toBe(true);
     }
-  });
-
-  it("creates Claude Code plugin directory when enabled", async () => {
-    const dir = makeTmpdir();
-    dirs.push(dir);
-
-    mkdirSync(join(dir, ".praxis"), { recursive: true });
-    writeFileSync(
-      join(dir, ".praxis", "config.json"),
-      JSON.stringify({ plugins: ["claude-code"] }),
-    );
-
-    await initProjectOrchestrator(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
-
-    expect(
-      existsSync(join(dir, "plugins", "praxis", ".claude-plugin")),
-      "expected plugins/praxis/.claude-plugin to exist",
-    ).toBe(true);
   });
 });

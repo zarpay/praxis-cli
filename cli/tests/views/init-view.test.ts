@@ -3,7 +3,16 @@ import { describe, expect, it } from "vitest";
 import initView from "@/views/init-view.js";
 
 describe("initView", () => {
-  const lines = initView({ created: 3, skipped: 1, nextSteps: ["  1. Edit config"] });
+  const lines = initView({
+    created: [".praxis/config.json", "experts/README.md", "experts/stewart.md"],
+    skipped: 1,
+    nextSteps: ["  1. Edit config"],
+  });
+
+  it("confirms each created file on its own line", () => {
+    expect(lines).toContainEqual({ channel: "success", text: "Created .praxis/config.json" });
+    expect(lines).toContainEqual({ channel: "success", text: "Created experts/stewart.md" });
+  });
 
   it("headlines what was created and what already existed", () => {
     expect(lines).toContainEqual({

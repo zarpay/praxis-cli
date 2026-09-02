@@ -15,8 +15,11 @@ import configView from "@/views/config-view.js";
  */
 export const showConfigOrchestrator: Orchestrator = async (ctx) => {
   const configPath = ctx.paths.configFile;
+  const config = readJson(configPath);
 
-  ctx.render(configView({ configPath, config: readJson(configPath) }));
+  const view = configView({ configPath, config });
+
+  ctx.render(view);
 
   return "ok";
 };

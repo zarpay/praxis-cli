@@ -36,10 +36,13 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
     onProgress: (event: CompileProgress) => ctx.render(compileProgressView(event)),
   };
 
+  // When an alias is given, compile only that expert and skip the watch mode.
+  // Otherwise, compile every expert and optionally watch for changes.
   if (alias) {
     const result = await compileByAlias({ ...input, alias, expertsDir: config.expertsDir });
 
-    ctx.render(compileResultView(result));
+    const view = compileResultView(result);
+    ctx.render(view);
 
     if (watch) logger.warn("--watch is not supported with --alias, ignoring");
 
@@ -48,15 +51,34 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
 
   const { compiled } = await compileExperts(input);
 
-  ctx.render(compileResultView({ compiled }));
+  const view = compileResultView({ compiled });
+  ctx.render(view);
 
+  // If watch mode is not requested, the job is done. Otherwise, start watching
+  // the experts directory and recompile on changes.
   if (!watch) return "ok";
+
+  // The watch service is a long-running process that never returns, so the
+  // orchestrator must not return either. It will render progress events as
+  // they happen, and the user can terminate it with Ctrl+C.
+  const onWatch = (dir: string) => {
+    const view = watchView({ kind: "watching", dir });
+    ctx.render(view);
+  };
+
+  // The recompile event is emitted when a file change is detected and the
+  // compile service is about to re-run. It is not emitted for every file
+  // change, only when a recompile is actually triggered.
+  const onRecompile = (filename: string | null) => {
+    const view = watchView({ kind: "recompiling", filename });
+    ctx.render(view);
+  };
 
   watchAndCompile({
     ...input,
+    onWatch,
+    onRecompile,
     sources: config.sources,
-    onWatch: (dir) => ctx.render(watchView({ kind: "watching", dir })),
-    onRecompile: (filename) => ctx.render(watchView({ kind: "recompiling", filename })),
     onError: (message) => logger.error(message),
   });
 

@@ -32,5 +32,7 @@ body here and nowhere else.
   behind while `init` shipped the stale copy and `compile` overwrote it.
 
 `scaffold/` keeps only content Praxis does not generate: the starter taxonomy
-`praxis init` copies, and `plugin.json`, whose `{claudeCodePluginName}` is
-substituted by `applyTemplate` during the copy.
+`praxis init` copies, byte for byte. There is no runtime substitution left —
+the last of it, `plugin.json`'s `{claudeCodePluginName}`, is
+`plugin-manifest-template.ts` now, written by the Claude Code plugin on first
+compile.

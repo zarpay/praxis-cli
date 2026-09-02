@@ -16,7 +16,8 @@ import statusView from "@/views/status-view.js";
 export const analyzeProjectOrchestrator: Orchestrator = async (ctx) => {
   const report = await buildStatusReport({ root: ctx.root, config: ctx.config });
 
-  ctx.render(statusView(report));
+  const view = statusView(report);
+  ctx.render(view);
 
   return countStatusIssues(report) > 0 ? "failed" : "ok";
 };

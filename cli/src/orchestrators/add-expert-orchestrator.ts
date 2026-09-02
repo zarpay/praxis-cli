@@ -18,7 +18,8 @@ export const addExpertOrchestrator: Orchestrator<AddDocumentOptions> = async (ct
     practicesDir: ctx.config.practicesDir,
   });
 
-  ctx.render(documentCreatedView(created));
+  const view = documentCreatedView(created);
+  ctx.render(view);
 
   return "ok";
 };

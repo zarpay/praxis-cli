@@ -3,22 +3,9 @@ import type { AgentMetadata, CompilerPlugin, PluginOptions } from "@/types.js";
 import { exists, readJson, writeJson, writeText } from "@/helpers/files-helper.js";
 import { joinPath, resolvePath } from "@/helpers/paths-helper.js";
 import evalTargetingTemplate from "@/templates/eval-targeting-template.js";
+import pluginManifestTemplate from "@/templates/plugin-manifest-template.js";
 import praxisResolveCommandTemplate from "@/templates/praxis-resolve-command-template.js";
 import praxisSkillTemplate from "@/templates/praxis-skill-template.js";
-
-/**
- * The manifest written when the output directory has none.
- *
- * Not read from `scaffold/`: `ensurePluginJson` checks the project's own
- * output directory, so this is the sole source on a project that was
- * never scaffolded.
- */
-const DEFAULT_PLUGIN_JSON = {
-  name: "praxis",
-  description: "A plugin for integrating assistant profiles with Claude.",
-  author: { name: "Your Name" },
-  keywords: ["productivity"],
-};
 
 /**
  * Claude Code compiler plugin.
@@ -79,7 +66,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
       existing.name = this.claudeCodePluginName;
       writeJson(pluginJsonPath, existing);
     } else {
-      writeJson(pluginJsonPath, { ...DEFAULT_PLUGIN_JSON, name: this.claudeCodePluginName });
+      writeText(pluginJsonPath, pluginManifestTemplate({ name: this.claudeCodePluginName }));
     }
   }
 
