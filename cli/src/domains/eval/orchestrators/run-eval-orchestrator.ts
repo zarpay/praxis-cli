@@ -1,10 +1,8 @@
 import type { RunEvalOptions } from "@/domains/eval/types.js";
 import type { Orchestrator } from "@/domains/workspace/types.js";
 
-import buildReviewScope from "@/domains/eval/services/build-review-scope-service.js";
-import reviewAll from "@/domains/eval/services/review-all-service.js";
 import reviewNamed from "@/domains/eval/services/review-named-service.js";
-import selectReviewers from "@/domains/eval/services/select-reviewers-service.js";
+import reviewProject from "@/domains/eval/services/review-project-service.js";
 import {
   progressEntries,
   reviewedTargetEntries,
@@ -51,11 +49,10 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 
   out.line(runHeadline({ type: options.type }));
 
-  const reviewers = selectReviewers({ configured: config.reviewers, only: options.reviewer });
-
-  const run = await reviewAll({
-    ...buildReviewScope({ root, config }),
-    reviewers,
+  const run = await reviewProject({
+    root,
+    config,
+    reviewer: options.reviewer,
     type: options.type,
     failFast: options.failFast ?? false,
     useCache: cache,

@@ -213,7 +213,7 @@ describe("isContentFile", () => {
     expect(isContentFile("/p/src/_template.md", "README.md")).toBe(false);
   });
 
-  it("reviewers a file whose directory is underscore-prefixed", () => {
+  it("reviews a file whose directory is underscore-prefixed", () => {
     // The rule is about the filename, not the path it sits under.
     expect(isContentFile("/p/_scratch/real.ts", "README.md")).toBe(true);
   });

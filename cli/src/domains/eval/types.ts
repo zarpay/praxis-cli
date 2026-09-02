@@ -376,6 +376,22 @@ export interface ReviewTargetResult {
 // ---------------------------------------------------------------------------
 
 /** What a run needs to know to review a project. */
+/** What reviewing a whole project needs: its root, its config, and the run's options. */
+export interface ReviewProjectInput {
+  root: string;
+  config: PraxisConfig;
+  /** Run only this configured reviewer; omitted runs all of them. */
+  reviewer?: string;
+  /** Review only the domains of this type; omitted reviews everything. */
+  type?: string;
+  /** Whether to stop at the first error verdict. */
+  failFast?: boolean;
+  /** Whether to consult the verdict cache. */
+  useCache?: boolean;
+  /** Called as the run progresses, for streamed output. */
+  onProgress?: (event: EvalProgress) => void;
+}
+
 export interface ReviewAllInput extends DiscoveryScope {
   /** The reviewers to run; every reviewer reviews every unit. */
   reviewers: ReviewerConfig[];

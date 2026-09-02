@@ -1,9 +1,7 @@
 import type { CiRunOptions } from "@/domains/eval/types.js";
 import type { Orchestrator } from "@/domains/workspace/types.js";
 
-import buildReviewScope from "@/domains/eval/services/build-review-scope-service.js";
-import reviewAll from "@/domains/eval/services/review-all-service.js";
-import selectReviewers from "@/domains/eval/services/select-reviewers-service.js";
+import reviewProject from "@/domains/eval/services/review-project-service.js";
 import { progressEntries, runHeadline, runReportLines } from "@/domains/eval/views/summary.js";
 import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
 import { renderReport } from "@/framework/views/report.js";
@@ -20,9 +18,9 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
 
   out.line(runHeadline({ ci: true }));
 
-  const run = await reviewAll({
-    ...buildReviewScope({ root, config }),
-    reviewers: selectReviewers({ configured: config.reviewers }),
+  const run = await reviewProject({
+    root,
+    config,
     onProgress: (event) => out.print(progressEntries(event)),
   });
 

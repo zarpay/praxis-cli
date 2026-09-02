@@ -498,7 +498,7 @@ describe("requestVerdict", () => {
 
     const echoReviewer = { ...TEST_REVIEWER, provider: "./praxis-providers/echo.mjs" };
 
-    it("reviewers through a local provider module with no HTTP call", async () => {
+    it("reviews through a local provider module with no HTTP call", async () => {
       // onUnhandledRequest: "error" makes any network attempt fail loudly.
       const { root, abs, cleanup } = providerProject(ECHO_PROVIDER);
 
