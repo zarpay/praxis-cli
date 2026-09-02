@@ -1,10 +1,11 @@
-import type { ReviewNamedInput, ReviewNamedResult, Verdict } from "@/types.js";
+import type { LedgerEntry, ReviewNamedInput, ReviewNamedResult, Verdict } from "@/types.js";
 
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import { VerdictCache } from "@/models/verdict-cache.js";
 import reviewTarget from "@/services/review-target-service.js";
 import selectReviewers from "@/services/select-reviewers-service.js";
+import writeLedgerRun from "@/services/write-ledger-run-service.js";
 
 /**
  * Reviews the named targets, each against its own spec.
@@ -17,6 +18,9 @@ import selectReviewers from "@/services/select-reviewers-service.js";
  * named: pointing several targets at one spec would silently review
  * them against direction that does not govern them.
  *
+ * Every fast-loop run is evidence (08): each reviewer's pass persists to
+ * the ledger with `scope: "files"` unless `ledger: false`.
+ *
  * @throws PraxisError when no reviewer is usable, or a target has no spec
  */
 export default async function reviewNamed({
@@ -26,10 +30,12 @@ export default async function reviewNamed({
   spec,
   reviewer: only,
   useCache = true,
+  ledger = true,
   onVerdict,
 }: ReviewNamedInput): Promise<ReviewNamedResult> {
   const reviewers = selectReviewers({ configured: config.reviewers, only });
   const specPath = targets.length === 1 ? spec : undefined;
+  const entriesByReviewer = new Map<string, LedgerEntry[]>();
 
   let errors = 0;
   let warnings = 0;
@@ -45,7 +51,7 @@ export default async function reviewNamed({
     const verdicts = [];
 
     for (const reviewerConfig of reviewers) {
-      const { verdict } = await reviewTarget({
+      const { verdict, cacheHit, usage } = await reviewTarget({
         target: subject,
         reviewer: Reviewer.fromConfig(reviewerConfig),
         cache: useCache
@@ -58,6 +64,19 @@ export default async function reviewNamed({
       });
 
       verdicts.push(verdict);
+
+      const entries = entriesByReviewer.get(reviewerConfig.name) ?? [];
+      entries.push({
+        verdict: { ...verdict, path: targetPath },
+        cacheHit,
+        evidence: {
+          usage,
+          specPath: subject.specPath,
+          targetContentHash: subject.targetContentHash(),
+          specContentHash: subject.specContentHash(),
+        },
+      });
+      entriesByReviewer.set(reviewerConfig.name, entries);
       onVerdict?.({
         path: targetPath,
         verdict,
@@ -71,6 +90,22 @@ export default async function reviewNamed({
     if (worst && !worst.compliant && worst.severity === "error") errors++;
 
     if (worst && !worst.compliant && worst.severity === "warning") warnings++;
+  }
+
+  if (ledger) {
+    for (const reviewerConfig of reviewers) {
+      const entries = entriesByReviewer.get(reviewerConfig.name);
+
+      if (!entries || entries.length === 0) continue;
+
+      writeLedgerRun({
+        root,
+        reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
+        trigger: "manual",
+        scope: "files",
+        entries,
+      });
+    }
   }
 
   return { errors, warnings };

@@ -142,6 +142,16 @@ Safe to run any time: entries belonging to currently configured reviewers are ne
 
 ---
 
+## The ledger
+
+Every `eval run` writes durable evidence to `.praxis/ledger/runs/<run_id>.jsonl` — one file per reviewer per invocation, committed to git like the rest of `.praxis/`. The first line is the **run record**: what ran, against which commit and branch, cache hits and misses, verdict counts, and the provider cost (tokens and dollars). Each following line is a **critique record** — one per issue found, carrying full provenance: the exact target and spec content hashes, and the reviewer's behavioral hash.
+
+The cache answers "is this compliant now" and overwrites; the ledger answers "what has ever happened" and never does. Records are append-only — a run file is written once and never touched again.
+
+Two things never write the ledger: `eval ci` (CI verifies without writing — the branch's own runs are the evidence) and cache hits (nothing new was reviewed; they are counted on the run record instead).
+
+A target that cannot be reviewed at all — unreadable, or a cohort too large for the model's context window — is reported **UNVERIFIED**: counted separately, never as a violation, and the run fails so it cannot pass unseen.
+
 ## How validation works
 
 1. The spec file (default: `README.md`) in the document's directory defines the validation criteria — plus any scoping frontmatter (`paths`, `cohort`, `excludes`, `exemplars`, `context`).

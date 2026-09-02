@@ -5,13 +5,13 @@
 
 ## Why the cache cannot be the ledger
 
-The existing cache (`.praxis/cache/validation/`) is a cost optimization: content-hash keyed, answering "is this file compliant right now." It **overwrites on change** — history is destroyed by design — and discards the OpenRouter `usage` block, so no cost data exists at all. Both are correct behaviors *for a cache*.
+The existing cache (`.praxis/cache/validation/`) is a cost optimization: content-hash keyed, answering "is this file compliant right now." It **overwrites on change** — history is destroyed by design — and discards the OpenRouter `usage` block, so no cost data exists at all. Both are correct behaviors _for a cache_.
 
 Observed corollary: the cache also cannot distinguish live from dead specs. In zarpay/core, 23 of 49 cached validations came from a spec file that no longer exists (`docs/subject-matter-experts/events.sme.md`); they persist indefinitely and double-count most files. (`orphanedCacheFiles()` detects deleted documents, not deleted specs — worth fixing in v1 regardless of v2.)
 
 **Rule: the cache stays as-is in role — a separate, append-only ledger sits beside it.** The cache answers "now"; the ledger answers "ever."
 
-Two format changes to the cache *are* required by v2:
+Two format changes to the cache _are_ required by v2:
 
 1. **Context joins the entry key** (01, axiom scope): for `file+context` axioms the judgment input includes spec-declared context files, so a verdict keyed on `hash(document + spec)` survives context edits it shouldn't. Key becomes `hash(document + spec + resolved context)`, with the resolved context file list + hashes recorded in the entry.
 2. **Reviewer identity joins the verdict key** (02, epoch detection): one cache file per target holds every verdict for it — all specs, all reviewers — keyed by `<spec_hash>:<reviewer_hash>`, where the reviewer hash covers the reviewer's behavioral settings (the whole config canonically hashed minus `name` and `apiKeyEnvVar`) plus the system prompt text (a Praxis release that rewrites the prompt changes the reviewer as much as a model swap). This fixes a latent v1 defect: the reviewer config was in no key at all, so changing the model left every old-reviewer verdict looking current — pre-break verdicts leaking across an epoch boundary. One-artifact-per-target was chosen over per-reviewer directories deliberately: the cache is committed, so a target's complete judgment state should be one file with one history, cross-reviewer comparison (06 agreement) becomes a single read, and it finishes the format's own logic — specs were already multiplexed inside the file, and reviewers are the same dimension shape. Rollback stays free (reverting the config re-hits the old keys). Invalidation summary: **spec edit → per-spec keys break; reviewer change → all of that reviewer's keys break (global for that reviewer)** — the cache's invalidation behavior is the epoch structure. Keys belonging to no configured reviewer are prunable (a rewrite, not an `rm -rf` — the accepted cost of the single artifact).
@@ -29,12 +29,14 @@ Append-only JSONL under `.praxis/ledger/`, partitioned by run, committed to git 
 ```
 run_id, timestamp, commit_sha, branch, trigger (manual | ci | watch)
 scope (corpus | diff | files), files_evaluated
-reviewer_name, reviewer_model, prompt_tokens, completion_tokens, cost_usd
+reviewer_name, reviewer_model, reviewer_hash, prompt_tokens, completion_tokens, cost_usd
 cache_hits, cache_misses
-pass / warn / fail counts, critique_count
+pass / warn / fail / unverified counts, critique_count
 calibration_status_at_run                    # 06 — stamps interpretability
 baseline: boolean                            # epoch-opening validate all (02)
 ```
+
+`reviewer_hash` (added at implementation, 2026-09-02) is what makes the derived-epoch promise true: `reviewer_model` alone cannot see a temperature, prompt-surface, or options change. `unverified` counts units that could not be reviewed at all (03) — never violations.
 
 Epochs (02) are **derived, not stored**: an epoch is a maximal run-sequence with stable (spec content hashes, reviewer config), computable from the provenance fields above. Reports segment by epoch; the ledger just records facts.
 
@@ -46,7 +48,7 @@ Epochs (02) are **derived, not stored**: an epoch is a maximal run-sequence with
 id, run_id, timestamp
 file_path, spec_path
 target_content_hash, spec_content_hash      # provenance: exact inputs
-reviewer_name, reviewer_model                      # provenance: exact reviewer
+reviewer_name, reviewer_model, reviewer_hash       # provenance: exact reviewer
 severity, text
 mode (judgment | agentic), scope_filtered?   # scoping exclusions recorded, not reviewed (03)
 axiom_id?, axiom_version?, assigned_by?      # 04; null until assigned
@@ -58,7 +60,7 @@ resolved_by?                                 # resolved events only: git author 
                                              #   commit — paydown credit is attributable (02)
 ```
 
-Provenance fields are mandatory. Derived fields (population, authorship) record their evidence so they can be *recomputed* when conventions or spec birthdates are revised — stored classifications are conveniences, not truth.
+Provenance fields are mandatory. Derived fields (population, authorship) record their evidence so they can be _recomputed_ when conventions or spec birthdates are revised — stored classifications are conveniences, not truth.
 
 ## Write paths
 

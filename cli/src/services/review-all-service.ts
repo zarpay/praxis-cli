@@ -1,11 +1,13 @@
 import type {
   EvalSummary,
   EvalUnit,
+  LedgerEntry,
+  LedgerEvidence,
   ReviewAllInput,
   ReviewAllResult,
+  ReviewUnitInput,
   TargetVerdict,
   ValidationDomain,
-  ReviewUnitInput,
 } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
@@ -19,6 +21,7 @@ import discoverDomains from "@/services/discover-domains-service.js";
 import listSourceDocuments from "@/services/list-source-documents-service.js";
 import resolveUnits from "@/services/resolve-units-service.js";
 import reviewTarget from "@/services/review-target-service.js";
+import writeLedgerRun from "@/services/write-ledger-run-service.js";
 
 /**
  * One `praxis eval run`: review every target every reviewer covers.
@@ -29,9 +32,13 @@ import reviewTarget from "@/services/review-target-service.js";
  *
  * Everything the caller needs comes back in the result; progress
  * arrives through `onProgress` as it happens, so the orchestrator never
- * touches an output stream. A reviewing failure is recorded as an error
- * verdict rather than raised: one unreachable target must not abandon
- * the rest of a run that costs real money.
+ * touches an output stream. A unit that cannot be reviewed at all is
+ * recorded as `unverified` rather than raised or counted as a violation
+ * (03): one unreachable target must not abandon a run that costs real
+ * money, and must never masquerade as a finding.
+ *
+ * Each reviewer's completed pass is persisted to the ledger (05) unless
+ * `ledger: false` — one run record per reviewer, one critique per issue.
  *
  * @throws PraxisError only when `type` matches no discovered domain
  */
@@ -43,6 +50,7 @@ export default async function reviewAll({
   reviewers,
   useCache = true,
   failFast = false,
+  ledger = true,
   type,
   onProgress,
 }: ReviewAllInput): Promise<ReviewAllResult> {
@@ -71,6 +79,8 @@ export default async function reviewAll({
   let stoppedEarly = false;
 
   for (const [reviewerIndex, reviewerConfig] of reviewers.entries()) {
+    const entries: LedgerEntry[] = [];
+
     for (const { unit, domain } of queue) {
       if (stoppedEarly) break;
 
@@ -84,7 +94,7 @@ export default async function reviewAll({
         reviewerName: reviewers.length > 1 ? reviewerConfig.name : undefined,
       });
 
-      const { verdict, cacheHit } = await reviewUnit({
+      const { verdict, cacheHit, evidence } = await reviewUnit({
         unit,
         specPath: domain.specPath,
         type: domain.type,
@@ -95,14 +105,27 @@ export default async function reviewAll({
         onProgress,
       });
 
-      if (cacheHit) cacheStats.hits++;
-      else cacheStats.misses++;
+      if (evidence) {
+        if (cacheHit) cacheStats.hits++;
+        else cacheStats.misses++;
+      }
 
       verdicts.push(verdict);
+      entries.push({ verdict, cacheHit, evidence });
 
-      if (failFast && !verdict.compliant && verdict.severity === "error") {
+      if (failFast && !verdict.compliant && !verdict.unverified && verdict.severity === "error") {
         stoppedEarly = true;
       }
+    }
+
+    if (ledger && entries.length > 0) {
+      writeLedgerRun({
+        root,
+        reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
+        trigger: "manual",
+        scope: "corpus",
+        entries,
+      });
     }
   }
 
@@ -153,7 +176,11 @@ async function reviewUnit({
   root,
   specFilePattern,
   onProgress,
-}: ReviewUnitInput): Promise<{ verdict: TargetVerdict; cacheHit: boolean }> {
+}: ReviewUnitInput): Promise<{
+  verdict: TargetVerdict;
+  cacheHit: boolean;
+  evidence: LedgerEvidence | null;
+}> {
   const identity = {
     path: unit.path,
     type,
@@ -172,7 +199,7 @@ async function reviewUnit({
       root,
     });
 
-    const { verdict, cacheHit } = await reviewTarget({
+    const { verdict, cacheHit, usage } = await reviewTarget({
       target,
       reviewer: Reviewer.fromConfig(reviewerConfig),
       cache,
@@ -181,20 +208,30 @@ async function reviewUnit({
 
     onProgress?.({ kind: "verdict", verdict });
 
-    return { verdict: { ...verdict, ...identity }, cacheHit };
+    return {
+      verdict: { ...verdict, ...identity },
+      cacheHit,
+      evidence: {
+        usage,
+        specPath: target.specPath,
+        targetContentHash: target.targetContentHash(),
+        specContentHash: target.specContentHash(),
+      },
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
 
     onProgress?.({ kind: "unit-error", message });
 
-    // A failure never came from the cache: it happened trying to review.
+    // Nothing was reviewed: no violation, no cache, no ledger critiques.
     return {
       cacheHit: false,
+      evidence: null,
       verdict: {
         ...identity,
         compliant: false,
-        severity: "error",
-        issues: [`Validation failed: ${message}`],
+        unverified: true,
+        issues: [],
         reason: message,
       },
     };
@@ -233,6 +270,8 @@ function summarize(verdicts: TargetVerdict[], sourceDocs: Set<string>): EvalSumm
 
     byReviewer[verdict.reviewer] ??= { compliant: 0, warnings: 0, errors: 0 };
 
+    if (verdict.unverified) continue;
+
     if (verdict.compliant) byReviewer[verdict.reviewer].compliant++;
     else if (verdict.severity === "warning") byReviewer[verdict.reviewer].warnings++;
     else byReviewer[verdict.reviewer].errors++;
@@ -241,11 +280,14 @@ function summarize(verdicts: TargetVerdict[], sourceDocs: Set<string>): EvalSumm
   const reviewedPaths = new Set(verdicts.map((v) => v.path));
   const allDocs = new Set([...sourceDocs, ...reviewedPaths]);
 
+  const reviewed = verdicts.filter((v) => !v.unverified);
+
   return {
     total: allDocs.size,
-    compliant: verdicts.filter((v) => v.compliant).length,
-    warnings: verdicts.filter((v) => !v.compliant && v.severity === "warning").length,
-    errors: verdicts.filter((v) => !v.compliant && v.severity === "error").length,
+    compliant: reviewed.filter((v) => v.compliant).length,
+    warnings: reviewed.filter((v) => !v.compliant && v.severity === "warning").length,
+    errors: reviewed.filter((v) => !v.compliant && v.severity === "error").length,
+    unverified: verdicts.filter((v) => v.unverified).length,
     notValidated: allDocs.size - reviewedPaths.size,
     byType,
     byReviewer,

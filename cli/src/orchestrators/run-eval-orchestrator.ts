@@ -59,7 +59,8 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 
   ctx.render(view);
 
-  return run.summary.errors === 0 ? "ok" : "failed";
+  // A run that could not look at everything cannot claim clean (03).
+  return run.summary.errors + run.summary.unverified === 0 ? "ok" : "failed";
 };
 
 export default prepareOrchestrator(runEvalOrchestrator);

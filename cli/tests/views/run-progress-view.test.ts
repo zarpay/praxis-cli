@@ -96,11 +96,11 @@ describe("a verdict landing", () => {
   });
 });
 
-describe("a unit failing outright", () => {
-  it("shows the error and its message", () => {
+describe("a unit that could not be reviewed", () => {
+  it("marks it unverified — never a violation — with the reason", () => {
     const text = rendered({ kind: "unit-error", message: "spec unreadable" });
 
-    expect(text).toContain("✗ ERROR");
+    expect(text).toContain("✗ UNVERIFIED");
     expect(text).toContain("· spec unreadable");
   });
 });

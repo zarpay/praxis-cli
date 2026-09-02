@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { ReviewSubject } from "@/models/review-subject.js";
@@ -112,5 +113,29 @@ describe("contentHash", () => {
     const there = subjectWith(["exemplars:", '  - "src/b.ts"'], { "src/b.ts": "X" });
 
     expect(here.contentHash()).not.toBe(there.contentHash());
+  });
+});
+
+describe("ledger provenance hashes", () => {
+  it("hashes target and spec separately, 8 hex chars each", () => {
+    const subject = subjectWith(["paths:", '  - "specs/*.md"']);
+
+    expect(subject.targetContentHash()).toMatch(/^[0-9a-f]{8}$/);
+    expect(subject.specContentHash()).toMatch(/^[0-9a-f]{8}$/);
+    expect(subject.targetContentHash()).not.toBe(subject.specContentHash());
+  });
+
+  it("keeps the combined contentHash byte-identical to before the split (cache pin)", () => {
+    const subject = subjectWith(["paths:", '  - "specs/*.md"']);
+
+    // sha256("# Doc" + spec text + "")[0:8] — the cache key every committed
+    // verdict is stored under. If this assertion breaks, every user's cache
+    // misses: that is an epoch roll and must be deliberate.
+    expect(subject.contentHash()).toBe(
+      createHash("sha256")
+        .update("# Doc" + ["---", "paths:", '  - "specs/*.md"', "---", "", "# Spec"].join("\n"))
+        .digest("hex")
+        .slice(0, 8),
+    );
   });
 });

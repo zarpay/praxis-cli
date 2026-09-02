@@ -170,6 +170,8 @@ Spec discovered (specFilePattern match, frontmatter read)
       and assist provenance (exemplar_files/context_files with per-file hashes)
 ```
 
+Every run also appends to the ledger (`.praxis/ledger/runs/<run_id>.jsonl`, 05): one run record per reviewer with git facts, cost and counts, plus one critique record per issue — full provenance, append-only, committed. `eval ci` verifies without writing; an unevaluable unit is `unverified`, never a violation.
+
 `praxis eval prune` is the epoch structure's other half: a behavioral change writes new cache keys and orphans the old ones, and pruning removes every entry whose reviewer hash matches no configured reviewer.
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).

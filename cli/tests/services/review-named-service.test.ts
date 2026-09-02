@@ -1,4 +1,8 @@
+import type { LedgerRecord } from "@/types.js";
+
 import { HttpResponse, http } from "msw";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
@@ -165,5 +169,52 @@ describe("reviewNamed", () => {
     });
 
     expect(seen).toHaveLength(2);
+  });
+
+  describe("the ledger", () => {
+    /** Parsed records of every run file, sorted by filename. */
+    function ledgerRuns(root: string): LedgerRecord[][] {
+      const dir = join(root, ".praxis", "ledger", "runs");
+
+      if (!existsSync(dir)) return [];
+
+      return readdirSync(dir)
+        .sort()
+        .map((file) =>
+          readFileSync(join(dir, file), "utf8")
+            .trimEnd()
+            .split("\n")
+            .map((line) => JSON.parse(line) as LedgerRecord),
+        );
+    }
+
+    it("persists each reviewer's pass with scope files — fast-loop runs are evidence", async () => {
+      useVerdict("validation_fail");
+      const { root, config, abs } = reviewingProject();
+
+      await reviewNamed({ targets: [abs("specs/doc.md")], root, config, useCache: false });
+
+      const runs = ledgerRuns(root);
+
+      expect(runs).toHaveLength(1);
+      expect(runs[0][0]).toMatchObject({ kind: "run", scope: "files", trigger: "manual" });
+      expect(runs[0].slice(1).every((record) => record.kind === "critique")).toBe(true);
+      expect(runs[0].length).toBeGreaterThan(1);
+    });
+
+    it("writes nothing when ledger is false", async () => {
+      useVerdict("validation_pass");
+      const { root, config, abs } = reviewingProject();
+
+      await reviewNamed({
+        targets: [abs("specs/doc.md")],
+        root,
+        config,
+        useCache: false,
+        ledger: false,
+      });
+
+      expect(ledgerRuns(root)).toEqual([]);
+    });
   });
 });

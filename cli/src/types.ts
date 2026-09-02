@@ -395,6 +395,8 @@ export interface ValidationDomain {
 export interface TargetVerdict extends Verdict {
   /** Absolute path of the validated document. */
   path: string;
+  /** Set when the unit could not be reviewed at all (03): never a violation. */
+  unverified?: true;
   /** Type label of the domain that validated it (spec directory, root-relative). */
   type: string;
   /** Basename of the validated document. */
@@ -413,6 +415,8 @@ export interface EvalSummary {
   warnings: number;
   /** Non-compliant results with error severity. */
   errors: number;
+  /** Units that could not be reviewed at all — never counted as violations. */
+  unverified: number;
   /** Documents no result covers (no spec, or skipped by fail-fast). */
   notValidated: number;
   /** Per-type breakdown, keyed by validation domain type label. */
@@ -533,6 +537,8 @@ export interface ReviewTargetResult {
 /** What a run needs to know to review a project. */
 /** What reviewing a whole project needs: its root, its config, and the run's options. */
 export interface ReviewProjectInput {
+  /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
+  ledger?: boolean;
   root: string;
   config: PraxisConfig;
   /** Run only this configured reviewer; omitted runs all of them. */
@@ -548,6 +554,8 @@ export interface ReviewProjectInput {
 }
 
 export interface ReviewAllInput extends DiscoveryScope {
+  /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
+  ledger?: boolean;
   /** The reviewers to run; every reviewer reviews every unit. */
   reviewers: ReviewerConfig[];
   /** Whether to consult the verdict cache. */
@@ -634,6 +642,8 @@ export interface WriteVerdictInput {
 
 /** The targets to review, and the project they live in. */
 export interface ReviewNamedInput {
+  /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
+  ledger?: boolean;
   /** Absolute or cwd-relative target paths. */
   targets: string[];
   /** Project root. */
@@ -1196,6 +1206,141 @@ export interface InitProjectResult {
   skipped: number;
   /** Guidance to show the author, matched to what was scaffolded. */
   nextSteps: string[];
+}
+
+// ---------------------------------------------------------------------------
+// The ledger (services/write-ledger-run-service.ts) — 05
+// ---------------------------------------------------------------------------
+
+/** What caused a ledger run (05). M2 writes only "manual". */
+export type LedgerTrigger = "manual" | "ci" | "watch";
+
+/** What a run covered (05). M2 writes "corpus" (full run) or "files" (named). */
+export type LedgerScope = "corpus" | "diff" | "files";
+
+/** Reviewer calibration state stamped on a run (06 grows this union). */
+export type CalibrationStatus = "uncalibrated";
+
+/** Verdict-diff classification of a critique (01). Null: no diff comparison existed. */
+export type LedgerFlow = "introduced" | "inherited" | "resolved";
+
+/**
+ * One run record — one per (invocation, reviewer) — as stored.
+ *
+ * `reviewer_hash` goes beyond 05's field list deliberately: epochs are
+ * promised to be derivable from provenance, and only the behavioral hash
+ * sees a temperature, prompt, or options change. `baseline` is always
+ * false until the epoch machinery exists (02).
+ */
+export interface LedgerRunRecord {
+  kind: "run";
+  run_id: string;
+  timestamp: string;
+  commit_sha: string | null;
+  branch: string | null;
+  trigger: LedgerTrigger;
+  scope: LedgerScope;
+  files_evaluated: number;
+  reviewer_name: string;
+  reviewer_model: string;
+  reviewer_hash: string;
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  cost_usd: number | null;
+  cache_hits: number;
+  cache_misses: number;
+  pass_count: number;
+  warn_count: number;
+  fail_count: number;
+  unverified_count: number;
+  critique_count: number;
+  calibration_status_at_run: CalibrationStatus;
+  baseline: boolean;
+}
+
+/**
+ * One critique record — one per issue — as stored.
+ *
+ * Fields no M2 run can know are typed literal `null`, so populating one
+ * later is a visible type change, not a quiet drift. The enums a future
+ * reader must understand (`population`, `authorship`, `flow`) carry their
+ * full unions now, because old records outlive new code.
+ */
+export interface LedgerCritiqueRecord {
+  kind: "critique";
+  /** `${run_id}:${seq}`, 1-based in write order. */
+  id: string;
+  run_id: string;
+  timestamp: string;
+  /** Project-relative. */
+  file_path: string;
+  /** Project-relative. */
+  spec_path: string;
+  target_content_hash: string;
+  spec_content_hash: string;
+  reviewer_name: string;
+  reviewer_model: string;
+  reviewer_hash: string;
+  severity: Severity;
+  text: string;
+  mode: "judgment";
+  axiom_id: null;
+  axiom_version: null;
+  assigned_by: null;
+  /** M2 writes "unknown" — never guessed (05). */
+  population: "pre_spec" | "post_spec" | "unknown";
+  /** M2 writes "unknown" — never guessed (02). */
+  authorship: "agent" | "human" | "unknown";
+  authorship_evidence: null;
+  agent_involved: null;
+  pre_review: null;
+  /** Null in M2: working-tree runs are excluded from flow by rule (12). */
+  flow: LedgerFlow | null;
+  before_run_id: null;
+  resolved_by: null;
+}
+
+/** Any line of a run file. */
+export type LedgerRecord = LedgerRunRecord | LedgerCritiqueRecord;
+
+/** What one review produced beyond its verdict — null when nothing was reviewed. */
+export interface LedgerEvidence {
+  /** Provider usage, or null on a cache hit. */
+  usage: ProviderUsage | null;
+  /** Absolute path of the spec the unit was reviewed against. */
+  specPath: string;
+  targetContentHash: string;
+  specContentHash: string;
+}
+
+/** One reviewed unit as the ledger sees it. */
+export interface LedgerEntry {
+  /** The structural slice of a verdict the ledger reads. */
+  verdict: {
+    path: string;
+    compliant: boolean;
+    issues: string[];
+    severity?: Severity;
+    unverified?: true;
+  };
+  cacheHit: boolean;
+  /** Null ⇒ the unit went unverified ⇒ it fans out no critiques. */
+  evidence: LedgerEvidence | null;
+}
+
+/** One reviewer's completed run, ready to persist. */
+export interface WriteLedgerRunInput {
+  root: string;
+  reviewer: CacheReviewerIdentity;
+  trigger: LedgerTrigger;
+  scope: LedgerScope;
+  entries: LedgerEntry[];
+}
+
+/** Where a run landed. */
+export interface WriteLedgerRunResult {
+  runId: string;
+  path: string;
 }
 
 // ---------------------------------------------------------------------------

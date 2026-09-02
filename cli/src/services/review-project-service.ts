@@ -22,6 +22,7 @@ export default async function reviewProjectService({
   type,
   failFast = false,
   useCache = true,
+  ledger = true,
   onProgress,
 }: ReviewProjectInput): Promise<ReviewAllResult> {
   return reviewAll({
@@ -30,6 +31,7 @@ export default async function reviewProjectService({
     type,
     failFast,
     useCache,
+    ledger,
     onProgress,
   });
 }

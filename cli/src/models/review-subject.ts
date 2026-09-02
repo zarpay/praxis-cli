@@ -94,10 +94,17 @@ export class ReviewSubject {
    * reviewer saw invalidates the verdict keyed on it.
    */
   contentHash(): string {
-    return createHash("sha256")
-      .update(this.targetContent + this.specContent + this.assistInput())
-      .digest("hex")
-      .slice(0, 8);
+    return hash8(this.targetContent + this.specContent + this.assistInput());
+  }
+
+  /** Provenance hash of the target alone, for the ledger (05). */
+  targetContentHash(): string {
+    return hash8(this.targetContent);
+  }
+
+  /** Provenance hash of the spec alone, for the ledger (05). */
+  specContentHash(): string {
+    return hash8(this.specContent);
   }
 
   /**
@@ -154,6 +161,11 @@ function findSpec(targetPath: string, specFilePattern: string): string {
 function records(files: AssistFile[]): AssistFileRecord[] {
   return files.map((file) => ({
     path: file.path,
-    hash: createHash("sha256").update(file.content).digest("hex").slice(0, 8),
+    hash: hash8(file.content),
   }));
+}
+
+/** The codebase's standard 8-char sha256 prefix. */
+function hash8(text: string): string {
+  return createHash("sha256").update(text).digest("hex").slice(0, 8);
 }

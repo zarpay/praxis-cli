@@ -1,5 +1,7 @@
+import type { LedgerRecord } from "@/types.js";
+
 import { HttpResponse, http } from "msw";
-import { writeFileSync } from "node:fs";
+import { chmodSync, existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
@@ -1032,5 +1034,126 @@ describe("reviewAll", () => {
       expect(summary.errors).toBe(0);
       expect(summary.warnings).toBe(0);
     });
+  });
+});
+
+describe("the ledger", () => {
+  const cleanups: (() => void)[] = [];
+
+  afterEach(() => {
+    while (cleanups.length) cleanups.pop()?.();
+    delete process.env["OPENROUTER_API_KEY"];
+  });
+
+  /** Every .jsonl run file under the project's ledger, parsed. */
+  function ledgerRuns(root: string): { file: string; records: LedgerRecord[] }[] {
+    const dir = join(root, ".praxis", "ledger", "runs");
+
+    if (!existsSync(dir)) return [];
+
+    return readdirSync(dir)
+      .sort()
+      .map((file) => ({
+        file,
+        records: readFileSync(join(dir, file), "utf8")
+          .trimEnd()
+          .split("\n")
+          .map((line) => JSON.parse(line) as LedgerRecord),
+      }));
+  }
+
+  const FLASH = { name: "flash", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" };
+
+  /** A throwaway two-target project with one keyed reviewer. */
+  function ledgerProject(): { root: string } {
+    const { root, cleanup } = createValidatorTmpdir({
+      sources: ["docs"],
+      files: {
+        "docs/README.md": "# Spec\nDocs need a title.",
+        "docs/guide.md": "# Guide",
+        "docs/other.md": "# Other",
+      },
+      reviewers: [FLASH],
+    });
+    cleanups.push(cleanup);
+    process.env["OPENROUTER_API_KEY"] = "test-key";
+
+    return { root };
+  }
+
+  it("persists one run file per reviewer, critiques matching the issues found", async () => {
+    useErrorFixture();
+    const { root } = ledgerProject();
+
+    await reviewAll({ root, sources: ["docs"], reviewers: [FLASH], useCache: false });
+
+    const runs = ledgerRuns(root);
+
+    expect(runs).toHaveLength(1);
+
+    const [run, ...critiques] = runs[0].records;
+
+    expect(run).toMatchObject({ kind: "run", scope: "corpus", trigger: "manual" });
+    // Two targets, two issues each (the error fixture reports two).
+    expect(critiques.every((record) => record.kind === "critique")).toBe(true);
+    expect(critiques.length).toBeGreaterThan(0);
+    expect((run as { critique_count: number }).critique_count).toBe(critiques.length);
+  });
+
+  it("writes a fresh run file for an all-hit run, counting hits and no critiques", async () => {
+    useErrorFixture();
+    const { root } = ledgerProject();
+
+    await reviewAll({ root, sources: ["docs"], reviewers: [FLASH] });
+    await reviewAll({ root, sources: ["docs"], reviewers: [FLASH] });
+
+    const runs = ledgerRuns(root);
+
+    expect(runs).toHaveLength(2);
+
+    const second = runs[1].records;
+    const run = second[0] as { cache_hits: number; critique_count: number; prompt_tokens: null };
+
+    expect(run.cache_hits).toBeGreaterThan(0);
+    expect(run.critique_count).toBe(0);
+    expect(run.prompt_tokens).toBeNull();
+    expect(second).toHaveLength(1);
+  });
+
+  it("writes nothing when ledger is false — CI verifies without writing (12)", async () => {
+    useCompliantFixture();
+    const { root } = ledgerProject();
+
+    await reviewAll({
+      root,
+      sources: ["docs"],
+      reviewers: [FLASH],
+      useCache: false,
+      ledger: false,
+    });
+
+    expect(ledgerRuns(root)).toEqual([]);
+  });
+
+  it("records an unreadable target as unverified: counted, excluded, no critiques", async () => {
+    useCompliantFixture();
+    const { root } = ledgerProject();
+    rmSync(join(root, "docs", "other.md"));
+    writeFileSync(join(root, "docs", "other.md"), "");
+    chmodSync(join(root, "docs", "other.md"), 0o000);
+
+    const run = await reviewAll({ root, sources: ["docs"], reviewers: [FLASH], useCache: false });
+
+    chmodSync(join(root, "docs", "other.md"), 0o644);
+
+    expect(run.summary.unverified).toBe(1);
+    expect(run.summary.errors).toBe(0);
+
+    const [runRecord, ...critiques] = ledgerRuns(root)[0].records;
+
+    expect((runRecord as { unverified_count: number }).unverified_count).toBe(1);
+    expect(
+      critiques.filter((c) => (c as { file_path?: string }).file_path?.includes("other")),
+    ).toEqual([]);
   });
 });

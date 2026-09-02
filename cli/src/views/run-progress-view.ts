@@ -31,7 +31,7 @@ const runProgressView: View<EvalProgress> = (event) => {
   return [
     {
       channel: "content",
-      entries: [`\t${chalk.red("✗ ERROR")}`, `\t${chalk.dim("·")} ${event.message}`],
+      entries: [`\t${chalk.gray("✗ UNVERIFIED")}`, `\t${chalk.dim("·")} ${event.message}`],
     },
   ];
 };

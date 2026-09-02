@@ -58,6 +58,11 @@ function summary(totals: EvalSummary): DisplayEntry[] {
     { badge: "Compliant", color: "green", value: totals.compliant },
     { badge: "Warnings", color: "yellow", value: totals.warnings },
     { badge: "Errors", color: "red", value: totals.errors },
+    totals.unverified > 0 && {
+      badge: "Unverified",
+      color: "gray",
+      value: `${totals.unverified} (could not be reviewed)`,
+    },
     totals.notValidated > 0 && {
       badge: "Not Validated",
       color: "gray",

@@ -31,15 +31,18 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
   const run = await reviewProject({
     root,
     config,
+    // CI verifies without writing (12): the branch's own runs are the evidence.
+    ledger: false,
     onProgress,
   });
 
   const reportView = runReportView({ run, cached: true });
   ctx.render(reportView);
 
-  const { errors, warnings } = run.summary;
+  const { errors, warnings, unverified } = run.summary;
 
-  const errorCount = errors + (strict ? warnings : 0);
+  // Unverified fails CI outright: a gate that could not look is not a gate.
+  const errorCount = errors + unverified + (strict ? warnings : 0);
 
   return errorCount === 0 ? "ok" : "failed";
 };
