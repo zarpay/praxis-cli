@@ -30,6 +30,7 @@ src/
   framework/      the mini-framework this CLI is built from, knowing nothing
                   about Praxis: errors, files, paths, frontmatter, markdown-file,
                   its own types, prepare-orchestrator, and views/ (the render kit)
+  templates/      the body of every file Praxis writes, one typed function each
   domains/        one directory per area, each owning its work end to end
     spec/         authoring → agent profiles (plus plugins/: output formats)
     eval/         evaluating targets against specs (plus providers/: backends)
@@ -40,7 +41,7 @@ src/
 **Dependencies flow one way, and ESLint enforces it:**
 
 ```
-framework  →  workspace/{models,types}  →  spec, eval  →  commands
+framework, templates  →  workspace/{models,types}  →  spec, eval  →  commands
 ```
 
 - `framework/` knows nothing about Praxis and depends on no domain. The test is
@@ -75,8 +76,11 @@ the two ends of it.
 | `orchestrators/` | **One file, one default-exported `Orchestrator`.** Coordinates services into a workflow, renders the result, and returns a `CommandOutcome`. The whole of what a command does. `run-eval-orchestrator.ts`, `compile-project-orchestrator.ts`. |
 | `views/`         | Rendering only — pure functions returning `DisplayEntry[]` or strings, never performing work. `unitHeading`, `issueBlocks`, `evalTargetingLines`.                                                                                             |
 
-A domain's `prompts/` holds the LLM- or agent-facing text it owns: the eval domain
-has the six reviewer prompts, the spec domain the two Claude Code plugin templates.
+A domain's `prompts/` holds text sent to a model — the eval domain's six reviewer
+prompts. Text _written to a file_ is a template instead, and lives in
+`src/templates/`: the expert and practice documents `praxis add` creates, and the
+skill and slash-command documents the Claude Code plugin installs. One emitted
+file, one typed function, one source.
 
 **Services and orchestrators are functions, not classes.** One file, one
 default-exported function, taking a single input payload and returning a single

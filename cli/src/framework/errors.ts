@@ -64,11 +64,6 @@ export const errors = {
     return new PraxisError("FILE_ALREADY_EXISTS", `File already exists: ${relPath}`);
   },
 
-  /** The scaffold template for `praxis add` is missing. */
-  templateNotFound(templatePath: string): PraxisError {
-    return new PraxisError("TEMPLATE_NOT_FOUND", `Template not found: ${templatePath}`);
-  },
-
   /** `praxis compile --alias` was given an alias no expert file declares. */
   expertNotFound(alias: string): PraxisError {
     return new PraxisError("EXPERT_NOT_FOUND", `No expert found with alias: ${alias}`);

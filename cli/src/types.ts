@@ -82,3 +82,21 @@ export interface NormalizedConfig {
 
 /** How a spec groups its targets into review units. */
 export type CohortMode = "by_file" | "by_directory";
+
+// ---------------------------------------------------------------------------
+// Templates (templates/)
+// ---------------------------------------------------------------------------
+
+/** What `praxis add expert` supplies to the expert document template. */
+export interface ExpertTemplateVars {
+  /** Display title, e.g. "Code Reviewer". */
+  title: string;
+  /** The alias the compiler keys the expert on — the name as typed. */
+  alias: string;
+}
+
+/** What `praxis add practice` supplies to the practice document template. */
+export interface PracticeTemplateVars {
+  /** Display title, e.g. "Review Pull Requests". */
+  title: string;
+}

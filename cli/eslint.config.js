@@ -199,6 +199,30 @@ export default tseslint.config(
     },
   },
   {
+    // templates/ is a leaf beside the framework: each file is one
+    // emitted document's body as a typed function, so it imports its
+    // parameter types and nothing else.
+    files: ["src/templates/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/domains/*", "@/commands/*", "@/framework/*"],
+              message:
+                "a template is a body of text and its variables: it must not depend on a domain, on commands, or on the framework.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // files.ts and paths.ts are the two modules allowed to import
     // node:fs and node:path, which is why they sit outside the block
     // above. That exemption must not also buy them the right to reach

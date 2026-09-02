@@ -3,7 +3,7 @@
  * agent-facing prompt that works through spec violations one file at
  * a time — discover, fix, verify — until the project is compliant.
  */
-export default function praxisResolveCommand(): string {
+export default function praxisResolveCommandTemplate(): string {
   return `---
 description: Iteratively resolve Praxis spec violations — review, fix, and verify until all targeted files are compliant.
 ---

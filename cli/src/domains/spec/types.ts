@@ -228,8 +228,6 @@ export interface CompileProjectOptions {
 export interface AddDocumentOptions {
   /** Kebab-case name for the new file, e.g. "code-reviewer". */
   name: string;
-  /** Scaffold source tree; defaults to the packaged one. */
-  scaffoldDir?: string;
 }
 
 /** Everything scaffolding one document needs. */
@@ -244,8 +242,6 @@ export interface AddDocumentInput {
   expertsDir: string;
   /** Where practices live. */
   practicesDir: string;
-  /** Scaffold source tree; defaults to the packaged one. */
-  scaffoldDir?: string;
 }
 
 /** What was created. */

@@ -1,11 +1,21 @@
----
-title: "{practice_title}"
+import type { PracticeTemplateVars } from "@/types.js";
+
+/**
+ * The document `praxis add practice <name>` writes.
+ *
+ * Only the display title comes from the command. `{owner_role_alias}` and
+ * `{optional_schedule}` are guidance the author replaces by hand, so they
+ * are literal text here rather than parameters.
+ */
+export default function practiceFileTemplate({ title }: PracticeTemplateVars): string {
+  return `---
+title: "${title}"
 type: practice
 owner: "{owner_role_alias}"
 schedule: "{optional_schedule}"
 ---
 
-# {practice_title}
+# ${title}
 
 > One-sentence description of what this practice accomplishes.
 
@@ -34,3 +44,5 @@ What does this practice achieve? Why does it matter?
 - [ ] Criterion 1
 - [ ] Criterion 2
 - [ ] Criterion 3
+`;
+}

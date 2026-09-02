@@ -51,12 +51,6 @@ describe("errors", () => {
     expect(err.message).toBe("File already exists: roles/dup.md");
   });
 
-  it("templateNotFound", () => {
-    const err = errors.templateNotFound("/scaffold/core/roles/_template.md");
-    expect(err.code).toBe("TEMPLATE_NOT_FOUND");
-    expect(err.message).toBe("Template not found: /scaffold/core/roles/_template.md");
-  });
-
   it("duplicateReviewerName", () => {
     const err = errors.duplicateReviewerName("flash");
     expect(err.code).toBe("INVALID_REVIEWER_CONFIG");

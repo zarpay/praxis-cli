@@ -9,9 +9,6 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import addDocumentService from "@/domains/spec/services/add-document-service.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 
-/** Resolved path to the scaffold directory at the project root. */
-const SCAFFOLD_DIR = join(import.meta.dirname, "..", "..", "..", "..", "scaffold");
-
 /** Creates a fresh temporary project root with .praxis/ and content dirs. */
 function makeTmpdir(): string {
   const dir = join(tmpdir(), `praxis-add-test-${randomUUID()}`);
@@ -44,7 +41,6 @@ describe("addDocumentOrchestrator", () => {
         root,
         expertsDir: config.expertsDir,
         practicesDir: config.practicesDir,
-        scaffoldDir: SCAFFOLD_DIR,
       });
   });
 
@@ -94,23 +90,6 @@ describe("addDocumentOrchestrator", () => {
 
     // Original content preserved
     expect(readFileSync(existing, "utf-8")).toBe("# My custom content\n");
-  });
-
-  it("throws when the scaffold template is missing", () => {
-    const emptyScaffold = join(root, "empty-scaffold");
-    mkdirSync(emptyScaffold, { recursive: true });
-    const config = new PraxisConfig(root);
-    const broken = () =>
-      addDocumentService({
-        type: "expert",
-        name: "anything",
-        root,
-        expertsDir: config.expertsDir,
-        practicesDir: config.practicesDir,
-        scaffoldDir: emptyScaffold,
-      });
-
-    expect(broken).toThrow("Template not found");
   });
 
   it("handles multi-word hyphenated names", () => {

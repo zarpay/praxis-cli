@@ -1,12 +1,18 @@
 import type { AgentMetadata, CompilerPlugin, PluginOptions } from "@/domains/spec/types.js";
 
-import praxisResolveCommand from "@/domains/spec/prompts/praxis-resolve-command.js";
-import praxisSkill from "@/domains/spec/prompts/praxis-skill.js";
 import evalTargetingLines from "@/domains/spec/views/targeting.js";
 import { exists, readJson, writeJson, writeText } from "@/framework/files.js";
 import { joinPath, resolvePath } from "@/framework/paths.js";
+import praxisResolveCommandTemplate from "@/templates/praxis-resolve-command-template.js";
+import praxisSkillTemplate from "@/templates/praxis-skill-template.js";
 
-/** Default plugin.json content used when no scaffold file exists. */
+/**
+ * The manifest written when the output directory has none.
+ *
+ * Not read from `scaffold/`: `ensurePluginJson` checks the project's own
+ * output directory, so this is the sole source on a project that was
+ * never scaffolded.
+ */
 const DEFAULT_PLUGIN_JSON = {
   name: "praxis",
   description: "A plugin for integrating assistant profiles with Claude.",
@@ -84,8 +90,11 @@ export class ClaudeCodePlugin implements CompilerPlugin {
    * documents without needing an OpenRouter API key.
    */
   private ensureCommands(): void {
-    writeText(joinPath(this.outputDir, "commands", "praxis-resolve.md"), praxisResolveCommand());
-    writeText(joinPath(this.outputDir, "skills", "praxis", "SKILL.md"), praxisSkill());
+    writeText(
+      joinPath(this.outputDir, "commands", "praxis-resolve.md"),
+      praxisResolveCommandTemplate(),
+    );
+    writeText(joinPath(this.outputDir, "skills", "praxis", "SKILL.md"), praxisSkillTemplate());
   }
 
   /**

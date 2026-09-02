@@ -2,7 +2,7 @@
  * The praxis skill document written into user projects: agent-facing
  * reference for the CLI — what it does, how the cache and specs work.
  */
-export default function praxisSkill(): string {
+export default function praxisSkillTemplate(): string {
   return `---
 description: Reference for the Praxis CLI — what it does, how to use it, and how the cache and specs work.
 ---

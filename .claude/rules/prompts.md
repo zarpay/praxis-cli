@@ -6,6 +6,11 @@ paths:
 
 # Prompts
 
+**A prompt is text sent to a model**, not text written to disk. A document Praxis
+installs into a user's project is a template (`src/templates/`), however
+agent-facing its prose — that is the distinction `praxis-skill.ts` sitting in
+`spec/prompts/` used to blur.
+
 One LLM- or agent-facing prompt per file, as that file's default-export
 function, with typed parameters when it templates. No prompt text lives anywhere
 else. Reviewer prompts belong to `eval`; Claude Code plugin templates belong to

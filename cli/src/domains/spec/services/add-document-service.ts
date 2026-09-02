@@ -1,10 +1,11 @@
 import type { AddDocumentInput, AddDocumentResult } from "@/domains/spec/types.js";
 
-import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
 import { errors } from "@/framework/errors.js";
-import { exists, readText, writeText } from "@/framework/files.js";
+import { exists, writeText } from "@/framework/files.js";
 import { joinPath, relativePath } from "@/framework/paths.js";
 import { kebabToTitleCase } from "@/framework/text.js";
+import expertFileTemplate from "@/templates/expert-file-template.js";
+import practiceFileTemplate from "@/templates/practice-file-template.js";
 
 /**
  * Creates one expert or practice from its template.
@@ -15,7 +16,7 @@ import { kebabToTitleCase } from "@/framework/text.js";
  * Refuses to overwrite. An existing document is the author's work, and
  * `add` is not the command for editing it.
  *
- * @throws PraxisError when the target exists, or the template is missing
+ * @throws PraxisError when the type has no template, or the target exists
  */
 export default function addDocumentService({
   type,
@@ -23,28 +24,19 @@ export default function addDocumentService({
   root,
   expertsDir,
   practicesDir,
-  scaffoldDir = SCAFFOLD_DIR,
 }: AddDocumentInput): AddDocumentResult {
   const title = kebabToTitleCase(name);
 
   let targetFile: string;
-  let templatePath: string;
-  let placeholders: [RegExp, string][];
+  let document: string;
 
   if (type === "expert") {
-    templatePath = joinPath(scaffoldDir, "core", "experts", "_template.md");
     targetFile = joinPath(expertsDir, `${name}.md`);
-    // An expert gets its display name and the alias the compiler keys it
-    // on. The alias is the name as typed, because it is an identifier
-    // rather than prose.
-    placeholders = [
-      [/\{expert_name\}/g, title],
-      [/\{required_alias\}/g, name],
-    ];
+    // The alias is the name as typed: an identifier, not prose.
+    document = expertFileTemplate({ title, alias: name });
   } else if (type === "practice") {
-    templatePath = joinPath(scaffoldDir, "core", "practices", "_template.md");
     targetFile = joinPath(practicesDir, `${name}.md`);
-    placeholders = [[/\{practice_title\}/g, title]];
+    document = practiceFileTemplate({ title });
   } else {
     throw errors.invalidDocumentType(type);
   }
@@ -54,15 +46,6 @@ export default function addDocumentService({
   if (exists(targetFile)) {
     throw errors.fileAlreadyExists(path);
   }
-
-  if (!exists(templatePath)) {
-    throw errors.templateNotFound(templatePath);
-  }
-
-  const document = placeholders.reduce(
-    (text, [placeholder, value]) => text.replace(placeholder, value),
-    readText(templatePath),
-  );
 
   writeText(targetFile, document);
 

@@ -9,14 +9,10 @@ import { renderReport } from "@/framework/views/report.js";
  * What `praxis add expert <name>` does: scaffold one expert from its
  * template and say where it landed.
  */
-export const addExpertOrchestrator: Orchestrator<AddDocumentOptions> = async (
-  ctx,
-  { name, scaffoldDir },
-) => {
+export const addExpertOrchestrator: Orchestrator<AddDocumentOptions> = async (ctx, { name }) => {
   const created = addDocumentService({
     type: "expert",
     name,
-    scaffoldDir,
     root: ctx.root,
     expertsDir: ctx.config.expertsDir,
     practicesDir: ctx.config.practicesDir,
