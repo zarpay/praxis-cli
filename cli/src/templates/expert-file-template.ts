@@ -14,7 +14,6 @@ export default function expertFileTemplate({ title, alias }: ExpertTemplateVars)
   return `---
 title: "${title}"
 type: expert
-manager: "{manager_email}"
 alias: "${alias}"
 
 description: "Use this agent to {LIST USECASES}. This agent should be invoked {EXPLAIN AUTO INVOCATION CRITERIA}."

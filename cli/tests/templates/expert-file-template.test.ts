@@ -20,7 +20,6 @@ describe("expertFileTemplate", () => {
   });
 
   it("keeps the author's guidance tokens for them to fill in", () => {
-    expect(rendered).toContain("{manager_email}");
     expect(rendered).toContain("practices/{verb}-{noun}.md");
   });
 

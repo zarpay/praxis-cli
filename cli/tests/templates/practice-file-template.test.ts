@@ -14,9 +14,8 @@ describe("practiceFileTemplate", () => {
     expect(rendered).not.toContain("{practice_title}");
   });
 
-  it("keeps the author's guidance tokens for them to fill in", () => {
-    expect(rendered).toContain("{owner_role_alias}");
-    expect(rendered).toContain("{optional_schedule}");
+  it("declares only what praxis add fills — no leftover guidance tokens", () => {
+    expect(rendered).not.toMatch(/\{[a-z_]+\}/);
   });
 
   it("declares the frontmatter the compiler requires", () => {

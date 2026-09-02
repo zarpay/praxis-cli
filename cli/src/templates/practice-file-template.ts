@@ -11,8 +11,6 @@ export default function practiceFileTemplate({ title }: PracticeTemplateVars): s
   return `---
 title: "${title}"
 type: practice
-owner: "{owner_role_alias}"
-schedule: "{optional_schedule}"
 ---
 
 # ${title}

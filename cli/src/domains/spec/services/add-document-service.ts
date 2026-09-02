@@ -32,7 +32,6 @@ export default function addDocumentService({
 
   if (type === "expert") {
     targetFile = joinPath(expertsDir, `${name}.md`);
-    // The alias is the name as typed: an identifier, not prose.
     document = expertFileTemplate({ title, alias: name });
   } else if (type === "practice") {
     targetFile = joinPath(practicesDir, `${name}.md`);
