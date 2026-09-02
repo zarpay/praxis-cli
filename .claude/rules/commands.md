@@ -18,7 +18,7 @@ then hands them to one orchestrator. Nothing else. Nothing imports `commands/`.
 - **Import the orchestrator and hand it straight to `.action()`:**
 
   ```ts
-  import analyzeProject from "@/domains/workspace/orchestrators/analyze-project.js";
+  import analyzeProject from "@/workspace/orchestrators/analyze-project.js";
   // …
   .action(analyzeProject);
   ```
@@ -41,7 +41,7 @@ then hands them to one orchestrator. Nothing else. Nothing imports `commands/`.
   an outcome, not a payload: `"failed"` exits 1, anything else is success. If you
   find yourself doing something with a return value here, it belongs one layer
   down.
-- `prepareOrchestrator` (`domains/workspace/prepare-orchestrator.ts`) is the
+- `prepareOrchestrator` (`workspace/prepare-orchestrator.ts`) is the
   composition root, and it lives at framework level so an orchestrator can wrap
   itself. Nothing in `commands/` calls it. It builds the `CommandContext` inside
   the returned handler — per dispatch, never at module load — and carries the one

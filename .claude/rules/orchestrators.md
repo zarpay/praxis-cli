@@ -1,7 +1,7 @@
 ---
 description: What belongs in a domain's orchestrators/ directory
 paths:
-  - cli/src/domains/*/orchestrators/**
+  - cli/src/*/orchestrators/**
 ---
 
 # Orchestrators
@@ -24,7 +24,7 @@ belongs here.
 - **`export const nameOrchestrator: Orchestrator<Options> = async (ctx, options) => {}`,
   with `export default prepareOrchestrator(nameOrchestrator)` beneath it.** The default export is
   the wrapped form a command hands to `.action()`; the named export is the
-  orchestrator itself, which is what a test calls. `Orchestrator` (`domains/workspace/types.ts`) is the one signature
+  orchestrator itself, which is what a test calls. `Orchestrator` (`workspace/types.ts`) is the one signature
   every orchestrator has, applied to the const rather than annotating a function
   declaration — that is what makes it enforced rather than described.
 - **The `options` parameter is never dropped.** An orchestrator that takes none is

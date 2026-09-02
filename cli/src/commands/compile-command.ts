@@ -1,6 +1,6 @@
 import type { CommandRegistrar } from "@/framework/types.js";
 
-import compileProjectOrchestrator from "@/domains/spec/orchestrators/compile-project-orchestrator.js";
+import compileProjectOrchestrator from "@/spec/orchestrators/compile-project-orchestrator.js";
 
 /**
  * Registers the `praxis compile` command.

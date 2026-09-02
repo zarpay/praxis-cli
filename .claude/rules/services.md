@@ -1,7 +1,7 @@
 ---
 description: What belongs in a domain's services/ directory
 paths:
-  - cli/src/domains/*/services/**
+  - cli/src/*/services/**
 ---
 
 # Services

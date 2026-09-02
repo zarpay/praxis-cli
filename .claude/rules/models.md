@@ -1,7 +1,7 @@
 ---
 description: What belongs in a domain's models/ directory
 paths:
-  - cli/src/domains/*/models/**
+  - cli/src/*/models/**
 ---
 
 # Models

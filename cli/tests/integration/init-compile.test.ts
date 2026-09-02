@@ -5,12 +5,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import compileExperts from "@/domains/spec/services/compile-experts-service.js";
-import resolvePlugins from "@/domains/spec/services/resolve-plugins-service.js";
-import { CommandContext } from "@/domains/workspace/models/command-context.js";
-import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
-import { initProjectOrchestrator } from "@/domains/workspace/orchestrators/init-project-orchestrator.js";
 import { Logger } from "@/framework/views/logger.js";
+import compileExperts from "@/spec/services/compile-experts-service.js";
+import resolvePlugins from "@/spec/services/resolve-plugins-service.js";
+import { CommandContext } from "@/workspace/models/command-context.js";
+import { PraxisConfig } from "@/workspace/models/praxis-config.js";
+import { initProjectOrchestrator } from "@/workspace/orchestrators/init-project-orchestrator.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 
 /** Resolved path to the scaffold directory at the project root. */

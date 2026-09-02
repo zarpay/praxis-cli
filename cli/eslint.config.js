@@ -189,7 +189,7 @@ export default tseslint.config(
               message: "Use the @/ path alias instead of relative imports.",
             },
             {
-              group: ["@/domains/*", "@/commands/*"],
+              group: ["@/eval/*", "@/spec/*", "@/workspace/*", "@/commands/*"],
               message:
                 "the framework is the kernel: it must not depend on a domain or on commands.",
             },
@@ -213,7 +213,7 @@ export default tseslint.config(
               message: "Use the @/ path alias instead of relative imports.",
             },
             {
-              group: ["@/domains/*", "@/commands/*", "@/framework/*"],
+              group: ["@/eval/*", "@/spec/*", "@/workspace/*", "@/commands/*", "@/framework/*"],
               message:
                 "a template is a body of text and its variables: it must not depend on a domain, on commands, or on the framework.",
             },
@@ -239,7 +239,7 @@ export default tseslint.config(
               message: "Use the @/ path alias instead of relative imports.",
             },
             {
-              group: ["@/domains/*", "@/commands/*"],
+              group: ["@/eval/*", "@/spec/*", "@/workspace/*", "@/commands/*"],
               message:
                 "the framework is the kernel: it must not depend on a domain or on commands.",
             },
@@ -252,7 +252,7 @@ export default tseslint.config(
     // The two layers (11-spec-layer.md) never import each other: the
     // spec layer produces artifacts the eval layer consumes as plain
     // files, and the eval layer never calls back.
-    files: ["src/domains/eval/**/*.ts"],
+    files: ["src/eval/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -267,14 +267,14 @@ export default tseslint.config(
               message: "Use the @/ path alias instead of relative imports.",
             },
             {
-              group: ["@/domains/spec/*"],
+              group: ["@/spec/*"],
               message: "The eval layer must not depend on the spec layer (11-spec-layer.md).",
             },
             {
               group: [
-                "@/domains/workspace/services/*",
-                "@/domains/workspace/orchestrators/*",
-                "@/domains/workspace/views/*",
+                "@/workspace/services/*",
+                "@/workspace/orchestrators/*",
+                "@/workspace/views/*",
               ],
               message:
                 "Only workspace's models and types may be reached into: its services read back into spec and eval, so importing them would be a cycle.",
@@ -289,7 +289,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["src/domains/spec/**/*.ts"],
+    files: ["src/spec/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -304,14 +304,14 @@ export default tseslint.config(
               message: "Use the @/ path alias instead of relative imports.",
             },
             {
-              group: ["@/domains/eval/*"],
+              group: ["@/eval/*"],
               message: "The spec layer must not depend on the eval layer (11-spec-layer.md).",
             },
             {
               group: [
-                "@/domains/workspace/services/*",
-                "@/domains/workspace/orchestrators/*",
-                "@/domains/workspace/views/*",
+                "@/workspace/services/*",
+                "@/workspace/orchestrators/*",
+                "@/workspace/views/*",
               ],
               message:
                 "Only workspace's models and types may be reached into: its services read back into spec and eval, so importing them would be a cycle.",
@@ -329,7 +329,7 @@ export default tseslint.config(
     // workspace's services and orchestrators are the health slice: they
     // may read both layers. Its models and types may not — the block
     // after this one narrows them, and comes later so it wins.
-    files: ["src/domains/workspace/**/*.ts"],
+    files: ["src/workspace/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -355,7 +355,7 @@ export default tseslint.config(
   {
     // workspace's models and types are the floor spec and eval stand on,
     // so they must not reach into a domain at all.
-    files: ["src/domains/workspace/models/**/*.ts", "src/domains/workspace/types.ts"],
+    files: ["src/workspace/models/**/*.ts", "src/workspace/types.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -370,7 +370,7 @@ export default tseslint.config(
               message: "Use the @/ path alias instead of relative imports.",
             },
             {
-              group: ["@/domains/spec/*", "@/domains/eval/*", "@/commands/*"],
+              group: ["@/spec/*", "@/eval/*", "@/commands/*"],
               message:
                 "workspace's models and types are what spec and eval depend on: they must not depend back.",
             },
@@ -385,7 +385,7 @@ export default tseslint.config(
     // domain needs, a domain's own for its own. Modules declare behavior
     // only.
     files: ["src/**/*.ts"],
-    ignores: ["src/types.ts", "src/framework/types.ts", "src/domains/*/types.ts"],
+    ignores: ["src/types.ts", "src/framework/types.ts", "src/eval/types.ts", "src/spec/types.ts", "src/workspace/types.ts"],
     rules: {
       "no-restricted-syntax": [
         "error",
@@ -419,7 +419,7 @@ export default tseslint.config(
     // throws *synchronously*, so failures would arrive on two different
     // channels depending on the orchestrator. `async` is the contract,
     // not a claim that the body does I/O.
-    files: ["src/domains/*/orchestrators/**/*.ts"],
+    files: ["src/*/orchestrators/**/*.ts"],
     rules: {
       "@typescript-eslint/require-await": "off",
     },

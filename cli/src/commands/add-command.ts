@@ -1,7 +1,7 @@
 import type { CommandRegistrar } from "@/framework/types.js";
 
-import addExpertOrchestrator from "@/domains/spec/orchestrators/add-expert-orchestrator.js";
-import addPracticeOrchestrator from "@/domains/spec/orchestrators/add-practice-orchestrator.js";
+import addExpertOrchestrator from "@/spec/orchestrators/add-expert-orchestrator.js";
+import addPracticeOrchestrator from "@/spec/orchestrators/add-practice-orchestrator.js";
 
 /**
  * Registers the `praxis add` command group.

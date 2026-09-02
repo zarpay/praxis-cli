@@ -1,7 +1,7 @@
 ---
 description: What belongs in the workspace domain, and why others may reach into it
 paths:
-  - cli/src/domains/workspace/**
+  - cli/src/workspace/**
 ---
 
 # Workspace

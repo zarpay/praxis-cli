@@ -1,7 +1,7 @@
 ---
 description: What belongs in a domain's prompts/ directory
 paths:
-  - cli/src/domains/*/prompts/**
+  - cli/src/*/prompts/**
 ---
 
 # Prompts

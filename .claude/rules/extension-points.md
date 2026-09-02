@@ -1,8 +1,8 @@
 ---
 description: What belongs in a domain's providers/ and plugins/ directories
 paths:
-  - cli/src/domains/*/providers/**
-  - cli/src/domains/*/plugins/**
+  - cli/src/*/providers/**
+  - cli/src/*/plugins/**
 ---
 
 # Extension points

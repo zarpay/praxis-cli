@@ -2,7 +2,7 @@
 description: What belongs in a views/ directory — the render kit and a domain's views
 paths:
   - cli/src/framework/views/**
-  - cli/src/domains/*/views/**
+  - cli/src/*/views/**
 ---
 
 # Views

@@ -12,7 +12,7 @@ This is the mini-framework a Praxis-shaped CLI is built from: primitives, the re
 
 The framework is not a domain and has no `models/`, `services/`, `orchestrators/` structure. A domain owns an area of the product and has a workflow and a way to show it; the framework has neither and never will. It sits below every domain, depends on nothing, and is depended on by everything (ESLint-enforced).
 
-**Where the framework needs to know something Praxis-specific, it takes it as a parameter rather than importing it.** `prepareOrchestrator` is generic in its context and receives a factory; `domains/workspace/prepare-orchestrator.ts` binds it to `CommandContext`. That binding is the one place the plumbing meets the application, and it belongs to workspace because `workspace/models` already depends on the framework — importing it back would be a cycle.
+**Where the framework needs to know something Praxis-specific, it takes it as a parameter rather than importing it.** `prepareOrchestrator` is generic in its context and receives a factory; `workspace/prepare-orchestrator.ts` binds it to `CommandContext`. That binding is the one place the plumbing meets the application, and it belongs to workspace because `workspace/models` already depends on the framework — importing it back would be a cycle.
 
 - `text.ts` shapes a string for a human to read (`kebabToTitleCase`) — never
   parsing, never I/O. It is not `files.ts`: reading a file and formatting a name
