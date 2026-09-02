@@ -19,9 +19,10 @@ The framework is not a domain and has no `models/`, `services/`, `orchestrators/
 - `files.ts` and `paths.ts` are deliberately namespace modules, not services, and are the only files allowed to import `node:fs` and `node:path` — the ESLint rule names them, so splitting them into single-function services would trade a wall for scattered one-liners.
 - `errors.ts` owns every error Praxis raises: one factory per failure mode, carrying a machine-readable code. Callers `throw errors.<name>(...)` and never build error strings.
 - `files.ts` also holds the filename matching that goes with reading files —
-  `hasGlobChars` and `matchesFilename(name, pattern)` — as pattern math, not
-  Praxis vocabulary. "Is this a spec file?" is a question a domain asks by
-  passing its configured pattern; "is this reviewable?" is eval's own rule and
-  lives in eval.
+  `hasGlobChars`, `matchesFilename(name, pattern)`, `isContentFile(path, metaPattern)`
+  — as pattern math, not Praxis vocabulary. A domain asks its question by passing
+  its own pattern: eval passes `specFilePattern` to ask "is this a target?", and
+  the answer is the generic one, "is this content rather than a directory's meta
+  file?".
 - `markdown-file.ts` owns the document format. `MarkdownFile.at(path)` gives you `.body` and `.frontmatter`, and nothing else scans for `---`. A document _has_ frontmatter; `Frontmatter` is the metadata alone, never touching a path.
 - **Frontmatter accessors validate.** `requiredString`, `optionalString`, `stringList` and `enumValue` raise on a wrong-shaped value, naming the document and the key. `parse()` is the unvalidated escape hatch.

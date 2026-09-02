@@ -2,8 +2,8 @@ import type { DiscoveryScope, EvalUnit, ValidationDomain } from "@/domains/eval/
 
 import fg from "fast-glob";
 
-import isTarget from "@/domains/eval/services/is-target-service.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
+import { isContentFile } from "@/framework/files.js";
 
 /**
  * The review units a domain should review.
@@ -50,5 +50,5 @@ function targetsIn(
 ): string[] {
   return fg
     .sync(pattern, { cwd, onlyFiles: true, absolute: true, dot: true, ignore })
-    .filter((file) => isTarget(file, specFilePattern));
+    .filter((file) => isContentFile(file, specFilePattern));
 }

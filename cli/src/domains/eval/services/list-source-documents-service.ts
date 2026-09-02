@@ -2,8 +2,8 @@ import type { DiscoveryScope } from "@/domains/eval/types.js";
 
 import fg from "fast-glob";
 
-import isTarget from "@/domains/eval/services/is-target-service.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
+import { isContentFile } from "@/framework/files.js";
 import { joinPath } from "@/framework/paths.js";
 
 /**
@@ -28,7 +28,7 @@ export default function listSourceDocuments({
         dot: true,
         ignore: absoluteIgnore,
       })
-      .filter((file) => isTarget(file, specFilePattern)),
+      .filter((file) => isContentFile(file, specFilePattern)),
   );
 
   return new Set(docs);

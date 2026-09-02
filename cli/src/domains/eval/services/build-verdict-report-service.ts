@@ -1,12 +1,6 @@
 import type { BuildVerdictReportInput, VerdictReport } from "@/domains/eval/types.js";
 
-import fg from "fast-glob";
-
-import assistHashInput from "@/domains/eval/services/build-assist-hash-input-service.js";
-import contentHash from "@/domains/eval/services/hash-content-service.js";
-import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs-service.js";
-import { exists, hasGlobChars, readText } from "@/framework/files.js";
-import { joinPath, parentDir } from "@/framework/paths.js";
+import { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 
 /**
  * Classifies a target's cached verdict, including whether it is stale.
@@ -76,31 +70,8 @@ function recomputeHash({
   root?: string;
 }): string | null {
   try {
-    const targetContent = readText(targetPath);
-    const resolvedSpec = specPath ?? findSpec(targetPath, specFilePattern);
-
-    if (!resolvedSpec || !exists(resolvedSpec)) return null;
-
-    const specContent = readText(resolvedSpec);
-    const assist = resolveAssistInputs({ specContent, specPath: resolvedSpec, root });
-
-    return contentHash(targetContent, specContent, assistHashInput(assist));
+    return ReviewSubject.resolve({ targetPath, specPath, specFilePattern, root }).contentHash();
   } catch {
     return null;
   }
-}
-
-/** The spec governing a target's directory, or null when there is none. */
-function findSpec(targetPath: string, specFilePattern: string): string | null {
-  const dir = parentDir(targetPath);
-
-  if (!hasGlobChars(specFilePattern)) {
-    const specPath = joinPath(dir, specFilePattern);
-
-    return exists(specPath) ? specPath : null;
-  }
-
-  const matches = fg.sync(specFilePattern, { cwd: dir, onlyFiles: true, absolute: true });
-
-  return matches.length > 0 ? matches[0] : null;
 }

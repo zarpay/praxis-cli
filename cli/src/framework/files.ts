@@ -148,3 +148,17 @@ export function matchesFilename(filePathOrName: string, pattern: string): boolea
 
   return picomatch.isMatch(name, pattern);
 }
+
+/**
+ * Whether a file is content rather than one of a directory's meta files.
+ *
+ * Two exclusions, both pure name math: the file matching `metaPattern` —
+ * a directory's index, spec or README, which describes its neighbours
+ * rather than being one of them — and anything underscore-prefixed, the
+ * conventional marker for a template or scratch file.
+ */
+export function isContentFile(path: string, metaPattern: string): boolean {
+  const name = basename(path);
+
+  return !matchesFilename(name, metaPattern) && !name.startsWith("_");
+}

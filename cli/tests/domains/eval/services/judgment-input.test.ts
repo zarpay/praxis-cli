@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import assistHashInput from "@/domains/eval/services/build-assist-hash-input-service.js";
 import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs-service.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
@@ -94,37 +93,5 @@ describe("resolveAssistInputs", () => {
     });
 
     expect(assist).toEqual({ exemplars: [], context: [] });
-  });
-});
-
-describe("assistHashInput", () => {
-  it("is empty when the spec declares no assist inputs", () => {
-    const input = assistHashInput({ exemplars: [], context: [] });
-
-    expect(input).toBe("");
-  });
-
-  it("labels each block with its kind and path", () => {
-    const input = assistHashInput({
-      exemplars: [{ path: "src/a.ts", content: "A" }],
-      context: [{ path: "docs/w.md", content: "W" }],
-    });
-
-    expect(input).toBe("EXEMPLAR src/a.ts\nA\nCONTEXT docs/w.md\nW");
-  });
-
-  it("distinguishes the same content used as exemplar versus context", () => {
-    const file = { path: "src/a.ts", content: "A" };
-    const asExemplar = assistHashInput({ exemplars: [file], context: [] });
-    const asContext = assistHashInput({ exemplars: [], context: [file] });
-
-    expect(asExemplar).not.toBe(asContext);
-  });
-
-  it("distinguishes identical content at different paths", () => {
-    const here = assistHashInput({ exemplars: [{ path: "a.ts", content: "X" }], context: [] });
-    const there = assistHashInput({ exemplars: [{ path: "b.ts", content: "X" }], context: [] });
-
-    expect(here).not.toBe(there);
   });
 });

@@ -6,10 +6,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import assistHashInput from "@/domains/eval/services/build-assist-hash-input-service.js";
+import { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 import buildVerdictReport from "@/domains/eval/services/build-verdict-report-service.js";
-import contentHash from "@/domains/eval/services/hash-content-service.js";
-import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs-service.js";
 
 const DOC_CONTENT = "# Guide\nA target under report.";
 const SPEC_CONTENT = "# Spec\nGuides need a title.";
@@ -18,13 +16,15 @@ describe("buildVerdictReport", () => {
   let dir: string;
   let targetPath: string;
   let build: (cacheData: CacheFileData | null, specFilePattern?: string) => VerdictReport;
+  /** The hash of the target and spec as first written, before a test edits them. */
+  let baselineHash: string;
 
   /** Cache data whose stored hash matches the on-disk target + spec. */
   function freshCacheData(overrides: Partial<CacheFileData["result"]> = {}): CacheFileData {
     return {
       version: "4.0",
       cached_at: "2026-08-31T12:00:00Z",
-      content_hash: contentHash(DOC_CONTENT, SPEC_CONTENT),
+      content_hash: baselineHash,
       document: { path: targetPath, spec_path: join(dir, "README.md") },
       result: { compliant: true, issues: [], reason: "All good", ...overrides },
     };
@@ -36,6 +36,11 @@ describe("buildVerdictReport", () => {
     targetPath = join(dir, "guide.md");
     writeFileSync(targetPath, DOC_CONTENT);
     writeFileSync(join(dir, "README.md"), SPEC_CONTENT);
+    baselineHash = ReviewSubject.resolve({
+      targetPath,
+      specPath: join(dir, "README.md"),
+      root: dir,
+    }).contentHash();
     build = (cacheData, specFilePattern = "README.md") =>
       buildVerdictReport({ targetPath, cacheData, specFilePattern, root: dir });
   });
@@ -114,7 +119,7 @@ describe("buildVerdictReport", () => {
       writeFileSync(join(dir, "rules.sme.md"), SPEC_CONTENT);
       const report = build(null, "*.sme.md");
 
-      expect(report.currentHash).toBe(contentHash(DOC_CONTENT, SPEC_CONTENT));
+      expect(report.currentHash).toBe(baselineHash);
     });
 
     it("returns a null hash when the target does not exist", () => {
@@ -136,11 +141,14 @@ describe("buildVerdictReport", () => {
       mkdirSync(join(dir, "services"), { recursive: true });
       writeFileSync(join(dir, "services", "store.ts"), "STORE_V1");
 
-      const specPath = join(dir, "README.md");
-      const assist = resolveAssistInputs({ specContent, specPath, root: dir });
+      // Re-hash after the context file exists: this is what a run would key on.
       const cacheData = {
         ...freshCacheData(),
-        content_hash: contentHash(DOC_CONTENT, specContent, assistHashInput(assist)),
+        content_hash: ReviewSubject.resolve({
+          targetPath,
+          specPath: join(dir, "README.md"),
+          root: dir,
+        }).contentHash(),
       };
 
       expect(build(cacheData).status).toBe("pass");

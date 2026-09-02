@@ -5,7 +5,6 @@ import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
-import contentHash from "@/domains/eval/services/hash-content-service.js";
 import readVerdictEntry from "@/domains/eval/services/read-verdict-entry-service.js";
 import readVerdict from "@/domains/eval/services/read-verdict-service.js";
 import writeVerdict from "@/domains/eval/services/write-verdict-service.js";
@@ -37,29 +36,6 @@ describe("the verdict cache", () => {
 
   afterEach(() => {
     cleanup();
-  });
-
-  describe("contentHash()", () => {
-    it("returns first 8 characters of SHA256 hex digest", () => {
-      const hash = contentHash("doc content", "readme content");
-
-      expect(hash).toHaveLength(8);
-      expect(hash).toMatch(/^[a-f0-9]{8}$/);
-    });
-
-    it("produces different hashes for different content", () => {
-      const hash1 = contentHash("doc A", "readme");
-      const hash2 = contentHash("doc B", "readme");
-
-      expect(hash1).not.toBe(hash2);
-    });
-
-    it("changes when readme content changes", () => {
-      const hash1 = contentHash("doc", "readme v1");
-      const hash2 = contentHash("doc", "readme v2");
-
-      expect(hash1).not.toBe(hash2);
-    });
   });
 
   describe("cachePathFor()", () => {

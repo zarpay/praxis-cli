@@ -15,6 +15,7 @@ import {
   removeFile,
   writeJson,
   writeText,
+  isContentFile,
 } from "@/framework/files.js";
 
 describe("files", () => {
@@ -192,5 +193,32 @@ describe("matchesFilename", () => {
     expect(matchesFilename("README.md", "{README,SPEC}.md")).toBe(true);
     expect(matchesFilename("SPEC.md", "{README,SPEC}.md")).toBe(true);
     expect(matchesFilename("OTHER.md", "{README,SPEC}.md")).toBe(false);
+  });
+});
+
+describe("isContentFile", () => {
+  it("accepts an ordinary target file", () => {
+    expect(isContentFile("/p/src/awards.ts", "README.md")).toBe(true);
+  });
+
+  it("rejects the spec itself — direction is never a target of itself", () => {
+    expect(isContentFile("/p/src/README.md", "README.md")).toBe(false);
+  });
+
+  it("rejects a spec matched by a glob pattern", () => {
+    expect(isContentFile("/p/docs/services.sme.md", "*.sme.md")).toBe(false);
+  });
+
+  it("rejects an underscore-prefixed file as a template", () => {
+    expect(isContentFile("/p/src/_template.md", "README.md")).toBe(false);
+  });
+
+  it("reviewers a file whose directory is underscore-prefixed", () => {
+    // The rule is about the filename, not the path it sits under.
+    expect(isContentFile("/p/_scratch/real.ts", "README.md")).toBe(true);
+  });
+
+  it("does not confuse a spec-like name elsewhere in the path", () => {
+    expect(isContentFile("/p/README.md/actual.ts", "README.md")).toBe(true);
   });
 });

@@ -64,3 +64,53 @@ describe("assistProvenance", () => {
     expect(subject.assistProvenance()).toEqual({ exemplarFiles: [], contextFiles: [] });
   });
 });
+
+describe("contentHash", () => {
+  it("is the first 8 characters of a SHA256 hex digest", () => {
+    const subject = subjectWith(["paths:", '  - "specs/*.md"']);
+
+    expect(subject.contentHash()).toMatch(/^[a-f0-9]{8}$/);
+  });
+
+  it("changes when the target changes", () => {
+    const before = subjectWith(["paths:", '  - "specs/*.md"']);
+    const after = subjectWith(["paths:", '  - "specs/*.md"'], { "specs/doc.md": "# Edited" });
+
+    expect(before.contentHash()).not.toBe(after.contentHash());
+  });
+
+  it("changes when the spec changes", () => {
+    const before = subjectWith(["paths:", '  - "specs/*.md"']);
+    const after = subjectWith(["paths:", '  - "specs/**/*.md"']);
+
+    expect(before.contentHash()).not.toBe(after.contentHash());
+  });
+
+  it("is unchanged by a spec that declares no assist inputs", () => {
+    const plain = subjectWith(["paths:", '  - "specs/*.md"']);
+    const alsoPlain = subjectWith(["paths:", '  - "specs/*.md"']);
+
+    expect(plain.contentHash()).toBe(alsoPlain.contentHash());
+  });
+
+  it("changes when an exemplar's content changes", () => {
+    const before = subjectWith(["exemplars:", '  - "src/a.ts"'], { "src/a.ts": "A" });
+    const after = subjectWith(["exemplars:", '  - "src/a.ts"'], { "src/a.ts": "EDITED" });
+
+    expect(before.contentHash()).not.toBe(after.contentHash());
+  });
+
+  it("distinguishes the same file used as exemplar versus context", () => {
+    const asExemplar = subjectWith(["exemplars:", '  - "src/a.ts"'], { "src/a.ts": "A" });
+    const asContext = subjectWith(["context:", '  - "src/a.ts"'], { "src/a.ts": "A" });
+
+    expect(asExemplar.contentHash()).not.toBe(asContext.contentHash());
+  });
+
+  it("distinguishes identical content at different paths", () => {
+    const here = subjectWith(["exemplars:", '  - "src/a.ts"'], { "src/a.ts": "X" });
+    const there = subjectWith(["exemplars:", '  - "src/b.ts"'], { "src/b.ts": "X" });
+
+    expect(here.contentHash()).not.toBe(there.contentHash());
+  });
+});

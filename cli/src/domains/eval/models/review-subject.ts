@@ -3,8 +3,6 @@ import type { AssistFileRecord, AssistInputs, AssistFile } from "@/domains/eval/
 import fg from "fast-glob";
 import { createHash } from "node:crypto";
 
-import assistHashInput from "@/domains/eval/services/build-assist-hash-input-service.js";
-import contentHash from "@/domains/eval/services/hash-content-service.js";
 import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs-service.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
 import { errors } from "@/framework/errors.js";
@@ -96,7 +94,24 @@ export class ReviewSubject {
    * reviewer saw invalidates the verdict keyed on it.
    */
   contentHash(): string {
-    return contentHash(this.targetContent, this.specContent, assistHashInput(this.assist));
+    return createHash("sha256")
+      .update(this.targetContent + this.specContent + this.assistInput())
+      .digest("hex")
+      .slice(0, 8);
+  }
+
+  /**
+   * The assist component of the content hash.
+   *
+   * Kind and path label each block so distinct assist states can never
+   * serialize identically. Empty when the spec declares no assist inputs,
+   * which keeps plain specs' hashes unchanged.
+   */
+  private assistInput(): string {
+    return [
+      ...this.assist.exemplars.map((file) => `EXEMPLAR ${file.path}\n${file.content}`),
+      ...this.assist.context.map((file) => `CONTEXT ${file.path}\n${file.content}`),
+    ].join("\n");
   }
 
   /** Per-file provenance for the cache entry: what was inlined, and its hash. */
