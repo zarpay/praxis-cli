@@ -256,4 +256,14 @@ export const errors = {
   unexpectedToolCall(toolName: string): PraxisError {
     return new PraxisError("UNEXPECTED_TOOL_CALL", `Unexpected validation tool call: ${toolName}`);
   },
+
+  // --- Axioms ---
+
+  /** No axiom in the store carries the requested id. */
+  axiomNotFound(id: string): PraxisError {
+    return new PraxisError(
+      "AXIOM_NOT_FOUND",
+      `No axiom "${id}" in .praxis/axioms/. Run \`praxis axioms list\` to see what exists.`,
+    );
+  },
 };

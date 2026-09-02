@@ -13,6 +13,7 @@
  * that module.
  */
 
+import type { AxiomFile } from "@/models/axiom-file.js";
 import type { CommandContext } from "@/models/command-context.js";
 import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { Paths } from "@/models/project-paths.js";
@@ -142,7 +143,8 @@ export type PraxisErrorCode =
   | "INVALID_REVIEW_PROVIDER"
   | "REVIEW_PROVIDER_FAILED"
   | "NO_TOOL_CALL"
-  | "UNEXPECTED_TOOL_CALL";
+  | "UNEXPECTED_TOOL_CALL"
+  | "AXIOM_NOT_FOUND";
 
 // ---------------------------------------------------------------------------
 // Eval (was eval/types.ts)
@@ -1419,3 +1421,81 @@ export type CompileOutcome = { compiled: number } | { alias: string; warnings: s
 /** One event from a compile watch session. */
 export type WatchEvent =
   { kind: "watching"; dir: string } | { kind: "recompiling"; filename: string | null };
+
+// ---------------------------------------------------------------------------
+// Axioms (models/axiom-file.ts, the axiom store services)
+// ---------------------------------------------------------------------------
+
+/** An axiom's lifecycle state (04): proposed until ratified, never deleted. */
+export type AxiomStatus = "proposed" | "active" | "deprecated";
+
+/** How the axiom is evaluated (03); `agentic` is schema-only until built. */
+export type AxiomMode = "judgment" | "agentic";
+
+/**
+ * What the reviewer reads to decide this axiom (03). The runtime honors
+ * `file` and `file+context`; the rest are in the schema so nothing gets
+ * silently stretched into them.
+ */
+export type AxiomScope = "hunk" | "file" | "file+context" | "cohort" | "changeset";
+
+/** The fields the proposal template renders into an axiom file. */
+export interface AxiomTemplateVars {
+  id: string;
+  status: AxiomStatus;
+  mode: AxiomMode;
+  scope: AxiomScope;
+  severity: Severity;
+  /** YYYY-MM-DD; per-axiom population clocks start here (04). */
+  introduced: string;
+  /** Spec traceability; null until ratification establishes it. */
+  groundedIn: string | null;
+  statement: string;
+  violatingExample: string;
+  compliantExample: string;
+}
+
+/** Whose axiom store to read. */
+export interface ListAxiomsInput {
+  root: string;
+}
+
+/** The store's contents, plus what could not be read. */
+export interface ListAxiomsResult {
+  /** Sorted by introduced date, id as tiebreak — random ids carry no order. */
+  axioms: AxiomFile[];
+  /** Files that failed validation: reported, never fatal to the sweep. */
+  problems: { path: string; message: string }[];
+}
+
+/** The project an id is minted for (uniqueness is checked in-store). */
+export interface NewAxiomIdInput {
+  root: string;
+}
+
+/** A draft accepted at triage, ready to become a proposal file. */
+export interface WriteAxiomProposalInput {
+  root: string;
+  statement: string;
+  severity: Severity;
+  scope: AxiomScope;
+  violatingExample: string;
+  compliantExample: string;
+}
+
+/** Where the proposal landed. */
+export interface WriteAxiomProposalResult {
+  id: string;
+  path: string;
+}
+
+/** Options for `praxis axioms list`. */
+export interface ListAxiomsOptions {
+  json?: boolean;
+}
+
+/** Options for `praxis axioms show <id>`. */
+export interface ShowAxiomOptions {
+  id: string;
+  json?: boolean;
+}

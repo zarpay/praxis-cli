@@ -1,6 +1,7 @@
 import { Command } from "commander";
 
 import registerAddCommand from "@/commands/add-command.js";
+import registerAxiomsCommand from "@/commands/axioms-command.js";
 import registerCompileCommand from "@/commands/compile-command.js";
 import registerConfigCommand from "@/commands/config-command.js";
 import registerEvalCommand from "@/commands/eval-command.js";
@@ -26,6 +27,7 @@ function createProgram(): Command {
   registerInitCommand(program);
   registerCompileCommand(program);
   registerEvalCommand(program);
+  registerAxiomsCommand(program);
   registerAddCommand(program);
   registerStatusCommand(program);
   registerConfigCommand(program);
