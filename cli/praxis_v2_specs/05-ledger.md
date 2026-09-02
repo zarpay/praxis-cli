@@ -67,7 +67,7 @@ Provenance fields are mandatory. Derived fields (population, authorship) record 
 - `BatchValidator.validateDocument` emits critique records alongside its existing cache write; run record on completion. Existing `cacheStats` feeds hits/misses directly.
 - `DocumentValidator.callOpenRouter` captures `data.usage` (currently discarded where `choices[0]` is destructured) and returns it upward.
 - The ledger is judgment-only (03): static tooling's findings never enter it.
-- Cache hits write **no** critique records (nothing new was reviewed) but are counted on the run record. Open question: on first ledger-enabled run, backfill from cache-hit results so the ledger starts populated? Tentatively yes, marked `backfilled: true`.
+- Cache hits write **no** critique records (nothing new was reviewed) but are counted on the run record. (An earlier open question — backfilling the first ledger-enabled run from cache hits — was dropped 2026-09-02: no install has pre-ledger history worth reconstructing, and the first real run populates the ledger anyway.)
 
 ## Integrity
 
