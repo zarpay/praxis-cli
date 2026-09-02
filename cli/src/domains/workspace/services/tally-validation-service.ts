@@ -1,7 +1,7 @@
 import type { StatusReport, TallyValidationInput } from "@/domains/workspace/types.js";
 
+import { Reviewer } from "@/domains/eval/models/reviewer.js";
 import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
-import cacheIdentity from "@/domains/eval/services/build-cache-identity-service.js";
 import listTargetPaths from "@/domains/eval/services/list-target-paths-service.js";
 import readVerdictEntry from "@/domains/eval/services/read-verdict-entry-service.js";
 import { joinPath } from "@/framework/paths.js";
@@ -35,7 +35,10 @@ export default function tallyValidation({
     config.reviewers.length > 0
       ? config.reviewers.map((reviewer) => ({
           reviewer: reviewer.name,
-          cache: new VerdictCache({ projectRoot: root, reviewer: cacheIdentity(reviewer) }),
+          cache: new VerdictCache({
+            projectRoot: root,
+            reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
+          }),
         }))
       : [{ reviewer: null, cache: new VerdictCache({ projectRoot: root }) }];
 

@@ -3,8 +3,8 @@ import type {
   CollectVerdictReportsResult,
 } from "@/domains/eval/types.js";
 
+import { Reviewer } from "@/domains/eval/models/reviewer.js";
 import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
-import cacheIdentity from "@/domains/eval/services/build-cache-identity-service.js";
 import buildVerdictReport from "@/domains/eval/services/build-verdict-report-service.js";
 import readVerdictEntry from "@/domains/eval/services/read-verdict-entry-service.js";
 import { errors } from "@/framework/errors.js";
@@ -48,7 +48,10 @@ export default function collectVerdictReports({
       report: buildVerdictReport({
         targetPath: absolutePath,
         cacheData: readVerdictEntry({
-          cache: new VerdictCache({ projectRoot: root, reviewer: cacheIdentity(reviewer) }),
+          cache: new VerdictCache({
+            projectRoot: root,
+            reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
+          }),
           targetPath: absolutePath,
         }),
         specFilePattern: config.specFilePattern,

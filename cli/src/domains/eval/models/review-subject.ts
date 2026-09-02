@@ -1,8 +1,8 @@
-import type { AssistFileRecord, AssistInputs } from "@/domains/eval/types.js";
+import type { AssistFileRecord, AssistInputs, AssistFile } from "@/domains/eval/types.js";
 
 import fg from "fast-glob";
+import { createHash } from "node:crypto";
 
-import assistFileRecords from "@/domains/eval/services/build-assist-file-records-service.js";
 import assistHashInput from "@/domains/eval/services/build-assist-hash-input-service.js";
 import contentHash from "@/domains/eval/services/hash-content-service.js";
 import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs-service.js";
@@ -102,8 +102,8 @@ export class ReviewSubject {
   /** Per-file provenance for the cache entry: what was inlined, and its hash. */
   assistProvenance(): { exemplarFiles: AssistFileRecord[]; contextFiles: AssistFileRecord[] } {
     return {
-      exemplarFiles: assistFileRecords(this.assist.exemplars),
-      contextFiles: assistFileRecords(this.assist.context),
+      exemplarFiles: records(this.assist.exemplars),
+      contextFiles: records(this.assist.context),
     };
   }
 }
@@ -129,4 +129,16 @@ function findSpec(targetPath: string, specFilePattern: string): string {
   if (matches.length > 0) return matches[0];
 
   throw errors.specPatternNotFound(specFilePattern, baseDir, targetPath);
+}
+
+/**
+ * The provenance records for one assist key (05): each file's path with
+ * an 8-char hash of its content, so a later run can tell whether what the
+ * reviewer was shown has changed.
+ */
+function records(files: AssistFile[]): AssistFileRecord[] {
+  return files.map((file) => ({
+    path: file.path,
+    hash: createHash("sha256").update(file.content).digest("hex").slice(0, 8),
+  }));
 }

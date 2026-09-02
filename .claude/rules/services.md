@@ -21,6 +21,15 @@ paths:
   A service never logs, never prints, and takes no logger.
 - No workflow. A service that calls two other services in sequence to produce an
   outcome is an orchestrator — a controller's job, not a service object's.
+- **No coercion of a single model.** A function whose whole job is deriving a
+  value from one model's own fields is a method on that model, not a service
+  here. `Reviewer.cacheIdentity()` and `ReviewSubject.assistProvenance()` were
+  services until the model was the only thing that could sensibly call them. The
+  test: if the body reads nothing but the model's fields, it belongs to the
+  model.
+- The line is the _input_, not the size. An algorithm a model happens to use —
+  `hash-reviewer-service.ts` canonicalizes a config and folds in the prompt
+  surface — is still a service, and the model delegates to it.
 
 Everything under `services/` is a service and takes the suffix — there are no
 exemptions, because the things that were not services have moved out.

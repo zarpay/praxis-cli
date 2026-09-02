@@ -22,6 +22,12 @@ frontmatter keys are spelled.
   job, not a parser's.
 - Callers that sweep a directory catch per file and report, so one malformed
   document never takes down a batch.
+- **A derivation from the model's own fields is a method here, not a service.**
+  If a function's whole body reads nothing but one model's fields, it belongs on
+  that model — `Reviewer.cacheIdentity()`, `ReviewSubject.assistProvenance()`,
+  `SpecFile.assistPatterns()`. A service that a model is the only sensible caller
+  of is a method wearing the wrong hat. An _algorithm_ the model uses stays a
+  service and the model delegates to it (`hash-reviewer-service.ts`).
 
 ## `reviewer` is a noun
 
@@ -29,6 +35,5 @@ The configured instrument, never the action. It is fixed by the public surface �
 `reviewers:` in `.praxis/config.json`, `--reviewer <name>`, and the `reviewer` field in
 every committed cache entry — so the verb had to give way instead.
 
-The verb is **evaluate**, matching the domain and `praxis eval run`:
-`evaluateTarget`, `provider.evaluate(request)`, `isTarget`. Write "the reviewer
-evaluates a target", never "reviewers" it.
+The verb is **review**: `review-target-service.ts`, `provider.review(request)`,
+`reviewNamed`. Write "the reviewer reviews a target", never "reviewers" it.

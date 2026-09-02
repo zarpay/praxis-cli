@@ -12,7 +12,6 @@ import type { ReviewerConfig } from "@/types.js";
 import { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 import { Reviewer } from "@/domains/eval/models/reviewer.js";
 import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
-import cacheIdentity from "@/domains/eval/services/build-cache-identity-service.js";
 import discoverDomains from "@/domains/eval/services/discover-domains-service.js";
 import listSourceDocuments from "@/domains/eval/services/list-source-documents-service.js";
 import resolveUnits from "@/domains/eval/services/resolve-units-service.js";
@@ -54,7 +53,12 @@ export default async function reviewAll({
   // Each reviewer gets its own cache bound to its identity: verdicts share
   // one file per target, keyed by (spec, reviewer) so they never collide.
   const caches = reviewers.map((reviewer) =>
-    useCache ? new VerdictCache({ projectRoot: root, reviewer: cacheIdentity(reviewer) }) : null,
+    useCache
+      ? new VerdictCache({
+          projectRoot: root,
+          reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
+        })
+      : null,
   );
 
   const queue = domains.flatMap((domain) =>

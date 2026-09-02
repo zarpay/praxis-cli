@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import assistFileRecords from "@/domains/eval/services/build-assist-file-records-service.js";
 import assistHashInput from "@/domains/eval/services/build-assist-hash-input-service.js";
 import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs-service.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
@@ -127,38 +126,5 @@ describe("assistHashInput", () => {
     const there = assistHashInput({ exemplars: [{ path: "b.ts", content: "X" }], context: [] });
 
     expect(here).not.toBe(there);
-  });
-});
-
-describe("assistFileRecords", () => {
-  it("records each file's path with an 8-char content hash", () => {
-    const records = assistFileRecords([{ path: "src/a.ts", content: "A" }]);
-
-    expect(records[0].path).toBe("src/a.ts");
-    expect(records[0].hash).toMatch(/^[0-9a-f]{8}$/);
-  });
-
-  it("hashes identical content to the same value regardless of path", () => {
-    const records = assistFileRecords([
-      { path: "src/a.ts", content: "same" },
-      { path: "src/b.ts", content: "same" },
-    ]);
-
-    expect(records[0].hash).toBe(records[1].hash);
-  });
-
-  it("hashes different content differently", () => {
-    const records = assistFileRecords([
-      { path: "a.ts", content: "one" },
-      { path: "b.ts", content: "two" },
-    ]);
-
-    expect(records[0].hash).not.toBe(records[1].hash);
-  });
-
-  it("returns nothing for no files", () => {
-    const records = assistFileRecords([]);
-
-    expect(records).toEqual([]);
   });
 });

@@ -4,7 +4,6 @@ import { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 import { Reviewer } from "@/domains/eval/models/reviewer.js";
 import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
 import { worstVerdict } from "@/domains/eval/models/verdict.js";
-import cacheIdentity from "@/domains/eval/services/build-cache-identity-service.js";
 import reviewTarget from "@/domains/eval/services/review-target-service.js";
 import selectReviewers from "@/domains/eval/services/select-reviewers-service.js";
 
@@ -51,7 +50,10 @@ export default async function reviewNamed({
         target: subject,
         reviewer: Reviewer.fromConfig(reviewerConfig),
         cache: useCache
-          ? new VerdictCache({ projectRoot: root, reviewer: cacheIdentity(reviewerConfig) })
+          ? new VerdictCache({
+              projectRoot: root,
+              reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
+            })
           : null,
         root,
       });

@@ -1,7 +1,6 @@
 import type { CacheReviewerIdentity } from "@/domains/eval/types.js";
 import type { ReviewerConfig } from "@/types.js";
 
-import cacheIdentity from "@/domains/eval/services/build-cache-identity-service.js";
 import reviewerHash from "@/domains/eval/services/hash-reviewer-service.js";
 import {
   DEFAULT_REVIEWER_BASE_URL,
@@ -71,7 +70,7 @@ export class Reviewer {
 
   /** The identity recorded alongside this reviewer's cached verdicts. */
   cacheIdentity(): CacheReviewerIdentity {
-    return cacheIdentity(this.config);
+    return { name: this.name, model: this.model, hash: this.hash() };
   }
 
   /**
