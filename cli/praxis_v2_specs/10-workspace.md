@@ -18,7 +18,7 @@ The repo belongs to the developer. Specs are their existing context files (READM
 ├── calibration/         # human-adjudicated · committed
 │   └── cases/<id>/      #   input + spec ref + expected.json
 ├── cache/               # machine-owned  · committed (regenerable; shared to save API calls)
-│   └── validation/…     #   one file per target; verdicts keyed by (spec, judge)
+│   └── validation/…     #   one file per target; verdicts keyed by (spec, reviewer)
 └── ledger/              # machine-owned  · committed (append-only evidence)
     └── runs/<run_id>.jsonl
 ```
@@ -30,13 +30,13 @@ The repo belongs to the developer. Specs are their existing context files (READM
 Two classes of content, and the distinction is enforced, not stylistic:
 
 - **Human-owned / human-ratified** — `config.json`, `axioms/`, `calibration/`. Markdown and JSON meant to be read, edited, and reviewed in PRs. Praxis writes here only through explicit verbs (`triage` writes proposals, `ratify` moves them) and never rewrites what a human authored.
-- **Machine-owned** — `cache/`, `ledger/`. Never hand-edited: cache entries are reproducible artifacts of `(inputs, judge)`, and ledger records carry provenance that hand-editing would falsify. Praxis treats unexpected content here as corruption (v1 already deletes corrupt cache files on read), not as input.
+- **Machine-owned** — `cache/`, `ledger/`. Never hand-edited: cache entries are reproducible artifacts of `(inputs, reviewer)`, and ledger records carry provenance that hand-editing would falsify. Praxis treats unexpected content here as corruption (v1 already deletes corrupt cache files on read), not as input.
 
 ## Commit policy
 
 Everything under `.praxis/` is committed, including the machine-owned dirs:
 
-- **cache/** — regenerable, but committing it shares verdicts across the team and CI: one person's validation run is everyone's cache hit. (zarpay/core already does this.) One file per target holds all judges' verdicts, keyed by (spec, judge) hashes (05); dead judges' keys are prunable.
+- **cache/** — regenerable, but committing it shares verdicts across the team and CI: one person's validation run is everyone's cache hit. (zarpay/core already does this.) One file per target holds all reviewers' verdicts, keyed by (spec, reviewer) hashes (05); dead reviewers' keys are prunable.
 - **ledger/** — the evidence itself; committing it *is* the durability story. One file per run keeps merges conflict-free (05).
 - No `.gitignore` inside `.praxis/`. If something shouldn't be committed, it shouldn't be written there.
 

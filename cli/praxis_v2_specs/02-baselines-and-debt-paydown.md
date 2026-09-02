@@ -17,7 +17,7 @@ Four things, all reliable, none requiring authorship:
 
 1. **A debt baseline.** The first full `eval run` under a spec quantifies nonconformance against your own standard at a point in time.
 2. **Forward flow.** Every subsequent diff introduces violations, resolves them, or inherits them — computed by verdict diffing (01), authorship-free.
-3. **Observable judge events.** Model and validation-config changes are global Praxis settings updates: visible, datable, recorded in provenance.
+3. **Observable reviewer events.** Model and validation-config changes are global Praxis settings updates: visible, datable, recorded in provenance.
 4. **Observable spec events.** Spec content is hashed on every verdict; edits are datable to the commit.
 
 ## The operative loop
@@ -27,11 +27,11 @@ Four things, all reliable, none requiring authorship:
 - **Baseline** — the epoch-opening full `eval run`. Debt stock per axiom, with coverage alongside (README, principle 1).
 - **Paydown** — resolved-violation flow against the baseline. Measurable, chartable, honestly named: this is cleanup, not agent performance.
 - **Struggle** — the *introduction rate* per axiom in new work within an epoch. "The harness consistently struggles with payload richness" is a precise sentence: AX-0011's introduction rate stays flat across N diffs while other axioms' rates decline. Consistency of struggle across many diffs is what licenses the word "harness" — a single bad diff licenses nothing.
-- **Hard break** — a spec change or judge change ends the epoch. Numbers do not cross the boundary.
+- **Hard break** — a spec change or reviewer change ends the epoch. Numbers do not cross the boundary.
 
 ## Epochs
 
-An **epoch** is a maximal interval over which the measurement system was stable: the spec content hashes and the judge configuration (model, validation settings) did not change.
+An **epoch** is a maximal interval over which the measurement system was stable: the spec content hashes and the reviewer configuration (model, validation settings) did not change.
 
 - Epochs are **derivable from provenance** already mandated on every verdict and run record — this is what the provenance rule was for. An explicit epoch table is a reporting convenience, not a new source of truth.
 - Within an epoch: baselines, paydown, and introduction rates are comparable. Across epochs: **no line is drawn through the boundary** (07, rule 6). Cross-epoch comparison is qualitative — "debt was 340 under spec v2; re-baselined at 410 under spec v3" — never a trend.
@@ -47,8 +47,8 @@ Per-axiom epochs also resolve cleanly with 01's per-axiom population clocks: a n
 The control group promised automatic differential diagnosis (spec problem vs harness problem). Without it, the honest substitutes, in decreasing confidence:
 
 - **`harness_gap`** — an axiom whose introduction rate in new work stays high and flat across many diffs within an epoch, while paydown of *other* axioms proceeds. The standard is followable in principle (violations get fixed when pointed out — resolution flow exists) but the harness doesn't carry it into generation.
-- **`spec_problem`** — triangulated, not proven: high debt density *and* high introduction rate *and* paydown attempts that fail re-validation, or high judge variance on the axiom (06 — variance is a property of the question, and an unanswerable question is a spec defect). Final call is human.
-- **`judge_noise`** — unchanged: residual/self-refuting critiques (04), calibration disagreement (06).
+- **`spec_problem`** — triangulated, not proven: high debt density *and* high introduction rate *and* paydown attempts that fail re-validation, or high reviewer variance on the axiom (06 — variance is a property of the question, and an unanswerable question is a spec defect). Final call is human.
+- **`reviewer_noise`** — unchanged: residual/self-refuting critiques (04), calibration disagreement (06).
 - **`insufficient_data`** — below the small-n floor; say so, recommend nothing.
 
 The brief (08) presents rates and evidence and *suggests* a diagnosis; the confident automatic spec-vs-harness verdict the control group would have licensed is explicitly downgraded. Where attribution conventions exist (below), the contrast returns as additional evidence, not as the mechanism.
@@ -65,15 +65,15 @@ Classification is three-way — `agent | human | unknown` — with evidence reco
 
 ## Epoch detection (decided)
 
-Praxis detects epoch boundaries itself; no manual declaration. At run start, compute the current **judge hash** (model + validation settings + judge system-prompt version) and the covered spec content hashes; compare against the last run record in the ledger. On mismatch:
+Praxis detects epoch boundaries itself; no manual declaration. At run start, compute the current **reviewer hash** (model + validation settings + reviewer system-prompt version) and the covered spec content hashes; compare against the last run record in the ledger. On mismatch:
 
 - Announce the boundary loudly and *name* it ("model → sonnet-4.6", "events spec v3") — this is the label reports use.
 - Recommend a re-baseline; auto-set `baseline: true` when the epoch-opening run is a full `eval run`.
 - **Warn, never block.**
 
-Epochs are **per judge** (06): each configured judge has its own hash and its own series, so adding a second judge opens that judge's first epoch — with its own baseline — while the incumbent judge's series continues uninterrupted. Removing one ends only its own series.
+Epochs are **per reviewer** (06): each configured reviewer has its own hash and its own series, so adding a second reviewer opens that reviewer's first epoch — with its own baseline — while the incumbent reviewer's series continues uninterrupted. Removing one ends only its own series.
 
-The cache enforces the boundary structurally — it is **namespaced by judge hash** (05): a judge change swaps the namespace, so pre-break verdicts cannot leak into the new epoch, and rolling the config back re-hits the old namespace at zero re-validation cost. Spec edits invalidate at entry level (spec content is already in the entry key), giving the per-axiom-grained break; judge changes invalidate at namespace level, giving the global one. The cache's invalidation behavior *is* the epoch structure.
+The cache enforces the boundary structurally — it is **namespaced by reviewer hash** (05): a reviewer change swaps the namespace, so pre-break verdicts cannot leak into the new epoch, and rolling the config back re-hits the old namespace at zero re-validation cost. Spec edits invalidate at entry level (spec content is already in the entry key), giving the per-axiom-grained break; reviewer changes invalidate at namespace level, giving the global one. The cache's invalidation behavior *is* the epoch structure.
 
 ## Paydown attribution (decided)
 
@@ -85,4 +85,4 @@ So: verdict diffing (01) already yields `resolved` events per diff; each carries
 
 1. ~~Detect epoch boundaries or require explicit acknowledgment?~~ **Resolved above:** detect, name, warn, never block.
 2. ~~Is paydown attribution worth it?~~ **Resolved above:** yes — per author (git identity of the resolving commit) and per directory.
-3. Sampled re-baseline after judge changes (estimate drift cheaply before a full re-run) — **explicitly deferred as a later optimization.** Couples to 06's sampling question; nothing in the data model blocks it.
+3. Sampled re-baseline after reviewer changes (estimate drift cheaply before a full re-run) — **explicitly deferred as a later optimization.** Couples to 06's sampling question; nothing in the data model blocks it.

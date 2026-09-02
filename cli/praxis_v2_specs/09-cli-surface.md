@@ -78,7 +78,7 @@ One CLI, two reading styles. The split is by **command default plus `--json`**, 
 - `praxis debt report [--json]` (07)
 - `praxis harness suggest` (08)
 
-The family rule (vocabulary, Terminology decisions): **`eval run` writes — it invokes judges; every other `eval` subcommand reads the ledger.** v1's `praxis validate document|all` remain as deprecated aliases through the migration.
+The family rule (vocabulary, Terminology decisions): **`eval run` writes — it invokes reviewers; every other `eval` subcommand reads the ledger.** v1's `praxis validate document|all` remain as deprecated aliases through the migration.
 
 Each lands with agent-grade help per the rules above; the inventory stays subordinate to the documents that define the semantics.
 

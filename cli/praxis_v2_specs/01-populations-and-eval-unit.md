@@ -7,7 +7,7 @@
 
 The naive design — run `praxis validate all`, chart the pass rate over time, call it "agent quality" — produces a number that means nothing, because it aggregates over code with completely different relationships to the spec.
 
-The observation that surfaced this: in zarpay/core, the event files were bulk-committed ~2026-05-07 and the SME spec was introduced 2026-06-05. The corpus scan shows 41 FAIL / 7 WARN / 1 PASS. That is not 41 findings about agents, or about the judge — it is a spec applied retroactively to code written before the standard existed. **This is the universal starting condition**: every codebase that adopts Praxis begins with its entire history in this state.
+The observation that surfaced this: in zarpay/core, the event files were bulk-committed ~2026-05-07 and the SME spec was introduced 2026-06-05. The corpus scan shows 41 FAIL / 7 WARN / 1 PASS. That is not 41 findings about agents, or about the reviewer — it is a spec applied retroactively to code written before the standard existed. **This is the universal starting condition**: every codebase that adopts Praxis begins with its entire history in this state.
 
 ## The three populations
 
@@ -51,48 +51,48 @@ Why the diff works:
 - It has a **single author** (or close enough to resolve — see 02).
 - It has a **timestamp**, hence an unambiguous population.
 - It is what a review actually looks at, so critiques anchored to a diff are actionable.
-- It bounds judge context: evaluating a diff-plus-surrounding-context is cheaper and more focused than evaluating whole files.
+- It bounds reviewer context: evaluating a diff-plus-surrounding-context is cheaper and more focused than evaluating whole files.
 - It matches the SME-review workflow zarpay/core already runs: SMEs review work as it lands, not the corpus on a schedule.
 
 ### Judgment scope vs attribution scope
 
-The central design move: the judge's *input* and the eval's *unit* are different things, and conflating them produces either myopia or attribution error.
+The central design move: the reviewer's *input* and the eval's *unit* are different things, and conflating them produces either myopia or attribution error.
 
-- **Judgment scope** — what the judge reads. Holistic: the full file, plus whatever cross-file context the axiom declares it needs (03). A diff is too thin to judge; a method added to a file cannot be evaluated without the file (did it add a *second* `schema` block? did it push logic into a class that must stay declarative?).
-- **Attribution scope** — what the verdict lands on. The diff. But attribution is **computed, never judged**.
+- **Judgment scope** — what the reviewer reads. Holistic: the full file, plus whatever cross-file context the axiom declares it needs (03). A diff is too thin to review; a method added to a file cannot be evaluated without the file (did it add a *second* `schema` block? did it push logic into a class that must stay declarative?).
+- **Attribution scope** — what the verdict lands on. The diff. But attribution is **computed, never reviewed**.
 
-**Never ask the judge to do attribution.** "Here is the file and the diff — which violations did the diff introduce?" invites exactly the class of error the judgment boundary (03) exists to prevent: the judge is good at reading and bad at bookkeeping. Instead:
+**Never ask the reviewer to do attribution.** "Here is the file and the diff — which violations did the diff introduce?" invites exactly the class of error the judgment boundary (03) exists to prevent: the reviewer is good at reading and bad at bookkeeping. Instead:
 
-1. Judge the file at the parent commit → holistic verdict.
-2. Judge the file at the new commit → holistic verdict.
+1. Reviewer the file at the parent commit → holistic verdict.
+2. Reviewer the file at the new commit → holistic verdict.
 3. **Diff the verdicts.** Present-after but not-before = *introduced* by this diff. Present-before, absent-after = *resolved*. Present in both = *inherited* — attributed to P1 debt, not to the diff's author.
 
 Step 3 is mechanical set-difference: an algorithm does it exactly, an LLM approximately. Same principle as the judgment boundary (03) — never route through judgment what can be computed.
 
-**Cost structure falls out of existing infrastructure:** the parent version's verdict is usually already in the content-hash cache (it was validated on the previous run or in CI), so diff evaluation costs roughly *one* judge call, not two.
+**Cost structure falls out of existing infrastructure:** the parent version's verdict is usually already in the content-hash cache (it was validated on the previous run or in CI), so diff evaluation costs roughly *one* reviewer call, not two.
 
 **What verdict diffing demands:**
 
 - **Critiques with identity.** Prose paragraphs cannot be set-differenced. "Is this the same violation as before?" is answerable only when critiques anchor to `(axiom_id, location/symbol)` — the strongest single argument for the axiom layer (04) and for critiques becoming durable records (05).
-- **Shared provenance across the comparison.** If before/after verdicts come from different judge states (model swap, spec edit), sampling variance masquerades as introduced/resolved flow. Both sides must share model + spec content hash, or the comparison is refused. Judge nondeterminism itself sets a noise floor, measured by calibration variance (06): flow signal below that floor reports as "insufficient data," not as a finding.
+- **Shared provenance across the comparison.** If before/after verdicts come from different reviewer states (model swap, spec edit), sampling variance masquerades as introduced/resolved flow. Both sides must share model + spec content hash, or the comparison is refused. Reviewer nondeterminism itself sets a noise floor, measured by calibration variance (06): flow signal below that floor reports as "insufficient data," not as a finding.
 
 ### Axiom scope: hunk | file | file+context | cohort | changeset
 
 Myopia has three distinct shapes, and axioms declare which context they need (03 owns the schema):
 
-- **`file`** — the default. Judged from the whole file; most structural axioms live here.
+- **`file`** — the default. Reviewed from the whole file; most structural axioms live here.
 - **`hunk`** — a cost optimization for axioms genuinely decidable from a change in isolation, and for very large files. Opt-in, never the default.
-- **`file+context`** — axioms that cannot be judged from the file alone. From the events SME: *payload richness* ("captures a complete snapshot of what the emitter had in memory") requires seeing the emitting service; *invoke targets* require the invoked service; *bus collisions* are relative to every other event. The spec declares what extra context is inlined (03). **Hard consequence for the cache:** context files must join the content hash — a verdict computed over `(document, spec, context)` that only hashes `(document, spec)` is non-reproducible and breaks provenance (05).
-- **`cohort`** — relational properties of a *set* of files that do not exist at file granularity: "every public service method has a spec," "the namespace has a README and a single `Service` entry point," "no orphaned files," "these controllers share the same auth pattern." You cannot ask "is this file compliant?" about "no orphans." Judgment input is the whole cohort; the verdict keys on a **cohort hash** (member list + member content hashes), so a file being *added or deleted* is itself a judgeable event — exactly what completeness and orphan axioms need. Cohort boundaries are declared by the spec author (`cohort: by_directory` — each directory matched by `paths:` is one unit containing all its files; the default `by_file` judges each matched file alone), never inferred. Homogeneous type-collections (events, Rails controllers) tend to carry file axioms; feature namespaces tend to carry cohort axioms — but the delineation lives on the axiom, not the SME: one SME routinely carries both.
-- **`changeset`** — properties of the *change itself*, judgeable from no single file: "a schema change updates the docs," "an event rename updates every subscriber." The judgment input is the whole diff across touched files — a diff-shaped cohort. Disproportionately valuable for P3: agents are characteristically good at local edits and bad at propagating consequences, so changeset axioms are where agent failure modes concentrate.
+- **`file+context`** — axioms that cannot be reviewed from the file alone. From the events SME: *payload richness* ("captures a complete snapshot of what the emitter had in memory") requires seeing the emitting service; *invoke targets* require the invoked service; *bus collisions* are relative to every other event. The spec declares what extra context is inlined (03). **Hard consequence for the cache:** context files must join the content hash — a verdict computed over `(document, spec, context)` that only hashes `(document, spec)` is non-reproducible and breaks provenance (05).
+- **`cohort`** — relational properties of a *set* of files that do not exist at file granularity: "every public service method has a spec," "the namespace has a README and a single `Service` entry point," "no orphaned files," "these controllers share the same auth pattern." You cannot ask "is this file compliant?" about "no orphans." Judgment input is the whole cohort; the verdict keys on a **cohort hash** (member list + member content hashes), so a file being *added or deleted* is itself a reviewable event — exactly what completeness and orphan axioms need. Cohort boundaries are declared by the spec author (`cohort: by_directory` — each directory matched by `paths:` is one unit containing all its files; the default `by_file` reviews each matched file alone), never inferred. Homogeneous type-collections (events, Rails controllers) tend to carry file axioms; feature namespaces tend to carry cohort axioms — but the delineation lives on the axiom, not the SME: one SME routinely carries both.
+- **`changeset`** — properties of the *change itself*, reviewable from no single file: "a schema change updates the docs," "an event rename updates every subscriber." The judgment input is the whole diff across touched files — a diff-shaped cohort. Disproportionately valuable for P3: agents are characteristically good at local edits and bad at propagating consequences, so changeset axioms are where agent failure modes concentrate.
 
-**Aggregation is never a cost optimization — it is only for cohort-shaped standards.** The cold-run saving of judging a directory in one call (the spec prefix paid once instead of N times) inverts in steady state: an aggregate verdict hashes the concatenation, so touching one file re-judges the whole set — and re-judging N-1 untouched files gives the judge N-1 opportunities to nondeterministically flip verdicts on code nobody changed, each flip a false entry in the flow metric. Per-file judgment structurally caps flow noise to touched files. The legitimate route to the cold-run saving is provider-side prompt caching of the shared spec prefix.
+**Aggregation is never a cost optimization — it is only for cohort-shaped standards.** The cold-run saving of reviewing a directory in one call (the spec prefix paid once instead of N times) inverts in steady state: an aggregate verdict hashes the concatenation, so touching one file re-reviews the whole set — and re-reviewing N-1 untouched files gives the reviewer N-1 opportunities to nondeterministically flip verdicts on code nobody changed, each flip a false entry in the flow metric. Per-file judgment structurally caps flow noise to touched files. The legitimate route to the cold-run saving is provider-side prompt caching of the shared spec prefix.
 
-Note the epistemic asymmetry this surfaces: the SME *as an interactive agent* has tools and can go read the emitter; the SME *as a pipeline judge* is a one-shot call that sees only its prompt. `file+context` closes that gap statically and cheaply. An agentic judge with read tools (`mode: agentic`, sketched in 03) closes it dynamically at real cost — an axiom must opt in explicitly.
+Note the epistemic asymmetry this surfaces: the SME *as an interactive agent* has tools and can go read the emitter; the SME *as a pipeline reviewer* is a one-shot call that sees only its prompt. `file+context` closes that gap statically and cheaply. An agentic reviewer with read tools (`mode: agentic`, sketched in 03) closes it dynamically at real cost — an axiom must opt in explicitly.
 
 ### Derived metric: violation flow
 
-Once verdicts are diffable across runs, the interesting number is not the stock (how many violations exist) but the **flow**: violations *introduced* vs violations *resolved* per diff. Post-spec introduction flow is the sharpest available signal of harness quality: "diffs this month introduced 0.3 violations per applicable opportunity, down from 0.5" is a real sentence — and within an epoch (02) it needs no authorship data to be meaningful. Debt paydown is resolution flow against the P1 baseline. Same machinery, different populations. Flow is always reported against the judge-variance noise floor (06) and never crosses an epoch boundary.
+Once verdicts are diffable across runs, the interesting number is not the stock (how many violations exist) but the **flow**: violations *introduced* vs violations *resolved* per diff. Post-spec introduction flow is the sharpest available signal of harness quality: "diffs this month introduced 0.3 violations per applicable opportunity, down from 0.5" is a real sentence — and within an epoch (02) it needs no authorship data to be meaningful. Debt paydown is resolution flow against the P1 baseline. Same machinery, different populations. Flow is always reported against the reviewer-variance noise floor (06) and never crosses an epoch boundary.
 
 ## Corpus conformance survives — renamed and demoted
 
@@ -103,7 +103,7 @@ Once verdicts are diffable across runs, the interesting number is not the stock 
 - The **ledger** (05) must record, per critique: the commit SHA, the population, the authorship classification, and whether the violation was introduced or inherited. Population is assigned at write time but must be *recomputable* (provenance rule) — spec birthdates can be revised.
 - **Metrics** (07) get a mandatory population qualifier. Unqualified conformance is banned from report output.
 - **Coverage** applies per population too: "82% of post-spec diff lines fell under some spec" is the honest denominator for eval claims. Work in uncovered directories is invisible to the eval, and the report must say how much work was invisible.
-- The **judge interface** needs before/after evaluation and verdict diffing — today `DocumentValidator` knows single whole files and nothing about commits. The cache is reused as the before-side verdict source.
+- The **reviewer interface** needs before/after evaluation and verdict diffing — today `DocumentValidator` knows single whole files and nothing about commits. The cache is reused as the before-side verdict source.
 
 ## Open questions
 

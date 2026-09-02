@@ -14,11 +14,11 @@ Observed corollary: the cache also cannot distinguish live from dead specs. In z
 Two format changes to the cache *are* required by v2:
 
 1. **Context joins the entry key** (01, axiom scope): for `file+context` axioms the judgment input includes spec-declared context files, so a verdict keyed on `hash(document + spec)` survives context edits it shouldn't. Key becomes `hash(document + spec + resolved context)`, with the resolved context file list + hashes recorded in the entry.
-2. **Judge identity joins the verdict key** (02, epoch detection): one cache file per target holds every verdict for it — all specs, all judges — keyed by `<spec_hash>:<judge_hash>`, where the judge hash covers the judge's behavioral settings (the whole config canonically hashed minus `name` and `apiKeyEnvVar`) plus the system prompt text (a Praxis release that rewrites the prompt changes the judge as much as a model swap). This fixes a latent v1 defect: the judge config was in no key at all, so changing the model left every old-judge verdict looking current — pre-break verdicts leaking across an epoch boundary. One-artifact-per-target was chosen over per-judge directories deliberately: the cache is committed, so a target's complete judgment state should be one file with one history, cross-judge comparison (06 agreement) becomes a single read, and it finishes the format's own logic — specs were already multiplexed inside the file, and judges are the same dimension shape. Rollback stays free (reverting the config re-hits the old keys). Invalidation summary: **spec edit → per-spec keys break; judge change → all of that judge's keys break (global for that judge)** — the cache's invalidation behavior is the epoch structure. Keys belonging to no configured judge are prunable (a rewrite, not an `rm -rf` — the accepted cost of the single artifact).
+2. **Reviewer identity joins the verdict key** (02, epoch detection): one cache file per target holds every verdict for it — all specs, all reviewers — keyed by `<spec_hash>:<reviewer_hash>`, where the reviewer hash covers the reviewer's behavioral settings (the whole config canonically hashed minus `name` and `apiKeyEnvVar`) plus the system prompt text (a Praxis release that rewrites the prompt changes the reviewer as much as a model swap). This fixes a latent v1 defect: the reviewer config was in no key at all, so changing the model left every old-reviewer verdict looking current — pre-break verdicts leaking across an epoch boundary. One-artifact-per-target was chosen over per-reviewer directories deliberately: the cache is committed, so a target's complete judgment state should be one file with one history, cross-reviewer comparison (06 agreement) becomes a single read, and it finishes the format's own logic — specs were already multiplexed inside the file, and reviewers are the same dimension shape. Rollback stays free (reverting the config re-hits the old keys). Invalidation summary: **spec edit → per-spec keys break; reviewer change → all of that reviewer's keys break (global for that reviewer)** — the cache's invalidation behavior is the epoch structure. Keys belonging to no configured reviewer are prunable (a rewrite, not an `rm -rf` — the accepted cost of the single artifact).
 
-The cache also gains a second consumer: verdict diffing (01) uses the parent version's cached verdict as the before-side of a diff evaluation, which is what makes diff-unit evaluation cost ~one judge call instead of two.
+The cache also gains a second consumer: verdict diffing (01) uses the parent version's cached verdict as the before-side of a diff evaluation, which is what makes diff-unit evaluation cost ~one reviewer call instead of two.
 
-Cohort-scoped axioms (01) key their verdicts on a **cohort hash**: the sorted member list plus each member's content hash. Membership changes (file added, deleted, renamed) change the hash and are judgeable events in their own right — the ledger records the member manifest alongside the verdict so that "what set was judged" is reconstructable (provenance), and so cohort-level verdict diffing can distinguish a content change from a membership change.
+Cohort-scoped axioms (01) key their verdicts on a **cohort hash**: the sorted member list plus each member's content hash. Membership changes (file added, deleted, renamed) change the hash and are reviewable events in their own right — the ledger records the member manifest alongside the verdict so that "what set was reviewed" is reconstructable (provenance), and so cohort-level verdict diffing can distinguish a content change from a membership change.
 
 ## Shape
 
@@ -29,16 +29,16 @@ Append-only JSONL under `.praxis/ledger/`, partitioned by run, committed to git 
 ```
 run_id, timestamp, commit_sha, branch, trigger (manual | ci | watch)
 scope (corpus | diff | files), files_evaluated
-judge_name, judge_model, prompt_tokens, completion_tokens, cost_usd
+reviewer_name, reviewer_model, prompt_tokens, completion_tokens, cost_usd
 cache_hits, cache_misses
 pass / warn / fail counts, critique_count
 calibration_status_at_run                    # 06 — stamps interpretability
 baseline: boolean                            # epoch-opening validate all (02)
 ```
 
-Epochs (02) are **derived, not stored**: an epoch is a maximal run-sequence with stable (spec content hashes, judge config), computable from the provenance fields above. Reports segment by epoch; the ledger just records facts.
+Epochs (02) are **derived, not stored**: an epoch is a maximal run-sequence with stable (spec content hashes, reviewer config), computable from the provenance fields above. Reports segment by epoch; the ledger just records facts.
 
-**Runs are per judge.** With multiple judges configured (06), one CLI invocation fans out into one run record per judge; every critique record already names its judge via `judge_model` plus its configured `judge_name`. Epoch derivation, baselines, and metrics then work per judge with no special cases — the multi-judge ledger is just more of the same records.
+**Runs are per reviewer.** With multiple reviewers configured (06), one CLI invocation fans out into one run record per reviewer; every critique record already names its reviewer via `reviewer_model` plus its configured `reviewer_name`. Epoch derivation, baselines, and metrics then work per reviewer with no special cases — the multi-reviewer ledger is just more of the same records.
 
 **Critique record** — one per issue (axioms attach to critiques, not files):
 
@@ -46,13 +46,13 @@ Epochs (02) are **derived, not stored**: an epoch is a maximal run-sequence with
 id, run_id, timestamp
 file_path, spec_path
 target_content_hash, spec_content_hash      # provenance: exact inputs
-judge_name, judge_model                      # provenance: exact judge
+reviewer_name, reviewer_model                      # provenance: exact reviewer
 severity, text
-mode (judgment | agentic), scope_filtered?   # scoping exclusions recorded, not judged (03)
+mode (judgment | agentic), scope_filtered?   # scoping exclusions recorded, not reviewed (03)
 axiom_id?, axiom_version?, assigned_by?      # 04; null until assigned
 population (pre_spec | post_spec)            # 01; recomputable
 authorship, authorship_evidence, agent_involved, pre_review   # 02
-introduced | inherited | resolved            # 01, computed by verdict diffing, never judged
+introduced | inherited | resolved            # 01, computed by verdict diffing, never reviewed
 before_run_id?                               # the run supplying the before-side verdict
 resolved_by?                                 # resolved events only: git author of the resolving
                                              #   commit — paydown credit is attributable (02)
@@ -65,7 +65,7 @@ Provenance fields are mandatory. Derived fields (population, authorship) record 
 - `BatchValidator.validateDocument` emits critique records alongside its existing cache write; run record on completion. Existing `cacheStats` feeds hits/misses directly.
 - `DocumentValidator.callOpenRouter` captures `data.usage` (currently discarded where `choices[0]` is destructured) and returns it upward.
 - The ledger is judgment-only (03): static tooling's findings never enter it.
-- Cache hits write **no** critique records (nothing new was judged) but are counted on the run record. Open question: on first ledger-enabled run, backfill from cache-hit results so the ledger starts populated? Tentatively yes, marked `backfilled: true`.
+- Cache hits write **no** critique records (nothing new was reviewed) but are counted on the run record. Open question: on first ledger-enabled run, backfill from cache-hit results so the ledger starts populated? Tentatively yes, marked `backfilled: true`.
 
 ## Integrity
 

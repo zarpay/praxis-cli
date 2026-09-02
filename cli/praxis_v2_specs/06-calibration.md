@@ -5,9 +5,9 @@
 
 ## What calibration is for
 
-The judge is a measuring instrument, and instruments have error. Without a measured error rate, no conformance number is interpretable: a drop in violations cannot be distinguished from a judge that got lenient (model swap, provider-side update, spec edit, sampling variance). Calibration is how the system knows — and *shows* — that its instrument still reads true.
+The reviewer is a measuring instrument, and instruments have error. Without a measured error rate, no conformance number is interpretable: a drop in violations cannot be distinguished from a reviewer that got lenient (model swap, provider-side update, spec edit, sampling variance). Calibration is how the system knows — and *shows* — that its instrument still reads true.
 
-Scope note: calibration covers judgment axioms — which, under the judgment boundary (03), is all of them. The boundary is what keeps calibration's surface small: mechanical criteria never enter Praxis, so there is no judge error about them to measure.
+Scope note: calibration covers judgment axioms — which, under the judgment boundary (03), is all of them. The boundary is what keeps calibration's surface small: mechanical criteria never enter Praxis, so there is no reviewer error about them to measure.
 
 ## Calibration cases
 
@@ -22,7 +22,7 @@ expected.json:
   adjudicated_by, adjudicated_on, rationale
 ```
 
-**Composition rule: cases must include true positives and true negatives.** A set built only from observed judge false positives trains the loop toward a judge that passes everything; leniency must cost agreement score exactly as over-triggering does. Sources for cases:
+**Composition rule: cases must include true positives and true negatives.** A set built only from observed reviewer false positives trains the loop toward a reviewer that passes everything; leniency must cost agreement score exactly as over-triggering does. Sources for cases:
 
 - Spec `exemplars` (03, scoping) — spec-blessed positives, free seed cases.
 - Disputed verdicts from real runs, once a human adjudicates ("confirmed false positive" outcomes from resolution workflows like `/praxis-resolve` are exactly this).
@@ -32,50 +32,50 @@ Cases are frozen against a spec *content hash*. When the spec changes materially
 
 ## Commands and outputs
 
-- `praxis calibrate run` — evaluates every case with the current judge config; reports **agreement** (verdict level), **per-axiom precision/recall**, and **false-positive rate**; writes a calibration record (with full provenance) to the ledger.
-- `praxis calibrate status` — last run, scores, and whether the judge model or any covered spec content hash has changed since. Stale = the judge changed under you.
+- `praxis calibrate run` — evaluates every case with the current reviewer config; reports **agreement** (verdict level), **per-axiom precision/recall**, and **false-positive rate**; writes a calibration record (with full provenance) to the ledger.
+- `praxis calibrate status` — last run, scores, and whether the reviewer model or any covered spec content hash has changed since. Stale = the reviewer changed under you.
 
-**Interpretability gating:** every eval report (07) displays calibration status. Conformance computed under a judge whose calibration is stale or absent is rendered with an explicit "uninterpretable — recalibrate" marker, not quietly printed. This is the enforcement point for the provenance principle.
+**Interpretability gating:** every eval report (07) displays calibration status. Conformance computed under a reviewer whose calibration is stale or absent is rendered with an explicit "uninterpretable — recalibrate" marker, not quietly printed. This is the enforcement point for the provenance principle.
 
-## Multiple judges
+## Multiple reviewers
 
-Judges are **named and plural in config**. v1's singular `validation: { model, apiKeyEnvVar }` becomes the one-judge case of:
+Reviewers are **named and plural in config**. v1's singular `validation: { model, apiKeyEnvVar }` becomes the one-reviewer case of:
 
 ```json
-"judges": [
+"reviewers": [
   { "name": "grok",  "model": "x-ai/grok-4.1-fast",    "apiKeyEnvVar": "OPENROUTER_API_KEY" },
   { "name": "codex", "model": "openai/gpt-5.2-codex",  "apiKeyEnvVar": "OPENROUTER_API_KEY" },
   { "name": "local", "model": "org-private-model",     "baseUrl": "https://inference.internal/v1", "apiKeyEnvVar": "INTERNAL_KEY" }
 ]
 ```
 
-A team that wants two models evaluating the same work configures both; every configured judge evaluates every target, contributing critiques side by side.
+A team that wants two models evaluating the same work configures both; every configured reviewer evaluates every target, contributing critiques side by side.
 
-Where code may be sent is the org's decision, made here: a judge is an endpoint plus a model, so an org with private inference points its judges at it (per-judge `baseUrl` for OpenAI-compatible endpoints; per-judge `provider` for anything else — a custom provider module implements the normalized verdict+usage contract). Praxis does not redact — a judge sees exactly what the axiom's scope declares, nothing else.
+Where code may be sent is the org's decision, made here: a reviewer is an endpoint plus a model, so an org with private inference points its reviewers at it (per-reviewer `baseUrl` for OpenAI-compatible endpoints; per-reviewer `provider` for anything else — a custom provider module implements the normalized verdict+usage contract). Praxis does not redact — a reviewer sees exactly what the axiom's scope declares, nothing else.
 
-**Nothing about the single-judge design changes — n judges are n instruments running the same protocol.** Each judge has its own judge hash, and therefore its own cache namespace (05), its own epochs (02), and its own calibration records. This is why the earlier decisions were shaped the way they were: provenance-mandatory verdicts and hash-namespaced caches were designed for judges changing *over time*; simultaneous judges are the same machinery with several namespaces live at once. Adding or removing a judge opens or ends that judge's series and touches nobody else's.
+**Nothing about the single-reviewer design changes — n reviewers are n instruments running the same protocol.** Each reviewer has its own reviewer hash, and therefore its own cache namespace (05), its own epochs (02), and its own calibration records. This is why the earlier decisions were shaped the way they were: provenance-mandatory verdicts and hash-namespaced caches were designed for reviewers changing *over time*; simultaneous reviewers are the same machinery with several namespaces live at once. Adding or removing a reviewer opens or ends that reviewer's series and touches nobody else's.
 
-Critiques from all judges triage into the **same axiom set** — axioms are judge-independent (04), and a shared taxonomy is what makes judges comparable at all. The reduction is the point: **adding judges multiplies evidence, never feedback.** A violation is an axiom-anchored finding on a file. When two judges flag the same axiom on the same file, that is one finding with two witnesses — corroboration recorded — not two findings. Every surface a developer or agent consumes (reports, briefs, the fast loop) shows the deduplicated finding set; the per-judge critique records live on in the ledger, where agreement is measured. What scales with the judge count is the number of independent witnesses standing behind each finding, and the cost — not the length of the list anyone has to work through.
+Critiques from all reviewers triage into the **same axiom set** — axioms are reviewer-independent (04), and a shared taxonomy is what makes reviewers comparable at all. The reduction is the point: **adding reviewers multiplies evidence, never feedback.** A violation is an axiom-anchored finding on a file. When two reviewers flag the same axiom on the same file, that is one finding with two witnesses — corroboration recorded — not two findings. Every surface a developer or agent consumes (reports, briefs, the fast loop) shows the deduplicated finding set; the per-reviewer critique records live on in the ledger, where agreement is measured. What scales with the reviewer count is the number of independent witnesses standing behind each finding, and the cost — not the length of the list anyone has to work through.
 
-Two judges on the same work buy a signal frozen cases cannot provide: **inter-judge agreement, measured continuously on live data at no extra cost** (both verdicts are already paid for). Its two faces:
+Two reviewers on the same work buy a signal frozen cases cannot provide: **inter-reviewer agreement, measured continuously on live data at no extra cost** (both verdicts are already paid for). Its two faces:
 
-- **Corroboration** — both judges flag the same axiom on the same file. Evidence weight in triage (04): a corroborated critique is likelier traceable at ratification.
-- **Disagreement** — one flags, the other passes. A judge-error signal, not a code signal, and it *locates*: axioms with persistently high disagreement rates are vaguely written or genuinely hard — the same axioms the drift protocol's variance measurement would flag, found faster.
+- **Corroboration** — both reviewers flag the same axiom on the same file. Evidence weight in triage (04): a corroborated critique is likelier traceable at ratification.
+- **Disagreement** — one flags, the other passes. A reviewer-error signal, not a code signal, and it *locates*: axioms with persistently high disagreement rates are vaguely written or genuinely hard — the same axioms the drift protocol's variance measurement would flag, found faster.
 
-The limit is stated plainly: **agreement is a tripwire, not ground truth.** Two judges sharing a blind spot agree wrongly; per-judge calibration against frozen, human-adjudicated cases remains the only ground truth, and interpretability gating applies per judge — one judge's stale calibration marks *its* numbers uninterpretable, not its neighbor's.
+The limit is stated plainly: **agreement is a tripwire, not ground truth.** Two reviewers sharing a blind spot agree wrongly; per-reviewer calibration against frozen, human-adjudicated cases remains the only ground truth, and interpretability gating applies per reviewer — one reviewer's stale calibration marks *its* numbers uninterpretable, not its neighbor's.
 
 ## Drift protocol
 
-On any judge-affecting change — model swap, spec edit, prompt/tooling change:
+On any reviewer-affecting change — model swap, spec edit, prompt/tooling change:
 
 1. `calibrate run` before trusting new numbers.
 2. Compare per-axiom scores to the previous record (both are in the ledger).
 3. Deltas above a threshold flag the axioms whose historical rates are no longer comparable across the change; reports annotate trend lines at that boundary rather than drawing a continuous line through a discontinuity.
 
-Judge nondeterminism itself is measurable here: run the same calibration N times, report per-axiom variance. High-variance axioms are candidates for spec clarification or removal (03) — variance is a property of the *question*, not just the model.
+Reviewer nondeterminism itself is measurable here: run the same calibration N times, report per-axiom variance. High-variance axioms are candidates for spec clarification or removal (03) — variance is a property of the *question*, not just the model.
 
 ## Open questions
 
 1. Minimum viable case count before gating turns on? Too-small sets give noisy scores that gate on nothing. Tentative: gate per-axiom only where an axiom has ≥N adjudicated cases; verdict-level agreement gates globally.
 2. Who adjudicates in practice, and how is disagreement between human adjudicators handled? (Grounded-theory answer: inter-rater reliability. Pragmatic answer: one owner per spec, revisit if it bites.)
-3. Cost: calibration runs are full-price judge calls. Sampling strategies vs full-set runs on every model change.
+3. Cost: calibration runs are full-price reviewer calls. Sampling strategies vs full-set runs on every model change.
