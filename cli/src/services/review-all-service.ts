@@ -1,13 +1,12 @@
 import type {
-  EvalProgress,
   EvalSummary,
   EvalUnit,
   ReviewAllInput,
   ReviewAllResult,
   TargetVerdict,
   ValidationDomain,
+  ReviewUnitInput,
 } from "@/types.js";
-import type { ReviewerConfig } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { readText } from "@/helpers/files-helper.js";
@@ -85,7 +84,7 @@ export default async function reviewAll({
         reviewerName: reviewers.length > 1 ? reviewerConfig.name : undefined,
       });
 
-      const verdict = await reviewUnit({
+      const { verdict, cacheHit } = await reviewUnit({
         unit,
         specPath: domain.specPath,
         type: domain.type,
@@ -93,9 +92,11 @@ export default async function reviewAll({
         cache: caches[reviewerIndex] ?? null,
         root,
         specFilePattern,
-        cacheStats,
         onProgress,
       });
+
+      if (cacheHit) cacheStats.hits++;
+      else cacheStats.misses++;
 
       verdicts.push(verdict);
 
@@ -129,13 +130,20 @@ function selectDomains(domains: ValidationDomain[], type?: string): ValidationDo
   const matching = domains.filter((d) => d.type === type || baseName(d.dir) === type);
 
   if (matching.length === 0) {
-    throw errors.unknownDocumentType(type);
+    const available = [...new Set(domains.map((domain) => domain.type))];
+
+    throw errors.unknownDocumentType(type, available);
   }
 
   return matching;
 }
 
-/** Reviews one unit with one reviewer, turning any failure into an error verdict. */
+/**
+ * Reviews one unit with one reviewer, turning any failure into an error
+ * verdict — one unreachable target must not abandon a run that costs
+ * real money. Returns what happened and whether the cache answered, and
+ * mutates nothing: the caller keeps its own tallies.
+ */
 async function reviewUnit({
   unit,
   specPath,
@@ -144,19 +152,8 @@ async function reviewUnit({
   cache,
   root,
   specFilePattern,
-  cacheStats,
   onProgress,
-}: {
-  unit: EvalUnit;
-  specPath: string;
-  type: string;
-  reviewerConfig: ReviewerConfig;
-  cache: VerdictCache | null;
-  root: string;
-  specFilePattern: string;
-  cacheStats: { hits: number; misses: number };
-  onProgress?: (event: EvalProgress) => void;
-}): Promise<TargetVerdict> {
+}: ReviewUnitInput): Promise<{ verdict: TargetVerdict; cacheHit: boolean }> {
   const identity = {
     path: unit.path,
     type,
@@ -182,23 +179,24 @@ async function reviewUnit({
       root,
     });
 
-    if (cacheHit) cacheStats.hits++;
-    else cacheStats.misses++;
-
     onProgress?.({ kind: "verdict", verdict });
 
-    return { ...verdict, ...identity };
+    return { verdict: { ...verdict, ...identity }, cacheHit };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
 
     onProgress?.({ kind: "unit-error", message });
 
+    // A failure never came from the cache: it happened trying to review.
     return {
-      ...identity,
-      compliant: false,
-      severity: "error",
-      issues: [`Validation failed: ${message}`],
-      reason: message,
+      cacheHit: false,
+      verdict: {
+        ...identity,
+        compliant: false,
+        severity: "error",
+        issues: [`Validation failed: ${message}`],
+        reason: message,
+      },
     };
   }
 }

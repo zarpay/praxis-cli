@@ -27,12 +27,12 @@ praxis eval run experts/code-reviewer.md --no-cache
 
 **Options:**
 
-| Flag | Description |
-| --- | --- |
-| `--spec <path>` | Override the spec file used for validation |
+| Flag                | Description                                                     |
+| ------------------- | --------------------------------------------------------------- |
+| `--spec <path>`     | Override the spec file used for validation                      |
 | `--reviewer <name>` | Run only the named reviewer (default: all configured reviewers) |
-| `--verbose` | Print the full AI reasoning after the result |
-| `--no-cache` | Skip the cache and always call the API |
+| `--verbose`         | Print the full AI reasoning after the result                    |
+| `--no-cache`        | Skip the cache and always call the API                          |
 
 **Exit code:** 0 unless a target has errors (warnings pass).
 
@@ -52,13 +52,13 @@ praxis eval run --fail-fast
 
 **Options:**
 
-| Flag | Description |
-| --- | --- |
-| `--type <type>` | Validate only documents matching this type |
+| Flag                | Description                                                     |
+| ------------------- | --------------------------------------------------------------- |
+| `--type <type>`     | Validate only documents matching this type                      |
 | `--reviewer <name>` | Run only the named reviewer (default: all configured reviewers) |
-| `--verbose` | Show full AI reasoning for each document |
-| `--no-cache` | Skip the cache for all documents |
-| `--fail-fast` | Stop at the first error instead of continuing |
+| `--verbose`         | Show full AI reasoning for each document                        |
+| `--no-cache`        | Skip the cache for all documents                                |
+| `--fail-fast`       | Stop at the first error instead of continuing                   |
 
 With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` tag and the summary adds a `By reviewer:` breakdown — one row per reviewer, never pooled.
 
@@ -95,8 +95,8 @@ praxis eval ci --strict
 
 **Options:**
 
-| Flag | Description |
-| --- | --- |
+| Flag       | Description                        |
+| ---------- | ---------------------------------- |
 | `--strict` | Fail on warnings as well as errors |
 
 **Exit code:** 0 if all pass (or no errors with `--strict` off), 1 otherwise.
@@ -114,17 +114,31 @@ praxis eval verdict experts/code-reviewer.md --verbose
 
 Shows one of five states:
 
-| Status | Meaning |
-| --- | --- |
-| **PASS** | Document is compliant |
-| **WARN** | Document has warnings but no hard errors |
-| **FAIL** | Document has errors |
-| **STALE** | Document changed since last validation (cached result may no longer apply) |
-| **NOT VALIDATED** | No cached result exists yet |
+| Status            | Meaning                                                                    |
+| ----------------- | -------------------------------------------------------------------------- |
+| **PASS**          | Document is compliant                                                      |
+| **WARN**          | Document has warnings but no hard errors                                   |
+| **FAIL**          | Document has errors                                                        |
+| **STALE**         | Document changed since last validation (cached result may no longer apply) |
+| **NOT VALIDATED** | No cached result exists yet                                                |
 
 Use `--verbose` to include the full AI reasoning from the cached result.
 
 **Exit code:** Always 0 — this command is for inspection only.
+
+### `praxis eval prune`
+
+Drops cached verdicts that no configured reviewer can hit again. Does not call any API.
+
+```bash
+praxis eval prune
+```
+
+Every cached verdict is keyed by its reviewer's behavioral hash, so changing a reviewer's model, prompts, or settings — or removing the reviewer — orphans its old entries: they sit in the committed cache files but can never be read. Pruning removes those entries, deletes cache files left empty, and clears out files in an unreadable or outdated format.
+
+Safe to run any time: entries belonging to currently configured reviewers are never touched, and a second run finds nothing to do.
+
+**Exit code:** Always 0.
 
 ---
 

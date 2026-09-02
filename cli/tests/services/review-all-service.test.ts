@@ -131,7 +131,9 @@ describe("reviewAll", () => {
         type: "bogus",
       });
 
-      await expect(run).rejects.toThrow("Unknown document type: bogus");
+      await expect(run).rejects.toThrow(
+        /Unknown document type "bogus" — this project has: .*experts/,
+      );
     });
   });
 

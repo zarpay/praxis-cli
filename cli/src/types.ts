@@ -485,6 +485,26 @@ export interface ResolveAssistInputsInput {
   root?: string;
 }
 
+/** One unit of a full run: the target, its spec, and who reviews it. */
+export interface ReviewUnitInput {
+  /** The unit to review — one file, or a cohort of them. */
+  unit: EvalUnit;
+  /** The spec governing this unit. */
+  specPath: string;
+  /** The domain type the unit belongs to, for the summary. */
+  type: string;
+  /** The reviewer doing the work. */
+  reviewerConfig: ReviewerConfig;
+  /** This reviewer's cache, or null when the cache is disabled. */
+  cache: VerdictCache | null;
+  /** Project root. */
+  root: string;
+  /** Filename or glob naming spec files. */
+  specFilePattern: string;
+  /** Called as the review progresses, for streamed output. */
+  onProgress?: (event: EvalProgress) => void;
+}
+
 /** One target to review, with the reviewer and cache to do it. */
 export interface ReviewTargetInput {
   /** What is being reviewed, already resolved. */
@@ -1216,6 +1236,20 @@ export interface ReviewerReports {
   named: boolean;
   /** Show the full reasoning. */
   verbose: boolean;
+}
+
+/** The project whose verdict cache is being pruned. */
+export interface PruneCacheInput {
+  root: string;
+  config: PraxisConfig;
+}
+
+/** What a prune removed. */
+export interface PruneCacheResult {
+  /** Entries dropped because no configured reviewer owns their hash. */
+  entriesPruned: number;
+  /** Files deleted: emptied by pruning, or unreadable/outdated outright. */
+  filesRemoved: number;
 }
 
 /** What a finished compile reports: a full count, or one alias's outcome. */

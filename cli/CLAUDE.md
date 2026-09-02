@@ -170,6 +170,8 @@ Spec discovered (specFilePattern match, frontmatter read)
       and assist provenance (exemplar_files/context_files with per-file hashes)
 ```
 
+`praxis eval prune` is the epoch structure's other half: a behavioral change writes new cache keys and orphans the old ones, and pruning removes every entry whose reviewer hash matches no configured reviewer.
+
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
 Key files: `services/request-verdict-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile), `services/` (resolve-assist-inputs, verdict-cache, hash-reviewer, discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
@@ -188,6 +190,7 @@ Config lives at `{root}/.praxis/config.json` with these fields:
 - `agentProfilesOutputDir: string | false` — where pure profiles are written (default: `"./agent-profiles"`)
 - `plugins: (string | PluginConfigEntry)[]` — enabled plugins with optional per-plugin config (default: `[]`). String entries are normalized to `{ name: theString }`. Object entries support `name`, `outputDir`, `claudeCodePluginName`.
 - `reviewers: { name, model, apiKeyEnvVar, baseUrl?, temperature?, provider?, options? }[]` — the configured reviewers; every reviewer evaluates every target, each with its own cache namespace keyed by its behavioral hash. `provider` selects the execution backend: a built-in registry name (default `"openrouter"`) or a `./relative` ESM module path whose default export is a provider factory (`types.ts`); `options` passes through to the provider verbatim (`services/hash-reviewer-service.ts`: whole config canonically hashed minus `name`/`apiKeyEnvVar`, plus the system prompt). The v1 `validation` section is removed — v2 is a breaking release.
+- `ignore?: string[]` — glob patterns, relative to the root, excluded from review (e.g. `"src/generated/**"`). Ignored files are never evaluated and never counted; spec discovery is unaffected.
 - `specFilePattern?: string` — top-level; filename or glob for spec files (default `README.md`).
 
 ### Plugin System

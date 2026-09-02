@@ -80,9 +80,9 @@ describe("errors", () => {
   });
 
   it("unknownDocumentType", () => {
-    const err = errors.unknownDocumentType("bogus");
+    const err = errors.unknownDocumentType("bogus", ["experts", "tests"]);
     expect(err.code).toBe("UNKNOWN_DOCUMENT_TYPE");
-    expect(err.message).toBe("Unknown document type: bogus");
+    expect(err.message).toBe('Unknown document type "bogus" — this project has: experts, tests');
   });
 
   it("specNotFound", () => {

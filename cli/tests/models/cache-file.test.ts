@@ -89,4 +89,39 @@ describe("CacheFile", () => {
       expect(() => CacheFile.parse("{ not json")).toThrow();
     });
   });
+
+  describe("prune", () => {
+    /** A file holding one flash entry and one v32 entry. */
+    function fileWithBoth(): CacheFile {
+      const file = CacheFile.empty();
+      file.put(CacheFile.keyOf(entry(FLASH)), entry(FLASH));
+      file.put(CacheFile.keyOf(entry(V32)), entry(V32));
+
+      return file;
+    }
+
+    it("drops rejected entries and reports how many fell", () => {
+      const file = fileWithBoth();
+
+      const pruned = file.prune((kept) => kept.reviewer.hash === FLASH.hash);
+
+      expect(pruned).toBe(1);
+      expect(file.entriesFor(FLASH)).toHaveLength(1);
+      expect(file.entriesFor(V32)).toHaveLength(0);
+    });
+
+    it("prunes nothing when everything is kept", () => {
+      const file = fileWithBoth();
+
+      expect(file.prune(() => true)).toBe(0);
+      expect(file.isEmpty()).toBe(false);
+    });
+
+    it("empties out when nothing survives", () => {
+      const file = fileWithBoth();
+
+      expect(file.prune(() => false)).toBe(2);
+      expect(file.isEmpty()).toBe(true);
+    });
+  });
 });

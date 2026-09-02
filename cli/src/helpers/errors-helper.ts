@@ -160,9 +160,12 @@ export const errors = {
     );
   },
 
-  /** `validate all --type` was given a type no validation domain matches. */
-  unknownDocumentType(type: string): PraxisError {
-    return new PraxisError("UNKNOWN_DOCUMENT_TYPE", `Unknown document type: ${type}`);
+  /** `eval run --type` was given a type no validation domain matches. */
+  unknownDocumentType(type: string, available: string[]): PraxisError {
+    return new PraxisError(
+      "UNKNOWN_DOCUMENT_TYPE",
+      `Unknown document type "${type}" — this project has: ${available.join(", ")}`,
+    );
   },
 
   /** The configured editor could not be started. */

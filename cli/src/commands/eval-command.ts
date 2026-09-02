@@ -1,6 +1,7 @@
 import type { CommandRegistrar } from "@framework/types.js";
 
 import ciRunOrchestrator from "@/orchestrators/ci-run-orchestrator.js";
+import pruneCacheOrchestrator from "@/orchestrators/prune-cache-orchestrator.js";
 import reportVerdictsOrchestrator from "@/orchestrators/report-verdicts-orchestrator.js";
 import runEvalOrchestrator from "@/orchestrators/run-eval-orchestrator.js";
 
@@ -29,6 +30,11 @@ const evalCommand: CommandRegistrar = (program) => {
     .description("Run a full review in CI mode")
     .option("--strict", "fail on warnings too", false)
     .action(ciRunOrchestrator);
+
+  evalCmd
+    .command("prune")
+    .description("Drop cached verdicts that no configured reviewer can hit")
+    .action(pruneCacheOrchestrator);
 
   evalCmd
     .command("verdict <target>")

@@ -81,6 +81,31 @@ export class CacheFile {
     return Object.values(this.verdicts).filter((entry) => entry.reviewer.hash === reviewer.hash);
   }
 
+  /**
+   * Drops every entry the predicate rejects, returning how many fell.
+   *
+   * This is the epoch structure's other half: a behavioral change writes
+   * new keys, and the old ones sit here until something says which
+   * reviewers still exist.
+   */
+  prune(keep: (entry: VerdictEntry) => boolean): number {
+    let pruned = 0;
+
+    for (const [key, entry] of Object.entries(this.verdicts)) {
+      if (keep(entry)) continue;
+
+      delete this.verdicts[key];
+      pruned++;
+    }
+
+    return pruned;
+  }
+
+  /** Whether nothing is cached here any more. */
+  isEmpty(): boolean {
+    return Object.keys(this.verdicts).length === 0;
+  }
+
   /** Upserts one entry, leaving every other spec's and reviewer's alone. */
   put(key: string, entry: VerdictEntry): void {
     this.verdicts[key] = entry;
