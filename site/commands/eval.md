@@ -152,6 +152,10 @@ Two things never write the ledger: `eval ci` (CI verifies without writing — th
 
 A target that cannot be reviewed at all — unreadable, or a cohort too large for the model's context window — is reported **UNVERIFIED**: counted separately, never as a violation, and the run fails so it cannot pass unseen.
 
+## The two channels
+
+Once axioms are ratified (see [praxis axioms](/commands/axioms)), the reviewer's prompt carries their checklist: violations of a checklist axiom come back **matched** — cited by id, rendered in the axiom's ratified words, deduplicated across reviewers into one finding with its witnesses counted. Everything else arrives on the **open channel** as raw critique prose and flows onward to triage — today's raw critique is tomorrow's axiom. The reviewer is also told the judgment boundary: mechanical criteria (anything a linter could decide) are out of scope and must not be reported.
+
 ## Epoch boundaries
 
 A reviewer's behavioral identity — its config plus the reviewer-facing prompt text this praxis version ships — is hashed onto every run record. When a run starts with a hash the ledger has never seen for that reviewer, praxis announces an **epoch boundary**: measurements on either side of it are not comparable, and no trend line crosses it. The warning names what changed (a model swap says so; anything else is config or prompt surface) and never blocks the run.

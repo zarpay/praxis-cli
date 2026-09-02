@@ -19,7 +19,11 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
     }
   ],
   "reviewers": [
-    { "name": "default", "model": "x-ai/grok-4.1-fast", "apiKeyEnvVar": "OPENROUTER_API_KEY" }
+    {
+      "name": "default",
+      "model": "x-ai/grok-4.1-fast",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    }
   ],
   "specFilePattern": "README.md"
 }
@@ -35,6 +39,7 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
 Directories that Praxis treats as knowledge sources. All paths are relative to the project root.
 
 Sources are used for:
+
 - **Validation discovery** — each directory in `sources` is scanned for spec files
 - **Watch mode** — `praxis compile --watch` watches every source directory
 - **Status** — `praxis status` scans sources to count documents
@@ -116,21 +121,23 @@ Uses all defaults for that plugin.
 
 ```json
 {
-  "plugins": [{
-    "name": "claude-code",
-    "outputDir": "./plugins/my-agents",
-    "claudeCodePluginName": "my-org"
-  }]
+  "plugins": [
+    {
+      "name": "claude-code",
+      "outputDir": "./plugins/my-agents",
+      "claudeCodePluginName": "my-org"
+    }
+  ]
 }
 ```
 
 ### Claude Code plugin options
 
-| Property | Type | Default | Description |
-| --- | --- | --- | --- |
-| `name` | `string` | — | Must be `"claude-code"` |
-| `outputDir` | `string` | `"./plugins/praxis"` | Full path to plugin output directory, resolved against project root |
-| `claudeCodePluginName` | `string` | `"praxis"` | The `name` field in `plugin.json` and the slash command namespace |
+| Property               | Type     | Default              | Description                                                         |
+| ---------------------- | -------- | -------------------- | ------------------------------------------------------------------- |
+| `name`                 | `string` | —                    | Must be `"claude-code"`                                             |
+| `outputDir`            | `string` | `"./plugins/praxis"` | Full path to plugin output directory, resolved against project root |
+| `claudeCodePluginName` | `string` | `"praxis"`           | The `name` field in `plugin.json` and the slash command namespace   |
 
 ---
 
@@ -144,25 +151,35 @@ The reviewers — named inference backends that evaluate targets against specs. 
 ```json
 {
   "reviewers": [
-    { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "apiKeyEnvVar": "OPENROUTER_API_KEY" },
-    { "name": "local", "model": "org-model", "baseUrl": "https://inference.internal/v1", "apiKeyEnvVar": "INTERNAL_KEY" }
+    {
+      "name": "flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    },
+    {
+      "name": "local",
+      "model": "org-model",
+      "baseUrl": "https://inference.internal/v1",
+      "apiKeyEnvVar": "INTERNAL_KEY"
+    }
   ]
 }
 ```
 
 ### Per-reviewer fields
 
-| Field | Required | Description |
-| --- | --- | --- |
-| `name` | yes | Unique label identifying the reviewer's verdicts in results and reports |
-| `model` | yes | Model identifier the backend understands (e.g. an [OpenRouter slug](https://openrouter.ai/models)) |
-| `apiKeyEnvVar` | yes | Environment variable holding the backend's API key |
-| `baseUrl` | no | OpenAI-compatible endpoint base; defaults to OpenRouter |
-| `temperature` | no | Sampling temperature for reviews; defaults to `0` |
+| Field          | Required | Description                                                                                        |
+| -------------- | -------- | -------------------------------------------------------------------------------------------------- |
+| `name`         | yes      | Unique label identifying the reviewer's verdicts in results and reports                            |
+| `model`        | yes      | Model identifier the backend understands (e.g. an [OpenRouter slug](https://openrouter.ai/models)) |
+| `apiKeyEnvVar` | yes      | Environment variable holding the backend's API key                                                 |
+| `baseUrl`      | no       | OpenAI-compatible endpoint base; defaults to OpenRouter                                            |
+| `temperature`  | no       | Sampling temperature for reviews; defaults to `0`                                                  |
 
-Each target's cache file holds every reviewer's verdicts, keyed by a hash of the reviewer's *behavioral* settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the evaluating prompt. Renaming a reviewer or rotating a key keeps its cached verdicts; changing the model, endpoint, or temperature invalidates them.
+Each target's cache file holds every reviewer's verdicts, keyed by a hash of the reviewer's _behavioral_ settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the evaluating prompt. Renaming a reviewer or rotating a key keeps its cached verdicts; changing the model, endpoint, or temperature invalidates them.
 
 ::: warning Breaking change in v2
+
 ### Providers
 
 Each reviewer runs through a **provider** — the backend that executes the review and returns a normalized verdict plus usage (tokens and, where reported, cost). `provider` defaults to `"openrouter"`, which speaks to OpenRouter or any OpenAI-compatible endpoint (`baseUrl`). A reviewer can instead point at a local ESM module, resolved from the project root:
@@ -170,7 +187,11 @@ Each reviewer runs through a **provider** — the backend that executes the revi
 ```json
 {
   "reviewers": [
-    { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "apiKeyEnvVar": "OPENROUTER_API_KEY" },
+    {
+      "name": "flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    },
     {
       "name": "internal",
       "model": "org-model",
@@ -235,14 +256,27 @@ Glob patterns are supported:
 v2 drops every 1.x compatibility spelling — nothing is aliased or
 normalized:
 
-| Removed | Use instead |
-| --- | --- |
-| `rolesDir` / `responsibilitiesDir` config keys | `expertsDir` / `practicesDir` |
-| `type: role` / `type: responsibility` frontmatter | `type: expert` / `type: practice` |
-| `responsibilities:` list in an expert file | `practices:` |
-| `validation:` config section | `reviewers:` + top-level `specFilePattern` |
-| `constitution: true` | an explicit glob, e.g. `constitution: "context/constitution/*.md"` |
-| `praxis validate document\|all\|ci\|report` | `praxis eval run\|ci\|verdict` |
-| `praxis add role\|responsibility` | `praxis add expert\|practice` |
+| Removed                                           | Use instead                                                        |
+| ------------------------------------------------- | ------------------------------------------------------------------ |
+| `rolesDir` / `responsibilitiesDir` config keys    | `expertsDir` / `practicesDir`                                      |
+| `type: role` / `type: responsibility` frontmatter | `type: expert` / `type: practice`                                  |
+| `responsibilities:` list in an expert file        | `practices:`                                                       |
+| `validation:` config section                      | `reviewers:` + top-level `specFilePattern`                         |
+| `constitution: true`                              | an explicit glob, e.g. `constitution: "context/constitution/*.md"` |
+| `praxis validate document\|all\|ci\|report`       | `praxis eval run\|ci\|verdict`                                     |
+| `praxis add role\|responsibility`                 | `praxis add expert\|practice`                                      |
 
 Default `sources` are `["experts", "practices", "reference", "context"]`.
+
+## curator
+
+The model behind `praxis axioms triage`, the authoring gate, and ratification's traceability assessment — the taxonomy's librarian. One entry, reviewer-shaped minus `name`; teams typically point it at a frontier model, since assignment quality bounds every per-axiom rate:
+
+```json
+"curator": {
+  "model": "<model slug>",
+  "apiKeyEnvVar": "OPENROUTER_API_KEY"
+}
+```
+
+Optional fields as for reviewers: `baseUrl`, `temperature`, `provider` (including `./relative` local modules), `options`. Not configured means the axiom lifecycle commands refuse with the exact block to add — there is no silent fallback to a reviewer model.

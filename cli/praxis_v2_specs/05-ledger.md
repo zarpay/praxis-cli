@@ -69,6 +69,8 @@ Provenance fields are mandatory. Derived fields (population, authorship) record 
 - The ledger is judgment-only (03): static tooling's findings never enter it.
 - Cache hits write **no** critique records (nothing new was reviewed) but are counted on the run record. (An earlier open question — backfilling the first ledger-enabled run from cache hits — was dropped 2026-09-02: no install has pre-ledger history worth reconstructing, and the first real run populates the ledger anyway.)
 
+**Triage partition (added at implementation, 2026-09-03):** the ledger gains a second partition, `.praxis/ledger/triage/<session_id>.jsonl` — append-only records of triage decisions (`assignment`, `dismissal`, `rejection`), one file per session, same merge-safety as runs. Assignments are the superseding-record mechanism this document's integrity rule promises: a critique record's null `axiom_id` is never mutated; the assignment that resolves it is a new record referencing it. Checklist-born critiques (04's matched channel) carry `axiom_id`/`axiom_version`/`assigned_by: "checklist"` inline at write time.
+
 ## Integrity
 
 - Append-only: no record is ever mutated. Corrections are superseding records referencing the original.

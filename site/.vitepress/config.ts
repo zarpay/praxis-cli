@@ -53,6 +53,7 @@ export default defineConfig({
           { text: 'praxis compile', link: '/commands/compile' },
           { text: 'praxis status', link: '/commands/status' },
           { text: 'praxis eval', link: '/commands/eval' },
+          { text: 'praxis axioms', link: '/commands/axioms' },
           { text: 'praxis config', link: '/commands/config' },
         ],
       },

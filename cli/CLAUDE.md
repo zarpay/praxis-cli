@@ -172,6 +172,8 @@ Spec discovered (specFilePattern match, frontmatter read)
 
 Every run also appends to the ledger (`.praxis/ledger/runs/<run_id>.jsonl`, 05): one run record per reviewer with git facts, cost and counts, plus one critique record per issue — full provenance, append-only, committed. `eval ci` verifies without writing; an unevaluable unit is `unverified`, never a violation. Run start detects epoch boundaries from the ledger (set-wise: a reviewer hash never seen before — warn, never block), and the first full run under a new hash is stamped `baseline: true`.
 
+The axiom layer (04) sits on the ledger: open-channel critiques triage into `.praxis/axioms/` (ids `AX-` + 6 random hex — never sequential), ratification grounds a proposal in its spec and activates it, and active axioms become the reviewer's checklist — rendered into the prompt and folded into the content hash, so ratifying re-reviews what the spec governs. The `curator` config role (required for triage/ratify/audit; instructive error otherwise) runs the organizing, the authoring gate (03), and traceability via the provider's optional `complete()`. Triage decisions append to `.praxis/ledger/triage/`.
+
 `praxis eval prune` is the epoch structure's other half: a behavioral change writes new cache keys and orphans the old ones, and pruning removes every entry whose reviewer hash matches no configured reviewer.
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).

@@ -44,9 +44,9 @@ A typical expert template after `praxis init`:
 
 ```markdown
 ---
-title: {Expert Name}
+title: { Expert Name }
 type: expert
-alias: {required_alias}
+alias: { required_alias }
 description: ""
 
 constitution:
@@ -63,12 +63,15 @@ Brief description of this expert.
 ## Scope
 
 ### Responsible For
+
 - ...
 
 ### Not Responsible For
+
 - ...
 
 ## Authorities
+
 - **Can** ...
 - **Cannot** ...
 ```

@@ -15,7 +15,7 @@ Markdown + frontmatter in `.praxis/axioms/`, versioned in git — consistent wit
 
 ```yaml
 ---
-id: AX-0007 # stable; never reused, never renumbered
+id: AX-3f9c2d # stable; never reused, never renumbered; random-minted (see note)
 version: 2
 status: proposed | active | deprecated
 mode: judgment | agentic # see 03; agentic is explicit opt-in
@@ -30,6 +30,8 @@ supersedes: AX-0003 # optional
 Statement of what the axiom asserts.
 A violating example. A compliant example.
 ```
+
+**Implementation notes (2026-09-03, flagged):** ids are `AX-` + 6 random hex, never sequential — two contributors triaging on separate branches must not be able to mint one id for two standards; a merge would fuse their meanings, the exact corruption this document forbids. Chronology lives in `introduced`, not the id. Triage decisions are append-only ledger records in `.praxis/ledger/triage/<session_id>.jsonl` (`assignment` / `dismissal` / `rejection` kinds); _pending triage_ is derived — a null-axiom critique no record covers — never stored. `assigned_by` records both halves: `{decision: "human" | "flag:--yes", suggested_by: <curator model>}`; checklist-born critiques carry `assigned_by: "checklist"`. The organizing/gating/tracing model is the config's `curator` role — required, never defaulted to a reviewer.
 
 ## Lifecycle rules
 

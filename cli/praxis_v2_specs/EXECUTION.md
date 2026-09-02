@@ -55,20 +55,20 @@ the gap named, `deferred` schema-only by design. The completion audit ran
 
 ## M3 — Axiom flow (with M2, the MVP)
 
-| Req                                                                                                                                                     | Sources                 | Status |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ |
-| Axiom store: `.praxis/axioms/AX-NNNN.md`, `proposed/` subdir; proposed have no metric effect                                                            | 04-a, 04-b, 10-d        | —      |
-| Axiom frontmatter schema (id, version, status, mode, scope, context, cohort, severity, grounded_in, introduced, supersedes) + statement + both examples | 04-c, VO-k              | —      |
-| Identity stability: never reused/renumbered/re-clustered; version bump vs supersede rules                                                               | 04-d, 04-f              | —      |
-| `axioms triage` — interactive; LLM groups/suggests/drafts, human folds/dismisses/accepts; scriptable `--yes`/`--reject`                                 | 04-j, 03-d, 09-z, 09-ab | —      |
-| `axioms ratify <id>` — spec traceability required; three outcomes; gate applied                                                                         | 04-m, 04-n, 09-aa       | —      |
-| `axioms show <id> \| list \| audit`                                                                                                                     | 09-c, 03-e              | —      |
-| Authoring gate: `appropriate \| not_appropriate \| split`; litmus prompts; advisory                                                                     | 03-f, 03-g, 03-h, RM-e  | —      |
-| Two-channel reviewer prompt: axiom checklist + open channel; bootstrap = open channel only                                                              | 04-p, 04-q              | —      |
-| Assignment provenance: axiom_id + version + assigned_by (human decision, LLM suggested)                                                                 | 04-k, 04-t              | —      |
-| Residual tracking: unassignable critiques as a health metric                                                                                            | 04-s                    | —      |
-| Deprecation freezes ledger history; removal via deprecate; return via new ID                                                                            | 04-h, 03-x              | —      |
-| Findings dedup: (axiom_id, file) = one finding, N witnesses; surfaces show findings, ledger keeps critiques                                             | 06-o, 08-f, VO-g        | —      |
+| Req                                                                                                                                                     | Sources                 | Status                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| Axiom store: `.praxis/axioms/AX-NNNN.md`, `proposed/` subdir; proposed have no metric effect                                                            | 04-a, 04-b, 10-d        | ✅ (ids AX- + 6 random hex — owner decision: never sequential, merge-safe)                              |
+| Axiom frontmatter schema (id, version, status, mode, scope, context, cohort, severity, grounded_in, introduced, supersedes) + statement + both examples | 04-c, VO-k              | ✅ (AxiomFile validates on construction; agentic/cohort/changeset schema-only per roadmap)              |
+| Identity stability: never reused/renumbered/re-clustered; version bump vs supersede rules                                                               | 04-d, 04-f              | ✅ random mint + store re-roll; version vs supersede is authoring discipline the docs state             |
+| `axioms triage` — interactive; LLM groups/suggests/drafts, human folds/dismisses/accepts; scriptable `--yes`/`--reject`                                 | 04-j, 03-d, 09-z, 09-ab | ✅ curator organizes, human decides; --yes/--reject script it; decisions append to ledger/triage/       |
+| `axioms ratify <id>` — spec traceability required; three outcomes; gate applied                                                                         | 04-m, 04-n, 09-aa       | ✅ three outcomes; --spec for critique-less proposals; body preserved byte-for-byte                     |
+| `axioms show <id> \| list \| audit`                                                                                                                     | 09-c, 03-e              | ✅ (--json on all)                                                                                      |
+| Authoring gate: `appropriate \| not_appropriate \| split`; litmus prompts; advisory                                                                     | 03-f, 03-g, 03-h, RM-e  | ✅ at triage-accept and ratify; audit re-runs it; fail-safe = refusal                                   |
+| Two-channel reviewer prompt: axiom checklist + open channel; bootstrap = open channel only                                                              | 04-p, 04-q              | ✅ checklist in content hash; posture states the judgment boundary; epoch 0717752e                      |
+| Assignment provenance: axiom_id + version + assigned_by (human decision, LLM suggested)                                                                 | 04-k, 04-t              | ✅ checklist-born inline; triage via assignment records {decision, suggested_by}                        |
+| Residual tracking: unassignable critiques as a health metric                                                                                            | 04-s                    | ✅ dismissal/rejection records counted; surfaced in triage summary                                      |
+| Deprecation freezes ledger history; removal via deprecate; return via new ID                                                                            | 04-h, 03-x              | ✅ by construction (append-only); deprecate = status edit, audit flags candidates                       |
+| Findings dedup: (axiom_id, file) = one finding, N witnesses; surfaces show findings, ledger keeps critiques                                             | 06-o, 08-f, VO-g        | ✅ fast loop (named runs): matched critiques collapse with witness counts; full-run report stays counts |
 
 ## M4 — Measurement
 
