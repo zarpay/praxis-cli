@@ -21,6 +21,67 @@
           "hash": "a1beb8f5"
         }
       ]
+    },
+    "0311531a:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T14:35:14.819Z",
+      "content_hash": "436b0f1f",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Structure: The module exports a function named `applyDiscount`, not `run` as required. The specification requires exactly one entry point, a function named `run`.",
+          "Structure: The signature takes `(store: Store, input)` — while the Store is first, the function must return `Result<T>` from the domain types; it returns a bare `number` and never returns a `Result` with `{ ok: ... }`.",
+          "Behavior: Domain failures are thrown instead of returned as values — `throw new Error(...)` is used for unknown parlor and missing code, which the spec explicitly forbids; services must return `{ ok: false, error }`.",
+          "Behavior: Error messages are vague and do not name what was wrong and what would be accepted instead ('invalid input', 'error'), violating the API-consumer-oriented error message criterion.",
+          "Behavior: The service performs console I/O (`console.log`) for audit logging, violating the 'No I/O except through the injected Store' criterion.",
+          "Behavior: The service has a second responsibility (audit logging) beyond applying a discount, violating 'Services do one thing'.",
+          "Documentation: The service has no doc comment stating its purpose in one sentence and enumerating its domain failure modes."
+        ],
+        "reason": "The file deliberately violates nearly every criterion in the Service Conventions specification: wrong entry-point name and return type, domain failures thrown instead of returned as values, vague error messages, console I/O, a second audit-logging responsibility, and no doc comment."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T14:38:04.260Z",
+      "content_hash": "436b0f1f",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Violates 'Domain failures are values, never exceptions' criterion: throws exceptions for domain failures instead of returning Result<T> with error objects",
+          "Violates 'Error messages are written for the API consumer' criterion: uses vague error messages like 'invalid input' and 'error' instead of specific, helpful messages",
+          "Violates 'No I/O except through the injected Store' criterion: uses console.log for audit logging",
+          "Violates 'Every service has a doc comment' criterion: has no documentation comment stating purpose and failure modes",
+          "Violates 'Services do one thing' criterion: includes audit logging as a second responsibility",
+          "Violates 'A service module exports exactly one entry point: a function named run' criterion: exports function named applyDiscount instead of run",
+          "Violates 'Input is validated before any work happens' criterion: validation is incomplete and mixed with business logic",
+          "Violates 'returning a Result<T> from the domain types' criterion: returns number instead of Result<T>"
+        ],
+        "reason": "The file violates multiple required criteria in the Service Conventions specification, fundamentally failing to conform to the established patterns."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
     }
   }
 }

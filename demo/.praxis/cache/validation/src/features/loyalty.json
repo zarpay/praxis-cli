@@ -25,6 +25,69 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T14:35:10.607Z",
+      "content_hash": "b4f31007",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Structure: The feature has no index.ts entry point. The spec requires exactly one entry point, index.ts, which re-exports the feature's entire public API, and nothing outside the feature imports any other file in it. The loyalty directory contains only punch-card.ts and summer-promo.ts with no index.ts, so the entire rule about re-exporting the public API is unmet and both files are unreachable through the mandated entry point.",
+          "Cohesion — one capability per feature: punch-card.ts (loyalty punches / free-scoop logic) and summer-promo.ts (seasonal banner text and flavor list) serve two unrelated purposes. The spec requires that if files serve two unrelated purposes they are two features; this directory mixes them into one unit.",
+          "Cohesion — no orphaned files: every file must be reachable from index.ts through its import graph. With no index.ts and no cross-imports, summer-promo.ts (and its SUMMER_FLAVORS/banner-text code) is orphaned: nothing imports it, so it is not part of any reachable import graph. Punch-card.ts is likewise not reachable via an entry point.",
+          "Style/naming: logic files must be verb-first kebab-case (e.g., build-menu.ts, pick-winners.ts). punch-card.ts is noun-first, violating the verb-first naming convention required by the service conventions referenced in the spec."
+        ],
+        "reason": "The loyalty cohort fails the feature-module specification on multiple required criteria: there is no index.ts entry point that re-exports the feature's public API, the directory mixes two unrelated capabilities in one feature, and files are orphaned/unreachable because nothing imports them and no index.ts exists. It cannot be evaluated as a valid feature module under the spec."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T14:36:09.668Z",
+      "content_hash": "b4f31007",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Missing required entry point: The specification requires 'Exactly one entry point, index.ts, which re-exports the feature's entire public API.' The loyalty directory has no index.ts file.",
+          "Orphaned files: The specification requires 'No orphaned files: every file in the directory is reachable from index.ts through its import graph.' Without an index.ts, both punch-card.ts and summer-promo.ts are orphaned.",
+          "Multiple capabilities in one feature: The specification requires 'One capability per feature: if the files serve two unrelated purposes, they are two features.' punch-card.ts handles loyalty punch card logic while summer-promo.ts handles summer promotion marketing - these are unrelated capabilities.",
+          "Missing types file: The specification requires 'Types live in a dedicated <feature>-types.ts file.' There is no loyalty-types.ts file.",
+          "No public API re-export: Without index.ts, there is no way for external consumers to import the feature's public API as required by the specification."
+        ],
+        "reason": "The loyalty feature directory violates multiple required criteria from the specification, with the most critical being the absence of an index.ts entry point."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

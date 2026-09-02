@@ -15,6 +15,46 @@
         "issues": [],
         "reason": "Review input has 403 words."
       }
+    },
+    "dacac2eb:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T14:35:20.651Z",
+      "content_hash": "c2f1d782",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "..."
+        ],
+        "reason": "..."
+      }
+    },
+    "dacac2eb:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T14:36:54.203Z",
+      "content_hash": "c2f1d782",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Violates subject framing: Top-level describe should name the unit under test by its module name (e.g., 'apply-discount'), not 'should work'",
+          "Violates subject framing: No nested describe blocks with 'when' clauses to name situations",
+          "Violates one assertion per block: The single it block contains 5 expect statements instead of exactly one",
+          "Violates functionality principle: Tests implementation details (internal array ordering with store.listParlors()[0].id) instead of observable behavior",
+          "Violates functionality principle: Tests internal state (store.listParlors().length) that isn't part of the unit's public API observable behavior"
+        ],
+        "reason": "The file violates multiple required criteria in the Test Conventions specification, including subject framing rules, one assertion per block requirement, and testing implementation details instead of functionality."
+      }
     }
   }
 }

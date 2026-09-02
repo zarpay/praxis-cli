@@ -15,6 +15,36 @@
         "issues": [],
         "reason": "Review input has 681 words."
       }
+    },
+    "dacac2eb:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T14:35:19.452Z",
+      "content_hash": "9d212d01",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "placeholder"
+      }
+    },
+    "dacac2eb:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T14:36:28.466Z",
+      "content_hash": "9d212d01",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with all three rules of the Test Conventions specification. It follows proper subject framing with top-level describe naming the module and nested describes naming situations as 'when' clauses. Each it block contains exactly one assertion using toMatchObject/toEqual for compound shapes. The tests exercise only the public API (run function) and assert on returned values and observable state through the injected store, without implementation details or spies."
+      }
     }
   }
 }

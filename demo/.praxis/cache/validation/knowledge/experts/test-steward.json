@@ -15,6 +15,40 @@
         "issues": [],
         "reason": "Review input has 279 words."
       }
+    },
+    "244fa7f3:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T14:35:05.235Z",
+      "content_hash": "ed0cc57e",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "The file contains required content violations...",
+          "..."
+        ],
+        "reason": "..."
+      }
+    },
+    "244fa7f3:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T14:39:07.915Z",
+      "content_hash": "ed0cc57e",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all required criteria: it contains all required frontmatter fields (title, type, alias, description), opens with a level-1 heading naming the expert and alias, states in prose what the expert is SME on, and contains no placeholder text."
+      }
     }
   }
 }

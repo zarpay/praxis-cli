@@ -25,6 +25,56 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T14:35:11.876Z",
+      "content_hash": "cbd707ee",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "bulid"
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T14:39:19.199Z",
+      "content_hash": "cbd707ee",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The tasting-menu feature module fully satisfies all criteria in the specification. It has exactly one entry point (index.ts), dedicated types file (tasting-menu-types.ts), verb-first kebab-case logic file (build-menu.ts), follows service conventions with Result pattern, maintains cohesion with no orphaned files, and serves a single capability (building tasting menus)."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

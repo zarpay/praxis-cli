@@ -21,6 +21,51 @@
           "hash": "a1beb8f5"
         }
       ]
+    },
+    "0311531a:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T14:35:16.919Z",
+      "content_hash": "e60d77e5",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "The exported entry point must be a function named `run` per the Structure section: 'exports exactly one entry point: a function named `run`...' The file exports a function named `run`.**Wait** — actually it does export `function run`. Let me double check: `export function run(store: Store, input: RankParlorsInput): Result<RankedParlor[]>`. Yes, that's `run`."
+        ],
+        "reason": "The exported entry point is a function named `run` that takes `Store` first and a single input object, returning `Result<RankedParlor[]>`."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T14:38:14.819Z",
+      "content_hash": "e60d77e5",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file rank-parlors.ts fully satisfies all criteria in the specification: it exports a single run function with correct signature, follows verb-first kebab-case naming, handles domain failures as values with clear error messages, validates input before work, performs a single responsibility, uses only injected Store for data access, and includes proper documentation with purpose and failure modes."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
     }
   }
 }

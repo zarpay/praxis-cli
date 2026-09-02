@@ -15,6 +15,39 @@
         "issues": [],
         "reason": "Review input has 294 words."
       }
+    },
+    "244fa7f3:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T14:35:00.984Z",
+      "content_hash": "8f4f2fef",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "..."
+        ],
+        "reason": "..."
+      }
+    },
+    "244fa7f3:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T14:37:39.832Z",
+      "content_hash": "8f4f2fef",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file fully satisfies all required criteria defined in the specification. It contains all required frontmatter fields (title, type, alias, description), opens with a level-1 heading naming the expert and its alias, and states in prose what the expert is the subject-matter expert on. The content contains no placeholder text and follows all conventions."
+      }
     }
   }
 }

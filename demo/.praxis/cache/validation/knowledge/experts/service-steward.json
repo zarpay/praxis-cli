@@ -15,6 +15,42 @@
         "issues": [],
         "reason": "Review input has 286 words."
       }
+    },
+    "244fa7f3:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T14:35:03.132Z",
+      "content_hash": "9345eb3c",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Required frontmatter field `description` is defined by the spec as 'one sentence or two' stating when to invoke the expert; the file's `description` is a valid string, so it satisfies the criterion.",
+          "Required content: the body must state, in prose, what the expert is the subject-matter expert on — the file states 'The subject-matter expert on how Scoop Society services are written,' satisfying that criterion.",
+          "Extra frontmatter keys are not prohibited by the spec; the additional `constitution`, `context`, `practices`, `refs`, `validates`, `excludes`, `exemplars` fields do not violate any criterion.",
+          "No placeholder text (TODO, TBD, lorem ipsum) appears in the file."
+        ],
+        "reason": "The file satisfies the required frontmatter (title, type, alias, description), required content (H1 heading naming the expert and alias, prose statement of expertise), and contains no placeholder text. Extra metadata fields are not prohibited by the specification."
+      }
+    },
+    "244fa7f3:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T14:39:00.884Z",
+      "content_hash": "9345eb3c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification. It contains all required frontmatter fields (title, type, alias, description), opens with a level-1 heading naming the expert and its alias, states what the expert is the subject-matter expert on in prose, and contains no placeholder text."
+      }
     }
   }
 }

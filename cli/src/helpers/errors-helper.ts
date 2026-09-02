@@ -165,6 +165,14 @@ export const errors = {
     return new PraxisError("UNKNOWN_DOCUMENT_TYPE", `Unknown document type: ${type}`);
   },
 
+  /** The configured editor could not be started. */
+  editorFailed(editor: string, cause: string): PraxisError {
+    return new PraxisError(
+      "EDITOR_FAILED",
+      `Could not start "${editor}" (${cause}) — praxis config edit uses $VISUAL, then $EDITOR, then vi`,
+    );
+  },
+
   /** `praxis add` was given a type it has no template for. */
   invalidDocumentType(type: string): PraxisError {
     return new PraxisError(

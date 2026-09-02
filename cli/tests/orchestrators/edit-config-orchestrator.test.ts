@@ -52,6 +52,14 @@ describe("editConfigOrchestrator", () => {
     expect(spawnSync).toHaveBeenCalledWith("vi", [configPath], { stdio: "inherit" });
   });
 
+  it("splits an editor value that carries arguments, keeping the file last", async () => {
+    process.env["VISUAL"] = "omarchy-launch-editor --inline";
+    await editConfigOrchestrator(ctx, {});
+    expect(spawnSync).toHaveBeenCalledWith("omarchy-launch-editor", ["--inline", configPath], {
+      stdio: "inherit",
+    });
+  });
+
   it("throws when the editor spawn fails", async () => {
     vi.mocked(spawnSync).mockReturnValueOnce({
       error: new Error("editor not found"),

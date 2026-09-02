@@ -15,6 +15,39 @@
         "issues": [],
         "reason": "Review input has 539 words."
       }
+    },
+    "dacac2eb:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T14:35:18.091Z",
+      "content_hash": "b35b5069",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "—"
+        ],
+        "reason": "..."
+      }
+    },
+    "dacac2eb:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T14:38:28.755Z",
+      "content_hash": "b35b5069",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully satisfies all criteria in the specification: 1) Subject framing follows the pattern with module name at top level, 'when' clauses for situations, and complete sentences; 2) Each 'it' block contains exactly one 'expect' assertion; 3) Tests exercise public API functionality without implementation details, use honest implementations, and build fresh test data."
+      }
     }
   }
 }
