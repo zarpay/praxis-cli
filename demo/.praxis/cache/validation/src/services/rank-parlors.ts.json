@@ -8,12 +8,12 @@
         "hash": "4886d09e"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-01T20:23:21.409Z",
-      "content_hash": "e60d77e5",
+      "cached_at": "2026-09-02T21:19:20.542Z",
+      "content_hash": "813a594c",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 642 words."
+        "reason": "Review input has 643 words."
       },
       "exemplar_files": [
         {
@@ -29,15 +29,12 @@
         "hash": "aa38870a"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T14:35:16.919Z",
-      "content_hash": "e60d77e5",
+      "cached_at": "2026-09-02T21:18:16.957Z",
+      "content_hash": "813a594c",
       "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "The exported entry point must be a function named `run` per the Structure section: 'exports exactly one entry point: a function named `run`...' The file exports a function named `run`.**Wait** — actually it does export `function run`. Let me double check: `export function run(store: Store, input: RankParlorsInput): Result<RankedParlor[]>`. Yes, that's `run`."
-        ],
-        "reason": "The exported entry point is a function named `run` that takes `Store` first and a single input object, returning `Result<RankedParlor[]>`."
+        "compliant": true,
+        "issues": [],
+        "reason": "The file rank-parlors.ts satisfies all service conventions from the specification. Structure: it exports exactly one entry point, a `run` function taking the `Store` first and a single input object, returning a `Result<RankedParlor[]>` from domain types; the module name is verb-first kebab-case ('rank-parlors.ts'). Behavior: domain failures (negative or non-whole minReviews) are returned as `{ ok: false, error }` values, never thrown; the error message names what was wrong and what would be accepted ('minReviews must be a whole number of 0 or more'); validation happens before any work and reads top-to-bottom before the happy path; the service does one thing (ranks parlors); no I/O occurs except through the injected Store (listParlors/listReviews). Documentation: the doc comment states the purpose in one sentence and enumerates the domain failure modes (minReviews negative or not a whole number), matching the exemplar's style. No criteria are violated."
       },
       "exemplar_files": [
         {
@@ -53,12 +50,33 @@
         "hash": "e25903cb"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T14:38:14.819Z",
+      "cached_at": "2026-09-02T21:19:04.724Z",
+      "content_hash": "813a594c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file rank-parlors.ts fully satisfies all criteria in the Service Conventions specification. It follows the required structure with a single run function, validates input before processing, returns domain failures as values with clear error messages, has proper documentation, and adheres to all behavioral constraints."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:aff4904b": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "aff4904b"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T21:03:12.217Z",
       "content_hash": "e60d77e5",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file rank-parlors.ts fully satisfies all criteria in the specification: it exports a single run function with correct signature, follows verb-first kebab-case naming, handles domain failures as values with clear error messages, validates input before work, performs a single responsibility, uses only injected Store for data access, and includes proper documentation with purpose and failure modes."
+        "reason": "Review input has 642 words."
       },
       "exemplar_files": [
         {

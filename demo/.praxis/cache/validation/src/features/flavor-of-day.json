@@ -1,0 +1,91 @@
+{
+  "version": "4.0",
+  "verdicts": {
+    "e280f5fa:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T21:20:44.122Z",
+      "content_hash": "67edd1dd",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "",
+          ""
+        ],
+        "reason": ""
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T21:21:01.983Z",
+      "content_hash": "67edd1dd",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Missing required entry point: The feature directory must have exactly one entry point 'index.ts' that re-exports the feature's entire public API.",
+          "Missing types file: The feature must have a dedicated 'flavor-of-day-types.ts' file for type definitions.",
+          "Incorrect file naming: Logic files must be verb-first kebab-case (e.g., 'get-flavor.ts', 'announce-flavor.ts'), not noun-first or adjective-first.",
+          "Doesn't follow service conventions: The 'flavor.ts' file doesn't export a 'run' function and doesn't return Result<T> type as required by service conventions.",
+          "Potential capability split: The 'old-rotation.ts' file appears to serve a different purpose than the main 'flavor-of-day' capability, suggesting it might belong in a separate feature."
+        ],
+        "reason": "The feature module violates multiple required criteria from the specification, with critical structural issues that prevent proper evaluation."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:4886d09e": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "4886d09e"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T21:21:25.568Z",
+      "content_hash": "67edd1dd",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 714 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    }
+  }
+}

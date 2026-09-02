@@ -8,12 +8,12 @@
         "hash": "4886d09e"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-01T20:23:21.405Z",
-      "content_hash": "b4f31007",
+      "cached_at": "2026-09-02T21:10:37.198Z",
+      "content_hash": "60a083d7",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 762 words."
+        "reason": "Review input has 815 words."
       },
       "context_files": [
         {
@@ -33,18 +33,12 @@
         "hash": "aa38870a"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T14:35:10.607Z",
-      "content_hash": "b4f31007",
+      "cached_at": "2026-09-02T21:09:43.191Z",
+      "content_hash": "60a083d7",
       "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "Structure: The feature has no index.ts entry point. The spec requires exactly one entry point, index.ts, which re-exports the feature's entire public API, and nothing outside the feature imports any other file in it. The loyalty directory contains only punch-card.ts and summer-promo.ts with no index.ts, so the entire rule about re-exporting the public API is unmet and both files are unreachable through the mandated entry point.",
-          "Cohesion — one capability per feature: punch-card.ts (loyalty punches / free-scoop logic) and summer-promo.ts (seasonal banner text and flavor list) serve two unrelated purposes. The spec requires that if files serve two unrelated purposes they are two features; this directory mixes them into one unit.",
-          "Cohesion — no orphaned files: every file must be reachable from index.ts through its import graph. With no index.ts and no cross-imports, summer-promo.ts (and its SUMMER_FLAVORS/banner-text code) is orphaned: nothing imports it, so it is not part of any reachable import graph. Punch-card.ts is likewise not reachable via an entry point.",
-          "Style/naming: logic files must be verb-first kebab-case (e.g., build-menu.ts, pick-winners.ts). punch-card.ts is noun-first, violating the verb-first naming convention required by the service conventions referenced in the spec."
-        ],
-        "reason": "The loyalty cohort fails the feature-module specification on multiple required criteria: there is no index.ts entry point that re-exports the feature's public API, the directory mixes two unrelated capabilities in one feature, and files are orphaned/unreachable because nothing imports them and no index.ts exists. It cannot be evaluated as a valid feature module under the spec."
+        "compliant": true,
+        "issues": [],
+        "reason": "All criteria satisfied."
       },
       "context_files": [
         {
@@ -64,19 +58,37 @@
         "hash": "e25903cb"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T14:36:09.668Z",
+      "cached_at": "2026-09-02T21:10:01.244Z",
+      "content_hash": "60a083d7",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The loyalty feature module satisfies all criteria in the specification: it has exactly one entry point (index.ts) that re-exports the public API, types are in a dedicated loyalty-types.ts file, logic files use verb-first kebab-case naming (track-punches.ts) and follow service conventions with a run function returning Results, there are no orphaned files (all files are reachable from index.ts), the feature has one coherent capability (tracking loyalty punches), and the feature name 'loyalty' appropriately describes the capability."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:aff4904b": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "aff4904b"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T21:03:12.213Z",
       "content_hash": "b4f31007",
       "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "Missing required entry point: The specification requires 'Exactly one entry point, index.ts, which re-exports the feature's entire public API.' The loyalty directory has no index.ts file.",
-          "Orphaned files: The specification requires 'No orphaned files: every file in the directory is reachable from index.ts through its import graph.' Without an index.ts, both punch-card.ts and summer-promo.ts are orphaned.",
-          "Multiple capabilities in one feature: The specification requires 'One capability per feature: if the files serve two unrelated purposes, they are two features.' punch-card.ts handles loyalty punch card logic while summer-promo.ts handles summer promotion marketing - these are unrelated capabilities.",
-          "Missing types file: The specification requires 'Types live in a dedicated <feature>-types.ts file.' There is no loyalty-types.ts file.",
-          "No public API re-export: Without index.ts, there is no way for external consumers to import the feature's public API as required by the specification."
-        ],
-        "reason": "The loyalty feature directory violates multiple required criteria from the specification, with the most critical being the absence of an index.ts entry point."
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 762 words."
       },
       "context_files": [
         {

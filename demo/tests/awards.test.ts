@@ -4,7 +4,7 @@ import { pickWinners } from "../src/features/awards/index.js";
 import { run as createReview } from "../src/services/create-review.js";
 import { createMemoryStore, type Store } from "../src/store/memory-store.js";
 
-/** Records a review with the given rating against one parlor. */
+/** Records one review with the given rating against one parlor. */
 function reviewParlor(store: Store, parlorId: string, rating: number): void {
   createReview(store, {
     parlorId,

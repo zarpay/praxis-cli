@@ -1,0 +1,85 @@
+{
+  "version": "4.0",
+  "verdicts": {
+    "0311531a:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T21:20:48.218Z",
+      "content_hash": "4e062e80",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Structure: The service must export exactly one entry point: a function named `run` taking the `Store` first and a single input object, returning a `Result<T>` from the domain types. The file exports `sendNewsletter` instead of `run`, takes `(store, input)` but returns `boolean` instead of `Result<T>`, and has no `ok/error` return shape. Rename to `run`, return `Result<T>` from `../domain/types.js`, and import the domain `Result` type.",
+          "Structure: The module name must be verb-first kebab-case saying what the service does. `send-newsletter.ts` is not verb-first (it is verb-last / noun-first); rename to something like `newsletter-send.ts` (or, if the intent is 'send newsletter', the verb-first form would be required by the spec). It also does not match the spec's stated pattern (e.g. `create-review.ts`, `rank-parlors.ts`).",
+          "Behavior: Domain failures must be values, never exceptions; `throw` is reserved for programmer error. The file throws `new Error('bad subject')` for a caller-plausible failure (empty subject). Return `{ ok: false, error }` instead.",
+          "Behavior: Error messages must name what was wrong and what would be accepted instead. 'bad subject' is not acceptable; it must name the invalid input and the acceptable value (e.g. 'subject must be a non-empty string').",
+          "Behavior: No I/O except through the injected Store — no console. The file calls `console.log`; it must be removed (or the logging isolated/removed) so all I/O goes through the injected `Store` only.",
+          "Behavior: Input must be validated before any work happens, and validation reads top-to-bottom before the happy path begins. Here validation is minimal and is followed by I/O; the empty-subject check would need to be a value-returning guard consistent with the rest, but the larger issue is the missing validation of the single input object relative to the spec's full pattern."
+        ],
+        "reason": "The file does not conform to the Service Conventions: it exports a differently-named function returning a bare boolean instead of a named `run` returning a domain `Result<T>`, it throws on a domain failure instead of returning an error value with a spec-compliant message, and it performs console I/O outside the injected Store. These are required criteria, so the file fails validation."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T21:21:13.312Z",
+      "content_hash": "4e062e80",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Function must be named 'run' but is named 'sendNewsletter'",
+          "Must return Result<T> from domain types but returns boolean",
+          "Domain failures must be values, never exceptions - throws Error instead",
+          "Error messages must be written for API consumer: 'bad subject' is not acceptable",
+          "No documentation comment stating purpose and enumerating failure modes",
+          "Uses console.log (I/O not through injected Store)",
+          "No import of domain types or Result type"
+        ],
+        "reason": "The file violates multiple required criteria in the specification. It does not follow the required structure, behavior patterns, or documentation requirements."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:4886d09e": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "4886d09e"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T21:21:25.572Z",
+      "content_hash": "4e062e80",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 537 words."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    }
+  }
+}

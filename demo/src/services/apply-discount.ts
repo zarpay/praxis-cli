@@ -1,20 +1,38 @@
-// Deliberately violates service conventions: throws for domain
-// failures, vague error messages, console I/O, no doc comment, and a
-// second responsibility (audit logging). Praxis should FAIL this file.
-import type { Store } from "../store/memory-store";
+import type { Result } from "../domain/types.js";
+import type { Store } from "../store/memory-store.js";
 
-export function applyDiscount(store: Store, input: { parlorId: string; code: string }): number {
-  if (!input.code) {
-    throw new Error("invalid input");
+/** Input for applying a discount code at one parlor. */
+export interface ApplyDiscountInput {
+  parlorId: string;
+  code: string;
+}
+
+/**
+ * The discount rates each active promotion code resolves to — the one
+ * obvious place promotion data lives until it moves into the Store.
+ */
+const ACTIVE_CODES: Record<string, number> = { SCOOP10: 0.1 };
+
+/**
+ * Resolves a discount code to the rate a parlor honors.
+ *
+ * Failure modes: unknown parlor id; empty code; code that no active
+ * promotion recognizes.
+ */
+export function run(store: Store, input: ApplyDiscountInput): Result<number> {
+  if (!store.getParlor(input.parlorId)) {
+    return { ok: false, error: `no parlor with id "${input.parlorId}" — list parlors for valid ids` };
+  }
+  if (input.code.trim() === "") {
+    return { ok: false, error: 'code must be a non-empty discount code, like "SCOOP10"' };
   }
 
-  const parlor = store.getParlor(input.parlorId);
+  const rate = ACTIVE_CODES[input.code];
 
-  if (!parlor) {
-    throw new Error("error");
+  if (rate === undefined) {
+    const accepted = Object.keys(ACTIVE_CODES).join(", ");
+    return { ok: false, error: `discount code "${input.code}" is not active — currently accepted: ${accepted}` };
   }
 
-  console.log(`audit: discount ${input.code} applied at ${input.parlorId}`);
-
-  return input.code === "SCOOP10" ? 0.1 : 0;
+  return { ok: true, value: rate };
 }

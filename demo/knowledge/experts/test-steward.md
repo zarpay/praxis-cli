@@ -16,7 +16,7 @@ validates:
 
 # Test Steward (a.k.a **Taster**)
 
-The subject-matter expert on how Scoop Society tests are written.
+The subject-matter expert on how Scoop Society test suites are written.
 
 ## Identity
 

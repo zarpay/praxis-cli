@@ -8,12 +8,12 @@
         "hash": "4886d09e"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-01T20:23:21.408Z",
-      "content_hash": "436b0f1f",
+      "cached_at": "2026-09-02T21:19:20.541Z",
+      "content_hash": "a54c5a51",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 581 words."
+        "reason": "Review input has 685 words."
       },
       "exemplar_files": [
         {
@@ -29,21 +29,15 @@
         "hash": "aa38870a"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T14:35:14.819Z",
-      "content_hash": "436b0f1f",
+      "cached_at": "2026-09-02T21:18:14.954Z",
+      "content_hash": "a54c5a51",
       "result": {
         "compliant": false,
-        "severity": "error",
+        "severity": "warning",
         "issues": [
-          "Structure: The module exports a function named `applyDiscount`, not `run` as required. The specification requires exactly one entry point, a function named `run`.",
-          "Structure: The signature takes `(store: Store, input)` — while the Store is first, the function must return `Result<T>` from the domain types; it returns a bare `number` and never returns a `Result` with `{ ok: ... }`.",
-          "Behavior: Domain failures are thrown instead of returned as values — `throw new Error(...)` is used for unknown parlor and missing code, which the spec explicitly forbids; services must return `{ ok: false, error }`.",
-          "Behavior: Error messages are vague and do not name what was wrong and what would be accepted instead ('invalid input', 'error'), violating the API-consumer-oriented error message criterion.",
-          "Behavior: The service performs console I/O (`console.log`) for audit logging, violating the 'No I/O except through the injected Store' criterion.",
-          "Behavior: The service has a second responsibility (audit logging) beyond applying a discount, violating 'Services do one thing'.",
-          "Documentation: The service has no doc comment stating its purpose in one sentence and enumerating its domain failure modes."
+          "The template's ??? placeholder is not a valid Message struct — it must contain user, assistant, and system fields."
         ],
-        "reason": "The file deliberately violates nearly every criterion in the Service Conventions specification: wrong entry-point name and return type, domain failures thrown instead of returned as values, vague error messages, console I/O, a second audit-logging responsibility, and no doc comment."
+        "reason": "The file contains an incomplete result that does not conform to the Message format."
       },
       "exemplar_files": [
         {
@@ -59,22 +53,33 @@
         "hash": "e25903cb"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T14:38:04.260Z",
+      "cached_at": "2026-09-02T21:18:55.663Z",
+      "content_hash": "a54c5a51",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file fully satisfies all criteria in the specification. It follows the required structure, implements proper error handling with consumer-friendly messages, validates input before processing, maintains single responsibility, uses only injected dependencies, and includes complete documentation."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:aff4904b": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "aff4904b"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T21:03:12.215Z",
       "content_hash": "436b0f1f",
       "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "Violates 'Domain failures are values, never exceptions' criterion: throws exceptions for domain failures instead of returning Result<T> with error objects",
-          "Violates 'Error messages are written for the API consumer' criterion: uses vague error messages like 'invalid input' and 'error' instead of specific, helpful messages",
-          "Violates 'No I/O except through the injected Store' criterion: uses console.log for audit logging",
-          "Violates 'Every service has a doc comment' criterion: has no documentation comment stating purpose and failure modes",
-          "Violates 'Services do one thing' criterion: includes audit logging as a second responsibility",
-          "Violates 'A service module exports exactly one entry point: a function named run' criterion: exports function named applyDiscount instead of run",
-          "Violates 'Input is validated before any work happens' criterion: validation is incomplete and mixed with business logic",
-          "Violates 'returning a Result<T> from the domain types' criterion: returns number instead of Result<T>"
-        ],
-        "reason": "The file violates multiple required criteria in the Service Conventions specification, fundamentally failing to conform to the established patterns."
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 581 words."
       },
       "exemplar_files": [
         {
