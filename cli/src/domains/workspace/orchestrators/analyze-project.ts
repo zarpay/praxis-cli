@@ -1,5 +1,4 @@
-import type { CommandContext } from "@/domains/workspace/models/command-context.js";
-import type { CommandOutcome } from "@/types.js";
+import type { Orchestrator } from "@/domains/workspace/types.js";
 
 import buildStatusReport from "@/domains/workspace/services/build-status-report.js";
 import countStatusIssues from "@/domains/workspace/services/count-status-issues.js";
@@ -14,10 +13,12 @@ import { renderReport } from "@/views/report.js";
  * cache. Fails when any structural issue is found, so CI fails on a
  * project whose taxonomy has drifted.
  */
-export default async function analyzeProject(ctx: CommandContext): Promise<CommandOutcome> {
+const analyzeProject: Orchestrator = async (ctx) => {
   const report = await buildStatusReport({ root: ctx.root, config: ctx.config });
 
   renderReport(statusReport(report), { out: ctx.out, logger: ctx.logger });
 
   return countStatusIssues(report) > 0 ? "failed" : "ok";
-}
+};
+
+export default analyzeProject;

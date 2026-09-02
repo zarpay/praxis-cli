@@ -63,12 +63,12 @@ the two ends of it.
 
 ### The four layers inside a domain
 
-| Layer            | What belongs here                                                                                                                                                                                                                            |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `models/`        | Data structures and the helpers on that data. **Validate on construction** — a model that exists is a valid document. No I/O beyond reading its own file. `SpecFile`, `ExpertFile`, `Reviewer`, `ReviewSubject`.                             |
-| `services/`      | **One file, one default-exported function**, one input → one output. Operates on primitives and models and returns its work; no workflow. `expandGlobs`, `auditExperts`, `discoverDomains`, `requestVerdict`.                                |
-| `orchestrators/` | **One file, one `export default async function (ctx, options)`.** Coordinates services into a workflow, renders the result, and returns a `CommandOutcome`. The whole of what a command does. `runEval`, `compileProject`, `analyzeProject`. |
-| `views/`         | Rendering only — pure functions returning `DisplayEntry[]` or strings, never performing work. `unitHeading`, `issueBlocks`, `evalTargetingLines`.                                                                                            |
+| Layer            | What belongs here                                                                                                                                                                                                             |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `models/`        | Data structures and the helpers on that data. **Validate on construction** — a model that exists is a valid document. No I/O beyond reading its own file. `SpecFile`, `ExpertFile`, `Reviewer`, `ReviewSubject`.              |
+| `services/`      | **One file, one default-exported function**, one input → one output. Operates on primitives and models and returns its work; no workflow. `expandGlobs`, `auditExperts`, `discoverDomains`, `requestVerdict`.                 |
+| `orchestrators/` | **One file, one default-exported `Orchestrator`.** Coordinates services into a workflow, renders the result, and returns a `CommandOutcome`. The whole of what a command does. `runEval`, `compileProject`, `analyzeProject`. |
+| `views/`         | Rendering only — pure functions returning `DisplayEntry[]` or strings, never performing work. `unitHeading`, `issueBlocks`, `evalTargetingLines`.                                                                             |
 
 A domain's `prompts/` holds the LLM- or agent-facing text it owns: the eval domain
 has the six reviewer prompts, the spec domain the two Claude Code plugin templates.
@@ -99,8 +99,13 @@ applies the single error policy. A command therefore imports orchestrators and
 `runAction`, and nothing else; the orchestrator owns the response, rendering
 included, and hands back only a `CommandOutcome` for the exit code.
 
-Every orchestrator is `async`, so there is one shape for `runAction` to await
-rather than a union of sync and async ones.
+Every orchestrator has the same signature, and it is a named type rather than a
+convention: `Orchestrator<Options>` in `domains/workspace/types.ts`, applied to
+the exported const. That fixes the arity, so an orchestrator taking no options is
+still called with `{}` — `analyzeProject(ctx, {})` — and there is one call shape
+across every command. They are all `async`, which gives `runAction` one shape to
+await and one channel for failures: a non-async function returning
+`Promise.resolve()` throws synchronously, which is a second signature in disguise.
 
 **Because an orchestrator renders, the data it renders is assembled in a
 service.** An orchestrator that computes a report and prints it has made that

@@ -14,5 +14,5 @@ export default function registerStatusCommand(program: Command): void {
   program
     .command("status")
     .description("Show project health dashboard")
-    .action(() => runAction((ctx) => analyzeProject(ctx)));
+    .action(() => runAction((ctx) => analyzeProject(ctx, {})));
 }

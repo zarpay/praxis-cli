@@ -1,5 +1,5 @@
 import type { CompileProjectOptions } from "@/domains/spec/types.js";
-import type { CommandContext } from "@/domains/workspace/models/command-context.js";
+import type { Orchestrator } from "@/domains/workspace/types.js";
 
 import compileByAlias from "@/domains/spec/services/compile-by-alias.js";
 import compileExperts from "@/domains/spec/services/compile-experts.js";
@@ -22,10 +22,10 @@ import { renderReport } from "@/views/report.js";
  * or every expert and then again on every change. They share the compile
  * scope, so the dispatch lives here rather than in the route.
  */
-export default async function compileProject(
-  ctx: CommandContext,
-  { alias, watch = false }: CompileProjectOptions,
-): Promise<void> {
+const compileProject: Orchestrator<CompileProjectOptions> = async (
+  ctx,
+  { alias, watch = false },
+) => {
   const { root, config, logger } = ctx;
   const render = (lines: Parameters<typeof renderReport>[0]) =>
     renderReport(lines, { out: ctx.out, logger });
@@ -66,4 +66,6 @@ export default async function compileProject(
     onRecompile: (filename) => render([recompilingLine(filename)]),
     onError: (message) => logger.error(message),
   });
-}
+};
+
+export default compileProject;

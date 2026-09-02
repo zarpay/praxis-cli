@@ -15,10 +15,10 @@ export default function registerConfigCommand(program: Command): void {
   config
     .command("show")
     .description("Print the current configuration")
-    .action(() => runAction((ctx) => showConfig(ctx)));
+    .action(() => runAction((ctx) => showConfig(ctx, {})));
 
   config
     .command("edit")
     .description("Open the configuration in your default editor")
-    .action(() => runAction((ctx) => editConfig(ctx)));
+    .action(() => runAction((ctx) => editConfig(ctx, {})));
 }

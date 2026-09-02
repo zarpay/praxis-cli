@@ -1,5 +1,5 @@
 import type { AddDocumentOptions } from "@/domains/spec/types.js";
-import type { CommandContext } from "@/domains/workspace/models/command-context.js";
+import type { Orchestrator } from "@/domains/workspace/types.js";
 
 import { errors } from "@/core/errors.js";
 import { exists, readText, writeText } from "@/core/files.js";
@@ -18,10 +18,10 @@ import { renderReport } from "@/views/report.js";
  *
  * @throws PraxisError when the target exists, or the template is missing
  */
-export default async function addDocument(
-  ctx: CommandContext,
-  { type, name, scaffoldDir = SCAFFOLD_DIR }: AddDocumentOptions,
-): Promise<void> {
+const addDocument: Orchestrator<AddDocumentOptions> = async (
+  ctx,
+  { type, name, scaffoldDir = SCAFFOLD_DIR },
+) => {
   const { root, config } = ctx;
   const { expertsDir, practicesDir } = config;
   const isExpert = type === "expert";
@@ -48,7 +48,7 @@ export default async function addDocument(
     out: ctx.out,
     logger: ctx.logger,
   });
-}
+};
 
 /**
  * Fills the template's placeholders.
@@ -74,3 +74,5 @@ function toTitleCase(name: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 }
+
+export default addDocument;

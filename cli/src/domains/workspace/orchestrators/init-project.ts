@@ -1,5 +1,4 @@
-import type { CommandContext } from "@/domains/workspace/models/command-context.js";
-import type { InitProjectOptions } from "@/domains/workspace/types.js";
+import type { InitProjectOptions, Orchestrator } from "@/domains/workspace/types.js";
 
 import {
   copyFile,
@@ -27,10 +26,10 @@ import { renderReport } from "@/views/report.js";
  * re-running with `--spec-layer` adds the taxonomy to a project that
  * started eval-only.
  */
-export default async function initProject(
-  ctx: CommandContext,
-  { directory, scaffoldDir = SCAFFOLD_DIR, specLayer = false }: InitProjectOptions,
-): Promise<void> {
+const initProject: Orchestrator<InitProjectOptions> = async (
+  ctx,
+  { directory, scaffoldDir = SCAFFOLD_DIR, specLayer = false },
+) => {
   const targetDir = resolvePath(directory);
   const onFileCreated = (path: string) => ctx.logger.success(`Created ${path}`);
 
@@ -73,7 +72,7 @@ export default async function initProject(
     out: ctx.out,
     logger: ctx.logger,
   });
-}
+};
 
 /**
  * Copies a scaffold tree, skipping anything already present.
@@ -147,3 +146,5 @@ function nextSteps(specLayer: boolean): string[] {
     "  4. Re-run `praxis init --spec-layer` later to add the authoring taxonomy",
   ];
 }
+
+export default initProject;

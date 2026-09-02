@@ -1,5 +1,5 @@
 import type { ReportVerdictsOptions } from "@/domains/eval/types.js";
-import type { CommandContext } from "@/domains/workspace/models/command-context.js";
+import type { Orchestrator } from "@/domains/workspace/types.js";
 
 import collectVerdictReports from "@/domains/eval/services/collect-verdict-reports.js";
 import { verdictReportsLines } from "@/domains/eval/views/summary.js";
@@ -12,10 +12,10 @@ import { renderReport } from "@/views/report.js";
  * @throws PraxisError when the target does not exist, or no reviewer is
  *   configured to have an opinion about it
  */
-export default async function reportVerdicts(
-  ctx: CommandContext,
-  { target, verbose = false }: ReportVerdictsOptions,
-): Promise<void> {
+const reportVerdicts: Orchestrator<ReportVerdictsOptions> = async (
+  ctx,
+  { target, verbose = false },
+) => {
   const { reports, named } = collectVerdictReports({
     targetPath: target,
     root: ctx.root,
@@ -26,4 +26,6 @@ export default async function reportVerdicts(
     out: ctx.out,
     logger: ctx.logger,
   });
-}
+};
+
+export default reportVerdicts;

@@ -14,11 +14,18 @@ belongs here.
 
 - Named `{verb}-{noun}` for what it produces: `run-eval.ts`, `compile-project.ts`,
   `analyze-project.ts`, `report-verdicts.ts`.
-- **`export default async function (ctx: CommandContext, options)`.** Always
-  async, so `runAction` has one shape to await. `options` is the command's parsed
-  input, typed in the domain's `types.ts`; omit it when the command has none.
-  Everything about the project — root, paths, config — comes off `ctx`, never a
-  parameter.
+- **`const name: Orchestrator<Options> = async (ctx, options) => {}`, default
+  exported.** `Orchestrator` (`domains/workspace/types.ts`) is the one signature
+  every orchestrator has, applied to the const rather than annotating a function
+  declaration — that is what makes it enforced rather than described.
+- **The `options` parameter is never dropped.** An orchestrator that takes none is
+  `Orchestrator` (defaulting to `NoOptions`) and its command passes `{}`. The
+  implementation may omit the parameter; the call site may not. `Options` is the
+  command's parsed input, typed in the domain's `types.ts`; everything about the
+  project — root, paths, config — comes off `ctx`, never a parameter.
+- **Always `async`**, so `runAction` has one shape to await _and_ one channel for
+  failures. A non-async function returning `Promise.resolve()` throws
+  synchronously, which is a second signature in disguise.
 - **Returns a `CommandOutcome`, or nothing.** `"failed"` becomes exit 1 — a
   legitimate result like issues found, not an error. Genuinely unusable input is
   thrown instead. It never returns a payload: there is no caller left to consume

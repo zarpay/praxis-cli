@@ -70,18 +70,18 @@ describe("the config command's parts", () => {
 
     it("spawns the VISUAL editor with the config path", async () => {
       process.env["VISUAL"] = "code";
-      await editConfig(ctx);
+      await editConfig(ctx, {});
       expect(spawnSync).toHaveBeenCalledWith("code", [configPath], { stdio: "inherit" });
     });
 
     it("falls back to EDITOR when VISUAL is unset", async () => {
       process.env["EDITOR"] = "nano";
-      await editConfig(ctx);
+      await editConfig(ctx, {});
       expect(spawnSync).toHaveBeenCalledWith("nano", [configPath], { stdio: "inherit" });
     });
 
     it("falls back to vi when neither VISUAL nor EDITOR is set", async () => {
-      await editConfig(ctx);
+      await editConfig(ctx, {});
       expect(spawnSync).toHaveBeenCalledWith("vi", [configPath], { stdio: "inherit" });
     });
 
@@ -89,7 +89,7 @@ describe("the config command's parts", () => {
       vi.mocked(spawnSync).mockReturnValueOnce({
         error: new Error("editor not found"),
       } as ReturnType<typeof spawnSync>);
-      await expect(editConfig(ctx)).rejects.toThrow("editor not found");
+      await expect(editConfig(ctx, {})).rejects.toThrow("editor not found");
     });
   });
 });

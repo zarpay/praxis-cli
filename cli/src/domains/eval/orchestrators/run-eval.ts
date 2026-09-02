@@ -1,6 +1,5 @@
 import type { RunEvalOptions } from "@/domains/eval/types.js";
-import type { CommandContext } from "@/domains/workspace/models/command-context.js";
-import type { CommandOutcome } from "@/types.js";
+import type { Orchestrator } from "@/domains/workspace/types.js";
 
 import { joinPath } from "@/core/paths.js";
 import reviewAll from "@/domains/eval/services/review-all.js";
@@ -26,10 +25,10 @@ import { renderReport } from "@/views/report.js";
  *
  * Fails on any error verdict — and in CI `--strict`, on warnings too.
  */
-export default async function runEval(
-  ctx: CommandContext,
-  { targets = [], ci = false, strict = false, cache = true, ...options }: RunEvalOptions,
-): Promise<CommandOutcome> {
+const runEval: Orchestrator<RunEvalOptions> = async (
+  ctx,
+  { targets = [], ci = false, strict = false, cache = true, ...options },
+) => {
   const { root, config, out } = ctx;
 
   if (targets.length > 0) {
@@ -68,4 +67,6 @@ export default async function runEval(
   const { errors, warnings } = run.summary;
 
   return errors + (strict ? warnings : 0) === 0 ? "ok" : "failed";
-}
+};
+
+export default runEval;

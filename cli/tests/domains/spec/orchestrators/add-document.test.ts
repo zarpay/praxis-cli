@@ -30,7 +30,7 @@ function makeTmpdir(): string {
 
 describe("addDocument", () => {
   let root: string;
-  let add: (type: "expert" | "practice", name: string) => Promise<void>;
+  let add: (type: "expert" | "practice", name: string) => Promise<unknown>;
   let logged: () => string;
 
   beforeEach(() => {
