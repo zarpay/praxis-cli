@@ -2,11 +2,11 @@ import type { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 import type { Reviewer } from "@/domains/eval/models/reviewer.js";
 import type { ProviderRequest, ProviderResult } from "@/domains/eval/types.js";
 
-import { PraxisError, errors } from "@/core/errors.js";
 import reviewTools from "@/domains/eval/prompts/review-tools.js";
 import systemPrompt from "@/domains/eval/prompts/system-prompt.js";
 import validationQuestion from "@/domains/eval/prompts/validation-question.js";
 import resolveProvider from "@/domains/eval/services/resolve-provider-service.js";
+import { PraxisError, errors } from "@/framework/errors.js";
 
 /**
  * Obtains one verdict for one target from one reviewer.

@@ -1,4 +1,4 @@
-import type { CommandRegistrar } from "@/types.js";
+import type { CommandRegistrar } from "@/framework/types.js";
 
 import editConfigOrchestrator from "@/domains/workspace/orchestrators/edit-config-orchestrator.js";
 import showConfigOrchestrator from "@/domains/workspace/orchestrators/show-config-orchestrator.js";

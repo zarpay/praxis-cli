@@ -1,5 +1,5 @@
 import type { CompileProgress } from "@/domains/spec/types.js";
-import type { ReportLine } from "@/types.js";
+import type { ReportLine } from "@/framework/types.js";
 
 /**
  * One compile event as it happens.

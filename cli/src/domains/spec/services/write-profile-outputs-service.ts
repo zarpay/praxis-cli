@@ -1,8 +1,8 @@
 import type { WriteProfileOutputsInput } from "@/domains/spec/types.js";
 
-import { writeText } from "@/core/files.js";
-import { joinPath } from "@/core/paths.js";
 import evalTargetingLines from "@/domains/spec/views/targeting.js";
+import { writeText } from "@/framework/files.js";
+import { joinPath } from "@/framework/paths.js";
 
 /**
  * Writes a compiled profile everywhere it is configured to go.

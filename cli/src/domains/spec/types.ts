@@ -5,8 +5,8 @@
  * Shapes more than one domain needs live in src/types.ts instead.
  */
 
+import type { Logger } from "@/framework/views/logger.js";
 import type { PluginConfigEntry } from "@/types.js";
-import type { Logger } from "@/views/logger.js";
 
 // ---------------------------------------------------------------------------
 // Spec layer (domains/spec/)

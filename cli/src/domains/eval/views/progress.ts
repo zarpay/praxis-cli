@@ -2,7 +2,7 @@ import type { Verdict } from "@/domains/eval/types.js";
 
 import chalk from "chalk";
 
-import { baseName } from "@/core/paths.js";
+import { baseName } from "@/framework/paths.js";
 
 /**
  * The progress line printed before a unit is reviewed.

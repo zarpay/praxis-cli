@@ -1,11 +1,11 @@
 import type { AddDocumentOptions } from "@/domains/spec/types.js";
 import type { Orchestrator } from "@/domains/workspace/types.js";
 
-import { errors } from "@/core/errors.js";
-import { exists, readText, writeText } from "@/core/files.js";
-import { joinPath, relativePath } from "@/core/paths.js";
 import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
-import { renderReport } from "@/views/report.js";
+import { errors } from "@/framework/errors.js";
+import { exists, readText, writeText } from "@/framework/files.js";
+import { joinPath, relativePath } from "@/framework/paths.js";
+import { renderReport } from "@/framework/views/report.js";
 
 /**
  * Creates a new expert or practice from its template.

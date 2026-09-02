@@ -1,5 +1,5 @@
 import type { CompileScope } from "@/domains/spec/types.js";
-import type { Logger } from "@/views/logger.js";
+import type { Logger } from "@/framework/views/logger.js";
 
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

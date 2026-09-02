@@ -2,10 +2,10 @@ import type { AssistFile, AssistInputs, ResolveAssistInputsInput } from "@/domai
 
 import fg from "fast-glob";
 
-import { errors } from "@/core/errors.js";
-import { readText } from "@/core/files.js";
-import { relativePath } from "@/core/paths.js";
 import { SpecFile } from "@/domains/eval/models/spec-file.js";
+import { errors } from "@/framework/errors.js";
+import { readText } from "@/framework/files.js";
+import { relativePath } from "@/framework/paths.js";
 
 /**
  * Resolves a spec's `exemplars:` and `context:` globs into file contents.

@@ -1,9 +1,9 @@
-import type { FSWatcher } from "@/core/files.js";
 import type { WatchAndCompileInput } from "@/domains/spec/types.js";
+import type { FSWatcher } from "@/framework/files.js";
 
-import { watchDir } from "@/core/files.js";
-import { resolvePath } from "@/core/paths.js";
 import compileExperts from "@/domains/spec/services/compile-experts-service.js";
+import { watchDir } from "@/framework/files.js";
+import { resolvePath } from "@/framework/paths.js";
 
 /**
  * Recompiles every expert whenever a source directory changes.

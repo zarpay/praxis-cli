@@ -2,8 +2,8 @@ import type { CommandContextOptions } from "@/domains/workspace/types.js";
 
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import { Paths } from "@/domains/workspace/models/project-paths.js";
-import { Display } from "@/views/display.js";
-import { Logger } from "@/views/logger.js";
+import { Display } from "@/framework/views/display.js";
+import { Logger } from "@/framework/views/logger.js";
 
 /**
  * What every orchestrator is handed: the project it acts on, and the

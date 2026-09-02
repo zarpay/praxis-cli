@@ -1,8 +1,8 @@
 import type { Orchestrator } from "@/domains/workspace/types.js";
 
-import { readJson } from "@/core/files.js";
 import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
 import { configEntries } from "@/domains/workspace/views/config.js";
+import { readJson } from "@/framework/files.js";
 
 /**
  * What `praxis config show` does: print the configuration as written.

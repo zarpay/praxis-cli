@@ -2,9 +2,9 @@ import type { DiscoveryScope } from "@/domains/eval/types.js";
 
 import fg from "fast-glob";
 
-import { joinPath } from "@/core/paths.js";
 import isTarget from "@/domains/eval/services/is-target-service.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
+import { joinPath } from "@/framework/paths.js";
 
 /**
  * Every .md document across the source directories.

@@ -1,4 +1,4 @@
-import type { BadgeEntry, DisplayEntry, HeaderEntry } from "@/types.js";
+import type { BadgeEntry, DisplayEntry, HeaderEntry } from "@/framework/types.js";
 
 import chalk from "chalk";
 

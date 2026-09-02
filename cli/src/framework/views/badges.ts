@@ -1,4 +1,4 @@
-import type { BadgeEntry, LineColor } from "@/types.js";
+import type { BadgeEntry, LineColor } from "@/framework/types.js";
 
 /** Indent every badge in a tallied block shares. */
 const BLOCK_INDENT = 2;

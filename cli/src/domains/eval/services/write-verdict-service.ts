@@ -1,8 +1,8 @@
 import type { VerdictEntry, WriteVerdictInput } from "@/domains/eval/types.js";
 
-import { exists, removeFile, writeText } from "@/core/files.js";
 import { CacheFile } from "@/domains/eval/models/cache-file.js";
 import readCacheFile from "@/domains/eval/services/read-cache-file-service.js";
+import { exists, removeFile, writeText } from "@/framework/files.js";
 
 /**
  * Stores a reviewer's verdict for a (target, spec) pair.

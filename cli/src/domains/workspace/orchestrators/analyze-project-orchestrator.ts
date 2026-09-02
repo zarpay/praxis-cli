@@ -4,7 +4,7 @@ import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js
 import buildStatusReport from "@/domains/workspace/services/build-status-report-service.js";
 import countStatusIssues from "@/domains/workspace/services/count-status-issues-service.js";
 import { statusReport } from "@/domains/workspace/views/status.js";
-import { renderReport } from "@/views/report.js";
+import { renderReport } from "@/framework/views/report.js";
 
 /**
  * What `praxis status` does: report the project's health.

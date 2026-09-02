@@ -1,5 +1,5 @@
 import type { CacheFileData, ReportStatus, VerdictReport } from "@/domains/eval/types.js";
-import type { DisplayEntry } from "@/types.js";
+import type { DisplayEntry } from "@/framework/types.js";
 
 import chalk from "chalk";
 

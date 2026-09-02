@@ -1,4 +1,4 @@
-import type { CommandRegistrar } from "@/types.js";
+import type { CommandRegistrar } from "@/framework/types.js";
 
 import analyzeProjectOrchestrator from "@/domains/workspace/orchestrators/analyze-project-orchestrator.js";
 

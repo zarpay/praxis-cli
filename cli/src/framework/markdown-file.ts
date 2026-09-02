@@ -1,5 +1,5 @@
-import { readText } from "@/core/files.js";
-import { Frontmatter } from "@/core/frontmatter.js";
+import { readText } from "@/framework/files.js";
+import { Frontmatter } from "@/framework/frontmatter.js";
 
 /** Delimiter fencing the YAML frontmatter block. */
 const DELIMITER = "---";

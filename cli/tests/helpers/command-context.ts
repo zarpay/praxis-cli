@@ -1,4 +1,4 @@
-import type { Logger } from "@/views/logger.js";
+import type { Logger } from "@/framework/views/logger.js";
 
 import { CommandContext } from "@/domains/workspace/models/command-context.js";
 import { Paths } from "@/domains/workspace/models/project-paths.js";

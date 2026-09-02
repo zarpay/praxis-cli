@@ -1,7 +1,6 @@
 import type { CacheReviewerIdentity } from "@/domains/eval/types.js";
 import type { ReviewerConfig } from "@/types.js";
 
-import { errors } from "@/core/errors.js";
 import cacheIdentity from "@/domains/eval/services/build-cache-identity-service.js";
 import reviewerHash from "@/domains/eval/services/hash-reviewer-service.js";
 import {
@@ -9,6 +8,7 @@ import {
   DEFAULT_REVIEWER_PROVIDER,
   DEFAULT_REVIEWER_TEMPERATURE,
 } from "@/domains/workspace/models/praxis-config.js";
+import { errors } from "@/framework/errors.js";
 
 /**
  * A configured reviewer: who is reviewing, and with what settings.

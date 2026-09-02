@@ -13,7 +13,7 @@ import {
   watchingLine,
 } from "@/domains/spec/views/compile-progress.js";
 import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
-import { renderReport } from "@/views/report.js";
+import { renderReport } from "@/framework/views/report.js";
 
 /**
  * What `praxis compile` does: turn expert definitions into agent profiles

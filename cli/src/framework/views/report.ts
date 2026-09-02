@@ -1,7 +1,7 @@
-import type { ReportLine } from "@/types.js";
+import type { ReportLine } from "@/framework/types.js";
 
-import { Display } from "@/views/display.js";
-import { Logger } from "@/views/logger.js";
+import { Display } from "@/framework/views/display.js";
+import { Logger } from "@/framework/views/logger.js";
 
 /**
  * Prints a report a view assembled.

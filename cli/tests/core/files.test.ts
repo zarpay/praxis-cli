@@ -15,7 +15,7 @@ import {
   removeFile,
   writeJson,
   writeText,
-} from "@/core/files.js";
+} from "@/framework/files.js";
 
 describe("files", () => {
   let dir: string;

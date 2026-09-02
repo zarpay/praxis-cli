@@ -3,13 +3,13 @@ import type {
   CollectVerdictReportsResult,
 } from "@/domains/eval/types.js";
 
-import { errors } from "@/core/errors.js";
-import { exists } from "@/core/files.js";
-import { resolvePath } from "@/core/paths.js";
 import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
 import cacheIdentity from "@/domains/eval/services/build-cache-identity-service.js";
 import buildVerdictReport from "@/domains/eval/services/build-verdict-report-service.js";
 import readVerdictEntry from "@/domains/eval/services/read-verdict-entry-service.js";
+import { errors } from "@/framework/errors.js";
+import { exists } from "@/framework/files.js";
+import { resolvePath } from "@/framework/paths.js";
 
 /**
  * What every reviewer last recorded about one target.

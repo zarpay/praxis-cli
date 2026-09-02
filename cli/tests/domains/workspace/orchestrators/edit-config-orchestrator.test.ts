@@ -9,10 +9,10 @@ vi.mock("node:child_process", () => ({
 
 import { spawnSync } from "node:child_process";
 
-import { readJson } from "@/core/files.js";
 import { editConfigOrchestrator } from "@/domains/workspace/orchestrators/edit-config-orchestrator.js";
 import { configEntries } from "@/domains/workspace/views/config.js";
-import { Display } from "@/views/display.js";
+import { readJson } from "@/framework/files.js";
+import { Display } from "@/framework/views/display.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 

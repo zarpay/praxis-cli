@@ -1,8 +1,8 @@
 import type { StatusReport } from "@/domains/workspace/types.js";
-import type { BadgeEntry, ReportLine } from "@/types.js";
+import type { BadgeEntry, ReportLine } from "@/framework/types.js";
 
-import { verdictTally } from "@/views/badges.js";
-import { statLines } from "@/views/stats.js";
+import { verdictTally } from "@/framework/views/badges.js";
+import { statLines } from "@/framework/views/stats.js";
 
 /** The document-count lines, label-aligned. */
 export function countLines(counts: StatusReport["counts"]): string[] {

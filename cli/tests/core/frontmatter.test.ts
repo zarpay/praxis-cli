@@ -1,9 +1,9 @@
-import type { Frontmatter } from "@/core/frontmatter.js";
+import type { Frontmatter } from "@/framework/frontmatter.js";
 
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { MarkdownFile } from "@/core/markdown-file.js";
+import { MarkdownFile } from "@/framework/markdown-file.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "..", "fixtures");
 

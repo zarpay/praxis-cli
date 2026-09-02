@@ -2,10 +2,10 @@ import type { DiscoveryScope, ValidationDomain } from "@/domains/eval/types.js";
 
 import fg from "fast-glob";
 
-import { baseName, joinPath, parentDir, relativePath } from "@/core/paths.js";
 import { SpecFile } from "@/domains/eval/models/spec-file.js";
 import isTarget from "@/domains/eval/services/is-target-service.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
+import { baseName, joinPath, parentDir, relativePath } from "@/framework/paths.js";
 
 /**
  * Every spec in the source directories, with what it governs.

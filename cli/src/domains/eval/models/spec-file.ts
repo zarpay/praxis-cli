@@ -1,8 +1,8 @@
-import type { Frontmatter } from "@/core/frontmatter.js";
+import type { Frontmatter } from "@/framework/frontmatter.js";
 import type { CohortMode } from "@/types.js";
 
-import { MarkdownFile } from "@/core/markdown-file.js";
-import { relativePath } from "@/core/paths.js";
+import { MarkdownFile } from "@/framework/markdown-file.js";
+import { relativePath } from "@/framework/paths.js";
 
 /** The accepted `cohort:` frontmatter values. */
 const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];

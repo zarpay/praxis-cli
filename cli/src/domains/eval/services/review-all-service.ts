@@ -9,9 +9,6 @@ import type {
 } from "@/domains/eval/types.js";
 import type { ReviewerConfig } from "@/types.js";
 
-import { errors } from "@/core/errors.js";
-import { readText } from "@/core/files.js";
-import { baseName, relativePath } from "@/core/paths.js";
 import { ReviewSubject } from "@/domains/eval/models/review-subject.js";
 import { Reviewer } from "@/domains/eval/models/reviewer.js";
 import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
@@ -21,6 +18,9 @@ import listSourceDocuments from "@/domains/eval/services/list-source-documents-s
 import resolveUnits from "@/domains/eval/services/resolve-units-service.js";
 import reviewTarget from "@/domains/eval/services/review-target-service.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
+import { errors } from "@/framework/errors.js";
+import { readText } from "@/framework/files.js";
+import { baseName, relativePath } from "@/framework/paths.js";
 
 /**
  * One `praxis eval run`: review every target every reviewer covers.

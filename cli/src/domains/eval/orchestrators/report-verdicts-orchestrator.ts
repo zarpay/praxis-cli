@@ -4,7 +4,7 @@ import type { Orchestrator } from "@/domains/workspace/types.js";
 import collectVerdictReports from "@/domains/eval/services/collect-verdict-reports-service.js";
 import { verdictReportsLines } from "@/domains/eval/views/summary.js";
 import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
-import { renderReport } from "@/views/report.js";
+import { renderReport } from "@/framework/views/report.js";
 
 /**
  * What `praxis eval verdict` does: show what every reviewer last recorded

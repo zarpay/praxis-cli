@@ -1,4 +1,4 @@
-import type { CommandRegistrar } from "@/types.js";
+import type { CommandRegistrar } from "@/framework/types.js";
 
 import ciRunOrchestrator from "@/domains/eval/orchestrators/ci-run-orchestrator.js";
 import reportVerdictsOrchestrator from "@/domains/eval/orchestrators/report-verdicts-orchestrator.js";

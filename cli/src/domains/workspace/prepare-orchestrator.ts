@@ -1,64 +1,19 @@
-import type { Command } from "commander";
-
 import type { Orchestrator } from "@/domains/workspace/types.js";
 
 import { CommandContext } from "@/domains/workspace/models/command-context.js";
+import { prepareOrchestrator as prepare } from "@/framework/prepare-orchestrator.js";
 
 /**
- * Wraps an orchestrator into the commander action handler that runs it.
+ * The framework's `prepareOrchestrator`, bound to Praxis's context.
  *
- * Framework level, so an orchestrator can export itself already wrapped
- * and a command has only to import it and hand it to `.action()`.
- *
- * Both sides of this have a fixed shape — commander parses into named
- * arguments and options, an orchestrator takes `(ctx, options)` — so the
- * mapping between them is derived rather than written out per command.
- * Commander knows its own argument names (`registeredArguments`) and its
- * parsed options (`opts()`), which together are the options object:
- * `praxis eval verdict <target> --verbose` yields `{ target, verbose }`.
- *
- * `extra` supplies what the CLI surface cannot: a literal that
- * distinguishes two commands sharing one orchestrator, like
- * `{ type: "expert" }` or `{ ci: true }`. It is type-checked; the derived
- * half is not, so an option renamed here and not in the orchestrator's
- * `Options` is caught by the tests and the demo run, not the compiler.
- *
- * This is also the composition root. Preparing is a definition, not work,
- * so it happens at an orchestrator's module top; the context itself is
- * built inside the returned handler, per dispatch and never at import
- * time. The one
- * error policy lives here too: "failed" exits 1 — a legitimate non-zero
- * result like issues found — and a genuine error is thrown instead,
- * logging to stderr and also exiting 1.
+ * This is the composition root: the one place that decides a Praxis
+ * command runs against a `CommandContext`. Everything else about
+ * preparing an action — deriving options from commander, the error
+ * policy, the exit code — is generic and lives in the framework.
  */
 export function prepareOrchestrator<Options>(
   orchestrator: Orchestrator<Options>,
   extra: Partial<Options> = {},
 ): (...args: unknown[]) => Promise<void> {
-  return async (...args: unknown[]) => {
-    const command = args.at(-1) as Command;
-    const named = command.registeredArguments.map((arg, index) => [
-      camelCase(arg.name()),
-      args[index],
-    ]);
-    const options = {
-      ...command.opts(),
-      ...Object.fromEntries(named),
-      ...extra,
-    } as Options;
-
-    const ctx = new CommandContext();
-
-    try {
-      if ((await orchestrator(ctx, options)) === "failed") process.exit(1);
-    } catch (err) {
-      ctx.logger.error(err instanceof Error ? err.message : String(err));
-      process.exit(1);
-    }
-  };
-}
-
-/** `some-thing` → `someThing`, matching how commander names its options. */
-function camelCase(name: string): string {
-  return name.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
+  return prepare(() => new CommandContext(), orchestrator, extra);
 }

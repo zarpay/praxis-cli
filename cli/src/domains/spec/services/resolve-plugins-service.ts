@@ -1,9 +1,9 @@
 import type { CompilerPlugin, PluginConstructor } from "@/domains/spec/types.js";
+import type { Logger } from "@/framework/views/logger.js";
 import type { PluginConfigEntry } from "@/types.js";
-import type { Logger } from "@/views/logger.js";
 
-import { errors } from "@/core/errors.js";
 import { ClaudeCodePlugin } from "@/domains/spec/plugins/claude-code.js";
+import { errors } from "@/framework/errors.js";
 
 /** Registry of available plugins, keyed by the name used in config.json. */
 const PLUGINS: Record<string, PluginConstructor> = {

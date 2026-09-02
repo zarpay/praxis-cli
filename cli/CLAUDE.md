@@ -25,10 +25,11 @@ npm publish --access public  # prepublishOnly runs: lint → typecheck → test 
 ```
 src/
   index.ts        CLI entry
-  types.ts        shapes more than one domain needs, and nothing else
-  core/           Praxis-agnostic kernel: base, errors, files, frontmatter,
-                  markdown-file, paths
-  views/          the render kit: display, logger, badges, stats, table
+  types.ts        Praxis vocabulary more than one domain needs; the framework's
+                  own shapes live in framework/types.ts
+  framework/      the mini-framework this CLI is built from, knowing nothing
+                  about Praxis: errors, files, paths, frontmatter, markdown-file,
+                  its own types, prepare-orchestrator, and views/ (the render kit)
   domains/        one directory per area, each owning its work end to end
     spec/         authoring → agent profiles (plus plugins/: output formats)
     eval/         evaluating targets against specs (plus providers/: backends)
@@ -39,12 +40,16 @@ src/
 **Dependencies flow one way, and ESLint enforces it:**
 
 ```
-core, views  →  workspace/{models,types}  →  spec, eval  →  commands
+framework  →  workspace/{models,types}  →  spec, eval  →  commands
 ```
 
-- `core/` and `views/` know nothing about Praxis and depend on no domain. The
-  test for core is whether a thing could be lifted into any markdown-and-config
-  CLI unchanged; anything that knows what `.praxis/` is belongs to a domain.
+- `framework/` knows nothing about Praxis and depends on no domain. The test is
+  whether a thing could be lifted into any markdown-and-config CLI unchanged;
+  anything that knows what `.praxis/` is belongs to a domain. Where the framework
+  needs something application-specific it takes it as a parameter:
+  `prepareOrchestrator` is generic in its context, and
+  `workspace/prepare-orchestrator.ts` binds it to Praxis's — that binding lives in
+  workspace because `workspace/models` already depends on the framework.
 - **`workspace` is the only domain the others may reach into.** `spec` and `eval`
   import its models and types (`PraxisConfig`, `Paths`, `DocumentFile`) and stay
   isolated from each other (11-spec-layer.md): the spec layer produces artifacts
@@ -128,7 +133,7 @@ at them rather than at captured stdout. Long runs still stream through an
 
 ```
 Expert .md file (with YAML frontmatter)
-  → Document parsed (core/markdown-file.ts → core/frontmatter.ts)
+  → Document parsed (framework/markdown-file.ts → framework/frontmatter.ts)
   → Referenced content resolved via globs (domains/spec/services/expand-globs-service.ts)
   → Sections assembled: Expert → Responsibilities → Constitution → Context → Reference
       (domains/spec/services/build-profile-service.ts)
@@ -159,7 +164,7 @@ Key files: `domains/eval/services/request-verdict-service.ts`, `domains/eval/mod
 
 ### Project Root Detection
 
-`core/paths.ts` walks up from cwd until it finds a `.praxis/` directory. All paths resolve relative to this root. Config loads from `.praxis/config.json`.
+`framework/paths.ts` walks up from cwd until it finds a `.praxis/` directory. All paths resolve relative to this root. Config loads from `.praxis/config.json`.
 
 ### Configuration
 
@@ -180,7 +185,7 @@ Plugins implement the `CompilerPlugin` interface (`domains/spec/types.ts`): `nam
 ## Code Conventions
 
 - **A file's name states its layer, and its export states its name:** files under `commands/`, `orchestrators/` and `services/` end `-command.ts`, `-orchestrator.ts`, `-service.ts`, and any named (non-default) export is that filename in camelCase — `run-eval-orchestrator.ts` exports `runEvalOrchestrator`. An import statement then says what kind of thing it is pulling in. The extension-point classes are not services and do not live under `services/`: they have their own `providers/` and `plugins/` directories, named for what they integrate with (`openrouter.ts`, `claude-code.ts`) because that name is what a user writes in the config.
-- **Types live in a `types.ts`:** a domain's own (`domains/<name>/types.ts`) for its vocabulary, or `src/types.ts` for shapes more than one domain needs — `ReviewerConfig` (normalized by `domains/workspace/models/praxis-config.ts`) and `CohortMode` (declared by an expert, honored by a spec) are there for that reason. ESLint bans interface/type-alias declarations anywhere else in `src/`. Modules declare behavior — classes, functions, constants — never shapes. Sole exception: `core/files.ts` re-exports node's `FSWatcher`, because `node:fs` is walled into that module.
+- **Types live in a `types.ts`:** a domain's own (`domains/<name>/types.ts`) for its vocabulary, or `src/types.ts` for shapes more than one domain needs — `ReviewerConfig` (normalized by `domains/workspace/models/praxis-config.ts`) and `CohortMode` (declared by an expert, honored by a spec) are there for that reason. ESLint bans interface/type-alias declarations anywhere else in `src/`. Modules declare behavior — classes, functions, constants — never shapes. Sole exception: `framework/files.ts` re-exports node's `FSWatcher`, because `node:fs` is walled into that module.
 - **Path aliases:** `@/*` → `./src/*`, `@tests/*` → `./tests/*` (tsconfig.json and vitest.config.ts). Imports always use aliases, never relative paths (ESLint-enforced; sole exception: `../package.json`).
 - **Import order:** third-party types, internal types, third-party values, internal values — blank line between groups, alphabetical within (perfectionist, autofixable)
 - **Import extensions:** `.js` required for local imports (ESM)
@@ -190,8 +195,8 @@ Plugins implement the `CompilerPlugin` interface (`domains/spec/types.ts`): `nam
 - **Formatting:** Double quotes, semicolons, trailing commas, 100-char line width
 - **Test location:** `tests/` mirrors `src/` structure, uses `.test.ts` suffix
 - **Excluded from compilation:** Files named `_template.md` or `README.md`
-- **File/path operations:** import from `@/core/files.js` (I/O: readText, writeText, exists, ...) and `@/core/paths.js` (composition: joinPath, baseName, ...; well-known locations: configFile, SCAFFOLD_DIR, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced). Where a _Praxis project_ keeps its files is `domains/workspace/models/project-paths.ts`, not core.
+- **File/path operations:** import from `@/framework/files.js` (I/O: readText, writeText, exists, ...) and `@/framework/paths.js` (composition: joinPath, baseName, ...; well-known locations: configFile, SCAFFOLD_DIR, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced). Where a _Praxis project_ keeps its files is `domains/workspace/models/project-paths.ts`, not the framework.
 - **Construct at invocation time, not import time:** module tops hold definitions, not work. `new Paths()` (and anything touching cwd or the filesystem) belongs in the command wiring helpers (`makeCommand()`), executed at action dispatch — never as a module-level instance or exported singleton (decided 2026-08-31: import-time cwd capture, test isolation, and `praxis init` running before `.praxis/` exists).
 - **Prompts:** every LLM/agent-facing prompt lives in its domain's `prompts/`, one prompt per file, as that file's default-export function — typed parameters wherever the prompt templates, with the parameter interfaces in the domain's `types.ts`. No prompt text inline anywhere else. The reviewer hash covers the complete reviewer-facing surface via `domains/eval/prompts/prompt-surface.ts`; rewording any of it is a reviewer-identity change (new epoch), by design.
-- **Command context:** every orchestrator's first parameter is a `CommandContext` (`@/domains/workspace/models/command-context.js`) carrying `root`, `paths`, `config`, `logger` and `out`. `root` and `config` resolve lazily and cache, because `praxis init` runs before a `.praxis/` directory exists. It lives in workspace rather than core because it holds `PraxisConfig` and `Paths`, and core depends on no domain. Construct one only in `prepareOrchestrator` — or, in a test, via `testContext(root)`.
-- **Terminal output:** all output goes through the view kit — `@/views/display.js` for stdout and `@/views/logger.js` for stderr. `Display.print([...])` renders a whole stdout block as one payload of entries (plain strings; `{ text, color }`; `{ badge, color, value, indent? }`; `{ header, char?, width? }`; falsy entries skipped so conditionals inline), with `line()` for single lines; `Logger` writes stderr diagnostics. Raw `console.*` is banned outside those two modules (ESLint `no-console`). Reusable rendering — badge rows, aligned stat blocks, tables — lives in `@/views/badges.js`, `@/views/stats.js`, `@/views/table.js` rather than being hand-built at the call site.
+- **Command context:** every orchestrator's first parameter is a `CommandContext` (`@/domains/workspace/models/command-context.js`) carrying `root`, `paths`, `config`, `logger` and `out`. `root` and `config` resolve lazily and cache, because `praxis init` runs before a `.praxis/` directory exists. It lives in workspace rather than the framework because it holds `PraxisConfig` and `Paths`, and the framework depends on no domain. Construct one only in `prepareOrchestrator` — or, in a test, via `testContext(root)`.
+- **Terminal output:** all output goes through the view kit — `@/framework/views/display.js` for stdout and `@/framework/views/logger.js` for stderr. `Display.print([...])` renders a whole stdout block as one payload of entries (plain strings; `{ text, color }`; `{ badge, color, value, indent? }`; `{ header, char?, width? }`; falsy entries skipped so conditionals inline), with `line()` for single lines; `Logger` writes stderr diagnostics. Raw `console.*` is banned outside those two modules (ESLint `no-console`). Reusable rendering — badge rows, aligned stat blocks, tables — lives in `@/framework/views/badges.js`, `@/framework/views/stats.js`, `@/framework/views/table.js` rather than being hand-built at the call site.

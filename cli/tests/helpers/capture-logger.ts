@@ -1,6 +1,6 @@
 import { Writable } from "node:stream";
 
-import { Logger } from "@/views/logger.js";
+import { Logger } from "@/framework/views/logger.js";
 
 /**
  * Creates a Logger whose output is captured in memory instead of stderr.

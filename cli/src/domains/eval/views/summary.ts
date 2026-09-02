@@ -5,7 +5,7 @@ import type {
   Verdict,
   VerdictReport,
 } from "@/domains/eval/types.js";
-import type { DisplayEntry, ReportLine } from "@/types.js";
+import type { DisplayEntry, ReportLine } from "@/framework/types.js";
 
 import chalk from "chalk";
 

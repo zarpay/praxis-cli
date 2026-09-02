@@ -1,7 +1,6 @@
 import type { RunEvalOptions } from "@/domains/eval/types.js";
 import type { Orchestrator } from "@/domains/workspace/types.js";
 
-import { joinPath } from "@/core/paths.js";
 import reviewAll from "@/domains/eval/services/review-all-service.js";
 import reviewNamed from "@/domains/eval/services/review-named-service.js";
 import selectReviewers from "@/domains/eval/services/select-reviewers-service.js";
@@ -13,7 +12,8 @@ import {
   targetsHeadline,
 } from "@/domains/eval/views/summary.js";
 import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
-import { renderReport } from "@/views/report.js";
+import { joinPath } from "@/framework/paths.js";
+import { renderReport } from "@/framework/views/report.js";
 
 /**
  * What `praxis eval run` and `praxis eval ci` do: review targets against

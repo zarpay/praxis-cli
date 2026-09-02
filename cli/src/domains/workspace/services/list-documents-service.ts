@@ -2,8 +2,8 @@ import type { ListDocumentsInput } from "@/domains/workspace/types.js";
 
 import fg from "fast-glob";
 
-import { exists, matchesFilename } from "@/core/files.js";
-import { baseName, resolvePath } from "@/core/paths.js";
+import { exists, matchesFilename } from "@/framework/files.js";
+import { baseName, resolvePath } from "@/framework/paths.js";
 
 /**
  * The authored markdown documents in a directory.

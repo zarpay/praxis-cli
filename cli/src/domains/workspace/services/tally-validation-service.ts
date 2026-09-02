@@ -1,10 +1,10 @@
 import type { StatusReport, TallyValidationInput } from "@/domains/workspace/types.js";
 
-import { joinPath } from "@/core/paths.js";
 import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
 import cacheIdentity from "@/domains/eval/services/build-cache-identity-service.js";
 import listTargetPaths from "@/domains/eval/services/list-target-paths-service.js";
 import readVerdictEntry from "@/domains/eval/services/read-verdict-entry-service.js";
+import { joinPath } from "@/framework/paths.js";
 
 /**
  * Counts each reviewer's cached verdicts across every spec target.

@@ -1,4 +1,4 @@
-import type { DisplayEntry } from "@/types.js";
+import type { DisplayEntry } from "@/framework/types.js";
 
 import chalk from "chalk";
 

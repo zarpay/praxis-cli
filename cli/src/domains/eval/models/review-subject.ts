@@ -2,14 +2,14 @@ import type { AssistFileRecord, AssistInputs } from "@/domains/eval/types.js";
 
 import fg from "fast-glob";
 
-import { errors } from "@/core/errors.js";
-import { exists, hasGlobChars, readText } from "@/core/files.js";
-import { joinPath, parentDir } from "@/core/paths.js";
 import assistFileRecords from "@/domains/eval/services/build-assist-file-records-service.js";
 import assistHashInput from "@/domains/eval/services/build-assist-hash-input-service.js";
 import contentHash from "@/domains/eval/services/hash-content-service.js";
 import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs-service.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/domains/workspace/models/praxis-config.js";
+import { errors } from "@/framework/errors.js";
+import { exists, hasGlobChars, readText } from "@/framework/files.js";
+import { joinPath, parentDir } from "@/framework/paths.js";
 
 /**
  * Everything a reviewer is shown about one target: the target itself, the

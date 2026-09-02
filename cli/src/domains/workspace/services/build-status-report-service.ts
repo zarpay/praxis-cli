@@ -1,12 +1,12 @@
 import type { BuildStatusReportInput, StatusReport } from "@/domains/workspace/types.js";
 
-import { exists } from "@/core/files.js";
 import auditExperts from "@/domains/workspace/services/audit-experts-service.js";
 import countDocumentsByType from "@/domains/workspace/services/count-documents-by-type-service.js";
 import findOrphanedPractices from "@/domains/workspace/services/find-orphaned-practices-service.js";
 import findUnmatchedOwners from "@/domains/workspace/services/find-unmatched-owners-service.js";
 import listDocuments from "@/domains/workspace/services/list-documents-service.js";
 import tallyValidation from "@/domains/workspace/services/tally-validation-service.js";
+import { exists } from "@/framework/files.js";
 
 /**
  * Assembles a project's health report.

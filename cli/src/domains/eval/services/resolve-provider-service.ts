@@ -1,8 +1,8 @@
 import type { ReviewProvider, ReviewProviderFactory } from "@/domains/eval/types.js";
 
-import { errors } from "@/core/errors.js";
-import { fileUrl, resolvePath } from "@/core/paths.js";
 import { OpenRouterProvider } from "@/domains/eval/providers/openrouter.js";
+import { errors } from "@/framework/errors.js";
+import { fileUrl, resolvePath } from "@/framework/paths.js";
 
 /** Built-in providers, keyed by the name used in a reviewer's `provider`. */
 const BUILTIN_PROVIDERS: Record<string, ReviewProviderFactory> = {

@@ -1,8 +1,8 @@
 import type { CountDocumentsInput, DocumentCounts } from "@/domains/workspace/types.js";
 
-import { resolvePath } from "@/core/paths.js";
 import { DocumentFile } from "@/domains/workspace/models/document-file.js";
 import listDocuments from "@/domains/workspace/services/list-documents-service.js";
+import { resolvePath } from "@/framework/paths.js";
 
 /**
  * Counts the reference and context documents across the source trees.

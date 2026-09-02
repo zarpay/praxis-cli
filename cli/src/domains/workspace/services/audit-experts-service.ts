@@ -1,10 +1,10 @@
 import type { RefKey } from "@/domains/spec/types.js";
 import type { AuditExpertsInput, ExpertAudit } from "@/domains/workspace/types.js";
 
-import { exists } from "@/core/files.js";
-import { baseName, joinPath } from "@/core/paths.js";
 import { ExpertFile } from "@/domains/spec/models/expert-file.js";
 import expandGlobs from "@/domains/spec/services/expand-globs-service.js";
+import { exists } from "@/framework/files.js";
+import { baseName, joinPath } from "@/framework/paths.js";
 
 /** The reference keys an expert can point at other documents with. */
 const REF_KEYS: readonly RefKey[] = ["practices", "context", "refs"];

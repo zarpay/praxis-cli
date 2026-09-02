@@ -2,11 +2,11 @@ import type { BuildVerdictReportInput, VerdictReport } from "@/domains/eval/type
 
 import fg from "fast-glob";
 
-import { exists, hasGlobChars, readText } from "@/core/files.js";
-import { joinPath, parentDir } from "@/core/paths.js";
 import assistHashInput from "@/domains/eval/services/build-assist-hash-input-service.js";
 import contentHash from "@/domains/eval/services/hash-content-service.js";
 import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs-service.js";
+import { exists, hasGlobChars, readText } from "@/framework/files.js";
+import { joinPath, parentDir } from "@/framework/paths.js";
 
 /**
  * Classifies a target's cached verdict, including whether it is stale.

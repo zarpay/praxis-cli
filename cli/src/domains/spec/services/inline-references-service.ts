@@ -1,9 +1,9 @@
 import type { ExpandGlobsInput, InlineReferencesResult } from "@/domains/spec/types.js";
 
-import { exists } from "@/core/files.js";
-import { MarkdownFile } from "@/core/markdown-file.js";
-import { joinPath } from "@/core/paths.js";
 import expandGlobs from "@/domains/spec/services/expand-globs-service.js";
+import { exists } from "@/framework/files.js";
+import { MarkdownFile } from "@/framework/markdown-file.js";
+import { joinPath } from "@/framework/paths.js";
 
 /**
  * Resolves declared patterns and reads the body of every file they name.

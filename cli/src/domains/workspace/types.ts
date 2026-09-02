@@ -8,34 +8,20 @@
 import type { CommandContext } from "@/domains/workspace/models/command-context.js";
 import type { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import type { Paths } from "@/domains/workspace/models/project-paths.js";
-import type { CommandOutcome } from "@/types.js";
-import type { Display } from "@/views/display.js";
-import type { Logger } from "@/views/logger.js";
+import type { NoOptions, Orchestrator as BaseOrchestrator } from "@/framework/types.js";
+import type { Display } from "@/framework/views/display.js";
+import type { Logger } from "@/framework/views/logger.js";
 
 // ---------------------------------------------------------------------------
 // Workspace (domains/workspace/)
 // ---------------------------------------------------------------------------
 
 /**
- * The one signature every orchestrator has.
- *
- * Applied to the exported const rather than annotating a function
- * declaration, because that is what makes it enforced: the type fixes the
- * arity, so a command must pass `options` even when the orchestrator
- * ignores it, while the implementation is free to omit the parameter.
+ * An orchestrator in this application: the framework's signature with
+ * Praxis's context bound in, so a domain writes `Orchestrator<Options>`
+ * and never repeats the context type.
  */
-export type Orchestrator<Options = NoOptions> = (
-  ctx: CommandContext,
-  options: Options,
-) => Promise<CommandOutcome | void>;
-
-/**
- * The options of an orchestrator that takes none.
- *
- * Not `void` and not optional: the parameter stays in the signature so
- * every command reads the same, passing `{}`.
- */
-export type NoOptions = Record<string, never>;
+export type Orchestrator<Options = NoOptions> = BaseOrchestrator<CommandContext, Options>;
 
 /**
  * Overrides for a CommandContext. Both default to a fresh instance, so a

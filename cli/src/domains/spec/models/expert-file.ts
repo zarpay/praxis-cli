@@ -1,10 +1,10 @@
-import type { Frontmatter } from "@/core/frontmatter.js";
 import type { RefKey } from "@/domains/spec/types.js";
 import type { AgentMetadata } from "@/domains/spec/types.js";
+import type { Frontmatter } from "@/framework/frontmatter.js";
 import type { CohortMode } from "@/types.js";
 
-import { errors } from "@/core/errors.js";
-import { MarkdownFile } from "@/core/markdown-file.js";
+import { errors } from "@/framework/errors.js";
+import { MarkdownFile } from "@/framework/markdown-file.js";
 
 /** The accepted `cohort:` frontmatter values. */
 const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];

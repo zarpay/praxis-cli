@@ -1,5 +1,5 @@
-import { matchesFilename } from "@/core/files.js";
-import { baseName } from "@/core/paths.js";
+import { matchesFilename } from "@/framework/files.js";
+import { baseName } from "@/framework/paths.js";
 
 /**
  * Whether a path is a target of review.

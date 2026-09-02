@@ -1,6 +1,6 @@
 import yaml from "js-yaml";
 
-import { errors } from "@/core/errors.js";
+import { errors } from "@/framework/errors.js";
 
 /**
  * A document's frontmatter: the parsed YAML, read through accessors

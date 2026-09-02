@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { ClaudeCodePlugin } from "@/domains/spec/plugins/claude-code.js";
-import { Logger } from "@/views/logger.js";
+import { Logger } from "@/framework/views/logger.js";
 import { readJsonFile } from "@tests/helpers/read-json.js";
 
 /** A complete AgentMetadata with only the fields a test cares about set. */

@@ -1,5 +1,9 @@
 import type { InitProjectOptions, Orchestrator } from "@/domains/workspace/types.js";
 
+import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
+import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
+import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
+import { initReport } from "@/domains/workspace/views/status.js";
 import {
   copyFile,
   ensureDir,
@@ -7,13 +11,9 @@ import {
   listFilesRecursive,
   readText,
   writeText,
-} from "@/core/files.js";
-import { joinPath, relativePath, resolvePath } from "@/core/paths.js";
-import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
-import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
-import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
-import { initReport } from "@/domains/workspace/views/status.js";
-import { renderReport } from "@/views/report.js";
+} from "@/framework/files.js";
+import { joinPath, relativePath, resolvePath } from "@/framework/paths.js";
+import { renderReport } from "@/framework/views/report.js";
 
 /**
  * Scaffolds a new Praxis project.

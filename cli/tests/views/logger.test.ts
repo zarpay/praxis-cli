@@ -2,8 +2,8 @@ import chalk from "chalk";
 import { Writable } from "node:stream";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Display } from "@/views/display.js";
-import { Logger } from "@/views/logger.js";
+import { Display } from "@/framework/views/display.js";
+import { Logger } from "@/framework/views/logger.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 
 describe("Logger", () => {

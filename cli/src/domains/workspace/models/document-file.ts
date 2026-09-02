@@ -1,6 +1,6 @@
-import type { Frontmatter } from "@/core/frontmatter.js";
+import type { Frontmatter } from "@/framework/frontmatter.js";
 
-import { MarkdownFile } from "@/core/markdown-file.js";
+import { MarkdownFile } from "@/framework/markdown-file.js";
 
 /**
  * Any Praxis markdown document, read for the two fields that classify

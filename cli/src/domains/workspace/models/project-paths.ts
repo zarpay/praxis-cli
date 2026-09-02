@@ -1,6 +1,6 @@
-import { errors } from "@/core/errors.js";
-import { exists } from "@/core/files.js";
-import { joinPath, parentDir, resolvePath } from "@/core/paths.js";
+import { errors } from "@/framework/errors.js";
+import { exists } from "@/framework/files.js";
+import { joinPath, parentDir, resolvePath } from "@/framework/paths.js";
 
 /**
  * Resolved path to the scaffold directory shipped with the package.

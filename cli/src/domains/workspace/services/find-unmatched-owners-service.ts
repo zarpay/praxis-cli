@@ -1,7 +1,7 @@
 import type { FindUnmatchedOwnersInput, StatusReport } from "@/domains/workspace/types.js";
 
-import { baseName } from "@/core/paths.js";
 import { DocumentFile } from "@/domains/workspace/models/document-file.js";
+import { baseName } from "@/framework/paths.js";
 
 /**
  * Practices whose `owner:` matches no expert alias.

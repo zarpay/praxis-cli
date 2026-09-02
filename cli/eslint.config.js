@@ -134,14 +134,14 @@ export default tseslint.config(
     // configs replace rather than merge, so the relative-import ban is
     // restated here.)
     files: ["src/**/*.ts"],
-    ignores: ["src/core/files.ts", "src/core/paths.ts"],
+    ignores: ["src/framework/files.ts", "src/framework/paths.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
         {
           paths: [
-            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
           ],
           patterns: [
             {
@@ -156,10 +156,11 @@ export default tseslint.config(
   {
     // Dependencies flow one way:
     //
-    //   core, views  ->  workspace/{models,types}  ->  spec, eval  ->  commands
+    //   framework  ->  workspace/{models,types}  ->  spec, eval  ->  commands
     //
-    // core and views are the kernel: generic primitives and the render
-    // kit, knowing nothing about Praxis and depending on no domain.
+    // framework is the kernel: generic primitives, the render kit, and
+    // the plumbing a Praxis-shaped CLI is built from — knowing nothing
+    // about Praxis's own vocabulary and depending on no domain.
     //
     // workspace is the project itself, and the ONLY domain the others
     // may reach into: spec and eval import its models and types (config,
@@ -172,15 +173,15 @@ export default tseslint.config(
     //
     // These blocks come last and restate the fs/path and relative-import
     // bans, because rule configs replace rather than merge.
-    files: ["src/core/**/*.ts", "src/views/**/*.ts"],
-    ignores: ["src/core/files.ts", "src/core/paths.ts"],
+    files: ["src/framework/**/*.ts"],
+    ignores: ["src/framework/files.ts", "src/framework/paths.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
         {
           paths: [
-            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
           ],
           patterns: [
             {
@@ -190,7 +191,33 @@ export default tseslint.config(
             {
               group: ["@/domains/*", "@/commands/*"],
               message:
-                "core and views are the kernel: they must not depend on a domain or on commands.",
+                "the framework is the kernel: it must not depend on a domain or on commands.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // files.ts and paths.ts are the two modules allowed to import
+    // node:fs and node:path, which is why they sit outside the block
+    // above. That exemption must not also buy them the right to reach
+    // into a domain, so the kernel restriction is restated here without
+    // the node: bans.
+    files: ["src/framework/files.ts", "src/framework/paths.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/domains/*", "@/commands/*"],
+              message:
+                "the framework is the kernel: it must not depend on a domain or on commands.",
             },
           ],
         },
@@ -207,8 +234,8 @@ export default tseslint.config(
         "error",
         {
           paths: [
-            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
           ],
           patterns: [
             {
@@ -244,8 +271,8 @@ export default tseslint.config(
         "error",
         {
           paths: [
-            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
           ],
           patterns: [
             {
@@ -284,8 +311,8 @@ export default tseslint.config(
         "error",
         {
           paths: [
-            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
           ],
           patterns: [
             {
@@ -310,8 +337,8 @@ export default tseslint.config(
         "error",
         {
           paths: [
-            { name: "node:fs", message: "Use the helpers in @/core/files.js instead." },
-            { name: "node:path", message: "Use the helpers in @/core/paths.js instead." },
+            { name: "node:fs", message: "Use the helpers in @/framework/files.js instead." },
+            { name: "node:path", message: "Use the helpers in @/framework/paths.js instead." },
           ],
           patterns: [
             {
@@ -329,23 +356,24 @@ export default tseslint.config(
     },
   },
   {
-    // Every type and interface lives in a types.ts — the root one for
-    // shapes more than one domain needs, a domain's own for its
-    // vocabulary. Modules declare behavior only.
+    // Every type and interface lives in a types.ts — the framework's for
+    // its plumbing, the root one for Praxis vocabulary more than one
+    // domain needs, a domain's own for its own. Modules declare behavior
+    // only.
     files: ["src/**/*.ts"],
-    ignores: ["src/types.ts", "src/domains/*/types.ts"],
+    ignores: ["src/types.ts", "src/framework/types.ts", "src/domains/*/types.ts"],
     rules: {
       "no-restricted-syntax": [
         "error",
         {
           selector: "TSInterfaceDeclaration",
           message:
-            "Declare interfaces in a types.ts — the domain's own, or src/types.ts when more than one domain needs it.",
+            "Declare interfaces in a types.ts — the domain's own, src/framework/types.ts for plumbing, or src/types.ts when more than one domain needs it.",
         },
         {
           selector: "TSTypeAliasDeclaration",
           message:
-            "Declare type aliases in a types.ts — the domain's own, or src/types.ts when more than one domain needs it.",
+            "Declare type aliases in a types.ts — the domain's own, src/framework/types.ts for plumbing, or src/types.ts when more than one domain needs it.",
         },
       ],
     },
@@ -355,7 +383,7 @@ export default tseslint.config(
     // reports, Logger for stderr diagnostics. Raw console calls are
     // allowed only inside those modules.
     files: ["src/**/*.ts"],
-    ignores: ["src/views/display.ts", "src/views/logger.ts"],
+    ignores: ["src/framework/views/display.ts", "src/framework/views/logger.ts"],
     rules: {
       "no-console": "error",
     },

@@ -8,7 +8,7 @@ import type {
   Verdict,
 } from "@/domains/eval/types.js";
 
-import { errors } from "@/core/errors.js";
+import { errors } from "@/framework/errors.js";
 
 /**
  * The default reviewer provider: OpenAI-compatible chat completions with

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { ClaudeCodePlugin } from "@/domains/spec/plugins/claude-code.js";
 import resolvePlugins from "@/domains/spec/services/resolve-plugins-service.js";
-import { Logger } from "@/views/logger.js";
+import { Logger } from "@/framework/views/logger.js";
 
 describe("resolvePlugins", () => {
   const logger = new Logger({ color: false });

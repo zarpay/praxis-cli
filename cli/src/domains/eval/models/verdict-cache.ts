@@ -1,7 +1,7 @@
 import type { CacheReviewerIdentity } from "@/domains/eval/types.js";
 
-import { baseName, joinPath, parentDir } from "@/core/paths.js";
 import { CacheFile } from "@/domains/eval/models/cache-file.js";
+import { baseName, joinPath, parentDir } from "@/framework/paths.js";
 
 /** Stands in for a reviewer when none is bound, which only tests do. */
 const UNBOUND: CacheReviewerIdentity = { name: "unbound", model: "unbound", hash: "00000000" };

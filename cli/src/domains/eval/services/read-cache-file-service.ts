@@ -1,5 +1,5 @@
-import { exists, readText, removeFile } from "@/core/files.js";
 import { CacheFile } from "@/domains/eval/models/cache-file.js";
+import { exists, readText, removeFile } from "@/framework/files.js";
 
 /**
  * Reads a target's cache file, or null when there is nothing usable.

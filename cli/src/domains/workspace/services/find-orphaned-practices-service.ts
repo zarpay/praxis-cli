@@ -1,6 +1,6 @@
 import type { FindOrphanedPracticesInput } from "@/domains/workspace/types.js";
 
-import { baseName, relativePath } from "@/core/paths.js";
+import { baseName, relativePath } from "@/framework/paths.js";
 
 /**
  * Practices no expert references, by filename.

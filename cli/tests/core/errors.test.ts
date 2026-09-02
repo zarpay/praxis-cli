@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { PraxisError, errors } from "@/core/errors.js";
+import { PraxisError, errors } from "@/framework/errors.js";
 
 describe("errors", () => {
   it("missingFrontmatterField", () => {

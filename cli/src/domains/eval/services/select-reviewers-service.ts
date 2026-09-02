@@ -1,6 +1,6 @@
 import type { ReviewerConfig } from "@/types.js";
 
-import { errors } from "@/core/errors.js";
+import { errors } from "@/framework/errors.js";
 
 /**
  * The reviewers a run should use, checked before any work begins.

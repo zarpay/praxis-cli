@@ -2,9 +2,9 @@ import type { CompileExpertsInput, CompileExpertsResult } from "@/domains/spec/t
 
 import fg from "fast-glob";
 
-import { matchesFilename } from "@/core/files.js";
-import { baseName } from "@/core/paths.js";
 import compileExpert from "@/domains/spec/services/compile-expert-service.js";
+import { matchesFilename } from "@/framework/files.js";
+import { baseName } from "@/framework/paths.js";
 
 /**
  * Compiles every expert in a directory.

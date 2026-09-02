@@ -7,7 +7,7 @@
  * place and every raised error carries a machine-readable `code`.
  */
 
-import type { PraxisErrorCode } from "@/types.js";
+import type { PraxisErrorCode } from "@/framework/types.js";
 
 /**
  * Error type for all failures Praxis itself detects.
