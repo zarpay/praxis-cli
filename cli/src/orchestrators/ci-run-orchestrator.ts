@@ -3,8 +3,9 @@ import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import reviewProject from "@/services/review-project-service.js";
-import { progressEntries, runHeadline, runReportLines } from "@/views/summary.js";
-import { renderReport } from "@framework/views/report.js";
+import evalHeadlineView from "@/views/eval-headline-view.js";
+import runProgressView from "@/views/run-progress-view.js";
+import runReportView from "@/views/run-report-view.js";
 
 /**
  * What `praxis eval ci` does: one full review, framed for CI.
@@ -14,17 +15,17 @@ import { renderReport } from "@framework/views/report.js";
  * takes: whether warnings count as failure alongside errors.
  */
 export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { strict = false }) => {
-  const { root, config, out } = ctx;
+  const { root, config } = ctx;
 
-  out.line(runHeadline({ ci: true }));
+  ctx.render(evalHeadlineView({ ci: true }));
 
   const run = await reviewProject({
     root,
     config,
-    onProgress: (event) => out.print(progressEntries(event)),
+    onProgress: (event) => ctx.render(runProgressView(event)),
   });
 
-  renderReport(runReportLines(run, { cached: true }), { out, logger: ctx.logger });
+  ctx.render(runReportView({ run, cached: true }));
 
   const { errors, warnings } = run.summary;
 

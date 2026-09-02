@@ -4,14 +4,10 @@ import type { Orchestrator } from "@/types.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import reviewNamed from "@/services/review-named-service.js";
 import reviewProject from "@/services/review-project-service.js";
-import {
-  progressEntries,
-  reviewedTargetEntries,
-  runHeadline,
-  runReportLines,
-  targetsHeadline,
-} from "@/views/summary.js";
-import { renderReport } from "@framework/views/report.js";
+import evalHeadlineView from "@/views/eval-headline-view.js";
+import reviewedTargetView from "@/views/reviewed-target-view.js";
+import runProgressView from "@/views/run-progress-view.js";
+import runReportView from "@/views/run-report-view.js";
 
 /**
  * What `praxis eval run` and `praxis eval ci` do: review targets against
@@ -28,10 +24,10 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
   ctx,
   { targets = [], cache = true, ...options },
 ) => {
-  const { root, config, out } = ctx;
+  const { root, config } = ctx;
 
   if (targets.length > 0) {
-    out.line(targetsHeadline(targets));
+    ctx.render(evalHeadlineView({ targets }));
 
     const { errors } = await reviewNamed({
       targets,
@@ -41,13 +37,13 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
       reviewer: options.reviewer,
       useCache: cache,
       onVerdict: (event) =>
-        out.print(reviewedTargetEntries({ ...event, verbose: options.verbose ?? false })),
+        ctx.render(reviewedTargetView({ ...event, verbose: options.verbose ?? false })),
     });
 
     return errors === 0 ? "ok" : "failed";
   }
 
-  out.line(runHeadline({ type: options.type }));
+  ctx.render(evalHeadlineView({ type: options.type }));
 
   const run = await reviewProject({
     root,
@@ -56,10 +52,10 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
     type: options.type,
     failFast: options.failFast ?? false,
     useCache: cache,
-    onProgress: (event) => out.print(progressEntries(event)),
+    onProgress: (event) => ctx.render(runProgressView(event)),
   });
 
-  renderReport(runReportLines(run, { cached: cache }), { out, logger: ctx.logger });
+  ctx.render(runReportView({ run, cached: cache }));
 
   return run.summary.errors === 0 ? "ok" : "failed";
 };

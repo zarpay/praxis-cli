@@ -12,8 +12,7 @@ import { joinPath, relativePath, resolvePath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import { PraxisConfig } from "@/models/praxis-config.js";
 import { SCAFFOLD_DIR } from "@/models/project-paths.js";
-import { initReport } from "@/views/status.js";
-import { renderReport } from "@framework/views/report.js";
+import initView from "@/views/init-view.js";
 
 /**
  * Scaffolds a new Praxis project.
@@ -69,10 +68,7 @@ export const initProjectOrchestrator: Orchestrator<InitProjectOptions> = async (
     skipped += result.skipped;
   }
 
-  renderReport(initReport({ created, skipped, nextSteps: nextSteps(specLayer) }), {
-    out: ctx.out,
-    logger: ctx.logger,
-  });
+  ctx.render(initView({ created, skipped, nextSteps: nextSteps(specLayer) }));
 };
 
 /**

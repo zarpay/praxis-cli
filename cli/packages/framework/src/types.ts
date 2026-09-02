@@ -93,6 +93,17 @@ export type CommandRegistrar = (program: Command) => void;
 export type CommandOutcome = "ok" | "failed";
 
 /**
+ * A view: one render moment, as a pure function from its data to a
+ * report ready to render.
+ *
+ * Every view returns `ReportLine[]` — the one shape `renderReport`
+ * consumes completely — so a caller always renders the same way,
+ * whatever the view shows. Smaller pieces (badges, stat blocks, tables,
+ * display entries) are components a view composes, not views.
+ */
+export type View<Data> = (data: Data) => ReportLine[];
+
+/**
  * The one signature every orchestrator has.
  *
  * Generic in its context: the framework fixes the shape — a context, the

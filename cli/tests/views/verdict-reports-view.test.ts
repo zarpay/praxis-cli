@@ -2,7 +2,8 @@ import type { CacheFileData, VerdictReport } from "@/types.js";
 
 import { describe, expect, it } from "vitest";
 
-import { verdictReportEntries } from "@/views/verdict-report.js";
+import verdictReportsView from "@/views/verdict-reports-view.js";
+import { reportText } from "@tests/helpers/report-text.js";
 
 /** A report in a given state, with only the fields the view reads. */
 function report(overrides: Partial<VerdictReport> = {}): VerdictReport {
@@ -28,24 +29,18 @@ function cacheData(overrides: Partial<CacheFileData> = {}): CacheFileData {
   };
 }
 
-/** The rendered entries as one searchable string. */
+/** The rendered report as one searchable string. */
 function rendered(subject: VerdictReport, verbose = false): string {
-  return verdictReportEntries(subject, verbose)
-    .map((entry) => {
-      if (!entry) return "";
-
-      if (typeof entry === "string") return entry;
-
-      if ("badge" in entry) return `${entry.badge} ${String(entry.value ?? "")}`;
-
-      if ("header" in entry) return entry.header;
-
-      return entry.text;
-    })
-    .join("\n");
+  return reportText(
+    verdictReportsView({
+      reports: [{ reviewer: "flash", report: subject }],
+      named: false,
+      verbose,
+    }),
+  );
 }
 
-describe("verdictReportEntries", () => {
+describe("verdictReportsView", () => {
   it("shows the not-validated state", () => {
     expect(rendered(report())).toContain("NOT VALIDATED");
   });
@@ -89,5 +84,29 @@ describe("verdictReportEntries", () => {
 
     expect(rendered(subject, true)).toContain("AI Reasoning:");
     expect(rendered(subject, false)).not.toContain("AI Reasoning:");
+  });
+});
+
+describe("naming reviewers", () => {
+  it("frames each report with its reviewer when several could disagree", () => {
+    const text = reportText(
+      verdictReportsView({
+        reports: [
+          { reviewer: "flash", report: report() },
+          { reviewer: "strict", report: report() },
+        ],
+        named: true,
+        verbose: false,
+      }),
+    );
+
+    expect(text).toContain("Reviewer: flash");
+    expect(text).toContain("Reviewer: strict");
+  });
+
+  it("names nobody when only one reviewer ran", () => {
+    const text = rendered(report());
+
+    expect(text).not.toContain("Reviewer:");
   });
 });

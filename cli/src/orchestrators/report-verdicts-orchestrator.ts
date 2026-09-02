@@ -3,8 +3,7 @@ import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import collectVerdictReports from "@/services/collect-verdict-reports-service.js";
-import { verdictReportsLines } from "@/views/summary.js";
-import { renderReport } from "@framework/views/report.js";
+import verdictReportsView from "@/views/verdict-reports-view.js";
 
 /**
  * What `praxis eval verdict` does: show what every reviewer last recorded
@@ -23,10 +22,7 @@ export const reportVerdictsOrchestrator: Orchestrator<ReportVerdictsOptions> = a
     config: ctx.config,
   });
 
-  renderReport(verdictReportsLines(reports, { named, verbose }), {
-    out: ctx.out,
-    logger: ctx.logger,
-  });
+  ctx.render(verdictReportsView({ reports, named, verbose }));
 };
 
 export default prepareOrchestrator(reportVerdictsOrchestrator);

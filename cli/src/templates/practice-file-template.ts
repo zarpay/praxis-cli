@@ -20,16 +20,6 @@ type: practice
 
 What does this practice achieve? Why does it matter?
 
-## Inputs
-
-- Input 1: Where to find it
-- Input 2: Where to find it
-
-## Outputs
-
-- Output 1: Format and destination
-- Output 2: Format and destination
-
 ## Process
 
 1. First, do X

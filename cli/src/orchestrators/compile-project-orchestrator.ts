@@ -1,4 +1,4 @@
-import type { CompileProjectOptions } from "@/types.js";
+import type { CompileProgress, CompileProjectOptions } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
@@ -6,14 +6,9 @@ import compileByAlias from "@/services/compile-by-alias-service.js";
 import compileExperts from "@/services/compile-experts-service.js";
 import resolvePlugins from "@/services/resolve-plugins-service.js";
 import watchAndCompile from "@/services/watch-and-compile-service.js";
-import {
-  compileProgressLine,
-  compiledCount,
-  compiledOneLines,
-  recompilingLine,
-  watchingLine,
-} from "@/views/compile-progress.js";
-import { renderReport } from "@framework/views/report.js";
+import compileProgressView from "@/views/compile-progress-view.js";
+import compileResultView from "@/views/compile-result-view.js";
+import watchView from "@/views/watch-view.js";
 
 /**
  * What `praxis compile` does: turn expert definitions into agent profiles
@@ -28,8 +23,6 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
   { alias, watch = false },
 ) => {
   const { root, config, logger } = ctx;
-  const render = (lines: Parameters<typeof renderReport>[0]) =>
-    renderReport(lines, { out: ctx.out, logger });
 
   // Plugins are constructed once per invocation, not per expert: the
   // Claude Code plugin writes its manifest on first compile and must not
@@ -40,14 +33,13 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
     specFilePattern: config.specFilePattern,
     agentProfilesOutputDir: config.agentProfilesOutputDir,
     plugins: resolvePlugins(config.plugins, root, logger),
-    onProgress: (event: Parameters<typeof compileProgressLine>[0]) =>
-      render([compileProgressLine(event)]),
+    onProgress: (event: CompileProgress) => ctx.render(compileProgressView(event)),
   };
 
   if (alias) {
     const result = await compileByAlias({ ...input, alias, expertsDir: config.expertsDir });
 
-    render(compiledOneLines(result.alias, result.warnings));
+    ctx.render(compileResultView(result));
 
     if (watch) logger.warn("--watch is not supported with --alias, ignoring");
 
@@ -56,15 +48,15 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
 
   const { compiled } = await compileExperts(input);
 
-  render([compiledCount(compiled)]);
+  ctx.render(compileResultView({ compiled }));
 
   if (!watch) return;
 
   watchAndCompile({
     ...input,
     sources: config.sources,
-    onWatch: (dir) => render([watchingLine(dir)]),
-    onRecompile: (filename) => render([recompilingLine(filename)]),
+    onWatch: (dir) => ctx.render(watchView({ kind: "watching", dir })),
+    onRecompile: (filename) => ctx.render(watchView({ kind: "recompiling", filename })),
     onError: (message) => logger.error(message),
   });
 };

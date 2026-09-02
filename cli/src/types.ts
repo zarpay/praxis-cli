@@ -1154,3 +1154,50 @@ export interface InitProjectResult {
   /** Guidance to show the author, matched to what was scaffolded. */
   nextSteps: string[];
 }
+
+// ---------------------------------------------------------------------------
+// View data (views/)
+// ---------------------------------------------------------------------------
+
+/** What an eval run announces before it starts. */
+export interface EvalHeadline {
+  /** Named targets; empty or omitted means a full run. */
+  targets?: string[];
+  /** CI framing. */
+  ci?: boolean;
+  /** A full run narrowed to one document type. */
+  type?: string;
+}
+
+/** A completed full run, ready to report. */
+export interface FinishedRun {
+  run: ReviewAllResult;
+  /** Whether the cache was consulted — a disabled cache is not a cold one. */
+  cached: boolean;
+}
+
+/** One named target's verdict, as it lands. */
+export interface ReviewedTarget {
+  path: string;
+  verdict: Verdict;
+  /** Set only when more than one reviewer ran. */
+  reviewerName?: string;
+  /** Show the full reasoning. */
+  verbose: boolean;
+}
+
+/** Every reviewer's cached report on one target. */
+export interface ReviewerReports {
+  reports: { reviewer: string; report: VerdictReport }[];
+  /** Name each reviewer — only when several could disagree. */
+  named: boolean;
+  /** Show the full reasoning. */
+  verbose: boolean;
+}
+
+/** What a finished compile reports: a full count, or one alias's outcome. */
+export type CompileOutcome = { compiled: number } | { alias: string; warnings: string[] };
+
+/** One event from a compile watch session. */
+export type WatchEvent =
+  { kind: "watching"; dir: string } | { kind: "recompiling"; filename: string | null };

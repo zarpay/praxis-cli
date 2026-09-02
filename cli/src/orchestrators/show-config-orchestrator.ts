@@ -2,7 +2,7 @@ import type { Orchestrator } from "@/types.js";
 
 import { readJson } from "@/helpers/files-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import { configEntries } from "@/views/config.js";
+import configView from "@/views/config-view.js";
 
 /**
  * What `praxis config show` does: print the configuration as written.
@@ -16,7 +16,7 @@ import { configEntries } from "@/views/config.js";
 export const showConfigOrchestrator: Orchestrator = async (ctx) => {
   const configPath = ctx.paths.configFile;
 
-  ctx.out.print(configEntries(configPath, readJson(configPath)));
+  ctx.render(configView({ configPath, config: readJson(configPath) }));
 };
 
 export default prepareOrchestrator(showConfigOrchestrator);

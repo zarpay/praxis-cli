@@ -1,9 +1,11 @@
 import type { CommandContextOptions } from "@/types.js";
+import type { ReportLine } from "@framework/types.js";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
 import { Paths } from "@/models/project-paths.js";
 import { Display } from "@framework/views/display.js";
 import { Logger } from "@framework/views/logger.js";
+import { renderReport } from "@framework/views/report.js";
 
 /**
  * What every orchestrator is handed: the project it acts on, and the
@@ -37,6 +39,11 @@ export class CommandContext {
   /** The project root — the directory holding `.praxis/`. */
   get root(): string {
     return this.paths.root;
+  }
+
+  /** Renders a view's report through this context's output channels. */
+  render(lines: ReportLine[]): void {
+    renderReport(lines, { out: this.out, logger: this.logger });
   }
 
   /** The project's configuration, read once per context. */

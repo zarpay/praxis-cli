@@ -3,7 +3,7 @@ import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import addDocumentService from "@/services/add-document-service.js";
-import { renderReport } from "@framework/views/report.js";
+import documentCreatedView from "@/views/document-created-view.js";
 
 /**
  * What `praxis add expert <name>` does: scaffold one expert from its
@@ -18,10 +18,7 @@ export const addExpertOrchestrator: Orchestrator<AddDocumentOptions> = async (ct
     practicesDir: ctx.config.practicesDir,
   });
 
-  renderReport([{ channel: "success", text: `Created ${created.type}: ${created.path}` }], {
-    out: ctx.out,
-    logger: ctx.logger,
-  });
+  ctx.render(documentCreatedView(created));
 };
 
 export default prepareOrchestrator(addExpertOrchestrator);

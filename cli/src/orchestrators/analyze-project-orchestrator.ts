@@ -3,8 +3,7 @@ import type { Orchestrator } from "@/types.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import buildStatusReport from "@/services/build-status-report-service.js";
 import countStatusIssues from "@/services/count-status-issues-service.js";
-import { statusReport } from "@/views/status.js";
-import { renderReport } from "@framework/views/report.js";
+import statusView from "@/views/status-view.js";
 
 /**
  * What `praxis status` does: report the project's health.
@@ -17,7 +16,7 @@ import { renderReport } from "@framework/views/report.js";
 export const analyzeProjectOrchestrator: Orchestrator = async (ctx) => {
   const report = await buildStatusReport({ root: ctx.root, config: ctx.config });
 
-  renderReport(statusReport(report), { out: ctx.out, logger: ctx.logger });
+  ctx.render(statusView(report));
 
   return countStatusIssues(report) > 0 ? "failed" : "ok";
 };
