@@ -14,6 +14,9 @@ The framework is not a domain and has no `models/`, `services/`, `orchestrators/
 
 **Where the framework needs to know something Praxis-specific, it takes it as a parameter rather than importing it.** `prepareOrchestrator` is generic in its context and receives a factory; `domains/workspace/prepare-orchestrator.ts` binds it to `CommandContext`. That binding is the one place the plumbing meets the application, and it belongs to workspace because `workspace/models` already depends on the framework — importing it back would be a cycle.
 
+- `text.ts` shapes a string for a human to read (`kebabToTitleCase`) — never
+  parsing, never I/O. It is not `files.ts`: reading a file and formatting a name
+  are different jobs, and a module that does both stops being either.
 - `types.ts` holds the framework's own vocabulary: display entries, error codes, `CommandRegistrar`, `CommandOutcome`, and the generic `Orchestrator<Ctx, Options>`. Praxis's cross-domain vocabulary (`ReviewerConfig`, `CohortMode`) stays in `src/types.ts`.
 
 - `files.ts` and `paths.ts` are deliberately namespace modules, not services, and are the only files allowed to import `node:fs` and `node:path` — the ESLint rule names them, so splitting them into single-function services would trade a wall for scattered one-liners.

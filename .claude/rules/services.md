@@ -30,6 +30,18 @@ paths:
 - The line is the _input_, not the size. An algorithm a model happens to use —
   `hash-reviewer-service.ts` canonicalizes a config and folds in the prompt
   surface — is still a service, and the model delegates to it.
+- **A second caller is not a reason to keep it.** `assistHashInput` and
+  `contentHash` looked shared, but the second caller was rebuilding by hand what
+  the model already did; once it went through `ReviewSubject`, both had one
+  caller and belonged to it. Ask what the caller _should_ be doing before
+  concluding a coercion is shared.
+- **A predicate over a filename is not a service either.** `isTarget` was three
+  lines of name math with no payload and no result type; it is `isContentFile`
+  in `framework/files.ts` now.
+- **A helper with one caller stays inside it.** `selectDomains`, `summarize` and
+  `worstVerdict` are module-private functions in the service that uses them, not
+  files of their own. If you cannot name it `{verb}-{noun}-service.ts` without
+  inventing a verb, that is the signal it is a helper rather than a service.
 
 Everything under `services/` is a service and takes the suffix — there are no
 exemptions, because the things that were not services have moved out.

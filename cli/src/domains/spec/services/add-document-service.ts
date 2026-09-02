@@ -4,6 +4,7 @@ import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
 import { errors } from "@/framework/errors.js";
 import { exists, readText, writeText } from "@/framework/files.js";
 import { joinPath, relativePath } from "@/framework/paths.js";
+import { kebabToTitleCase } from "@/framework/text.js";
 
 /**
  * Creates one expert or practice from its template.
@@ -24,14 +25,30 @@ export default function addDocumentService({
   practicesDir,
   scaffoldDir = SCAFFOLD_DIR,
 }: AddDocumentInput): AddDocumentResult {
-  const isExpert = type === "expert";
-  const templatePath = joinPath(
-    scaffoldDir,
-    "core",
-    isExpert ? "experts" : "practices",
-    "_template.md",
-  );
-  const targetFile = joinPath(isExpert ? expertsDir : practicesDir, `${name}.md`);
+  const title = kebabToTitleCase(name);
+
+  let targetFile: string;
+  let templatePath: string;
+  let placeholders: [RegExp, string][];
+
+  if (type === "expert") {
+    templatePath = joinPath(scaffoldDir, "core", "experts", "_template.md");
+    targetFile = joinPath(expertsDir, `${name}.md`);
+    // An expert gets its display name and the alias the compiler keys it
+    // on. The alias is the name as typed, because it is an identifier
+    // rather than prose.
+    placeholders = [
+      [/\{expert_name\}/g, title],
+      [/\{required_alias\}/g, name],
+    ];
+  } else if (type === "practice") {
+    templatePath = joinPath(scaffoldDir, "core", "practices", "_template.md");
+    targetFile = joinPath(practicesDir, `${name}.md`);
+    placeholders = [[/\{practice_title\}/g, title]];
+  } else {
+    throw errors.invalidDocumentType(type);
+  }
+
   const path = relativePath(root, targetFile);
 
   if (exists(targetFile)) {
@@ -42,32 +59,12 @@ export default function addDocumentService({
     throw errors.templateNotFound(templatePath);
   }
 
-  writeText(targetFile, fillTemplate(type, name, readText(templatePath)));
+  const document = placeholders.reduce(
+    (text, [placeholder, value]) => text.replace(placeholder, value),
+    readText(templatePath),
+  );
+
+  writeText(targetFile, document);
 
   return { type, path };
-}
-
-/**
- * Fills the template's placeholders.
- *
- * An expert gets both its display name and the alias the compiler keys
- * it on; a practice gets only a title. The alias is the name as typed,
- * because it is an identifier, not prose.
- */
-function fillTemplate(type: AddDocumentInput["type"], name: string, template: string): string {
-  const title = toTitleCase(name);
-
-  if (type === "expert") {
-    return template.replace(/\{expert_name\}/g, title).replace(/\{required_alias\}/g, name);
-  }
-
-  return template.replace(/\{practice_title\}/g, title);
-}
-
-/** Converts a kebab-case name to Title Case: "code-reviewer" → "Code Reviewer". */
-function toTitleCase(name: string): string {
-  return name
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
 }
