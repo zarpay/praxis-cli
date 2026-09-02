@@ -69,6 +69,8 @@ export const initProjectOrchestrator: Orchestrator<InitProjectOptions> = async (
   }
 
   ctx.render(initView({ created, skipped, nextSteps: nextSteps(specLayer) }));
+
+  return "ok";
 };
 
 /**

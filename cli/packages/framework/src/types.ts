@@ -113,7 +113,7 @@ export type View<Data> = (data: Data) => ReportLine[];
 export type Orchestrator<Ctx, Options = NoOptions> = (
   ctx: Ctx,
   options: Options,
-) => Promise<CommandOutcome | void>;
+) => Promise<CommandOutcome>;
 
 /**
  * The options of an orchestrator that takes none.

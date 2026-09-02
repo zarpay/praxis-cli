@@ -25,6 +25,8 @@ export const editConfigOrchestrator: Orchestrator = async (ctx) => {
   if (result.error) {
     throw errors.editorFailed(editor, result.error.message);
   }
+
+  return "ok";
 };
 
 export default prepareOrchestrator(editConfigOrchestrator);

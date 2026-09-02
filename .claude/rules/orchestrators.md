@@ -35,10 +35,11 @@ belongs here.
 - **Always `async`**, so `prepareOrchestrator` has one shape to await _and_ one channel for
   failures. A non-async function returning `Promise.resolve()` throws
   synchronously, which is a second signature in disguise.
-- **Returns a `CommandOutcome`, or nothing.** `"failed"` becomes exit 1 — a
-  legitimate result like issues found, not an error. Genuinely unusable input is
-  thrown instead. It never returns a payload: there is no caller left to consume
-  one.
+- **Always returns a `CommandOutcome`** — `"ok"` or `"failed"`, never nothing.
+  `"failed"` becomes exit 1, a legitimate result like issues found; genuinely
+  unusable input is thrown instead. An explicit `"ok"` costs one line and makes
+  the contract total: silence can never be mistaken for success. It never
+  returns a payload — there is no caller left to consume one.
 - **A class is fine when several orchestrators share real scope or behaviour** —
   a common constructor payload, a cached handle, helpers they all need. Reach for
   it when the sharing exists, not in advance; one orchestrator alone is a

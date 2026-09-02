@@ -19,6 +19,8 @@ export const addExpertOrchestrator: Orchestrator<AddDocumentOptions> = async (ct
   });
 
   ctx.render(documentCreatedView(created));
+
+  return "ok";
 };
 
 export default prepareOrchestrator(addExpertOrchestrator);

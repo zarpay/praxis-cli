@@ -958,7 +958,7 @@ export interface AddDocumentResult {
 
 /**
  * An orchestrator in this application: the framework's signature with
- * Praxis's context bound in, so a domain writes `Orchestrator<Options>`
+ * Praxis's context bound in, so a caller writes `Orchestrator<Options>`
  * and never repeats the context type.
  */
 export type Orchestrator<Options = NoOptions> = BaseOrchestrator<CommandContext, Options>;

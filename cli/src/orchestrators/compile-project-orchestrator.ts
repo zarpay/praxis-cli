@@ -43,14 +43,14 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
 
     if (watch) logger.warn("--watch is not supported with --alias, ignoring");
 
-    return;
+    return "ok";
   }
 
   const { compiled } = await compileExperts(input);
 
   ctx.render(compileResultView({ compiled }));
 
-  if (!watch) return;
+  if (!watch) return "ok";
 
   watchAndCompile({
     ...input,
@@ -59,6 +59,8 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
     onRecompile: (filename) => ctx.render(watchView({ kind: "recompiling", filename })),
     onError: (message) => logger.error(message),
   });
+
+  return "ok";
 };
 
 export default prepareOrchestrator(compileProjectOrchestrator);

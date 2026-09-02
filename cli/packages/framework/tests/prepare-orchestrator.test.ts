@@ -42,7 +42,7 @@ describe("prepareOrchestrator", () => {
     const handler = prepareOrchestrator(captureLogger, (_ctx, options) => {
       seen = options;
 
-      return Promise.resolve();
+      return Promise.resolve("ok" as const);
     });
 
     await handler("some/doc.md", fakeCommand(["target"], { verbose: true }));
@@ -55,7 +55,7 @@ describe("prepareOrchestrator", () => {
     const handler = prepareOrchestrator(captureLogger, (_ctx, options) => {
       seen = options;
 
-      return Promise.resolve();
+      return Promise.resolve("ok" as const);
     });
 
     await handler("./proj", fakeCommand(["target-dir"], {}));
@@ -70,7 +70,7 @@ describe("prepareOrchestrator", () => {
       (_ctx, options: { ci?: boolean; strict?: boolean }) => {
         seen = options;
 
-        return Promise.resolve();
+        return Promise.resolve("ok" as const);
       },
       { ci: true },
     );
@@ -87,7 +87,7 @@ describe("prepareOrchestrator", () => {
         built++;
         return captureLogger();
       },
-      () => Promise.resolve(),
+      () => Promise.resolve("ok" as const),
     );
 
     expect(built).toBe(0);

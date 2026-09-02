@@ -19,6 +19,8 @@ export const addPracticeOrchestrator: Orchestrator<AddDocumentOptions> = async (
   });
 
   ctx.render(documentCreatedView(created));
+
+  return "ok";
 };
 
 export default prepareOrchestrator(addPracticeOrchestrator);

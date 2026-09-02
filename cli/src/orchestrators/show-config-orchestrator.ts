@@ -17,6 +17,8 @@ export const showConfigOrchestrator: Orchestrator = async (ctx) => {
   const configPath = ctx.paths.configFile;
 
   ctx.render(configView({ configPath, config: readJson(configPath) }));
+
+  return "ok";
 };
 
 export default prepareOrchestrator(showConfigOrchestrator);

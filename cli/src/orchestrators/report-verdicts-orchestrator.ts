@@ -23,6 +23,8 @@ export const reportVerdictsOrchestrator: Orchestrator<ReportVerdictsOptions> = a
   });
 
   ctx.render(verdictReportsView({ reports, named, verbose }));
+
+  return "ok";
 };
 
 export default prepareOrchestrator(reportVerdictsOrchestrator);
