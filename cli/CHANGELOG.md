@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased — v2]
+
+v2 is a **breaking release**: v1 compatibility spellings are being removed rather than aliased.
+
+### Added
+
+- **Multiple reviewers** — `reviewers: [{ name, model, apiKeyEnvVar, baseUrl?, temperature? }]` in config. Every reviewer reviews every target; results, summaries (`By reviewer:`), `praxis status`, and `eval verdict` report per reviewer, never pooled. `eval run --reviewer <name>` runs one reviewer.
+- **Reviewer-keyed verdict cache (format 4.0)** — one cache file per target holds every verdict for it, keyed by `<specHash>:<reviewerHash>` with readable reviewer provenance on each entry. The reviewer hash covers behavioral settings only (whole config canonically hashed minus `name` and `apiKeyEnvVar`, plus the system prompt text): renames and key rotation keep cache hits; model/endpoint/temperature/prompt changes invalidate — the hash is the epoch boundary.
+- **`cohort:` spec frontmatter** — `by_file` (default) or `by_directory`: each directory matched by `paths:` is reviewed as one unit. Compiles through from expert `cohort:` frontmatter.
+
+### Removed (breaking)
+
+- The `validation:` config section — configure `reviewers:` instead; `specFilePattern` moves top-level.
+- Pre-4.0 cache files are ignored, not migrated; the first v2 run re-reviews (one-time cost).
+- **`judge` is now `reviewer`** throughout: the `judges:` config key, the `--judge` flag, the `JudgeProvider` contract method (`provider.judge()` → `provider.review()`), and the `judge` field on every cache entry. A reviewer reviews a target and returns a verdict.
+
 ## [1.4.0] - 2026-08-30
 
 ### Added

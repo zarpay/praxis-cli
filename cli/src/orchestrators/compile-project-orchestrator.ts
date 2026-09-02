@@ -1,0 +1,88 @@
+import type { CompileProgress, CompileProjectOptions } from "@/types.js";
+import type { Orchestrator } from "@/types.js";
+
+import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
+import compileByAliasService from "@/services/compile-by-alias-service.js";
+import compileExpertsService from "@/services/compile-experts-service.js";
+import resolvePluginsService from "@/services/resolve-plugins-service.js";
+import watchAndCompileService from "@/services/watch-and-compile-service.js";
+import compileProgressView from "@/views/compile-progress-view.js";
+import compileResultView from "@/views/compile-result-view.js";
+import watchView from "@/views/watch-view.js";
+
+/**
+ * What `praxis compile` does: turn expert definitions into agent profiles
+ * and run whatever plugins the project enables.
+ *
+ * Three shapes of the same job — one expert by alias, every expert once,
+ * or every expert and then again on every change. They share the compile
+ * scope, so the dispatch lives here rather than in the route.
+ */
+export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = async (
+  ctx,
+  { alias, watch = false },
+) => {
+  const { root, config, logger } = ctx;
+
+  // Plugins are constructed once per invocation, not per expert: the
+  // Claude Code plugin writes its manifest on first compile and must not
+  // repeat it for every agent.
+  const input = {
+    root,
+    expertsDir: config.expertsDir,
+    specFilePattern: config.specFilePattern,
+    agentProfilesOutputDir: config.agentProfilesOutputDir,
+    plugins: resolvePluginsService(config.plugins, root, logger),
+    onProgress: (event: CompileProgress) => ctx.render(compileProgressView(event)),
+  };
+
+  // When an alias is given, compile only that expert and skip the watch mode.
+  // Otherwise, compile every expert and optionally watch for changes.
+  if (alias) {
+    const result = await compileByAliasService({ ...input, alias, expertsDir: config.expertsDir });
+
+    const view = compileResultView(result);
+    ctx.render(view);
+
+    if (watch) logger.warn("--watch is not supported with --alias, ignoring");
+
+    return "ok";
+  }
+
+  const { compiled } = await compileExpertsService(input);
+
+  const view = compileResultView({ compiled });
+  ctx.render(view);
+
+  // If watch mode is not requested, the job is done. Otherwise, start watching
+  // the experts directory and recompile on changes.
+  if (!watch) return "ok";
+
+  // The watch service is a long-running process that never returns, so the
+  // orchestrator must not return either. It will render progress events as
+  // they happen, and the user can terminate it with Ctrl+C.
+  const onWatch = (dir: string) => {
+    const view = watchView({ kind: "watching", dir });
+    ctx.render(view);
+  };
+
+  // The recompile event is emitted when a file change is detected and the
+  // compile service is about to re-run. It is not emitted for every file
+  // change, only when a recompile is actually triggered.
+  const onRecompile = (filename: string | null) => {
+    const view = watchView({ kind: "recompiling", filename });
+    ctx.render(view);
+  };
+
+  watchAndCompileService({
+    ...input,
+    onWatch,
+    onRecompile,
+    sources: config.sources,
+    onError: (message) => logger.error(message),
+  });
+
+  return "ok";
+};
+
+export default prepareOrchestrator(compileProjectOrchestrator);

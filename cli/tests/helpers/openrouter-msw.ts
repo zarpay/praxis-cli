@@ -1,5 +1,15 @@
+import type { ChatCompletionUsage } from "@/types.js";
+import type { ReviewerConfig } from "@/types.js";
+
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+
+/** A baseline reviewer for tests that need one and don't care which. */
+export const TEST_REVIEWER: ReviewerConfig = {
+  name: "test",
+  model: "test-model",
+  apiKeyEnvVar: "OPENROUTER_API_KEY",
+};
 
 /** The concrete server type setupServer() returns (msw's exported alias has drifted across versions). */
 type OpenRouterServer = ReturnType<typeof setupServer>;
@@ -12,14 +22,16 @@ export type ValidationToolName = "validation_pass" | "validation_warn" | "valida
 
 /**
  * Builds an OpenRouter chat-completion response body containing a single
- * validation tool call, matching the shape Judge parses.
+ * validation tool call, matching the shape the provider parses.
  *
  * @param toolName - Which validation tool the "model" called
  * @param args - The tool arguments (reason, and issues for warn/fail)
+ * @param usage - Optional usage block (prompt_tokens/completion_tokens/cost)
  */
 export function validationToolCallResponse(
   toolName: ValidationToolName,
   args: { reason: string; issues?: string[] },
+  usage?: ChatCompletionUsage,
 ): object {
   return {
     choices: [
@@ -37,6 +49,7 @@ export function validationToolCallResponse(
         },
       },
     ],
+    ...(usage && { usage }),
   };
 }
 

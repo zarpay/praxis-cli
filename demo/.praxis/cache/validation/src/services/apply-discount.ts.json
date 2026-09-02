@@ -1,0 +1,92 @@
+{
+  "version": "4.0",
+  "verdicts": {
+    "0311531a:4886d09e": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "4886d09e"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T21:19:20.541Z",
+      "content_hash": "a54c5a51",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 685 words."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T21:18:14.954Z",
+      "content_hash": "a54c5a51",
+      "result": {
+        "compliant": false,
+        "severity": "warning",
+        "issues": [
+          "The template's ??? placeholder is not a valid Message struct — it must contain user, assistant, and system fields."
+        ],
+        "reason": "The file contains an incomplete result that does not conform to the Message format."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T21:18:55.663Z",
+      "content_hash": "a54c5a51",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file fully satisfies all criteria in the specification. It follows the required structure, implements proper error handling with consumer-friendly messages, validates input before processing, maintains single responsibility, uses only injected dependencies, and includes complete documentation."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:aff4904b": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "aff4904b"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T21:03:12.215Z",
+      "content_hash": "436b0f1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 581 words."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    }
+  }
+}

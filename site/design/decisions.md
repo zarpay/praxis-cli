@@ -54,7 +54,7 @@ Praxis uses an LLM to eval runs against specs, not a schema validator or linter.
 
 Schema validators can check field presence and type. They cannot check whether a `description` field is actually descriptive, whether a `## Scope` section actually explains the agent's scope, whether an ADR's "Consequences" section is genuinely thoughtful, or whether a service object's header comment explains when to use it.
 
-The LLM reads your spec as instructions and exercises judgment — the same kind of judgment a senior developer would use in a review.
+The LLM reads your spec as instructions and exercises judgment — the same kind a senior developer would bring to a review.
 
 The tradeoff is that LLM validation requires an API key, costs money per call, and is non-deterministic at the margin. The content hash cache mitigates the cost by only calling the API when content changes. The non-determinism is acceptable for documentation quality checks.
 

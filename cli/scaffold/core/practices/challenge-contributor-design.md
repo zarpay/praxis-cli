@@ -1,8 +1,6 @@
 ---
 title: Challenge Contributor Design
 type: practice
-owner: remy
-schedule: triggered
 ---
 
 # Challenge Contributor Design

@@ -26,6 +26,9 @@ export interface Review {
   createdAt: string;
 }
 
+/** A review as submitted, before persistence assigns id and createdAt. */
+export type ReviewDraft = Omit<Review, "id" | "createdAt">;
+
 /** A parlor with its aggregate review standing. */
 export interface RankedParlor {
   parlor: Parlor;

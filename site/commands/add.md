@@ -9,10 +9,6 @@ praxis add expert <name>
 praxis add practice <name>
 ```
 
-::: info Deprecated aliases
-`praxis add role` and `praxis add responsibility` still work as deprecated aliases for `add expert` and `add practice`.
-:::
-
 The `<name>` argument should be kebab-case. It is used as the filename and pre-filled into the template.
 
 ## Examples

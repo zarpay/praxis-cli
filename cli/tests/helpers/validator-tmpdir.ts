@@ -1,29 +1,30 @@
-import type { ValidationConfig } from "@/core/config.js";
+import type { ReviewerConfig } from "@/types.js";
 
 import { randomUUID } from "node:crypto";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
-const DEFAULT_VALIDATION: ValidationConfig = {
-  apiKeyEnvVar: "OPENROUTER_API_KEY",
-  model: "test",
-};
+/** The reviewer written into helper configs; matches TEST_REVIEWER in openrouter-msw. */
+const DEFAULT_REVIEWERS: ReviewerConfig[] = [
+  { name: "test", model: "test-model", apiKeyEnvVar: "OPENROUTER_API_KEY" },
+];
 
 /**
- * Creates a minimal Praxis project root in a temp directory for validator tests.
+ * Creates a minimal Praxis project root in a temp directory for eval tests.
  *
  * Accepts a flat map of relative paths to file contents — parent directories are
  * created automatically, so deeply nested files don't require explicit `mkdirSync`
- * calls. A `.praxis/config.json` is written with the given sources and validation
- * config (defaults: OPENROUTER_API_KEY key, "test" model).
+ * calls. A `.praxis/config.json` is written with the given sources, reviewers
+ * (default: one OpenRouter test reviewer), and spec file pattern.
  *
  * @returns `root` (absolute path), `abs` (path resolver), and `cleanup` (rm -rf).
  */
 export function createValidatorTmpdir(options: {
   sources: string[];
   files: Record<string, string>;
-  validation?: Partial<ValidationConfig>;
+  reviewers?: ReviewerConfig[];
+  specFilePattern?: string;
 }): {
   root: string;
   abs: (relativePath: string) => string;
@@ -44,7 +45,8 @@ export function createValidatorTmpdir(options: {
     abs(".praxis/config.json"),
     JSON.stringify({
       sources: options.sources,
-      validation: { ...DEFAULT_VALIDATION, ...options.validation },
+      reviewers: options.reviewers ?? DEFAULT_REVIEWERS,
+      ...(options.specFilePattern !== undefined && { specFilePattern: options.specFilePattern }),
     }),
   );
 

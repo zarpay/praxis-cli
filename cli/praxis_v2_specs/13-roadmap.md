@@ -10,25 +10,25 @@ Everything measured depends on critiques being durable; everything aggregated de
 
 ## Milestones
 
-**M1 — Spec layer settled** *(largely shipped in v1's terminology migration)*
-Expert/practice compiler, spec targeting via `paths:`, the `eval` CLI family, judge naming. Remaining from [11](./11-spec-layer.md)'s retirement list: `praxis init` scaffolds the eval-layer `.praxis/` tree with the spec-layer scaffold as explicit opt-in; `praxis status` splits eval state from framework health; `TargetType` retires from eval-layer data.
+**M1 — Spec layer settled** _(largely shipped in v1's terminology migration)_
+Expert/practice compiler, spec targeting via `paths:`, the `eval` CLI family, reviewer naming. Remaining from [11](./11-spec-layer.md)'s retirement list: ~~`praxis init` scaffolds the eval-layer `.praxis/` tree with the spec-layer scaffold as explicit opt-in~~ (done — `init` writes only `.praxis/config.json`; `init --spec-layer` adds the taxonomy); ~~`praxis status` splits eval state from framework health~~ (done — framework health surfaces only when the experts directory exists); ~~`TargetType` retires from eval-layer data~~ (done 2026-08-31: the type enum, frontmatter/path detection, cached `target_type`, and the verdict report's Type line are all removed — the eval layer's notion of type is the covering spec). The spec scoping frontmatter (03) has landed: `cohort`, `excludes`, `exemplars`, and `context` are honored by the eval layer, with context-in-key (05's change #1) and the cohort hash both live; `excludes`/`exemplars` compile through from experts. Open gap found in the demo coverage pass (2026-08-31): **profiles-as-specs has no discovery path** — compiled profiles are named `{alias}.md`, and `specFilePattern` matches basenames, so no pattern can select profiles without matching every markdown file; the v1 workaround was aliases that embed the suffix (`events.sme`). Wants a profile-filename option (e.g. `agentProfileSuffix`) before the feature is honest. Open naming decision: expert-level compile-through for judgment `context:` — the expert's existing `context:` key already means "inline into the profile body at compile time" (the SME agent's knowledge), a different feature than the spec-level assist-only key, so the expert key for it needs a distinct name before it compiles through.
 
-**M2 — Critique flow** *(first eval-layer milestone; with M3, the MVP)*
-Critiques become durable records. The ledger (05): run + critique records, full provenance, OpenRouter `usage` captured (cost data exists for the first time). Cache format changes: judge-hash namespacing, context-in-key. Judge output becomes structured critiques ready for the two channels. Corpus-level only — no git, no axioms yet. *Standalone value: durable evidence and cost visibility on any v1 project, immediately.*
+**M2 — Critique flow** _(first eval-layer milestone; with M3, the MVP)_
+Critiques become durable records. The ledger (05): run + critique records, full provenance, OpenRouter `usage` captured (cost data exists for the first time). Cache format changes: reviewer-hash namespacing, context-in-key. Reviewer output becomes structured critiques ready for the two channels. Corpus-level only — no git, no axioms yet. _Standalone value: durable evidence and cost visibility on any v1 project, immediately._
 
-**M3 — Axiom flow** *(completes the MVP)*
-The taxonomy machinery: `axioms triage` as the human-in-the-loop review session (04), `proposed/` + `ratify` with spec traceability, the authoring gate (03), the two-channel judge (checklist + open channel), residual tracking. The fast loop starts returning axioms instead of raw prose. *Standalone value: the 223 zarpay critiques become a ratified taxonomy; agents get stable, teachable feedback.*
+**M3 — Axiom flow** _(completes the MVP)_
+The taxonomy machinery: `axioms triage` as the human-in-the-loop review session (04), `proposed/` + `ratify` with spec traceability, the authoring gate (03), the two-channel reviewer (checklist + open channel), residual tracking. The fast loop starts returning axioms instead of raw prose. _Standalone value: the 223 zarpay critiques become a ratified taxonomy; agents get stable, teachable feedback._
 
-**The MVP is M2 + M3.** The scope is novel but not extensive: one new store (ledger), one new record shape (critique), one new interactive surface (triage/ratify), one judge-prompt change (two channels). It proves the core thesis — SME critiques are qualitative data that normalize into a longitudinal taxonomy — with zero git machinery.
+**The MVP is M2 + M3.** The scope is novel but not extensive: one new store (ledger), one new record shape (critique), one new interactive surface (triage/ratify), one reviewer-prompt change (two channels). It proves the core thesis — SME critiques are qualitative data that normalize into a longitudinal taxonomy — with zero git machinery.
 
 **M4 — Measurement**
 Populations from spec/axiom birthdates, epochs derived from provenance, the debt baseline and paydown surfaces, `eval report` / `debt report` with the hard rules (07): coverage+conformance paired, denominators shown, small-n floors, per-axiom rates. Corpus and per-axiom — still no diffs.
 
-**M5 — Diff units** *(git integration, [12](./12-git-integration.md))*
+**M5 — Diff units** _(git integration, [12](./12-git-integration.md))_
 Merge-base diffs, verdict diffing, violation flow, introduction rate — the agentic development eval proper. This is where "the eval" in the thesis becomes a number.
 
-**M6 — Judge instrumentation**
-Calibration cases, `calibrate run|status`, interpretability gating on reports, drift protocol, multi-judge config with inter-judge agreement (06). Ordered after M5 deliberately: calibration gates the *interpretation* of numbers M4–M5 produce, and needs adjudicated cases that accumulate from M2–M3's resolution workflows.
+**M6 — Reviewer instrumentation**
+Calibration cases, `calibrate run|status`, interpretability gating on reports, drift protocol, inter-reviewer agreement (06). (Multi-reviewer config itself landed early, with the reviewer-hash cache namespacing it requires.) Ordered after M5 deliberately: calibration gates the _interpretation_ of numbers M4–M5 produce, and needs adjudicated cases that accumulate from M2–M3's resolution workflows.
 
 **M7 — Feedback surfaces**
 Briefs with triangulated diagnosis, `harness suggest` + the generated drafting command, intervention tracking (08).
@@ -37,8 +37,10 @@ Briefs with triangulated diagnosis, `harness suggest` + the generated drafting c
 
 `mode: agentic` (03), `cohort` and `changeset` scopes (start with `file` and `file+context`), the `watch` trigger (12), attribution conventions / the human-agent contrast (02's optional sharpening), A/B interventions (08), multi-repo anything (README non-goal). Each is already shaped in its document; deferral means no code, not no design.
 
-## Migration (v1 → M2)
+## Migration (v1 → v2)
 
-- Existing cache files move under their computed judge-hash namespace on first v2 run (mechanical: current config *is* the judge).
-- Ledger backfill from cache hits on the first ledger-enabled run, marked `backfilled: true` (05's open question — resolved: yes).
-- No spec, config, or workflow changes required of users beyond what the terminology migration already aliased.
+**v2 is a breaking release — no compatibility shims.** Decided during M2 implementation, superseding the earlier aliasing plan:
+
+- The `validation:` config section is removed; projects configure `reviewers: []` and top-level `specFilePattern`.
+- Pre-namespacing caches are not migrated; the first v2 run re-reviews (a one-time cost the cache immediately amortizes).
+- ~~**Pre-release task: strip the 1.4 compatibility aliases**~~ Done (2026-08-31): validate CLI verbs, `rolesDir`/`responsibilitiesDir`, `type: role|responsibility`, `responsibilities:` list key, `add role|responsibility`, `constitution: true`, and the legacy default sources are all removed. v2 accepts only v2 spellings.

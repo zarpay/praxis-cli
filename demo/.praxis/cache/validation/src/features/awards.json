@@ -1,0 +1,105 @@
+{
+  "version": "4.0",
+  "verdicts": {
+    "e280f5fa:4886d09e": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "4886d09e"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-01T20:23:21.404Z",
+      "content_hash": "385839e6",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 948 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T14:35:07.412Z",
+      "content_hash": "385839e6",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "All structural, naming, and cohesion criteria are satisfied. The module is exactly one evaluation unit: a single directory with an index.ts entry point, a dedicated award-types.ts for types, and a verb-first kebab-case logic file (pick-winners.ts) exporting a run function. The logic follows service conventions: run takes a Store, returns the domain Result type, and surfaces consumer-grade error messages for invalid input and empty qualification. There are no orphaned files — every file is reachable from index.ts through its import graph. The feature serves one coherent capability (yearly awards) and its name (awards) describes the capability, not the implementation. index.ts re-exports the entire public API and nothing else in the feature is required to be importable by outsiders."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T14:35:44.134Z",
+      "content_hash": "385839e6",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The awards feature directory satisfies all criteria defined in the specification. It has exactly one entry point (index.ts), dedicated types file (award-types.ts), verb-first kebab-case logic file (pick-winners.ts), and follows all structural and cohesion requirements."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:aff4904b": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "aff4904b"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-02T21:03:12.211Z",
+      "content_hash": "385839e6",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 948 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    }
+  }
+}

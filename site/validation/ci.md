@@ -86,7 +86,7 @@ A few practices that help keep validation costs predictable:
 - **Commit the cache** — unchanged documents are free.
 - **Use `paths` triggers** — only validate when knowledge files change.
 - **Use `--type` to scope** — if only experts changed, `praxis eval run --type experts` avoids re-validating everything.
-- **Pick an efficient model** — the default `x-ai/grok-4.1-fast` is tuned for speed and cost. Swap for a larger model if you need more nuanced judgment on complex specs.
+- **Pick an efficient model** — the default `x-ai/grok-4.1-fast` is tuned for speed and cost. Swap for a larger model if you need more nuanced review on complex specs.
 
 ## See also
 

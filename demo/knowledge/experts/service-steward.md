@@ -4,19 +4,28 @@ type: expert
 alias: Scooper
 description: "Use this agent to review Scoop Society services for convention adherence, or for advice when writing a new service. Invoke it whenever files under src/services/ are added or changed."
 
+constitution: "knowledge/context/constitution/*.md"
+
 context:
   - knowledge/context/conventions/result-handling.md
 
 practices:
   - knowledge/practices/review-service-quality.md
 
+refs:
+  - knowledge/reference/api-shape.md
+
 validates:
   - src/services/*.ts
+excludes:
+  - src/services/legacy-import.ts
+exemplars:
+  - src/services/create-review.ts
 ---
 
 # Service Steward (a.k.a **Scooper**)
 
-The subject-matter expert on how Scoop Society services are written.
+The subject-matter expert on how Scoop Society services are written and reviewed.
 
 ## Identity
 

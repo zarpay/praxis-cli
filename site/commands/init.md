@@ -6,11 +6,31 @@ Scaffolds a new Praxis project in the target directory.
 
 ```bash
 praxis init [directory]
+praxis init [directory] --spec-layer
 ```
 
 If `directory` is omitted, scaffolding happens in the current working directory.
 
 ## What it creates
+
+By default, init scaffolds only the eval layer — the `.praxis/` tree:
+
+```
+my-org/
+└── .praxis/
+    └── config.json              ← reviewers, sources, specFilePattern
+```
+
+Your specs are your existing files (READMEs and the like); point the
+config's `sources` at the directories they live in and run
+`praxis eval run`. Nothing else is written to your repo.
+
+## `--spec-layer`
+
+Pass `--spec-layer` to also scaffold the knowledge-authoring taxonomy
+the compiler works with (experts, practices, constitution, reference).
+It is safe to run later on an existing eval-layer project — existing
+files are never overwritten:
 
 ```
 my-org/
@@ -66,7 +86,23 @@ Re-running `praxis init` after adding the plugin to config will scaffold these d
 
 ## Default config
 
-The generated `.praxis/config.json`:
+The eval-layer `.praxis/config.json` (default init):
+
+```json
+{
+  "sources": [],
+  "specFilePattern": "README.md",
+  "reviewers": [
+    {
+      "name": "default",
+      "model": "x-ai/grok-4.1-fast",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    }
+  ]
+}
+```
+
+With `--spec-layer`, the config also wires the authoring taxonomy:
 
 ```json
 {
@@ -75,10 +111,13 @@ The generated `.praxis/config.json`:
   "practicesDir": "practices",
   "agentProfilesOutputDir": "./agent-profiles",
   "plugins": [],
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast"
-  }
+  "reviewers": [
+    {
+      "name": "default",
+      "model": "x-ai/grok-4.1-fast",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    }
+  ]
 }
 ```
 

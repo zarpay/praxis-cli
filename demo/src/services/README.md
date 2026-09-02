@@ -1,6 +1,10 @@
 ---
 paths:
   - "src/services/*.ts"
+exemplars:
+  - "src/services/create-review.ts"
+excludes:
+  - "src/services/legacy-import.ts"
 ---
 
 # Service Conventions

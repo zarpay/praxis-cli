@@ -12,9 +12,9 @@ praxis status
 
 `praxis status` scans all configured `sources` directories and produces a summary of:
 
-- **Document counts** — how many documents exist per type
-- **Validation coverage** — pass / warn / fail / not-validated counts per type, read from the local cache
-- **Issues** — structural problems detected without any LLM calls:
+- **Validation coverage** — pass / warn / fail / not-validated counts per reviewer, read from the local cache. Always shown.
+- **Document counts** — how many documents exist per type. Only shown when the spec-layer compiler is in use (the configured experts directory exists).
+- **Issues** — structural problems detected without any LLM calls. Also compiler-only — an eval-layer project is never asked about a taxonomy it doesn't have:
   - Dangling references (expert frontmatter points to a file that doesn't exist)
   - Orphaned practices (practice not claimed by any expert)
   - Missing `description` fields on experts

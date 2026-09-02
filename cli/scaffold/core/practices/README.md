@@ -32,8 +32,6 @@ When you delegate a practice, you're saying: "This is yours — figure it out, d
 ---
 title: "{practice_title}"
 type: practice
-owner: "{owner_role_alias}"
-schedule: "{optional_schedule}"
 ---
 
 # [Verb What]

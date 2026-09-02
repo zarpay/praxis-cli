@@ -10,8 +10,29 @@
   "plugins": [
     "claude-code"
   ],
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast"
-  }
+  "reviewers": [
+    {
+      "name": "flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    },
+    {
+      "name": "v32",
+      "model": "deepseek/deepseek-v3.2",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    },
+    {
+      "name": "counter",
+      "model": "none",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY",
+      "provider": "./praxis-providers/word-count.js",
+      "options": {
+        "minWords": 20
+      }
+    }
+  ],
+  "specFilePattern": "{README.md,*.sme.md}",
+  "ignore": [
+    "src/generated/**"
+  ]
 }

@@ -39,19 +39,15 @@ Every expert must have a `## Scope` section that contains both:
 - A `### Not Responsible For` subsection
 ```
 
-When `praxis eval run` runs, it sends this spec and the document content to an LLM and asks whether the document conforms. The LLM returns Yes / Maybe / No with specific issues.
+When `praxis eval run` runs, it sends this spec and the document content to each configured reviewer and asks whether the document conforms. The reviewer answers through a required tool call — pass, warn, or fail — with specific issues.
 
 ## Configurable spec file name
 
-By default, the spec file is named `README.md`. You can change this globally in your validation config:
+By default, the spec file is named `README.md`. You can change this globally with the top-level `specFilePattern` config key:
 
 ```json
 {
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast",
-    "specFilePattern": "SPEC.md"
-  }
+  "specFilePattern": "SPEC.md"
 }
 ```
 

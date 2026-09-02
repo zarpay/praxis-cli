@@ -7,7 +7,7 @@ export interface RankParlorsInput {
 }
 
 /**
- * Ranks every parlor by average rating, highest first.
+ * Ranks every reviewed parlor by average rating, highest first.
  *
  * Failure modes: minReviews negative or not a whole number.
  */

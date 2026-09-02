@@ -1,0 +1,65 @@
+{
+  "version": "4.0",
+  "verdicts": {
+    "244fa7f3:4886d09e": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "4886d09e"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T21:19:20.535Z",
+      "content_hash": "7de401cd",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 294 words."
+      }
+    },
+    "244fa7f3:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T21:11:34.063Z",
+      "content_hash": "7de401cd",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification. Required frontmatter fields (title, type, alias, description) are present with correct types and values: type is 'expert', title 'Feature Steward', alias 'Sundae', description is one sentence (two clauses) explaining when to invoke. The body opens with a level-1 heading naming the expert and its alias (# Feature Steward (a.k.a **Sundae**)), and states in prose what the expert is the subject-matter expert on ('The subject-matter expert on how Scoop Society features are composed'). No placeholder text (TODO, TBD, lorem ipsum) is present. The extra frontmatter fields (context, practices, validates, cohort) do not violate the spec, which only defines required fields and not allowed content. The description uses a two-sentence invocation guidance which aligns with 'one sentence or two'."
+      }
+    },
+    "244fa7f3:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T21:18:25.189Z",
+      "content_hash": "7de401cd",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all required criteria: it contains all mandatory frontmatter fields with correct values, opens with the required level-1 heading naming the expert and alias, states in prose what the expert is the SME on, and contains no placeholder text."
+      }
+    },
+    "244fa7f3:aff4904b": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "aff4904b"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-02T21:03:12.207Z",
+      "content_hash": "8f4f2fef",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 294 words."
+      }
+    }
+  }
+}

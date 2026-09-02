@@ -1,0 +1,60 @@
+{
+  "version": "4.0",
+  "verdicts": {
+    "dacac2eb:aa38870a": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "aa38870a"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T21:20:51.679Z",
+      "content_hash": "18a6ed1a",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Subject framing: top-level describe must name the unit under test by its module name (e.g. describe('send-newsletter', ...)), but the file uses describe('newsletter stuff', ...), violating the subject framing rule.",
+          "Subject framing: nested describe blocks naming the situation as when clauses are missing; the file has no nested describes at all.",
+          "One assertion per block: the sole it block contains three expect calls; each it block must contain exactly one expect, with each additional outcome as a separate it under the same describe.",
+          "Functionality, not implementation: the first expect asserts a boolean literal return value from sendNewsletter which is not a returned value/observable state shape asserted with a single expect; more importantly the block conflates multiple outcomes (returns true, store state, and throwing on empty subject) in one it, each of which should be its own it. Also the throw assertion tests error behavior without naming the outcome in plain language."
+        ],
+        "reason": "The file does not conform to the Test Conventions specification: the describe block does not name the module, there are no when-clause nested describes, the single it block contains multiple expects instead of exactly one per block, and outcomes are not stated as plain-language sentences."
+      }
+    },
+    "dacac2eb:e25903cb": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e25903cb"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T21:21:25.545Z",
+      "content_hash": "18a6ed1a",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          "Subject framing violation: The top-level `describe` should name the unit under test by its module name (e.g., 'send-newsletter'), not 'newsletter stuff'",
+          "One assertion per block violation: The `it` block contains three `expect` statements instead of exactly one. Each observable outcome should be in its own `it` block"
+        ],
+        "reason": "The file violates required criteria in the specification regarding subject framing and assertion structure."
+      }
+    },
+    "dacac2eb:4886d09e": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "4886d09e"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-02T21:21:25.574Z",
+      "content_hash": "18a6ed1a",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 345 words."
+      }
+    }
+  }
+}
