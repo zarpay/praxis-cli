@@ -5,10 +5,10 @@ import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { VerdictCache } from "@/domains/eval/models/verdict-cache.js";
-import contentHash from "@/domains/eval/services/hash-content.js";
-import readVerdictEntry from "@/domains/eval/services/read-verdict-entry.js";
-import readVerdict from "@/domains/eval/services/read-verdict.js";
-import writeVerdict from "@/domains/eval/services/write-verdict.js";
+import contentHash from "@/domains/eval/services/hash-content-service.js";
+import readVerdictEntry from "@/domains/eval/services/read-verdict-entry-service.js";
+import readVerdict from "@/domains/eval/services/read-verdict-service.js";
+import writeVerdict from "@/domains/eval/services/write-verdict-service.js";
 
 describe("the verdict cache", () => {
   describe("default cache root", () => {

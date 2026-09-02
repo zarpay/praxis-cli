@@ -1,11 +1,11 @@
 import { Command } from "commander";
 
-import registerAddCommand from "@/commands/add.js";
-import registerCompileCommand from "@/commands/compile.js";
-import registerConfigCommand from "@/commands/config.js";
-import registerEvalCommand from "@/commands/eval.js";
-import registerInitCommand from "@/commands/init.js";
-import registerStatusCommand from "@/commands/status.js";
+import registerAddCommand from "@/commands/add-command.js";
+import registerCompileCommand from "@/commands/compile-command.js";
+import registerConfigCommand from "@/commands/config-command.js";
+import registerEvalCommand from "@/commands/eval-command.js";
+import registerInitCommand from "@/commands/init-command.js";
+import registerStatusCommand from "@/commands/status-command.js";
 
 import pkg from "../package.json";
 

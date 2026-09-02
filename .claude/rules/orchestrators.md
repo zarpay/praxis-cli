@@ -12,10 +12,16 @@ to services. A command has a direct relationship to the orchestrators it calls â
 if a command is doing work that is not argument parsing or rendering, that work
 belongs here.
 
-- Named `{verb}-{noun}` for what it produces: `run-eval.ts`, `compile-project.ts`,
-  `analyze-project.ts`, `report-verdicts.ts`.
-- **`export const name: Orchestrator<Options> = async (ctx, options) => {}`, with
-  `export default prepareOrchestrator(name)` beneath it.** The default export is
+- **Named `{verb}-{noun}-orchestrator.ts`** for what it produces:
+  `run-eval-orchestrator.ts`, `compile-project-orchestrator.ts`,
+  `analyze-project-orchestrator.ts`.
+- **Its named export is the filename in camelCase** â€”
+  `run-eval-orchestrator.ts` exports `runEvalOrchestrator`. One file, one
+  orchestrator: if you want a second prepared form, it needs its own file
+  (`ci-run-orchestrator.ts`, `add-expert-orchestrator.ts`), named for the command
+  it serves so that command is findable from the filename.
+- **`export const nameOrchestrator: Orchestrator<Options> = async (ctx, options) => {}`,
+  with `export default prepareOrchestrator(nameOrchestrator)` beneath it.** The default export is
   the wrapped form a command hands to `.action()`; the named export is the
   orchestrator itself, which is what a test calls. `Orchestrator` (`domains/workspace/types.ts`) is the one signature
   every orchestrator has, applied to the const rather than annotating a function

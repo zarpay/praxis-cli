@@ -2,8 +2,8 @@ import type { CacheReviewerIdentity } from "@/domains/eval/types.js";
 import type { ReviewerConfig } from "@/types.js";
 
 import { errors } from "@/core/errors.js";
-import cacheIdentity from "@/domains/eval/services/build-cache-identity.js";
-import reviewerHash from "@/domains/eval/services/hash-reviewer.js";
+import cacheIdentity from "@/domains/eval/services/build-cache-identity-service.js";
+import reviewerHash from "@/domains/eval/services/hash-reviewer-service.js";
 import {
   DEFAULT_REVIEWER_BASE_URL,
   DEFAULT_REVIEWER_PROVIDER,

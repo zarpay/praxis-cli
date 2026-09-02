@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import assistFileRecords from "@/domains/eval/services/build-assist-file-records.js";
-import assistHashInput from "@/domains/eval/services/build-assist-hash-input.js";
-import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs.js";
+import assistFileRecords from "@/domains/eval/services/build-assist-file-records-service.js";
+import assistHashInput from "@/domains/eval/services/build-assist-hash-input-service.js";
+import resolveAssistInputs from "@/domains/eval/services/resolve-assist-inputs-service.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 const cleanups: (() => void)[] = [];

@@ -9,9 +9,9 @@ paths:
 **A command is a route.** It declares the command, its arguments and its options,
 then hands them to one orchestrator. Nothing else. Nothing imports `commands/`.
 
-- **One file, one `const register{Name}Command: CommandRegistrar`, default
-  exported.** `CommandRegistrar` (`src/types.ts`) is the one signature every
-  command file has, applied to the const rather than annotating a function
+- **Named `{name}-command.ts`, exporting a `const {name}Command: CommandRegistrar`
+  as its default.** The filename carries the type and the const carries the
+  filename, so `status-command.ts` declares `statusCommand`. `CommandRegistrar` (`src/types.ts`) is the one signature every command file has, applied to the const rather than annotating a function
   declaration — that is what makes it enforced rather than described, the same
   way `Orchestrator` is one layer down. Keep the name on the const: an anonymous
   default export loses it in stack traces. `index.ts` is the only caller.
