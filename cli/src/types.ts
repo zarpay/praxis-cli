@@ -23,6 +23,7 @@ import type { VerdictCache } from "@/models/verdict-cache.js";
 import type { NoOptions, Orchestrator as BaseOrchestrator } from "@framework/types.js";
 import type { Display } from "@framework/views/display.js";
 import type { Logger } from "@framework/views/logger.js";
+import type { Prompter } from "@framework/views/prompter.js";
 // ---------------------------------------------------------------------------
 // Configuration (workspace/models/praxis-config.ts)
 // ---------------------------------------------------------------------------
@@ -66,6 +67,15 @@ export interface ReviewerConfig {
   options?: Record<string, unknown>;
 }
 
+/**
+ * The curator: the model that organizes triage, runs the authoring
+ * gate, and assists ratification traceability (04). One entry, no name
+ * — there is exactly one taxonomy librarian, and teams typically point
+ * it at a frontier model. Reviewer-shaped so it rides the same provider
+ * plumbing.
+ */
+export type CuratorConfig = Omit<ReviewerConfig, "name">;
+
 /** Config shape as it may appear on disk (all fields optional). */
 export interface RawConfig {
   agentProfilesOutputDir?: string | false;
@@ -75,6 +85,7 @@ export interface RawConfig {
   expertsDir?: string;
   practicesDir?: string;
   reviewers?: Partial<ReviewerConfig>[];
+  curator?: Partial<CuratorConfig>;
   /** Filename or glob pattern for spec files (default: "README.md"). */
   specFilePattern?: string;
 }
@@ -88,6 +99,8 @@ export interface NormalizedConfig {
   expertsDir: string;
   practicesDir: string;
   reviewers: ReviewerConfig[];
+  /** Null until configured; triage/gate/audit refuse without it. */
+  curator: CuratorConfig | null;
   specFilePattern: string;
 }
 
@@ -144,7 +157,11 @@ export type PraxisErrorCode =
   | "REVIEW_PROVIDER_FAILED"
   | "NO_TOOL_CALL"
   | "UNEXPECTED_TOOL_CALL"
-  | "AXIOM_NOT_FOUND";
+  | "AXIOM_NOT_FOUND"
+  | "CURATOR_NOT_CONFIGURED"
+  | "CURATOR_MISSING_FIELD"
+  | "PROVIDER_CANNOT_COMPLETE"
+  | "NOT_A_TTY";
 
 // ---------------------------------------------------------------------------
 // Eval (was eval/types.ts)
@@ -354,7 +371,20 @@ export interface ReviewProvider {
   /** Identifier used in error context (e.g. "openrouter", or a module path). */
   readonly name: string;
   /** Obtains one verdict for a fully-prepared request. */
-  review(request: ProviderRequest): Promise<ProviderResult>;
+  review(request: ProviderRequest): Promise<ProviderResult>; /**
+   * One raw structured-output call: the given tools, exactly one tool
+   * call back. What the curator's prompts ride on (04). Optional — a
+   * provider without it can review but cannot curate.
+   */
+  complete?(request: ProviderRequest): Promise<ProviderCompletion>;
+}
+
+/** One raw tool-call completion, before any domain parsing. */
+export interface ProviderCompletion {
+  toolName: string;
+  /** The tool call's arguments, JSON-parsed but not validated. */
+  args: unknown;
+  usage: ProviderUsage | null;
 }
 
 /**
@@ -1557,5 +1587,229 @@ export interface ListAxiomsOptions {
 /** Options for `praxis axioms show <id>`. */
 export interface ShowAxiomOptions {
   id: string;
+  json?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Curator (04): triage organization, the authoring gate, traceability
+// ---------------------------------------------------------------------------
+
+/** One unassigned open-channel critique, as triage works it. */
+export interface PendingCritique {
+  id: string;
+  runId: string;
+  /** Project-relative, as the ledger records them. */
+  filePath: string;
+  specPath: string;
+  severity: Severity;
+  text: string;
+  reviewerName: string;
+}
+
+/** A draft axiom the curator proposes from a critique cluster. */
+export interface AxiomDraft {
+  statement: string;
+  severity: Severity;
+  scope: AxiomScope;
+  violatingExample: string;
+  compliantExample: string;
+  /** The spec passage the curator grounds the draft in — ratification's aid. */
+  groundingHint: string;
+}
+
+/** What the curator suggests doing with one cluster; a human decides (04). */
+export type TriageSuggestion =
+  | { kind: "assign"; axiomId: string }
+  | { kind: "propose"; draft: AxiomDraft }
+  | { kind: "unassignable"; why: string };
+
+/** One cluster of critiques the curator grouped, with its suggestion. */
+export interface TriageCluster {
+  critiqueIds: string[];
+  rationale: string;
+  suggestion: TriageSuggestion;
+}
+
+/** The curator's organization of one spec's pending critiques. */
+export interface TriageOrganization {
+  clusters: TriageCluster[];
+  usage: ProviderUsage | null;
+}
+
+/** The authoring gate's verdict on one candidate axiom (03). */
+export interface GateAssessment {
+  assessment: "appropriate" | "not_appropriate" | "split";
+  reasoning: string;
+  /** On split: the judgment half, redrafted as the admissible statement. */
+  judgmentHalf: string | null;
+  usage: ProviderUsage | null;
+}
+
+/** The curator's spec-traceability aid at ratification (04). */
+export interface TraceabilityAssessment {
+  traceable: boolean;
+  /** `<spec path>#<section>` when traceable. */
+  grounding: string | null;
+  /** The spec passage that grounds the axiom, quoted verbatim. */
+  quotedBasis: string;
+  reasoning: string;
+  usage: ProviderUsage | null;
+}
+
+/** One curator call: rendered prompts and tools in, one tool call out. */
+export interface RequestCuratorCompletionInput {
+  root: string;
+  curator: CuratorConfig;
+  systemPrompt: string;
+  userPrompt: string;
+  tools: readonly unknown[];
+}
+
+/** One spec's pending critiques, ready for the curator to organize. */
+export interface OrganizeTriageInput {
+  root: string;
+  curator: CuratorConfig;
+  /** Project-relative spec path, as the critiques record it. */
+  specPath: string;
+  specContent: string;
+  critiques: PendingCritique[];
+  /** Established axioms the critiques may fold into: id + statement. */
+  axioms: { id: string; statement: string }[];
+}
+
+/** One candidate axiom for the authoring gate (03). */
+export interface AssessAxiomGateInput {
+  root: string;
+  curator: CuratorConfig;
+  statement: string;
+  violatingExample: string;
+  compliantExample: string;
+}
+
+/** One proposal to trace against its spec at ratification. */
+export interface AssessTraceabilityInput {
+  root: string;
+  curator: CuratorConfig;
+  /** Project-relative spec path the proposal claims to belong to. */
+  specPath: string;
+  specContent: string;
+  statement: string;
+}
+
+// ---------------------------------------------------------------------------
+// Triage state (the ledger's triage partition)
+// ---------------------------------------------------------------------------
+
+/** A human decision folding one critique into an axiom (04-t). */
+export interface TriageAssignmentRecord {
+  kind: "assignment";
+  critique_id: string;
+  axiom_id: string;
+  axiom_version: number;
+  /** Both halves of the provenance: who decided, who suggested. */
+  assigned_by: { decision: "human" | "flag:--yes"; suggested_by: string };
+  timestamp: string;
+}
+
+/** A human decision that a critique is not evidence worth keeping. */
+export interface TriageDismissalRecord {
+  kind: "dismissal";
+  critique_id: string;
+  reason: string;
+  timestamp: string;
+}
+
+/** A proposal rejected at ratification — reviewer-noise signal (04). */
+export interface ProposalRejectionRecord {
+  kind: "rejection";
+  axiom_id: string;
+  reason: string;
+  timestamp: string;
+}
+
+/** Everything a triage session appends. */
+export type TriageRecord = TriageAssignmentRecord | TriageDismissalRecord | ProposalRejectionRecord;
+
+/** The triage tool's wire shape for one cluster, before validation. */
+export interface TriageWireCluster {
+  critique_ids?: string[];
+  rationale?: string;
+  suggestion?: string;
+  axiom_id?: string | null;
+  draft?: {
+    statement?: string;
+    severity?: string;
+    scope?: string;
+    violating_example?: string;
+    compliant_example?: string;
+    grounding_hint?: string;
+  } | null;
+  why_unassignable?: string | null;
+}
+
+/** Whose triage queue to derive. */
+export interface ListTriageStateInput {
+  root: string;
+}
+
+/** The derived triage queue and its residual counters. */
+export interface TriageState {
+  /** Open-channel critiques no assignment or dismissal covers yet. */
+  pending: PendingCritique[];
+  /** Every assignment on record — ratification reads a proposal's support here. */
+  assignments: TriageAssignmentRecord[];
+  dismissed: number;
+  rejectedProposals: number;
+}
+
+/** What one interactive triage session accumulates as it walks clusters. */
+export interface TriageSession {
+  ctx: CommandContext;
+  root: string;
+  curator: CuratorConfig;
+  yes: boolean;
+  prompter: Prompter;
+  /** The curator model, recorded as the suggester in every assignment. */
+  suggestedBy: string;
+  records: TriageRecord[];
+  assigned: number;
+  proposed: number;
+  dismissed: number;
+  skipped: number;
+  costUsd: number | null;
+}
+
+/** A session's records, ready to append. */
+export interface WriteTriageRecordsInput {
+  root: string;
+  records: TriageRecord[];
+}
+
+/** Ratification's store move: proposal → active, grounded (04). */
+export interface RatifyAxiomInput {
+  root: string;
+  id: string;
+  groundedIn: string;
+}
+
+/** Options for `praxis axioms triage`. */
+export interface TriageAxiomsOptions {
+  /** Accept every curator suggestion without prompting. */
+  yes?: boolean;
+  /** Dismiss everything pending, with this reason. */
+  reject?: string;
+}
+
+/** Options for `praxis axioms ratify <id>`. */
+export interface RatifyAxiomOptions {
+  id: string;
+  yes?: boolean;
+  reject?: string;
+  /** Spec to trace against; needed only when no assigned critique names one. */
+  spec?: string;
+}
+
+/** Options for `praxis axioms audit`. */
+export interface AuditAxiomsOptions {
   json?: boolean;
 }

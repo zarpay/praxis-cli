@@ -1,4 +1,5 @@
 import type {
+  CuratorConfig,
   ReviewerConfig,
   NormalizedConfig,
   PluginConfigEntry,
@@ -32,6 +33,7 @@ const DEFAULT_CONFIG: NormalizedConfig = {
   expertsDir: "experts",
   practicesDir: "practices",
   reviewers: [],
+  curator: null,
   specFilePattern: DEFAULT_SPEC_FILE_PATTERN,
 };
 
@@ -106,6 +108,17 @@ export class PraxisConfig {
     return this.data.reviewers;
   }
 
+  /**
+   * The curator — the taxonomy's librarian (04) — or null when the
+   * project has not chosen one. Callers that need it raise the
+   * instructive error rather than falling back to a reviewer: taxonomy
+   * work silently done by a cheap model is the failure mode the role
+   * exists to prevent.
+   */
+  get curator(): CuratorConfig | null {
+    return this.data.curator;
+  }
+
   /** The spec file pattern (default: "README.md"). */
   get specFilePattern(): string {
     return this.data.specFilePattern;
@@ -138,6 +151,7 @@ export class PraxisConfig {
       expertsDir: raw.expertsDir ?? DEFAULT_CONFIG.expertsDir,
       practicesDir: raw.practicesDir ?? DEFAULT_CONFIG.practicesDir,
       reviewers: this.normalizeReviewers(raw),
+      curator: this.normalizeCurator(raw),
       specFilePattern: raw.specFilePattern ?? DEFAULT_SPEC_FILE_PATTERN,
     };
   }
@@ -182,6 +196,31 @@ export class PraxisConfig {
   }
 
   /** Normalizes raw plugin entries: strings become `{ name: theString }`. */
+  /**
+   * Validates the curator entry when one is declared.
+   *
+   * @throws PraxisError when a declared curator omits model or
+   *   apiKeyEnvVar
+   */
+  private normalizeCurator(raw: RawConfig): CuratorConfig | null {
+    if (!raw.curator) return null;
+
+    for (const field of ["model", "apiKeyEnvVar"] as const) {
+      if (!raw.curator[field]) {
+        throw errors.curatorMissingField(field);
+      }
+    }
+
+    return {
+      model: raw.curator.model,
+      apiKeyEnvVar: raw.curator.apiKeyEnvVar,
+      ...(raw.curator.baseUrl !== undefined && { baseUrl: raw.curator.baseUrl }),
+      ...(raw.curator.temperature !== undefined && { temperature: raw.curator.temperature }),
+      ...(raw.curator.provider !== undefined && { provider: raw.curator.provider }),
+      ...(raw.curator.options !== undefined && { options: raw.curator.options }),
+    } as CuratorConfig;
+  }
+
   private normalizePlugins(raw: RawPluginEntry[]): PluginConfigEntry[] {
     return raw.map((entry) => {
       if (typeof entry === "string") {

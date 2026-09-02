@@ -94,6 +94,29 @@ export class AxiomFile {
 
     return lead.trim();
   }
+
+  /** The violating example's text, or empty when the section is absent. */
+  violatingExample(): string {
+    return this.section("Violating example");
+  }
+
+  /** The compliant example's text, or empty when the section is absent. */
+  compliantExample(): string {
+    return this.section("Compliant example");
+  }
+
+  /** One `## <name>` section's text, without its heading. */
+  private section(name: string): string {
+    const heading = `## ${name}`;
+    const start = this.body.indexOf(heading);
+
+    if (start === -1) return "";
+
+    const rest = this.body.slice(start + heading.length);
+    const nextHeading = rest.indexOf("\n## ");
+
+    return (nextHeading === -1 ? rest : rest.slice(0, nextHeading)).trim();
+  }
 }
 
 /**

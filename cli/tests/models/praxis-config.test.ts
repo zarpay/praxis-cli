@@ -274,6 +274,35 @@ describe("PraxisConfig", () => {
     });
   });
 
+  describe("curator", () => {
+    it("is null when the config declares none", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, {});
+
+      const config = new PraxisConfig(dir);
+
+      expect(config.curator).toBeNull();
+    });
+
+    it("normalizes a declared curator, keeping unset optionals absent", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, { curator: { model: "big/model", apiKeyEnvVar: "KEY", temperature: 0.2 } });
+
+      const config = new PraxisConfig(dir);
+
+      expect(config.curator).toEqual({ model: "big/model", apiKeyEnvVar: "KEY", temperature: 0.2 });
+    });
+
+    it("throws when a declared curator omits a required field", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, { curator: { apiKeyEnvVar: "KEY" } });
+
+      const readCurator = () => new PraxisConfig(dir).curator;
+
+      expect(readCurator).toThrow(/missing required field "model"/);
+    });
+  });
+
   describe("specFilePattern", () => {
     it("loads a top-level specFilePattern", () => {
       const dir = makeTmpdir();

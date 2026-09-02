@@ -1,6 +1,7 @@
 import type {
   ChatCompletionResponse,
   ReviewProvider,
+  ProviderCompletion,
   ProviderRequest,
   ProviderResult,
   ProviderUsage,
@@ -62,6 +63,53 @@ export class OpenRouterProvider implements ReviewProvider {
 
     return {
       verdict: this.verdictFromToolCall(data.choices[0]?.message?.tool_calls?.[0]),
+      usage: this.normalizeUsage(data.usage),
+    };
+  }
+
+  /**
+   * One raw structured-output call: same endpoint and protocol as a
+   * review, but the tool call comes back unparsed — the curator's
+   * prompts (04) own their own shapes.
+   *
+   * @throws PraxisError on non-OK responses or a missing tool call
+   */
+  async complete(request: ProviderRequest): Promise<ProviderCompletion> {
+    const response = await fetch(`${request.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${request.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...request.options,
+        model: request.model,
+        messages: [
+          { role: "system", content: request.systemPrompt },
+          { role: "user", content: request.userPrompt },
+        ],
+        tools: request.tools,
+        tool_choice: "required",
+        temperature: request.temperature,
+        ...(this.supportsUsageAccounting(request.baseUrl) && { usage: { include: true } }),
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw errors.reviewerApiError(this.name, response.status, body);
+    }
+
+    const data = (await response.json()) as ChatCompletionResponse;
+    const toolCall = data.choices[0]?.message?.tool_calls?.[0];
+
+    if (!toolCall) {
+      throw errors.noToolCall();
+    }
+
+    return {
+      toolName: toolCall.function.name,
+      args: JSON.parse(toolCall.function.arguments) as unknown,
       usage: this.normalizeUsage(data.usage),
     };
   }
