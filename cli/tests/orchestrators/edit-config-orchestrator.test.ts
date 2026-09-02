@@ -9,14 +9,11 @@ vi.mock("node:child_process", () => ({
 
 import { spawnSync } from "node:child_process";
 
-import { readJson } from "@/helpers/files-helper.js";
 import { editConfigOrchestrator } from "@/orchestrators/edit-config-orchestrator.js";
-import { configEntries } from "@/views/config.js";
-import { Display } from "@framework/views/display.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 
-describe("the config command's parts", () => {
+describe("editConfigOrchestrator", () => {
   let tmpdir: string;
   let cleanup: () => void;
   let configPath: string;
@@ -32,64 +29,33 @@ describe("the config command's parts", () => {
 
   afterAll(() => cleanup());
 
-  describe("show()", () => {
-    it("prints the config as formatted JSON", () => {
-      const spy = vi.spyOn(console, "log").mockImplementation(() => {});
-      new Display().print(configEntries(configPath, readJson(configPath)));
-      const output = spy.mock.calls.map((args) => args.join(" ")).join("\n");
-      expect(output).toContain('"sources"');
-      spy.mockRestore();
-    });
-
-    it("prints the config file path", () => {
-      const spy = vi.spyOn(console, "log").mockImplementation(() => {});
-      new Display().print(configEntries(configPath, readJson(configPath)));
-      const output = spy.mock.calls.map((args) => args.join(" ")).join("\n");
-      expect(output).toContain(configPath);
-      spy.mockRestore();
-    });
-
-    it("throws when the config file does not exist", () => {
-      expect(() =>
-        new Display().print(
-          configEntries(
-            "/nonexistent/.praxis/config.json",
-            readJson("/nonexistent/.praxis/config.json"),
-          ),
-        ),
-      ).toThrow();
-    });
+  afterEach(() => {
+    vi.clearAllMocks();
+    delete process.env["VISUAL"];
+    delete process.env["EDITOR"];
   });
 
-  describe("edit()", () => {
-    afterEach(() => {
-      vi.clearAllMocks();
-      delete process.env["VISUAL"];
-      delete process.env["EDITOR"];
-    });
+  it("spawns the VISUAL editor with the config path", async () => {
+    process.env["VISUAL"] = "code";
+    await editConfigOrchestrator(ctx, {});
+    expect(spawnSync).toHaveBeenCalledWith("code", [configPath], { stdio: "inherit" });
+  });
 
-    it("spawns the VISUAL editor with the config path", async () => {
-      process.env["VISUAL"] = "code";
-      await editConfigOrchestrator(ctx, {});
-      expect(spawnSync).toHaveBeenCalledWith("code", [configPath], { stdio: "inherit" });
-    });
+  it("falls back to EDITOR when VISUAL is unset", async () => {
+    process.env["EDITOR"] = "nano";
+    await editConfigOrchestrator(ctx, {});
+    expect(spawnSync).toHaveBeenCalledWith("nano", [configPath], { stdio: "inherit" });
+  });
 
-    it("falls back to EDITOR when VISUAL is unset", async () => {
-      process.env["EDITOR"] = "nano";
-      await editConfigOrchestrator(ctx, {});
-      expect(spawnSync).toHaveBeenCalledWith("nano", [configPath], { stdio: "inherit" });
-    });
+  it("falls back to vi when neither VISUAL nor EDITOR is set", async () => {
+    await editConfigOrchestrator(ctx, {});
+    expect(spawnSync).toHaveBeenCalledWith("vi", [configPath], { stdio: "inherit" });
+  });
 
-    it("falls back to vi when neither VISUAL nor EDITOR is set", async () => {
-      await editConfigOrchestrator(ctx, {});
-      expect(spawnSync).toHaveBeenCalledWith("vi", [configPath], { stdio: "inherit" });
-    });
-
-    it("throws when the editor spawn fails", async () => {
-      vi.mocked(spawnSync).mockReturnValueOnce({
-        error: new Error("editor not found"),
-      } as ReturnType<typeof spawnSync>);
-      await expect(editConfigOrchestrator(ctx, {})).rejects.toThrow("editor not found");
-    });
+  it("throws when the editor spawn fails", async () => {
+    vi.mocked(spawnSync).mockReturnValueOnce({
+      error: new Error("editor not found"),
+    } as ReturnType<typeof spawnSync>);
+    await expect(editConfigOrchestrator(ctx, {})).rejects.toThrow("editor not found");
   });
 });

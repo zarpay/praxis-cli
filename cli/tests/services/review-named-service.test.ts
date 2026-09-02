@@ -3,7 +3,6 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
 import reviewNamed from "@/services/review-named-service.js";
-import selectReviewers from "@/services/select-reviewers-service.js";
 import {
   OPENROUTER_URL,
   createOpenRouterServer,
@@ -40,56 +39,9 @@ function useVerdict(tool: "validation_pass" | "validation_warn" | "validation_fa
   );
 }
 
-/** A throwaway project configured with the given reviewers. */
-function project(reviewers: { name: string; model: string; apiKeyEnvVar: string }[]): PraxisConfig {
-  const { root, cleanup } = createValidatorTmpdir({
-    sources: ["specs"],
-    files: { "specs/README.md": "# Spec", "specs/doc.md": "# Doc" },
-    reviewers,
-  });
-  cleanups.push(cleanup);
-
-  return new PraxisConfig(root);
-}
-
 const KEYED = { name: "flash", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" };
 
-describe("reviewer configuration", () => {
-  it("raises when the project configures no reviewers", () => {
-    const run = () => selectReviewers({ configured: project([]).reviewers });
-
-    expect(run).toThrow(/reviewer/i);
-  });
-
-  it("raises when --reviewer names a reviewer that is not configured", () => {
-    const run = () => selectReviewers({ configured: project([KEYED]).reviewers, only: "nope" });
-
-    expect(run).toThrow(/nope/);
-  });
-
-  it("names the configured reviewers when --reviewer does not match", () => {
-    const run = () => selectReviewers({ configured: project([KEYED]).reviewers, only: "nope" });
-
-    expect(run).toThrow(/flash/);
-  });
-
-  it("raises when a reviewer's API key variable is unset", () => {
-    const keyless = { name: "keyless", model: "m", apiKeyEnvVar: "MISSING_KEY_VAR" };
-    const run = () => selectReviewers({ configured: project([keyless]).reviewers });
-
-    expect(run).toThrow(/MISSING_KEY_VAR/);
-  });
-
-  it("raises when a reviewer's API key variable is set but empty", () => {
-    process.env["MISSING_KEY_VAR"] = "";
-    const keyless = { name: "keyless", model: "m", apiKeyEnvVar: "MISSING_KEY_VAR" };
-    const run = () => selectReviewers({ configured: project([keyless]).reviewers });
-
-    expect(run).toThrow(/MISSING_KEY_VAR/);
-  });
-});
-
-describe("run() target dispatch", () => {
+describe("reviewNamed", () => {
   /** A project with one keyed reviewer and two documents to review. */
   function reviewingProject(): {
     root: string;

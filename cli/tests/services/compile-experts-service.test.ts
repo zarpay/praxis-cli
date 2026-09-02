@@ -67,7 +67,7 @@ describe("compileExperts", () => {
     cleanup();
   });
 
-  describe("compile()", () => {
+  describe("compiling one expert", () => {
     it("compiles a single role to agent output and profile", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
@@ -317,7 +317,7 @@ describe("compileExperts", () => {
     });
   });
 
-  describe("compileAll()", () => {
+  describe("compiling every expert", () => {
     it("compiles all roles in the roles directory", async () => {
       const result = await compileAll();
 

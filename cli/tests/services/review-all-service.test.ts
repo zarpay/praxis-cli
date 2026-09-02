@@ -88,7 +88,7 @@ describe("reviewAll", () => {
     });
   });
 
-  describe("validateAll()", () => {
+  describe("a full run over the sources", () => {
     it("validates documents across all types", async () => {
       useCompliantFixture();
 
@@ -979,7 +979,7 @@ describe("reviewAll", () => {
     });
   });
 
-  describe("summary()", () => {
+  describe("the run summary", () => {
     it("counts non-.md targets without going negative", async () => {
       useCompliantFixture();
 

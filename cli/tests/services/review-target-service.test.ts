@@ -46,7 +46,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-describe("requestVerdict", () => {
+describe("reviewTarget", () => {
   let tmpdir: string;
   let cleanup: () => void;
 

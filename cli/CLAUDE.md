@@ -205,7 +205,7 @@ Plugins implement the `CompilerPlugin` interface (`types.ts`): `name` property a
 - **Conditionals breathe:** blank line before and after `if`/`switch`, except at block edges (@stylistic, autofixable)
 - **Unused args:** Prefix with `_` (eslint rule)
 - **Formatting:** Double quotes, semicolons, trailing commas, 100-char line width
-- **Test location:** `tests/` mirrors `src/` structure, uses `.test.ts` suffix
+- **Test location:** `tests/` mirrors `src/` one-to-one (framework tests mirror `packages/framework/src/`); each file tests exactly one module's public interface — never private helpers. `tests/integration/` is the one non-mirroring exception
 - **Excluded from compilation:** Files named `_template.md` or `README.md`
 - **File/path operations:** import from `@/helpers/files-helper.js` (I/O: readText, writeText, exists, ...) and `@/helpers/paths-helper.js` (composition: joinPath, baseName, ...). `node:fs` and `node:path` are restricted to those two modules (ESLint-enforced). Where a _Praxis project_ keeps its files is `models/project-paths.ts`.
 - **Construct at invocation time, not import time:** module tops hold definitions, not work. `new Paths()` (and anything touching cwd or the filesystem) belongs in the command wiring helpers (`makeCommand()`), executed at action dispatch — never as a module-level instance or exported singleton (decided 2026-08-31: import-time cwd capture, test isolation, and `praxis init` running before `.praxis/` exists).

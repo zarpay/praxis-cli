@@ -26,7 +26,7 @@ function makeTmpdir(): string {
   return dir;
 }
 
-describe("addDocumentOrchestrator", () => {
+describe("addDocumentService", () => {
   let root: string;
   let add: (type: "expert" | "practice", name: string) => AddDocumentResult;
 

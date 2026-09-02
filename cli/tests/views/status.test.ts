@@ -2,7 +2,13 @@ import type { StatusReport } from "@/types.js";
 
 import { describe, expect, it } from "vitest";
 
-import { countLines, issueBlocks, statusReport, validationBlocks } from "@/views/status.js";
+import {
+  countLines,
+  initReport,
+  issueBlocks,
+  statusReport,
+  validationBlocks,
+} from "@/views/status.js";
 
 /** A clean report, with only the fields a test cares about overridden. */
 function report(fields: Partial<StatusReport> = {}): StatusReport {
@@ -207,5 +213,22 @@ describe("statusReport", () => {
 
     expect(seen).toContain("warning");
     expect(seen.indexOf("warning")).toBeLessThan(seen.lastIndexOf("content"));
+  });
+});
+
+describe("initReport", () => {
+  const lines = initReport({ created: 3, skipped: 1, nextSteps: ["  1. Edit config"] });
+
+  it("headlines what was created and what already existed", () => {
+    expect(lines).toContainEqual({
+      channel: "heading",
+      text: "Initialized Praxis project: 3 files created, 1 skipped",
+    });
+  });
+
+  it("carries the next steps as printable content", () => {
+    const content = lines.find((line) => line.channel === "content");
+
+    expect(content && "entries" in content && content.entries).toContain("  1. Edit config");
   });
 });
