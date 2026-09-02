@@ -1,9 +1,11 @@
+import { HttpResponse, http } from "msw";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import reviewNamed from "@/domains/eval/services/review-named-service.js";
 import selectReviewers from "@/domains/eval/services/select-reviewers-service.js";
 import { PraxisConfig } from "@/domains/workspace/models/praxis-config.js";
 import {
+  OPENROUTER_URL,
   createOpenRouterServer,
   useOpenRouterResponse,
   validationToolCallResponse,
@@ -162,6 +164,39 @@ describe("run() target dispatch", () => {
     });
 
     expect(result).toEqual({ errors: 0, warnings: 0 });
+  });
+
+  it("takes the worst verdict when reviewers disagree about one target", async () => {
+    server.use(
+      http.post(OPENROUTER_URL, async ({ request }) => {
+        const body = (await request.json()) as { model: string };
+
+        return HttpResponse.json(
+          body.model === "strict-model"
+            ? validationToolCallResponse("validation_fail", { reason: "No.", issues: ["Bad"] })
+            : validationToolCallResponse("validation_pass", { reason: "Fine." }),
+        );
+      }),
+    );
+    const { root, abs, cleanup } = createValidatorTmpdir({
+      sources: ["specs"],
+      files: { "specs/README.md": "# Spec", "specs/doc.md": "# Doc" },
+      reviewers: [
+        KEYED,
+        { name: "strict", model: "strict-model", apiKeyEnvVar: KEYED.apiKeyEnvVar },
+      ],
+    });
+    cleanups.push(cleanup);
+
+    const result = await reviewNamed({
+      targets: [abs("specs/doc.md")],
+      root,
+      config: new PraxisConfig(root),
+      useCache: false,
+    });
+
+    // One reviewer passed and one failed: the target is an error, not a pass.
+    expect(result).toEqual({ errors: 1, warnings: 0 });
   });
 
   it("reports each verdict as it lands", async () => {
