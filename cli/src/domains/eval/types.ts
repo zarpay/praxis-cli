@@ -540,9 +540,11 @@ export interface RunEvalOptions {
   failFast?: boolean;
   /** Whether to consult the verdict cache. */
   cache?: boolean;
-  /** CI mode: a full run with CI framing. */
-  ci?: boolean;
-  /** In CI mode, count warnings as failures too. */
+}
+
+/** How `praxis eval ci` was invoked. */
+export interface CiRunOptions {
+  /** Count warnings as failures alongside errors. */
   strict?: boolean;
 }
 

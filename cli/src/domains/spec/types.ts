@@ -224,12 +224,33 @@ export interface CompileProjectOptions {
   watch?: boolean;
 }
 
-/** A document to scaffold from its template. */
+/** What `praxis add expert|practice <name>` was given. */
 export interface AddDocumentOptions {
-  /** Which template to use. */
-  type: "expert" | "practice";
   /** Kebab-case name for the new file, e.g. "code-reviewer". */
   name: string;
   /** Scaffold source tree; defaults to the packaged one. */
   scaffoldDir?: string;
+}
+
+/** Everything scaffolding one document needs. */
+export interface AddDocumentInput {
+  /** Which template to use. */
+  type: "expert" | "practice";
+  /** Kebab-case name for the new file. */
+  name: string;
+  /** Project root the reported path is relative to. */
+  root: string;
+  /** Where experts live. */
+  expertsDir: string;
+  /** Where practices live. */
+  practicesDir: string;
+  /** Scaffold source tree; defaults to the packaged one. */
+  scaffoldDir?: string;
+}
+
+/** What was created. */
+export interface AddDocumentResult {
+  type: "expert" | "practice";
+  /** The new file's path, relative to the project root. */
+  path: string;
 }

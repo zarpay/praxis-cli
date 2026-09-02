@@ -17,9 +17,10 @@ belongs here.
   `analyze-project-orchestrator.ts`.
 - **Its named export is the filename in camelCase** —
   `run-eval-orchestrator.ts` exports `runEvalOrchestrator`. One file, one
-  orchestrator: if you want a second prepared form, it needs its own file
-  (`ci-run-orchestrator.ts`, `add-expert-orchestrator.ts`), named for the command
-  it serves so that command is findable from the filename.
+  orchestrator, named for the command it serves so that command is findable from
+  the filename. Commands that look like variants of each other —
+  `run-eval`/`ci-run`, `add-expert`/`add-practice` — each get their own, calling
+  the same services.
 - **`export const nameOrchestrator: Orchestrator<Options> = async (ctx, options) => {}`,
   with `export default prepareOrchestrator(nameOrchestrator)` beneath it.** The default export is
   the wrapped form a command hands to `.action()`; the named export is the
@@ -42,8 +43,12 @@ belongs here.
   a common constructor payload, a cached handle, helpers they all need. Reach for
   it when the sharing exists, not in advance; one orchestrator alone is a
   function.
-- It **sequences services**. It does no scanning, parsing, globbing or rendering
-  of its own — if it is doing the work itself, that work is a missing service.
+- It **sequences services, and only services**. An orchestrator never imports
+  another orchestrator: two commands that share a workflow share the _services_
+  under it, not the controller over it. If one wants to wrap another, what they
+  have in common is a service that has not been extracted yet.
+- It does no scanning, parsing or globbing of its own — if it is doing the work
+  itself, that work is a missing service.
 - **Renders its own views**, through `ctx.out` and `ctx.logger`. It is the only
   layer that decides a command has finished and what the user sees for it.
 - **Assembling the data it renders belongs in a service.** An orchestrator that

@@ -1,6 +1,7 @@
 import type { RunEvalOptions } from "@/domains/eval/types.js";
 import type { Orchestrator } from "@/domains/workspace/types.js";
 
+import buildReviewScope from "@/domains/eval/services/build-review-scope-service.js";
 import reviewAll from "@/domains/eval/services/review-all-service.js";
 import reviewNamed from "@/domains/eval/services/review-named-service.js";
 import selectReviewers from "@/domains/eval/services/select-reviewers-service.js";
@@ -12,7 +13,6 @@ import {
   targetsHeadline,
 } from "@/domains/eval/views/summary.js";
 import { prepareOrchestrator } from "@/domains/workspace/prepare-orchestrator.js";
-import { joinPath } from "@/framework/paths.js";
 import { renderReport } from "@/framework/views/report.js";
 
 /**
@@ -28,7 +28,7 @@ import { renderReport } from "@/framework/views/report.js";
  */
 export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
   ctx,
-  { targets = [], ci = false, strict = false, cache = true, ...options },
+  { targets = [], cache = true, ...options },
 ) => {
   const { root, config, out } = ctx;
 
@@ -49,14 +49,13 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
     return errors === 0 ? "ok" : "failed";
   }
 
-  out.line(runHeadline({ ci, type: options.type }));
+  out.line(runHeadline({ type: options.type }));
+
+  const reviewers = selectReviewers({ configured: config.reviewers, only: options.reviewer });
 
   const run = await reviewAll({
-    root,
-    sources: config.sources,
-    specFilePattern: config.specFilePattern,
-    absoluteIgnore: config.ignore.map((pattern) => joinPath(root, pattern)),
-    reviewers: selectReviewers({ configured: config.reviewers, only: options.reviewer }),
+    ...buildReviewScope({ root, config }),
+    reviewers,
     type: options.type,
     failFast: options.failFast ?? false,
     useCache: cache,
@@ -65,9 +64,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 
   renderReport(runReportLines(run, { cached: cache }), { out, logger: ctx.logger });
 
-  const { errors, warnings } = run.summary;
-
-  return errors + (strict ? warnings : 0) === 0 ? "ok" : "failed";
+  return run.summary.errors === 0 ? "ok" : "failed";
 };
 
 export default prepareOrchestrator(runEvalOrchestrator);

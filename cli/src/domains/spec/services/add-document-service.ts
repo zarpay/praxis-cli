@@ -1,29 +1,29 @@
-import type { AddDocumentOptions } from "@/domains/spec/types.js";
-import type { Orchestrator } from "@/domains/workspace/types.js";
+import type { AddDocumentInput, AddDocumentResult } from "@/domains/spec/types.js";
 
 import { SCAFFOLD_DIR } from "@/domains/workspace/models/project-paths.js";
 import { errors } from "@/framework/errors.js";
 import { exists, readText, writeText } from "@/framework/files.js";
 import { joinPath, relativePath } from "@/framework/paths.js";
-import { renderReport } from "@/framework/views/report.js";
 
 /**
- * Creates a new expert or practice from its template.
+ * Creates one expert or practice from its template.
  *
- * What `praxis add` does: the taxonomy's entry point, so an author
- * starts from the shape the compiler expects rather than a blank file.
+ * The taxonomy's entry point, so an author starts from the shape the
+ * compiler expects rather than a blank file.
  *
  * Refuses to overwrite. An existing document is the author's work, and
  * `add` is not the command for editing it.
  *
  * @throws PraxisError when the target exists, or the template is missing
  */
-export const addDocumentOrchestrator: Orchestrator<AddDocumentOptions> = async (
-  ctx,
-  { type, name, scaffoldDir = SCAFFOLD_DIR },
-) => {
-  const { root, config } = ctx;
-  const { expertsDir, practicesDir } = config;
+export default function addDocumentService({
+  type,
+  name,
+  root,
+  expertsDir,
+  practicesDir,
+  scaffoldDir = SCAFFOLD_DIR,
+}: AddDocumentInput): AddDocumentResult {
   const isExpert = type === "expert";
   const templatePath = joinPath(
     scaffoldDir,
@@ -44,11 +44,8 @@ export const addDocumentOrchestrator: Orchestrator<AddDocumentOptions> = async (
 
   writeText(targetFile, fillTemplate(type, name, readText(templatePath)));
 
-  renderReport([{ channel: "success", text: `Created ${type}: ${path}` }], {
-    out: ctx.out,
-    logger: ctx.logger,
-  });
-};
+  return { type, path };
+}
 
 /**
  * Fills the template's placeholders.
@@ -57,7 +54,7 @@ export const addDocumentOrchestrator: Orchestrator<AddDocumentOptions> = async (
  * it on; a practice gets only a title. The alias is the name as typed,
  * because it is an identifier, not prose.
  */
-function fillTemplate(type: AddDocumentOptions["type"], name: string, template: string): string {
+function fillTemplate(type: AddDocumentInput["type"], name: string, template: string): string {
   const title = toTitleCase(name);
 
   if (type === "expert") {
