@@ -1,64 +1,49 @@
 {
-  "version": "4.0",
+  "version": "5.0",
   "verdicts": {
-    "dacac2eb:4886d09e": {
+    "dacac2eb:f524adbc": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "4886d09e"
+        "hash": "f524adbc"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-01T20:23:21.411Z",
-      "content_hash": "a1734e88",
+      "cached_at": "2026-09-02T22:40:22.121Z",
+      "content_hash": "94a05a03",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 585 words."
+        "reason": "Review input has 986 words."
       }
     },
-    "dacac2eb:aa38870a": {
+    "dacac2eb:41d823fa": {
       "reviewer": {
         "name": "flash",
         "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "aa38870a"
+        "hash": "41d823fa"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T14:35:22.487Z",
-      "content_hash": "a1734e88",
+      "cached_at": "2026-09-02T22:38:01.527Z",
+      "content_hash": "94a05a03",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file follows all three conventions. The top-level describe names the module (rank-parlors), nested describes use when clauses, and each it reads as an observable outcome sentence. Every it block contains exactly one expect; compound shapes are asserted once with toMatchObject/toEqual. Tests exercise only the public run function and the injected Store, building fresh state in beforeEach, with no spies, mocks, or internals."
+        "reason": "The file conforms to all axioms. Top-level describe names the module (rank-parlors); nested describes frame situations as when clauses; each it has exactly one expect and states an observable outcome; data is built fresh in beforeEach or inside tests; tests exercise only the public run API through the honest in-memory store."
       }
     },
-    "dacac2eb:e25903cb": {
+    "dacac2eb:2b519849": {
       "reviewer": {
         "name": "v32",
         "model": "deepseek/deepseek-v3.2",
-        "hash": "e25903cb"
+        "hash": "2b519849"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T14:38:37.352Z",
-      "content_hash": "a1734e88",
+      "cached_at": "2026-09-02T22:40:19.137Z",
+      "content_hash": "94a05a03",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The test file fully complies with all requirements in the specification: proper subject framing with module name and 'when' clauses, one assertion per test block using compound assertions, and exclusive focus on public API functionality without implementation details."
-      }
-    },
-    "dacac2eb:aff4904b": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "aff4904b"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T21:03:12.220Z",
-      "content_hash": "a1734e88",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 585 words."
+        "reason": "The test file fully satisfies all criteria in the specification and all axioms in the checklist. It uses proper subject framing with nested describe blocks for different scenarios, maintains one assertion per test block, exercises only public API functionality, builds fresh test data for each scenario, and uses clear, complete sentence descriptions for each test case."
       }
     }
   }

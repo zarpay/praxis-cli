@@ -1,4 +1,4 @@
-import type { ReviewerConfig } from "@/types.js";
+import type { CuratorConfig, ReviewerConfig } from "@/types.js";
 
 import { randomUUID } from "node:crypto";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -24,6 +24,7 @@ export function createValidatorTmpdir(options: {
   sources: string[];
   files: Record<string, string>;
   reviewers?: ReviewerConfig[];
+  curator?: CuratorConfig;
   specFilePattern?: string;
 }): {
   root: string;
@@ -46,6 +47,7 @@ export function createValidatorTmpdir(options: {
     JSON.stringify({
       sources: options.sources,
       reviewers: options.reviewers ?? DEFAULT_REVIEWERS,
+      ...(options.curator !== undefined && { curator: options.curator }),
       ...(options.specFilePattern !== undefined && { specFilePattern: options.specFilePattern }),
     }),
   );

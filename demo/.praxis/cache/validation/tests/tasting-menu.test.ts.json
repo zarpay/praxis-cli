@@ -1,64 +1,49 @@
 {
-  "version": "4.0",
+  "version": "5.0",
   "verdicts": {
-    "dacac2eb:4886d09e": {
+    "dacac2eb:f524adbc": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "4886d09e"
+        "hash": "f524adbc"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-01T20:23:21.411Z",
-      "content_hash": "1d27ad5e",
+      "cached_at": "2026-09-02T22:40:22.121Z",
+      "content_hash": "8f4607af",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 479 words."
+        "reason": "Review input has 880 words."
       }
     },
-    "dacac2eb:aa38870a": {
+    "dacac2eb:41d823fa": {
       "reviewer": {
         "name": "flash",
         "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "aa38870a"
+        "hash": "41d823fa"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T14:35:24.242Z",
-      "content_hash": "1d27ad5e",
+      "cached_at": "2026-09-02T22:38:03.252Z",
+      "content_hash": "8f4607af",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file satisfies all criteria: top-level describe names the module ('tasting-menu'), nested describes use 'when' clauses, each it states one observable outcome, every it block contains exactly one expect (the fourth uses toMatchObject with a single compound assertion), tests exercise only the public API (buildMenu) and observable state via the memory store, data is built fresh in each test with setup in beforeEach, and no implementation details or spies are used."
+        "reason": "The tasting-menu.test.ts file conforms to the Test Conventions specification. The top-level describe names the unit under test by module name ('tasting-menu'), nested describes frame situations as when clauses, and each it reads as a complete sentence of an observable outcome with exactly one expect per block. Test data is built fresh in beforeEach via createMemoryStore, so suites do not depend on cross-test state. All axioms (AX-371742, AX-635eb9, AX-9a7dd5, AX-dca8ca) are satisfied: nested describes communicate context, fresh data is established per scenario, it descriptions state specific behaviors, and distinct outcomes are separated into separate blocks with single expects. No internal implementation, spies, or cross-suite dependencies are present."
       }
     },
-    "dacac2eb:e25903cb": {
+    "dacac2eb:2b519849": {
       "reviewer": {
         "name": "v32",
         "model": "deepseek/deepseek-v3.2",
-        "hash": "e25903cb"
+        "hash": "2b519849"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T14:37:04.092Z",
-      "content_hash": "1d27ad5e",
+      "cached_at": "2026-09-02T22:40:22.097Z",
+      "content_hash": "8f4607af",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file fully satisfies all criteria defined in the specification. It follows the three rules of test conventions: proper subject framing with describe/it structure, one assertion per block, and functionality-focused testing without implementation details."
-      }
-    },
-    "dacac2eb:aff4904b": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "aff4904b"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-02T21:03:12.221Z",
-      "content_hash": "1d27ad5e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 479 words."
+        "reason": "The file fully satisfies all criteria defined in the specification. It follows the three rules for test conventions: subject framing with nested describe blocks for different situations, one assertion per it block, and functionality-focused testing without implementation details. The file also complies with all axioms in the checklist."
       }
     }
   }

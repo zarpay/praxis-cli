@@ -95,6 +95,53 @@ export class Frontmatter {
   }
 
   /**
+   * A whole number the document's kind requires.
+   *
+   * @throws PraxisError when the key is absent or holds anything but an
+   *   integer
+   */
+  requiredInt(key: string): number {
+    const raw = this.parse()[key];
+
+    if (raw === undefined || raw === null) {
+      throw errors.missingFrontmatterField(key, this.docName);
+    }
+
+    if (typeof raw !== "number" || !Number.isInteger(raw)) {
+      throw errors.invalidFrontmatterField(key, this.docName, "a whole number", raw);
+    }
+
+    return raw;
+  }
+
+  /**
+   * A calendar date the document's kind requires, as `YYYY-MM-DD`.
+   *
+   * YAML parses a bare `2026-08-29` into a Date; a quoted string in the
+   * same shape is accepted equally, so authors cannot get this wrong by
+   * quoting.
+   *
+   * @throws PraxisError when the key is absent, or holds neither form
+   */
+  requiredDate(key: string): string {
+    const raw = this.parse()[key];
+
+    if (raw === undefined || raw === null) {
+      throw errors.missingFrontmatterField(key, this.docName);
+    }
+
+    if (raw instanceof Date) {
+      return raw.toISOString().slice(0, 10);
+    }
+
+    if (typeof raw === "string" && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return raw;
+    }
+
+    throw errors.invalidFrontmatterField(key, this.docName, "a date like 2026-08-29", raw);
+  }
+
+  /**
    * A string from a fixed set; an absent key yields undefined.
    *
    * @throws PraxisError when the key holds anything outside the set

@@ -256,4 +256,53 @@ export const errors = {
   unexpectedToolCall(toolName: string): PraxisError {
     return new PraxisError("UNEXPECTED_TOOL_CALL", `Unexpected validation tool call: ${toolName}`);
   },
+
+  // --- Curator ---
+
+  /** Triage, the gate, and audit need a curator; none is configured. */
+  curatorNotConfigured(): PraxisError {
+    return new PraxisError(
+      "CURATOR_NOT_CONFIGURED",
+      `No curator configured. The curator organizes triage, runs the authoring gate, and assists ratification — teams typically point it at a frontier model. Add to .praxis/config.json:
+
+  "curator": {
+    "model": "<model slug>",
+    "apiKeyEnvVar": "OPENROUTER_API_KEY"
+  }`,
+    );
+  },
+
+  /** A declared curator omits a required field. */
+  curatorMissingField(field: string): PraxisError {
+    return new PraxisError(
+      "CURATOR_MISSING_FIELD",
+      `The curator entry is missing required field "${field}".`,
+    );
+  },
+
+  /** The curator's provider implements review() but not complete(). */
+  providerCannotComplete(providerName: string): PraxisError {
+    return new PraxisError(
+      "PROVIDER_CANNOT_COMPLETE",
+      `Provider "${providerName}" does not implement complete(), which curator work requires. Use the openrouter provider, or add complete() to the custom provider.`,
+    );
+  },
+
+  /** An interactive command was run without a terminal and without flags. */
+  notATty(command: string, flags: string): PraxisError {
+    return new PraxisError(
+      "NOT_A_TTY",
+      `${command} is interactive and stdin is not a terminal. Script it with ${flags}.`,
+    );
+  },
+
+  // --- Axioms ---
+
+  /** No axiom in the store carries the requested id. */
+  axiomNotFound(id: string): PraxisError {
+    return new PraxisError(
+      "AXIOM_NOT_FOUND",
+      `No axiom "${id}" in .praxis/axioms/. Run \`praxis axioms list\` to see what exists.`,
+    );
+  },
 };

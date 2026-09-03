@@ -37,6 +37,14 @@ paths:
   service — it lives module-private beside the class. `hash-reviewer-service.ts`
   and `resolve-assist-inputs-service.ts` sat here until the rule; they are
   private functions in `reviewer.ts` and `review-subject.ts` now.
+- **A store's lifecycle event is not a service.** Listing, minting for,
+  appending to, or moving files within one store belongs to that store's
+  handle model (`VerdictCache`, `Ledger`, `AxiomStore`) — nine such services
+  were folded into `Ledger` and `AxiomStore` on 2026-09-03. The service test:
+  does it coordinate more than one store, call something external (a model
+  provider, git), assemble records from caller inputs, or carry caller-context
+  policy? Then it is a service. Is its whole body one verb against one store's
+  own contents? Then it is a method wearing a service's filename.
 - **A second caller is not a reason to keep it.** `assistHashInput` and
   `contentHash` looked shared, but the second caller was rebuilding by hand what
   the model already did; once it went through `ReviewSubject`, both had one

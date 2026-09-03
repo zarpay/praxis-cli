@@ -123,9 +123,11 @@ describe("reviewTargetService", () => {
 
       const { verdict } = await evaluate();
 
-      expect(verdict.issues).toContain("Missing required `owner` field in frontmatter");
-      expect(verdict.issues).toContain("Missing Objective section");
-      expect(verdict.issues).toContain("Missing Criteria section");
+      const issueTexts = verdict.issues.map((issue) => issue.text);
+
+      expect(issueTexts).toContain("Missing required `owner` field in frontmatter");
+      expect(issueTexts).toContain("Missing Objective section");
+      expect(issueTexts).toContain("Missing Criteria section");
     });
 
     it("throws when the API key environment variable is not set", async () => {

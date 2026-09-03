@@ -81,7 +81,7 @@ describe("buildVerdictReportService", () => {
     it("returns warn for a fresh non-compliant verdict with warning severity", () => {
       const cacheData = freshCacheData({
         compliant: false,
-        issues: ["Minor issue"],
+        issues: [{ text: "Minor issue", axiomId: null, axiomVersion: null }],
         severity: "warning",
       });
 
@@ -93,7 +93,7 @@ describe("buildVerdictReportService", () => {
     it("returns fail for a fresh non-compliant verdict with error severity", () => {
       const cacheData = freshCacheData({
         compliant: false,
-        issues: ["Major issue"],
+        issues: [{ text: "Major issue", axiomId: null, axiomVersion: null }],
         severity: "error",
       });
 

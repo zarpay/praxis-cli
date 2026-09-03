@@ -1,7 +1,7 @@
 import type { DetectEpochBoundariesInput, EpochBoundary, LedgerRunRecord } from "@/types.js";
 
+import { Ledger } from "@/models/ledger.js";
 import { Reviewer } from "@/models/reviewer.js";
-import listLedgerRunsService from "@/services/list-ledger-runs-service.js";
 
 /**
  * The reviewers whose behavioral hash the ledger has never seen (02).
@@ -17,7 +17,7 @@ export default function detectEpochBoundariesService({
   root,
   reviewers,
 }: DetectEpochBoundariesInput): EpochBoundary[] {
-  const runs = listLedgerRunsService({ root });
+  const runs = new Ledger({ projectRoot: root }).runs();
   const boundaries: EpochBoundary[] = [];
 
   for (const config of reviewers) {

@@ -35,7 +35,7 @@ export default function writeVerdict({
     result: {
       ...result,
       reason: sanitizeText(result.reason),
-      issues: result.issues.map(sanitizeText),
+      issues: result.issues.map((issue) => ({ ...issue, text: sanitizeText(issue.text) })),
     },
     ...(exemplarFiles?.length ? { exemplar_files: exemplarFiles } : {}),
     ...(contextFiles?.length ? { context_files: contextFiles } : {}),

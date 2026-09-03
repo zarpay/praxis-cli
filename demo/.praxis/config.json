@@ -34,5 +34,9 @@
   "specFilePattern": "{README.md,*.sme.md}",
   "ignore": [
     "src/generated/**"
-  ]
+  ],
+  "curator": {
+    "model": "anthropic/claude-sonnet-4.5",
+    "apiKeyEnvVar": "OPENROUTER_API_KEY"
+  }
 }

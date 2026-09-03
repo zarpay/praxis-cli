@@ -15,7 +15,10 @@ import promptSurface from "@/prompts/prompt-surface.js";
  * fails, either revert the wording, or update the constant and say in
  * the commit that the epoch roll is intentional.
  */
-const LOCKED_SURFACE_SHA8 = "61132753";
+// Epoch history: 61132753 (v2 pre-axioms) → 0717752e (2026-09-03, the
+// two-channel reviewer: axiom checklist + open channel + the judgment-
+// boundary posture, 03/04 — the M3 epoch roll, intentional).
+const LOCKED_SURFACE_SHA8 = "0717752e";
 
 describe("promptSurface", () => {
   it("is deterministic", () => {

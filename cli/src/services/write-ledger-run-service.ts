@@ -9,11 +9,9 @@ import type {
 } from "@/types.js";
 
 import { spawnSync } from "node:child_process";
-import { randomBytes } from "node:crypto";
 
-import { writeText } from "@/helpers/files-helper.js";
-import { joinPath, relativePath } from "@/helpers/paths-helper.js";
-import listLedgerRunsService from "@/services/list-ledger-runs-service.js";
+import { relativePath } from "@/helpers/paths-helper.js";
+import { Ledger } from "@/models/ledger.js";
 
 /**
  * Persists one reviewer's completed run to the ledger (05).
@@ -34,7 +32,8 @@ export default function writeLedgerRunService({
   scope,
   entries,
 }: WriteLedgerRunInput): WriteLedgerRunResult {
-  const runId = newRunId();
+  const ledger = new Ledger({ projectRoot: root });
+  const runId = ledger.mintRunId();
   const timestamp = new Date().toISOString();
   const { commitSha, branch } = gitFacts(root);
 
@@ -57,11 +56,13 @@ export default function writeLedgerRunService({
         reviewer_model: reviewer.model,
         reviewer_hash: reviewer.hash,
         severity: verdict.severity ?? "error",
-        text: stripControlChars(issue),
+        text: stripControlChars(issue.text),
         mode: "judgment",
-        axiom_id: null,
-        axiom_version: null,
-        assigned_by: null,
+        // Born matched = assigned at review time by the checklist (04-t);
+        // open-channel critiques stay null until triage assigns them.
+        axiom_id: issue.axiomId,
+        axiom_version: issue.axiomVersion,
+        assigned_by: issue.axiomId === null ? null : "checklist",
         population: "unknown",
         authorship: "unknown",
         authorship_evidence: null,
@@ -92,15 +93,12 @@ export default function writeLedgerRunService({
     ...verdictCounts(entries),
     critique_count: critiques.length,
     calibration_status_at_run: "uncalibrated",
-    baseline: isBaseline(root, scope, reviewer.hash),
+    baseline: isBaseline(ledger, scope, reviewer.hash),
   };
 
   const records: LedgerRecord[] = [run, ...critiques];
-  const path = joinPath(root, ".praxis", "ledger", "runs", `${runId}.jsonl`);
 
-  writeText(path, records.map((record) => JSON.stringify(record)).join("\n") + "\n");
-
-  return { runId, path };
+  return ledger.writeRun(runId, records);
 }
 
 /**
@@ -110,19 +108,10 @@ export default function writeLedgerRunService({
  * merges cannot flip it. A files-scope fast loop never claims baseline —
  * an epoch without an opening full run has no denominator.
  */
-function isBaseline(root: string, scope: string, reviewerHash: string): boolean {
+function isBaseline(ledger: Ledger, scope: string, reviewerHash: string): boolean {
   if (scope !== "corpus") return false;
 
-  return !listLedgerRunsService({ root }).some(
-    (run) => run.reviewer_hash === reviewerHash && run.scope === "corpus",
-  );
-}
-
-/** Sortable, filename-safe, collision-safe: the UTC instant plus 32 random bits. */
-function newRunId(): string {
-  const instant = new Date().toISOString().replace(/[-:.]/g, "");
-
-  return `${instant}-${randomBytes(4).toString("hex")}`;
+  return !ledger.runs().some((run) => run.reviewer_hash === reviewerHash && run.scope === "corpus");
 }
 
 /**

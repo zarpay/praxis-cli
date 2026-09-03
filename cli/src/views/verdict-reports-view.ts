@@ -53,7 +53,9 @@ function reportEntries(report: VerdictReport, verbose: boolean): DisplayEntry[] 
           `  Last result: ${lastResultSummary(cacheData.result)}`,
         ]
       : []),
-    ...(showIssues ? ["", "  Issues:", ...issues.map((issue) => `    - ${issue}`)] : []),
+    ...(showIssues
+      ? ["", "  Issues:", ...issues.map((issue) => `    - ${issueLabel(issue)}${issue.text}`)]
+      : []),
     ...(report.status === "not_validated"
       ? ["", `  Run ${chalk.cyan("`praxis eval run " + report.targetPath + "`")} to validate.`]
       : []),
@@ -104,4 +106,9 @@ function formatDate(isoString: string): string {
   } catch {
     return isoString;
   }
+}
+
+/** The axiom citation prefix for a matched critique; empty on the open channel. */
+function issueLabel(issue: { axiomId: string | null }): string {
+  return issue.axiomId === null ? "" : chalk.cyan(`[${issue.axiomId}] `);
 }

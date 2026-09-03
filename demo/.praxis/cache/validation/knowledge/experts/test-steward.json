@@ -1,65 +1,49 @@
 {
-  "version": "4.0",
+  "version": "5.0",
   "verdicts": {
-    "244fa7f3:4886d09e": {
+    "244fa7f3:f524adbc": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "4886d09e"
+        "hash": "f524adbc"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-02T21:19:20.537Z",
-      "content_hash": "41cb158d",
+      "cached_at": "2026-09-03T12:59:55.557Z",
+      "content_hash": "1755f194",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 280 words."
+        "reason": "Review input has 401 words."
       }
     },
-    "244fa7f3:aa38870a": {
+    "244fa7f3:41d823fa": {
       "reviewer": {
         "name": "flash",
         "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "aa38870a"
+        "hash": "41d823fa"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-02T21:18:13.824Z",
-      "content_hash": "41cb158d",
+      "cached_at": "2026-09-03T12:55:22.405Z",
+      "content_hash": "1755f194",
       "result": {
-        "compliant": false,
-        "severity": "warning",
+        "compliant": true,
         "issues": [],
-        "reason": "The document satisfies the specification fully: correct frontmatter (title, type: expert, alias, description), body opens with a level-1 heading naming the expert and alias (Test Steward, Taster), and states in prose the subject-matter expertise (how Scoop Society test suites are written). No placeholder text present. Optional context/practices/validates frontmatter fields are permitted by the spec (not prohibited)."
+        "reason": "The file satisfies the specification. All required frontmatter is present and correct: title ('Test Steward'), type ('expert'), alias ('Taster'), and a description that tells an operator when to invoke the expert (reviewing test suites for convention adherence, advice on structuring new suites, and triggering on changes under tests/), satisfying AX-be1f03. The body opens with a level-1 heading naming the expert and its alias ('# Test Steward (a.k.a **Taster**)') and states in prose what the expert is the subject-matter expert on ('The subject-matter expert on how Scoop Society test suites are written.'). No placeholder text (TODO, TBD, lorem ipsum) is present."
       }
     },
-    "244fa7f3:e25903cb": {
+    "244fa7f3:2b519849": {
       "reviewer": {
         "name": "v32",
         "model": "deepseek/deepseek-v3.2",
-        "hash": "e25903cb"
+        "hash": "2b519849"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-02T21:18:42.843Z",
-      "content_hash": "41cb158d",
+      "cached_at": "2026-09-03T12:58:58.850Z",
+      "content_hash": "1755f194",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification: it contains all required frontmatter fields (title, type, alias, description), opens with a level-1 heading naming the expert and its alias, states in prose what the expert is the subject-matter expert on, and contains no prohibited placeholder text."
-      }
-    },
-    "244fa7f3:aff4904b": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "aff4904b"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-02T21:03:12.209Z",
-      "content_hash": "ed0cc57e",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 279 words."
+        "reason": "The file fully satisfies all criteria in the specification. All required frontmatter fields are present and correct, the body opens with the required level-1 heading naming the expert and alias, and the prose clearly states what the expert is SME on. The description meets the axiom requirement by clearly stating when to invoke the expert with specific triggers. No placeholder text is present."
       }
     }
   }

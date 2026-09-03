@@ -56,6 +56,7 @@ Each enabled plugin receives the compiled profile content and writes its own out
 ## Errors
 
 The compiler exits with a non-zero code and a helpful message if:
+
 - A referenced file or glob matches nothing
 - An expert is missing required frontmatter fields
 - A file cannot be read

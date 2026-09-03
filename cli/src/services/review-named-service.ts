@@ -1,5 +1,14 @@
-import type { LedgerEntry, ReviewNamedInput, ReviewNamedResult, Verdict } from "@/types.js";
+import type {
+  ChecklistAxiom,
+  Critique,
+  Finding,
+  LedgerEntry,
+  ReviewNamedInput,
+  ReviewNamedResult,
+  Verdict,
+} from "@/types.js";
 
+import { AxiomStore } from "@/models/axiom-store.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import { VerdictCache } from "@/models/verdict-cache.js";
@@ -10,9 +19,11 @@ import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 /**
  * Reviews the named targets, each against its own spec.
  *
- * What `praxis eval run <targets…>` does. Every selected reviewer sees
- * every target, and each target's outcome is the worst verdict across
- * them — one error anywhere is an error.
+ * What `praxis eval run <targets…>` does — the fast loop (08). Every
+ * selected reviewer sees every target; a target's outcome is the worst
+ * verdict across them, and its critiques collapse into a deduplicated
+ * finding list: matched critiques merge on their axiom with witnesses
+ * counted, open-channel critiques stand alone until triage.
  *
  * `spec` overrides spec discovery, and only when a single target was
  * named: pointing several targets at one spec would silently review
@@ -31,7 +42,7 @@ export default async function reviewNamed({
   reviewer: only,
   useCache = true,
   ledger = true,
-  onVerdict,
+  onTarget,
 }: ReviewNamedInput): Promise<ReviewNamedResult> {
   const reviewers = selectReviewersService({ configured: config.reviewers, only });
   const specPath = targets.length === 1 ? spec : undefined;
@@ -46,9 +57,11 @@ export default async function reviewNamed({
       specPath,
       specFilePattern: config.specFilePattern,
       root,
+      checklistFor: (resolvedSpec) =>
+        new AxiomStore({ projectRoot: root }).checklistFor(resolvedSpec),
     });
 
-    const verdicts = [];
+    const verdicts: { reviewerName: string; verdict: Verdict }[] = [];
 
     for (const reviewerConfig of reviewers) {
       const { verdict, cacheHit, usage } = await reviewTargetService({
@@ -63,7 +76,7 @@ export default async function reviewNamed({
         root,
       });
 
-      verdicts.push(verdict);
+      verdicts.push({ reviewerName: reviewerConfig.name, verdict });
 
       const entries = entriesByReviewer.get(reviewerConfig.name) ?? [];
       entries.push({
@@ -77,19 +90,22 @@ export default async function reviewNamed({
         },
       });
       entriesByReviewer.set(reviewerConfig.name, entries);
-      onVerdict?.({
-        path: targetPath,
-        verdict,
-        // Only worth naming the reviewer when more than one ran.
-        reviewerName: reviewers.length > 1 ? reviewerConfig.name : undefined,
-      });
     }
 
-    const worst = worstVerdict(verdicts);
+    const worst = worstVerdict(verdicts.map((entry) => entry.verdict));
 
     if (worst && !worst.compliant && worst.severity === "error") errors++;
 
     if (worst && !worst.compliant && worst.severity === "warning") warnings++;
+
+    if (worst) {
+      onTarget?.({
+        path: targetPath,
+        verdict: worst,
+        findings: assembleFindings(verdicts, subject.checklist),
+        reviewerCount: reviewers.length,
+      });
+    }
   }
 
   if (ledger) {
@@ -109,6 +125,57 @@ export default async function reviewNamed({
   }
 
   return { errors, warnings };
+}
+
+/**
+ * Collapses one target's critiques into findings (08, 06).
+ *
+ * Matched critiques dedup on their axiom id — the shared identity that
+ * already exists — one finding, every flagging reviewer a witness, the
+ * text and severity taken from the ratified axiom so the same violation
+ * reads the same every run. Open-channel critiques have no shared
+ * identity yet: each stands alone, deduped only when two reviewers
+ * produce byte-identical text.
+ */
+function assembleFindings(
+  verdicts: { reviewerName: string; verdict: Verdict }[],
+  checklist: ChecklistAxiom[],
+): Finding[] {
+  const axiomsById = new Map(checklist.map((axiom) => [axiom.id, axiom]));
+  const findings = new Map<string, Finding>();
+
+  for (const { reviewerName, verdict } of verdicts) {
+    for (const critique of verdict.issues) {
+      const key = critique.axiomId ?? `open:${critique.text}`;
+      const existing = findings.get(key);
+
+      if (existing) {
+        if (!existing.witnesses.includes(reviewerName)) existing.witnesses.push(reviewerName);
+
+        continue;
+      }
+
+      findings.set(key, findingFor(critique, reviewerName, axiomsById));
+    }
+  }
+
+  return [...findings.values()];
+}
+
+/** One critique's finding: the axiom's terms when matched, its own otherwise. */
+function findingFor(
+  critique: Critique,
+  reviewerName: string,
+  axiomsById: Map<string, ChecklistAxiom>,
+): Finding {
+  const axiom = critique.axiomId === null ? undefined : axiomsById.get(critique.axiomId);
+
+  return {
+    axiomId: critique.axiomId,
+    text: axiom ? axiom.statement : critique.text,
+    severity: axiom ? axiom.severity : "error",
+    witnesses: [reviewerName],
+  };
 }
 
 /**

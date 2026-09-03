@@ -40,7 +40,7 @@ describe("writeVerdictService", () => {
     const targetPath = join(projectRoot, "roles", "test-expert.md");
     const result = {
       compliant: false,
-      issues: ["Missing section"],
+      issues: [{ text: "Missing section", axiomId: null, axiomVersion: null }],
       reason: "No — missing required section",
       severity: "error" as const,
     };
@@ -57,7 +57,7 @@ describe("writeVerdictService", () => {
     const passA = { compliant: true, issues: [], reason: "Pass spec A" };
     const failB = {
       compliant: false,
-      issues: ["Missing section"],
+      issues: [{ text: "Missing section", axiomId: null, axiomVersion: null }],
       reason: "Fail spec B",
       severity: "error" as const,
     };
@@ -142,7 +142,9 @@ describe("writeVerdictService", () => {
       const targetPath = join(projectRoot, "roles", "test-expert.md");
       const result = {
         compliant: false,
-        issues: ['issue with \x00 null byte and "quotes"'],
+        issues: [
+          { text: 'issue with \x00 null byte and "quotes"', axiomId: null, axiomVersion: null },
+        ],
         reason: 'No \x01\x02\x03 — bad chars here\x00 and "quoted text"',
         severity: "error" as const,
       };

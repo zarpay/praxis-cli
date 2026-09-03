@@ -22,7 +22,9 @@ const runProgressView: View<EvalProgress> = (event) => {
           `\t${verdictMark(event.verdict)}`,
           ...(event.verdict.compliant
             ? []
-            : event.verdict.issues.map((issue) => `\t${chalk.dim("·")} ${issue}`)),
+            : event.verdict.issues.map(
+                (issue) => `\t${chalk.dim("·")} ${critiqueLabel(issue)}${issue.text}`,
+              )),
         ],
       },
     ];
@@ -66,4 +68,9 @@ function verdictMark(verdict: Verdict): string {
   if (verdict.severity === "warning") return chalk.yellow("⚠ WARN");
 
   return chalk.red("✗ FAIL");
+}
+
+/** The axiom citation prefix for a matched critique; empty on the open channel. */
+function critiqueLabel(critique: { axiomId: string | null }): string {
+  return critique.axiomId === null ? "" : chalk.cyan(`[${critique.axiomId}] `);
 }

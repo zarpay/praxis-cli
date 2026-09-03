@@ -1,19 +1,19 @@
 {
-  "version": "4.0",
+  "version": "5.0",
   "verdicts": {
-    "e280f5fa:4886d09e": {
+    "e280f5fa:f524adbc": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "4886d09e"
+        "hash": "f524adbc"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-01T20:23:21.407Z",
-      "content_hash": "cbd707ee",
+      "cached_at": "2026-09-03T12:59:55.567Z",
+      "content_hash": "9bb3b7a6",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 883 words."
+        "reason": "Review input has 1097 words."
       },
       "context_files": [
         {
@@ -26,19 +26,19 @@
         }
       ]
     },
-    "e280f5fa:aa38870a": {
+    "e280f5fa:41d823fa": {
       "reviewer": {
         "name": "flash",
         "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "aa38870a"
+        "hash": "41d823fa"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T14:35:11.876Z",
-      "content_hash": "cbd707ee",
+      "cached_at": "2026-09-03T12:58:22.019Z",
+      "content_hash": "9bb3b7a6",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "bulid"
+        "reason": "The cohort satisfies the Feature Module Conventions. Structure: `index.ts` is the single entry point re-exporting the entire public API (`buildMenu` plus the types); types live in the dedicated `tasting-menu-types.ts`; the logic file `build-menu.ts` is verb-first kebab-case, exports a single `run`, and returns `Result<TastingMenu>` rather than throwing. Cohesion: all three files serve the single capability of building a tasting menu (AX-d3e3b0), every file is reachable from `index.ts` through its import graph (no orphans), and the feature name `tasting-menu` describes the capability, not its implementation. Error handling: the only failure message, 'stops must be a whole number of 1 or more', is clear about what went wrong and actionable about how to fix it — consumer-grade, not a technical code or terse label (AX-fac03c)."
       },
       "context_files": [
         {
@@ -51,44 +51,19 @@
         }
       ]
     },
-    "e280f5fa:e25903cb": {
+    "e280f5fa:2b519849": {
       "reviewer": {
         "name": "v32",
         "model": "deepseek/deepseek-v3.2",
-        "hash": "e25903cb"
+        "hash": "2b519849"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T14:39:19.199Z",
-      "content_hash": "cbd707ee",
+      "cached_at": "2026-09-03T12:59:55.520Z",
+      "content_hash": "9bb3b7a6",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The tasting-menu feature module fully satisfies all criteria in the specification. It has exactly one entry point (index.ts), dedicated types file (tasting-menu-types.ts), verb-first kebab-case logic file (build-menu.ts), follows service conventions with Result pattern, maintains cohesion with no orphaned files, and serves a single capability (building tasting menus)."
-      },
-      "context_files": [
-        {
-          "path": "src/domain/types.ts",
-          "hash": "f1d20738"
-        },
-        {
-          "path": "src/store/memory-store.ts",
-          "hash": "1f6fdfe2"
-        }
-      ]
-    },
-    "e280f5fa:aff4904b": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "aff4904b"
-      },
-      "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T21:03:12.214Z",
-      "content_hash": "cbd707ee",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 883 words."
+        "reason": "The tasting-menu feature directory fully complies with the specification. It has a single entry point (index.ts), dedicated types file (tasting-menu-types.ts), and properly structured logic file (build-menu.ts) with consumer-grade error messages. All files serve the single capability of creating tasting menus, and the feature name appropriately describes this capability. The implementation follows service conventions with Results over exceptions and clear, actionable error messages."
       },
       "context_files": [
         {

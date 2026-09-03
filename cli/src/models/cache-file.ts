@@ -10,7 +10,7 @@ import { createHash } from "node:crypto";
  * against, so reading one would silently miss every time. Discarding
  * them costs one re-review and cannot be got wrong.
  */
-export const CACHE_VERSION = "4.0";
+export const CACHE_VERSION = "5.0";
 
 /**
  * One target's cache file: every verdict for it, across specs and

@@ -13,6 +13,7 @@ import type {
 import { errors } from "@/helpers/errors-helper.js";
 import { readText } from "@/helpers/files-helper.js";
 import { baseName, relativePath } from "@/helpers/paths-helper.js";
+import { AxiomStore } from "@/models/axiom-store.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
@@ -201,6 +202,7 @@ async function reviewUnit({
       specPath,
       specFilePattern,
       root,
+      checklistFor: (spec) => new AxiomStore({ projectRoot: root }).checklistFor(spec),
     });
 
     const { verdict, cacheHit, usage } = await reviewTargetService({

@@ -1,80 +1,93 @@
 {
-  "version": "4.0",
+  "version": "5.0",
   "verdicts": {
-    "e280f5fa:aa38870a": {
-      "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "aa38870a"
-      },
-      "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T21:20:44.122Z",
-      "content_hash": "67edd1dd",
-      "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "",
-          ""
-        ],
-        "reason": ""
-      },
-      "context_files": [
-        {
-          "path": "src/domain/types.ts",
-          "hash": "f1d20738"
-        },
-        {
-          "path": "src/store/memory-store.ts",
-          "hash": "1f6fdfe2"
-        }
-      ]
-    },
-    "e280f5fa:e25903cb": {
-      "reviewer": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e25903cb"
-      },
-      "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T21:21:01.983Z",
-      "content_hash": "67edd1dd",
-      "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          "Missing required entry point: The feature directory must have exactly one entry point 'index.ts' that re-exports the feature's entire public API.",
-          "Missing types file: The feature must have a dedicated 'flavor-of-day-types.ts' file for type definitions.",
-          "Incorrect file naming: Logic files must be verb-first kebab-case (e.g., 'get-flavor.ts', 'announce-flavor.ts'), not noun-first or adjective-first.",
-          "Doesn't follow service conventions: The 'flavor.ts' file doesn't export a 'run' function and doesn't return Result<T> type as required by service conventions.",
-          "Potential capability split: The 'old-rotation.ts' file appears to serve a different purpose than the main 'flavor-of-day' capability, suggesting it might belong in a separate feature."
-        ],
-        "reason": "The feature module violates multiple required criteria from the specification, with critical structural issues that prevent proper evaluation."
-      },
-      "context_files": [
-        {
-          "path": "src/domain/types.ts",
-          "hash": "f1d20738"
-        },
-        {
-          "path": "src/store/memory-store.ts",
-          "hash": "1f6fdfe2"
-        }
-      ]
-    },
-    "e280f5fa:4886d09e": {
+    "e280f5fa:f524adbc": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "4886d09e"
+        "hash": "f524adbc"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T21:21:25.568Z",
-      "content_hash": "67edd1dd",
+      "cached_at": "2026-09-03T12:59:55.561Z",
+      "content_hash": "5f5ece93",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 714 words."
+        "reason": "Review input has 928 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-03T12:57:45.637Z",
+      "content_hash": "5f5ece93",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "src/features/flavor-of-day/old-rotation.ts is a legacy rotation system kept as dead code ('Kept around in case we go back to the old rotation') that serves a different purpose than the flavor-of-day capability — this is exactly the violating example in the axiom. The file must be removed or moved to its own feature so every file in the directory serves the single capability of determining/announcing today's flavor.",
+            "axiomId": "AX-d3e3b0",
+            "axiomVersion": 1
+          },
+          {
+            "text": "src/features/flavor-of-day/flavor.ts does not provide consumer-grade error messages: it returns plain strings and can throw an unhandled TypeError (e.g., when the store has no parlors, `parlors[index].signatureFlavor` throws) rather than returning a Result with a clear, actionable error message about what went wrong and how to fix it.",
+            "axiomId": "AX-fac03c",
+            "axiomVersion": 1
+          }
+        ],
+        "reason": "The feature directory fails the ratified axioms: it contains a dead-code legacy rotation file serving a different purpose (violating the single-capability axiom), and its logic file lacks consumer-grade error handling, throwing raw exceptions instead of returning actionable error messages."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-03T12:59:26.119Z",
+      "content_hash": "5f5ece93",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "The feature contains files serving unrelated purposes: 'flavor.ts' implements the current flavor-of-day capability using store data, while 'old-rotation.ts' contains legacy rotation logic with hardcoded flavors. These belong in separate features to maintain clear boundaries and focused purpose.",
+            "axiomId": "AX-d3e3b0",
+            "axiomVersion": 1
+          },
+          {
+            "text": "Logic files do not follow the service conventions: they export multiple functions instead of a single 'run' function, do not return 'Result<T>' type, and do not provide consumer-grade error messages as required by the specification.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The flavor-of-day feature violates the specification by containing files that serve unrelated purposes, breaking the single-capability principle."
       },
       "context_files": [
         {

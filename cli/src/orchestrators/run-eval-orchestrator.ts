@@ -43,7 +43,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 
     ctx.render(headlineView);
 
-    const onVerdict = (event: Parameters<NonNullable<ReviewNamedInput["onVerdict"]>>[0]) => {
+    const onTarget = (event: Parameters<NonNullable<ReviewNamedInput["onTarget"]>>[0]) => {
       const targetView = reviewedTargetView({ ...event, verbose: options.verbose ?? false });
 
       ctx.render(targetView);
@@ -56,7 +56,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
       spec: options.spec,
       reviewer: options.reviewer,
       useCache: cache,
-      onVerdict,
+      onTarget,
     });
 
     return errors === 0 ? "ok" : "failed";

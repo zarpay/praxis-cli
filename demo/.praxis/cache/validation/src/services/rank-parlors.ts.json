@@ -1,19 +1,19 @@
 {
-  "version": "4.0",
+  "version": "5.0",
   "verdicts": {
-    "0311531a:4886d09e": {
+    "0311531a:f524adbc": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "4886d09e"
+        "hash": "f524adbc"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T21:19:20.542Z",
-      "content_hash": "813a594c",
+      "cached_at": "2026-09-03T12:47:11.675Z",
+      "content_hash": "72b5f0a3",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 643 words."
+        "reason": "Review input has 1036 words."
       },
       "exemplar_files": [
         {
@@ -22,19 +22,19 @@
         }
       ]
     },
-    "0311531a:aa38870a": {
+    "0311531a:41d823fa": {
       "reviewer": {
         "name": "flash",
         "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "aa38870a"
+        "hash": "41d823fa"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T21:18:16.957Z",
-      "content_hash": "813a594c",
+      "cached_at": "2026-09-03T12:45:15.763Z",
+      "content_hash": "72b5f0a3",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file rank-parlors.ts satisfies all service conventions from the specification. Structure: it exports exactly one entry point, a `run` function taking the `Store` first and a single input object, returning a `Result<RankedParlor[]>` from domain types; the module name is verb-first kebab-case ('rank-parlors.ts'). Behavior: domain failures (negative or non-whole minReviews) are returned as `{ ok: false, error }` values, never thrown; the error message names what was wrong and what would be accepted ('minReviews must be a whole number of 0 or more'); validation happens before any work and reads top-to-bottom before the happy path; the service does one thing (ranks parlors); no I/O occurs except through the injected Store (listParlors/listReviews). Documentation: the doc comment states the purpose in one sentence and enumerates the domain failure modes (minReviews negative or not a whole number), matching the exemplar's style. No criteria are violated."
+        "reason": "The file satisfies the specification and all axioms. AX-2559f7: the doc comment states a clear one-sentence purpose ('Ranks every reviewed parlor by average rating, highest first') and enumerates the complete set of failure modes ('minReviews negative or not a whole number'), which exactly matches the single validation branch in the body. AX-3317a7: invalid input is returned as a domain failure value ({ ok: false, error }) with no throws. AX-6e307b: all I/O goes through the injected Store (listParlors, listReviews); no console, timers, or fetch. AX-a108ea: no hardcoded configuration or domain constants — minReviews is input and the ranking logic uses no magic values. AX-b951db: the error message 'minReviews must be a whole number of 0 or more' names the field, what was wrong, and what would be accepted. Structure is also compliant: the module exports a single `run` entry point taking the Store first and a single input object, returning a Result<RankedParlor[]>, with a verb-first kebab-case module name; validation runs top-to-bottom before any work; and the service does one thing."
       },
       "exemplar_files": [
         {
@@ -43,40 +43,19 @@
         }
       ]
     },
-    "0311531a:e25903cb": {
+    "0311531a:2b519849": {
       "reviewer": {
         "name": "v32",
         "model": "deepseek/deepseek-v3.2",
-        "hash": "e25903cb"
+        "hash": "2b519849"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T21:19:04.724Z",
-      "content_hash": "813a594c",
+      "cached_at": "2026-09-03T12:46:59.425Z",
+      "content_hash": "72b5f0a3",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file rank-parlors.ts fully satisfies all criteria in the Service Conventions specification. It follows the required structure with a single run function, validates input before processing, returns domain failures as values with clear error messages, has proper documentation, and adheres to all behavioral constraints."
-      },
-      "exemplar_files": [
-        {
-          "path": "src/services/create-review.ts",
-          "hash": "a1beb8f5"
-        }
-      ]
-    },
-    "0311531a:aff4904b": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "aff4904b"
-      },
-      "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T21:03:12.217Z",
-      "content_hash": "e60d77e5",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 642 words."
+        "reason": "The file satisfies all criteria defined in the specification. It follows the required structure with a single exported `run` function, has proper documentation, handles domain failures as values with actionable error messages, performs all I/O through the injected Store, and adheres to all axioms."
       },
       "exemplar_files": [
         {

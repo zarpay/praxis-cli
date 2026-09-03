@@ -1,69 +1,69 @@
 {
-  "version": "4.0",
+  "version": "5.0",
   "verdicts": {
-    "e280f5fa:aa38870a": {
-      "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "aa38870a"
-      },
-      "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T21:09:44.807Z",
-      "content_hash": "ae35b04c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The cohort satisfies all criteria. Structure: exactly one index.ts re-exports the whole public API (types + run renamed buildBanner), a dedicated summer-promo-types.ts holds the types, and the verb-first kebab-case build-banner.ts file exposes one run with Results and consumer-grade error messages. Cohesion: every file is reachable from index.ts through the import graph (no orphaned files), the single capability is building the summer banner, and the feature name describes the capability rather than the implementation."
-      },
-      "context_files": [
-        {
-          "path": "src/domain/types.ts",
-          "hash": "f1d20738"
-        },
-        {
-          "path": "src/store/memory-store.ts",
-          "hash": "1f6fdfe2"
-        }
-      ]
-    },
-    "e280f5fa:e25903cb": {
-      "reviewer": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "e25903cb"
-      },
-      "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T21:10:14.194Z",
-      "content_hash": "ae35b04c",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The summer-promo feature module satisfies all criteria defined in the specification. It has exactly one entry point (index.ts) that re-exports the public API, a dedicated types file following the naming convention, logic files in verb-first kebab-case format following service conventions, no orphaned files, a single cohesive capability, and a descriptive feature name."
-      },
-      "context_files": [
-        {
-          "path": "src/domain/types.ts",
-          "hash": "f1d20738"
-        },
-        {
-          "path": "src/store/memory-store.ts",
-          "hash": "1f6fdfe2"
-        }
-      ]
-    },
-    "e280f5fa:4886d09e": {
+    "e280f5fa:f524adbc": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "4886d09e"
+        "hash": "f524adbc"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T21:10:37.201Z",
-      "content_hash": "ae35b04c",
+      "cached_at": "2026-09-03T12:59:55.565Z",
+      "content_hash": "c1eed208",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 821 words."
+        "reason": "Review input has 1035 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-03T12:58:06.446Z",
+      "content_hash": "c1eed208",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The summer-promo feature conforms to the specification. Structure: exactly one entry point (index.ts) re-exporting the public API (types and run as buildBanner); types in a dedicated summer-promo-types.ts; the logic file build-banner.ts is verb-first kebab-case and exports a single `run` returning Result<SummerBanner> per service conventions. Cohesion: every file (index.ts, build-banner.ts, summer-promo-types.ts) is reachable from index.ts with no orphans, and all serve the single capability of building the summer promotion banner (AX-d3e3b0 compliant). Error handling is consumer-grade: the failure message clearly states what went wrong ('no parlors are registered') and how to fix it ('add a parlor before building the banner') (AX-fac03c compliant). The feature name describes the capability, not its implementation."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-03T12:59:41.339Z",
+      "content_hash": "c1eed208",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The summer-promo feature module fully satisfies the specification. It has a single entry point (index.ts), dedicated types file, properly named logic file with a single run function returning Result<T>, consumer-grade error messages, and all files serve the single coherent capability of building summer promotion banners. No violations of the axiom checklist or general specification requirements were found."
       },
       "context_files": [
         {
