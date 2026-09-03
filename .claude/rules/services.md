@@ -51,10 +51,10 @@ paths:
   private functions in `reviewer.ts` and `review-subject.ts` now.
 - **A store's lifecycle event is not a service.** Listing, minting for,
   appending to, reading from, or moving files within one store belongs to
-  that store's class in `src/stores/` (`VerdictStore`, `Ledger`,
-  `AxiomStore`, `ExpertStore`, `PracticeStore` — see
-  `.claude/rules/stores.md`); fourteen such services have been folded to
-  date. The service test: does it coordinate more than one store, call
+  that store's class in `src/stores/` (`VerdictStore`, `RunStore`,
+  `TriageStore`, `AxiomStore`, `ExpertStore`, `PracticeStore`, `SpecStore`,
+  `DocumentStore` — see `.claude/rules/stores.md`); twenty-one such
+  services have been folded to date. The service test: does it coordinate more than one store, call
   something external (a model provider, git), assemble records from caller
   inputs, or carry caller-context policy beyond the store's own stated
   contract? Then it is a service. Is its whole body one verb against one
