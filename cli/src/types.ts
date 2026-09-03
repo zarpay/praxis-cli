@@ -1856,7 +1856,7 @@ export interface ReportScope {
   /** Exact run commit shas; null = any. */
   commits: string[] | null;
   /** Shas that no longer resolve in this clone (12's note renders). */
-  unresolvableShas: string[];
+  unresolvableShas: { sha: string; branch: string | null; at: string | null }[];
 }
 
 /** Everything `resolve-report-scope` needs to build a scope. */
@@ -1962,6 +1962,25 @@ export interface DebtReport {
   creditNote: string | null;
   /** Stock movement across the last two baselines, boundary named (02). */
   rebaseline: { boundaryLabel: string; before: number; after: number } | null;
+}
+
+/** What the eval-report builder computes over. */
+export interface BuildEvalReportInput {
+  root: string;
+  config: PraxisConfig;
+  scoped: ScopedLedger;
+}
+
+/** The single-axiom drill-down's inputs. */
+export interface BuildAxiomReportInput {
+  root: string;
+  scoped: ScopedLedger;
+  axiomId: string;
+}
+
+/** The debt report builder's inputs. */
+export interface BuildDebtReportInput {
+  root: string;
 }
 
 /** Options for `praxis eval report`. */

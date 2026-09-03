@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { AxiomFile } from "@/models/axiom-file.js";
 import { AxiomStore } from "@/models/axiom-store.js";
+import { seedAxiom as seedSharedAxiom } from "@tests/helpers/axiom-fixtures.js";
 
 /** A draft as triage would accept it. */
 function draft() {
@@ -32,7 +33,7 @@ describe("AxiomStore", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  /** Writes one axiom file into the store (or its proposed/ subdir). */
+  /** Writes one v2 warning axiom into the store, this suite's default shape. */
   function seedAxiom(
     id: string,
     fields: {
@@ -42,26 +43,14 @@ describe("AxiomStore", () => {
       proposed?: boolean;
     } = {},
   ): void {
-    const dir = fields.proposed
-      ? join(root, ".praxis", "axioms", "proposed")
-      : join(root, ".praxis", "axioms");
-    mkdirSync(dir, { recursive: true });
-
-    const grounding = fields.groundedIn ? [`grounded_in: ${fields.groundedIn}`] : [];
-    const content = [
-      "---",
-      `id: ${id}`,
-      "version: 2",
-      `status: ${fields.status ?? "active"}`,
-      "severity: warning",
-      ...grounding,
-      `introduced: ${fields.introduced ?? "2026-08-29"}`,
-      "---",
-      "",
-      `Statement of ${id}.`,
-    ].join("\n");
-
-    writeFileSync(join(dir, `${id}.md`), content);
+    seedSharedAxiom(root, id, {
+      version: "2",
+      severity: "warning",
+      ...(fields.status !== undefined && { status: fields.status }),
+      ...(fields.introduced !== undefined && { introduced: fields.introduced }),
+      ...(fields.groundedIn !== undefined && { grounded_in: fields.groundedIn }),
+      ...(fields.proposed !== undefined && { proposed: fields.proposed }),
+    });
   }
 
   describe("all", () => {

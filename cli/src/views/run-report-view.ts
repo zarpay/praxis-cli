@@ -53,7 +53,7 @@ function summary(totals: EvalSummary): DisplayEntry[] {
 
   return [
     "",
-    { header: "Summary" },
+    { header: "Summary — corpus conformance (includes pre-spec debt)" },
     `Total documents: ${totals.total}`,
     { badge: "Compliant", color: "green", value: totals.compliant },
     { badge: "Warnings", color: "yellow", value: totals.warnings },

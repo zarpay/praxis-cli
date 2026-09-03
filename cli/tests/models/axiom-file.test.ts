@@ -1,40 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import { AxiomFile } from "@/models/axiom-file.js";
+import { axiomContent as sharedAxiomContent } from "@tests/helpers/axiom-fixtures.js";
 
-/** A valid axiom document; tests break one thing at a time. */
+/** The shared fixture, pinned to this file's canonical example axiom. */
 function axiomContent(overrides: Record<string, string | null> = {}, body?: string): string {
-  const fields: Record<string, string | null> = {
-    id: "AX-3f9c2d",
-    version: "1",
-    status: "active",
-    severity: "error",
-    grounded_in: "docs/README.md#payloads",
-    introduced: "2026-08-29",
-    ...overrides,
-  };
-
-  const frontmatter = Object.entries(fields)
-    .filter(([, value]) => value !== null)
-    .map(([key, value]) => `${key}: ${value}`);
-
-  const defaultBody = [
-    "Payloads capture a complete snapshot at emission time.",
-    "",
-    "## Violating example",
-    "",
-    "```rb",
-    "payload: { id: id }",
-    "```",
-    "",
-    "## Compliant example",
-    "",
-    "```rb",
-    "payload: full_snapshot",
-    "```",
-  ].join("\n");
-
-  return ["---", ...frontmatter, "---", "", body ?? defaultBody].join("\n");
+  return sharedAxiomContent(
+    { id: "AX-3f9c2d", grounded_in: "docs/README.md#payloads", ...overrides },
+    {
+      statement: "Payloads capture a complete snapshot at emission time.",
+      ...(body !== undefined && { body }),
+    },
+  );
 }
 
 describe("AxiomFile", () => {

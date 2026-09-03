@@ -4,6 +4,7 @@ import { auditAxiomsOrchestrator } from "@/orchestrators/audit-axioms-orchestrat
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
+import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
@@ -22,18 +23,10 @@ afterEach(() => {
   while (cleanups.length) cleanups.pop()?.();
 });
 
-const ACTIVE_AXIOM = [
-  "---",
-  "id: AX-aaaa11",
-  "version: 1",
-  "status: active",
-  "severity: warning",
-  "grounded_in: docs/README.md#error-messages",
-  "introduced: 2026-09-03",
-  "---",
-  "",
-  "Files have a frozen_string_literal comment.",
-].join("\n");
+const ACTIVE_AXIOM = axiomContent(
+  { severity: "warning", grounded_in: "docs/README.md#error-messages", introduced: "2026-09-03" },
+  { statement: "Files have a frozen_string_literal comment." },
+);
 
 describe("auditAxiomsOrchestrator", () => {
   it("flags an axiom the gate now refuses — a removal candidate (03)", async () => {

@@ -2,6 +2,7 @@ import type { CommandRegistrar } from "@framework/types.js";
 
 import ciRunOrchestrator from "@/orchestrators/ci-run-orchestrator.js";
 import pruneCacheOrchestrator from "@/orchestrators/prune-cache-orchestrator.js";
+import reportEvalOrchestrator from "@/orchestrators/report-eval-orchestrator.js";
 import reportVerdictsOrchestrator from "@/orchestrators/report-verdicts-orchestrator.js";
 import runEvalOrchestrator from "@/orchestrators/run-eval-orchestrator.js";
 
@@ -35,6 +36,22 @@ const evalCommand: CommandRegistrar = (program) => {
     .command("prune")
     .description("Drop cached verdicts that no configured reviewer can hit")
     .action(pruneCacheOrchestrator);
+
+  evalCmd
+    .command("report [target]")
+    .description(
+      "Compute over the ledger: per-axiom rates, epochs, costs, residual (reads only, never calls a reviewer)",
+    )
+    .option(
+      "--since <dateOrRef>",
+      "only runs at or after this ISO date, or a git ref's commit date",
+    )
+    .option("--branch <name>", "only runs recorded on this branch")
+    .option("--commit <sha>", "only runs anchored to this commit")
+    .option("--commits <shas...>", "only runs anchored to any of these commits (a PR's set)")
+    .option("--axiom <id>", "one axiom across everything in scope")
+    .option("--json", "machine-readable output (stable contract)", false)
+    .action(reportEvalOrchestrator);
 
   evalCmd
     .command("verdict <target>")
