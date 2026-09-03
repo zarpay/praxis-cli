@@ -37,7 +37,8 @@ export default function triageTools() {
                   },
                   axiom_id: {
                     type: ["string", "null"],
-                    description: "For assign: the established axiom's id. Otherwise null.",
+                    description:
+                      "For assign: the established axiom's id — ONLY when that axiom's fix would resolve every critique in the cluster. Otherwise null.",
                   },
                   draft: {
                     type: ["object", "null"],
@@ -46,7 +47,7 @@ export default function triageTools() {
                       statement: {
                         type: "string",
                         description:
-                          "One to three sentences asserting the standard — judgment, not mechanics.",
+                          "One to three sentences asserting the standard — judgment, not mechanics, at the altitude of one remediation: one fix resolves every violation of it.",
                       },
                       severity: { type: "string", enum: ["error", "warning"] },
                       scope: {
@@ -75,7 +76,7 @@ export default function triageTools() {
                   why_unassignable: {
                     type: ["string", "null"],
                     description:
-                      "For unassignable: why this cluster cannot be grounded in the specification.",
+                      "For unassignable: why this cluster cannot be grounded in the specification, and which reading applies — reviewer noise, or a real standard no spec states yet.",
                   },
                 },
                 required: ["critique_ids", "rationale", "suggestion"],
