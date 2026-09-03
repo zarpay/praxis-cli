@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { DocumentStore } from "@/stores/document-store.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 /** A document declaring its `type:`. */
 function typedContent(type: string): string {
@@ -38,7 +39,7 @@ describe("DocumentStore", () => {
       seed("docs/_template.md", "# Template");
       seed("reference/api.md", "# API");
 
-      const paths = new DocumentStore({ root, sources: ["docs", "reference"] }).paths();
+      const paths = new DocumentStore(testConfig(root, { sources: ["docs", "reference"] })).paths();
 
       expect(paths).toHaveLength(3);
       expect(paths.every((path) => !path.endsWith("README.md"))).toBe(true);
@@ -47,7 +48,7 @@ describe("DocumentStore", () => {
     it("includes documents in directories with no spec at all", () => {
       seed("docs/uncovered/floating.md", "# No spec governs me");
 
-      const paths = new DocumentStore({ root, sources: ["docs"] }).paths();
+      const paths = new DocumentStore(testConfig(root, { sources: ["docs"] })).paths();
 
       expect(paths).toHaveLength(1);
     });
@@ -56,17 +57,15 @@ describe("DocumentStore", () => {
       seed("docs/counted.md", "# Counted");
       seed("docs/generated/output.md", "# Generated");
 
-      const store = new DocumentStore({
-        root,
-        sources: ["docs"],
-        ignore: [join(root, "docs/generated/**")],
-      });
+      const store = new DocumentStore(
+        testConfig(root, { sources: ["docs"], ignore: ["docs/generated/**"] }),
+      );
 
       expect(store.paths()).toHaveLength(1);
     });
 
     it("sweeps nothing from a missing source — unused taxonomy is normal", () => {
-      expect(new DocumentStore({ root, sources: ["nope"] }).paths()).toEqual([]);
+      expect(new DocumentStore(testConfig(root, { sources: ["nope"] })).paths()).toEqual([]);
     });
   });
 
@@ -78,7 +77,9 @@ describe("DocumentStore", () => {
       seed("context/values.md", typedContent("constitution"));
       seed("context/untyped.md", "# No frontmatter");
 
-      const counts = new DocumentStore({ root, sources: ["reference", "context"] }).countsByType();
+      const counts = new DocumentStore(
+        testConfig(root, { sources: ["reference", "context"] }),
+      ).countsByType();
 
       expect(counts).toEqual({ references: 2, context: 2 });
     });

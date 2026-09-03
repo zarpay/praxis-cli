@@ -1,4 +1,4 @@
-import type { CollectVerdictReportsInput, CollectVerdictReportsResult } from "@/types.js";
+import type { CollectVerdictReportsInput, CollectVerdictReportsResult, Service } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { exists } from "@/helpers/files-helper.js";
@@ -20,11 +20,10 @@ import { VerdictStore } from "@/stores/verdict-store.js";
  * @throws PraxisError when the target does not exist, or no reviewer is
  *   configured to have an opinion about it
  */
-export default function collectVerdictReports({
-  targetPath,
-  root,
-  config,
-}: CollectVerdictReportsInput): CollectVerdictReportsResult {
+const collectVerdictReportsService: Service<
+  CollectVerdictReportsInput,
+  CollectVerdictReportsResult
+> = (config, { targetPath }) => {
   const absolutePath = resolvePath(targetPath);
 
   if (!exists(absolutePath)) {
@@ -41,15 +40,14 @@ export default function collectVerdictReports({
     named: config.reviewers.length > 1,
     reports: config.reviewers.map((reviewer) => ({
       reviewer: reviewer.name,
-      report: buildVerdictReportService({
+      report: buildVerdictReportService(config, {
         targetPath: absolutePath,
-        cacheData: new VerdictStore({
-          projectRoot: root,
+        cacheData: new VerdictStore(config, {
           reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
         }).readEntry({ targetPath: absolutePath }),
-        specFilePattern: config.specFilePattern,
-        root,
       }),
     })),
   };
-}
+};
+
+export default collectVerdictReportsService;

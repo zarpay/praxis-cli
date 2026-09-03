@@ -1,4 +1,4 @@
-import type { DiscoveryScope } from "@/types.js";
+import type { NoInput, Service } from "@/types.js";
 
 import discoverDomainsService from "@/services/discover-domains-service.js";
 import resolveUnitsService from "@/services/resolve-units-service.js";
@@ -11,12 +11,12 @@ import resolveUnitsService from "@/services/resolve-units-service.js";
  * verdict. It asks the eval layer rather than guessing, so the number
  * can never drift from what a run actually covers.
  */
-export default function listTargetPaths(scope: DiscoveryScope): string[] {
-  return discoverDomainsService(scope).flatMap((domain) =>
-    resolveUnitsService({
-      domain,
-      specFilePattern: scope.specFilePattern,
-      absoluteIgnore: scope.absoluteIgnore,
-    }).map((unit) => unit.path),
+const listTargetPathsService: Service<NoInput, string[]> = (config) => {
+  const domains = discoverDomainsService(config, {});
+
+  return domains.flatMap((domain) =>
+    resolveUnitsService(config, { domain }).map((unit) => unit.path),
   );
-}
+};
+
+export default listTargetPathsService;

@@ -1,4 +1,4 @@
-import type { DerivePopulationInput, PopulationQualifier } from "@/types.js";
+import type { DerivePopulationInput, PopulationQualifier, Service } from "@/types.js";
 
 import { fileFirstCommitDate } from "@/helpers/git-helper.js";
 
@@ -15,14 +15,12 @@ import { fileFirstCommitDate } from "@/helpers/git-helper.js";
  * Birthdates are memoized per service call via the caller-held cache,
  * because a report asks about the same files across many axioms.
  */
-export default function derivePopulation({
-  root,
-  filePath,
-  axiomIntroduced,
-  birthdates,
-}: DerivePopulationInput): PopulationQualifier {
+const derivePopulationService: Service<DerivePopulationInput, PopulationQualifier> = (
+  config,
+  { filePath, axiomIntroduced, birthdates },
+) => {
   if (!birthdates.has(filePath)) {
-    birthdates.set(filePath, fileFirstCommitDate(root, filePath));
+    birthdates.set(filePath, fileFirstCommitDate(config.root, filePath));
   }
 
   const born = birthdates.get(filePath) ?? null;
@@ -30,4 +28,6 @@ export default function derivePopulation({
   if (born === null) return "unknown";
 
   return born < axiomIntroduced ? "pre_spec" : "post_spec";
-}
+};
+
+export default derivePopulationService;

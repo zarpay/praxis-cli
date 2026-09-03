@@ -1,4 +1,4 @@
-import type { BuildDebtReportInput, Orientation } from "@/types.js";
+import type { NoInput, Orientation, Service } from "@/types.js";
 
 import { CALIBRATION_STATUS } from "@/helpers/metrics-helper.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
@@ -10,12 +10,10 @@ import { RunStore } from "@/stores/run-store.js";
  * glance — the entry point for a human returning after a week, and an
  * agent's cheapest situational poll's human twin.
  */
-export default function buildOrientation({ root }: BuildDebtReportInput): Orientation {
-  const runs = new RunStore({ projectRoot: root })
-    .runs()
-    .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-  const state = deriveTriageStateService({ root });
-  const { axioms } = new AxiomStore({ projectRoot: root }).all();
+const buildOrientationService: Service<NoInput, Orientation> = (config) => {
+  const runs = new RunStore(config).runs().sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  const state = deriveTriageStateService(config, {});
+  const { axioms } = new AxiomStore(config).all();
 
   const last = runs[runs.length - 1];
   const lastRun =
@@ -48,4 +46,6 @@ export default function buildOrientation({ root }: BuildDebtReportInput): Orient
     calibration: CALIBRATION_STATUS,
     debtLine,
   };
-}
+};
+
+export default buildOrientationService;

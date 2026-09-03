@@ -1,6 +1,6 @@
-import type { CountSpecUnitsInput } from "@/types.js";
+import type { NoInput, Service } from "@/types.js";
 
-import { joinPath, relativePath } from "@/helpers/paths-helper.js";
+import { relativePath } from "@/helpers/paths-helper.js";
 import discoverDomainsService from "@/services/discover-domains-service.js";
 import resolveUnitsService from "@/services/resolve-units-service.js";
 
@@ -13,29 +13,16 @@ import resolveUnitsService from "@/services/resolve-units-service.js";
  * for current-stock denominators. Keys are project-relative spec paths,
  * matching how critique records name their specs.
  */
-export default function countSpecUnits({
-  root,
-  config,
-}: CountSpecUnitsInput): Record<string, number> {
-  const absoluteIgnore = config.ignore.map((pattern) => joinPath(root, pattern));
-  const scope = {
-    root,
-    sources: config.sources,
-    specFilePattern: config.specFilePattern,
-    absoluteIgnore,
-  };
-
+const countSpecUnitsService: Service<NoInput, Record<string, number>> = (config) => {
   const counts: Record<string, number> = {};
 
-  for (const domain of discoverDomainsService(scope)) {
-    const units = resolveUnitsService({
-      domain,
-      specFilePattern: config.specFilePattern,
-      absoluteIgnore,
-    });
+  for (const domain of discoverDomainsService(config, {})) {
+    const units = resolveUnitsService(config, { domain });
 
-    counts[relativePath(root, domain.specPath)] = units.length;
+    counts[relativePath(config.root, domain.specPath)] = units.length;
   }
 
   return counts;
-}
+};
+
+export default countSpecUnitsService;

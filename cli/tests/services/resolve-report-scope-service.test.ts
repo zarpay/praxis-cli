@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import resolveReportScopeService from "@/services/resolve-report-scope-service.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 describe("resolveReportScopeService", () => {
   let root: string;
@@ -47,7 +48,7 @@ describe("resolveReportScopeService", () => {
     seedRun({ runId: "r1", files: ["src/a.ts"] });
     seedRun({ runId: "r2", files: ["src/b.ts"] });
 
-    const scoped = resolveReportScopeService({ root });
+    const scoped = resolveReportScopeService(testConfig(root), {});
 
     expect(scoped.runs).toHaveLength(2);
     expect(scoped.critiques).toHaveLength(2);
@@ -56,7 +57,7 @@ describe("resolveReportScopeService", () => {
   it("scopes critiques by target glob without dropping runs", () => {
     seedRun({ runId: "r1", files: ["src/a.ts", "tests/a.test.ts"] });
 
-    const scoped = resolveReportScopeService({ root, target: "src/**" });
+    const scoped = resolveReportScopeService(testConfig(root), { target: "src/**" });
 
     expect(scoped.critiques.map((critique) => critique.file_path)).toEqual(["src/a.ts"]);
   });
@@ -65,7 +66,7 @@ describe("resolveReportScopeService", () => {
     seedRun({ runId: "r1", branch: "main", files: ["src/a.ts"] });
     seedRun({ runId: "r2", branch: "feature", files: ["src/b.ts"] });
 
-    const scoped = resolveReportScopeService({ root, branch: "main" });
+    const scoped = resolveReportScopeService(testConfig(root), { branch: "main" });
 
     expect(scoped.runs).toHaveLength(1);
     expect(scoped.critiques.map((critique) => critique.file_path)).toEqual(["src/a.ts"]);
@@ -75,7 +76,7 @@ describe("resolveReportScopeService", () => {
     seedRun({ runId: "r1", at: "2026-08-01T10:00:00.000Z" });
     seedRun({ runId: "r2", at: "2026-09-02T10:00:00.000Z" });
 
-    const scoped = resolveReportScopeService({ root, since: "2026-09-01" });
+    const scoped = resolveReportScopeService(testConfig(root), { since: "2026-09-01" });
 
     expect(scoped.runs.map((run) => run.run_id)).toEqual(["r2"]);
   });
@@ -91,7 +92,7 @@ describe("resolveReportScopeService", () => {
     seedRun({ runId: "r1", sha, files: ["src/a.ts"] });
     seedRun({ runId: "r2", files: ["src/b.ts"] });
 
-    const scoped = resolveReportScopeService({ root, commit: sha });
+    const scoped = resolveReportScopeService(testConfig(root), { commit: sha });
 
     expect(scoped.runs.map((run) => run.run_id)).toEqual(["r1"]);
     expect(scoped.scope.unresolvableShas).toEqual([]);
@@ -101,7 +102,7 @@ describe("resolveReportScopeService", () => {
     const ghost = "f".repeat(40);
     seedRun({ runId: "r1", sha: ghost, branch: "feature", at: "2026-09-01T10:00:00.000Z" });
 
-    const scoped = resolveReportScopeService({ root, commit: ghost });
+    const scoped = resolveReportScopeService(testConfig(root), { commit: ghost });
 
     expect(scoped.scope.unresolvableShas).toEqual([
       { sha: ghost, branch: "feature", at: "2026-09-01T10:00:00.000Z" },

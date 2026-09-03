@@ -51,13 +51,8 @@ describe("init → compile integration", () => {
 
     // Compile all roles
     const config = new PraxisConfig(dir);
-    await compileExpertsService({
-      root: dir,
-      expertsDir: config.expertsDir,
-      specFilePattern: config.specFilePattern,
-      agentProfilesOutputDir: config.agentProfilesOutputDir,
-      plugins: resolvePluginsService(config.plugins, dir, logger),
-    });
+    const plugins = resolvePluginsService(config, { logger });
+    await compileExpertsService(config, { plugins });
   });
 
   afterAll(() => {

@@ -72,12 +72,10 @@ describe("reviewNamedService", () => {
 
   it("counts an error verdict for a named target", async () => {
     useVerdict("validation_fail");
-    const { root, config, abs } = reviewingProject();
+    const { config, abs } = reviewingProject();
 
-    const result = await reviewNamedService({
+    const result = await reviewNamedService(config, {
       targets: [abs("specs/doc.md")],
-      root,
-      config,
       useCache: false,
     });
 
@@ -86,12 +84,10 @@ describe("reviewNamedService", () => {
 
   it("counts a warning separately from an error", async () => {
     useVerdict("validation_warn");
-    const { root, config, abs } = reviewingProject();
+    const { config, abs } = reviewingProject();
 
-    const result = await reviewNamedService({
+    const result = await reviewNamedService(config, {
       targets: [abs("specs/doc.md")],
-      root,
-      config,
       useCache: false,
     });
 
@@ -100,12 +96,10 @@ describe("reviewNamedService", () => {
 
   it("reviews every named target, not just the first", async () => {
     useVerdict("validation_fail");
-    const { root, config, abs } = reviewingProject();
+    const { config, abs } = reviewingProject();
 
-    const result = await reviewNamedService({
+    const result = await reviewNamedService(config, {
       targets: [abs("specs/doc.md"), abs("specs/other.md")],
-      root,
-      config,
       useCache: false,
     });
 
@@ -114,12 +108,10 @@ describe("reviewNamedService", () => {
 
   it("counts nothing for a compliant target", async () => {
     useVerdict("validation_pass");
-    const { root, config, abs } = reviewingProject();
+    const { config, abs } = reviewingProject();
 
-    const result = await reviewNamedService({
+    const result = await reviewNamedService(config, {
       targets: [abs("specs/doc.md")],
-      root,
-      config,
       useCache: false,
     });
 
@@ -148,10 +140,8 @@ describe("reviewNamedService", () => {
     });
     cleanups.push(cleanup);
 
-    const result = await reviewNamedService({
+    const result = await reviewNamedService(new PraxisConfig(root), {
       targets: [abs("specs/doc.md")],
-      root,
-      config: new PraxisConfig(root),
       useCache: false,
     });
 
@@ -161,13 +151,11 @@ describe("reviewNamedService", () => {
 
   it("reports each target's findings as it lands", async () => {
     useVerdict("validation_fail", { reason: "no", issues: ["Bad thing"] });
-    const { root, config, abs } = reviewingProject();
+    const { config, abs } = reviewingProject();
     const seen: { path: string; findingTexts: string[] }[] = [];
 
-    await reviewNamedService({
+    await reviewNamedService(config, {
       targets: [abs("specs/doc.md"), abs("specs/other.md")],
-      root,
-      config,
       useCache: false,
       onTarget: ({ path, findings }) =>
         seen.push({ path, findingTexts: findings.map((finding) => finding.text) }),
@@ -224,19 +212,17 @@ describe("reviewNamedService", () => {
         reason: "no",
         issues: [{ axiom: "AX-aaaa11", text: "Title is vague." }],
       });
-      const { root, config, abs } = projectWithAxiom();
+      const { config, abs } = projectWithAxiom();
       const targets: ReviewedTarget[] = [];
 
-      await reviewNamedService({
+      await reviewNamedService(config, {
         targets: [abs("specs/doc.md")],
-        root,
-        config,
         useCache: false,
         onTarget: (event) => targets.push(event),
       });
 
       const finding = targets[0].findings[0];
-      const critiqueRecords = ledgerRuns(root)
+      const critiqueRecords = ledgerRuns(config.root)
         .flat()
         .filter((record) => record.kind === "critique");
 
@@ -258,19 +244,17 @@ describe("reviewNamedService", () => {
         reason: "no",
         issues: [{ axiom: "AX-ffffff", text: "Invented citation." }],
       });
-      const { root, config, abs } = projectWithAxiom();
+      const { config, abs } = projectWithAxiom();
       const targets: ReviewedTarget[] = [];
 
-      await reviewNamedService({
+      await reviewNamedService(config, {
         targets: [abs("specs/doc.md")],
-        root,
-        config,
         useCache: false,
         onTarget: (event) => targets.push(event),
       });
 
       const finding = targets[0].findings[0];
-      const critiqueRecords = ledgerRuns(root)
+      const critiqueRecords = ledgerRuns(config.root)
         .flat()
         .filter((record) => record.kind === "critique");
 
@@ -285,13 +269,11 @@ describe("reviewNamedService", () => {
         issues: [{ axiom: "AX-aaaa11", text: "Title is vague." }],
       });
       const second = { name: "v32", model: "m2", apiKeyEnvVar: "OPENROUTER_API_KEY" };
-      const { root, config, abs } = projectWithAxiom([KEYED, second]);
+      const { config, abs } = projectWithAxiom([KEYED, second]);
       const targets: ReviewedTarget[] = [];
 
-      await reviewNamedService({
+      await reviewNamedService(config, {
         targets: [abs("specs/doc.md")],
-        root,
-        config,
         useCache: false,
         onTarget: (event) => targets.push(event),
       });
@@ -305,11 +287,11 @@ describe("reviewNamedService", () => {
   describe("the ledger", () => {
     it("persists each reviewer's pass with scope files — fast-loop runs are evidence", async () => {
       useVerdict("validation_fail");
-      const { root, config, abs } = reviewingProject();
+      const { config, abs } = reviewingProject();
 
-      await reviewNamedService({ targets: [abs("specs/doc.md")], root, config, useCache: false });
+      await reviewNamedService(config, { targets: [abs("specs/doc.md")], useCache: false });
 
-      const runs = ledgerRuns(root);
+      const runs = ledgerRuns(config.root);
 
       expect(runs).toHaveLength(1);
       expect(runs[0][0]).toMatchObject({ kind: "run", scope: "files", trigger: "manual" });
@@ -319,17 +301,15 @@ describe("reviewNamedService", () => {
 
     it("writes nothing when ledger is false", async () => {
       useVerdict("validation_pass");
-      const { root, config, abs } = reviewingProject();
+      const { config, abs } = reviewingProject();
 
-      await reviewNamedService({
+      await reviewNamedService(config, {
         targets: [abs("specs/doc.md")],
-        root,
-        config,
         useCache: false,
         ledger: false,
       });
 
-      expect(ledgerRuns(root)).toEqual([]);
+      expect(ledgerRuns(config.root)).toEqual([]);
     });
   });
 });

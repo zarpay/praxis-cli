@@ -15,7 +15,7 @@ export const listAxiomsOrchestrator: Orchestrator<ListAxiomsOptions> = async (
   ctx,
   { json = false },
 ) => {
-  const { axioms, problems } = new AxiomStore({ projectRoot: ctx.root }).all();
+  const { axioms, problems } = new AxiomStore(ctx.config).all();
   const view = axiomListView({ axioms, problems, json });
 
   ctx.render(view);

@@ -21,8 +21,11 @@ described none of them — it is `RunFile`/`TriageSessionFile` (models),
 `RunStore`/`TriageStore` (here), and `derive-triage-state-service` now.
 
 - **Named `{name}-store.ts`**, exporting the filename in PascalCase as a
-  class. Constructed per use from a `projectRoot` (or the specific
-  directory), never held as a singleton.
+  class. Constructed per use from the `PraxisConfig` — one argument, the
+  store extracts its own facts (root, its directory, the spec pattern, the
+  ignore globs) — never held as a singleton. Store-specific extras that are
+  not config facts (the bound reviewer identity) ride in a second options
+  argument.
 - **Layered between models and services**: a store imports helpers,
   templates, and models — never services, prompts, orchestrators, or views
   (ESLint-enforced). Services construct stores and call their methods; a

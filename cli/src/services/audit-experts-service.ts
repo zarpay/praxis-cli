@@ -1,5 +1,5 @@
 import type { RefKey } from "@/types.js";
-import type { AuditExpertsInput, ExpertAudit } from "@/types.js";
+import type { AuditExpertsInput, ExpertAudit, Service } from "@/types.js";
 
 import { exists, readText } from "@/helpers/files-helper.js";
 import { baseName, joinPath } from "@/helpers/paths-helper.js";
@@ -20,11 +20,10 @@ const REF_KEYS: readonly RefKey[] = ["practices", "context", "refs"];
  * An expert that fails to parse is recorded, never raised: project
  * health is exactly the report you want when a document is broken.
  */
-export default async function auditExperts({
-  expertFiles,
-  root,
-  specFilePattern,
-}: AuditExpertsInput): Promise<ExpertAudit> {
+const auditExpertsService: Service<AuditExpertsInput, Promise<ExpertAudit>> = async (
+  config,
+  { expertFiles },
+) => {
   const audit: ExpertAudit = {
     aliases: new Map<string, string>(),
     referencedPractices: new Set<string>(),
@@ -55,11 +54,7 @@ export default async function auditExperts({
     }
 
     for (const key of REF_KEYS) {
-      const expansions = await expandGlobsService({
-        patterns: parsed.refs(key),
-        root,
-        specFilePattern,
-      });
+      const expansions = await expandGlobsService(config, { patterns: parsed.refs(key) });
 
       for (const { pattern, isGlob, matches } of expansions) {
         // A glob matching nothing is a typo; a plain path that does not
@@ -69,7 +64,7 @@ export default async function auditExperts({
           audit.zeroMatchGlobs.push({ expert, pattern });
         }
 
-        if (!isGlob && !exists(joinPath(root, pattern))) {
+        if (!isGlob && !exists(joinPath(config.root, pattern))) {
           audit.danglingRefs.push({ expert, ref: pattern });
         }
 
@@ -81,4 +76,6 @@ export default async function auditExperts({
   }
 
   return audit;
-}
+};
+
+export default auditExpertsService;

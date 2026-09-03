@@ -1,7 +1,7 @@
-import type { BuildStatusReportInput, StatusReport } from "@/types.js";
+import type { PraxisConfig } from "@/models/praxis-config.js";
+import type { NoInput, Service, StatusReport } from "@/types.js";
 
 import { exists } from "@/helpers/files-helper.js";
-import { resolvePath } from "@/helpers/paths-helper.js";
 import auditExpertsService from "@/services/audit-experts-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
@@ -28,45 +28,24 @@ import { RunStore } from "@/stores/run-store.js";
  * an eval-only project gets validation state and nothing else, because
  * it has no taxonomy to be asked about.
  */
-export default async function buildStatusReport({
-  root,
-  config,
-}: BuildStatusReportInput): Promise<StatusReport> {
-  const validation = tallyValidationService({ root, config });
-  const evalState = evalStateOf(root, config);
+const buildStatusReportService: Service<NoInput, Promise<StatusReport>> = async (config) => {
+  const validation = tallyValidationService(config, {});
+  const evalState = evalStateOf(config);
 
   if (!exists(config.expertsDir)) {
     return evalOnlyReport(validation, evalState);
   }
 
-  const absoluteIgnore = config.ignore.map((pattern) => resolvePath(root, pattern));
-  const expertStore = new ExpertStore({
-    expertsDir: config.expertsDir,
-    specFilePattern: config.specFilePattern,
-    ignore: absoluteIgnore,
-  });
-  const practiceStore = new PracticeStore({
-    practicesDir: config.practicesDir,
-    specFilePattern: config.specFilePattern,
-    ignore: absoluteIgnore,
-  });
-  const documentStore = new DocumentStore({
-    root,
-    sources: config.sources,
-    specFilePattern: config.specFilePattern,
-    ignore: absoluteIgnore,
-  });
+  const expertStore = new ExpertStore(config);
+  const practiceStore = new PracticeStore(config);
+  const documentStore = new DocumentStore(config);
 
   const expertFiles = expertStore.files();
   const counts = documentStore.countsByType();
-  const audit = await auditExpertsService({
-    expertFiles,
-    root,
-    specFilePattern: config.specFilePattern,
-  });
+  const audit = await auditExpertsService(config, { expertFiles });
 
   const findings = {
-    orphanedPractices: practiceStore.orphans(audit.referencedPractices, root),
+    orphanedPractices: practiceStore.orphans(audit.referencedPractices),
     danglingRefs: audit.danglingRefs,
     expertsMissingDescription: audit.missingDescriptions,
     invalidExperts: audit.invalidExperts,
@@ -86,7 +65,9 @@ export default async function buildStatusReport({
     issueCount: issueCountOf(findings),
     ...findings,
   };
-}
+};
+
+export default buildStatusReportService;
 
 /** How many structural problems the report found — the exit-code fact. */
 function issueCountOf(findings: {
@@ -125,14 +106,11 @@ function evalOnlyReport(
 }
 
 /** The situational-poll facts (09-ae), derived from the stores. */
-function evalStateOf(
-  root: string,
-  config: BuildStatusReportInput["config"],
-): StatusReport["evalState"] {
-  const { axioms } = new AxiomStore({ projectRoot: root }).all();
-  const state = deriveTriageStateService({ root });
-  const runs = new RunStore({ projectRoot: root }).runs();
-  const boundaries = detectEpochBoundariesService({ root, reviewers: config.reviewers });
+function evalStateOf(config: PraxisConfig): StatusReport["evalState"] {
+  const { axioms } = new AxiomStore(config).all();
+  const state = deriveTriageStateService(config, {});
+  const runs = new RunStore(config).runs();
+  const boundaries = detectEpochBoundariesService(config, { reviewers: config.reviewers });
 
   const lastRun = runs.map((run) => run.timestamp).sort()[runs.length - 1] ?? null;
 

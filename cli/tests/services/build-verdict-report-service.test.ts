@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { ReviewSubject } from "@/models/review-subject.js";
 import buildVerdictReportService from "@/services/build-verdict-report-service.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 const DOC_CONTENT = "# Guide\nA target under report.";
 const SPEC_CONTENT = "# Spec\nGuides need a title.";
@@ -42,7 +43,7 @@ describe("buildVerdictReportService", () => {
       root: dir,
     }).contentHash();
     build = (cacheData, specFilePattern = "README.md") =>
-      buildVerdictReportService({ targetPath, cacheData, specFilePattern, root: dir });
+      buildVerdictReportService(testConfig(dir, { specFilePattern }), { targetPath, cacheData });
   });
 
   afterEach(() => {
@@ -123,11 +124,9 @@ describe("buildVerdictReportService", () => {
     });
 
     it("returns a null hash when the target does not exist", () => {
-      const report = buildVerdictReportService({
+      const report = buildVerdictReportService(testConfig(dir), {
         targetPath: join(dir, "missing.md"),
         cacheData: null,
-        specFilePattern: "README.md",
-        root: dir,
       });
 
       expect(report.currentHash).toBeNull();
@@ -156,22 +155,6 @@ describe("buildVerdictReportService", () => {
       writeFileSync(join(dir, "services", "store.ts"), "STORE_V2");
 
       expect(build(cacheData).status).toBe("stale");
-    });
-
-    it("skips the staleness check when a context-declaring spec has no root to resolve against", () => {
-      const specContent = ["---", "context:", '  - "services/store.ts"', "---", "# Spec"].join(
-        "\n",
-      );
-      writeFileSync(join(dir, "README.md"), specContent);
-
-      // No root at all: the spec's context glob cannot be resolved.
-      const report = buildVerdictReportService({
-        targetPath,
-        cacheData: freshCacheData(),
-        specFilePattern: "README.md",
-      });
-
-      expect(report).toMatchObject({ currentHash: null, isStale: false });
     });
   });
 });

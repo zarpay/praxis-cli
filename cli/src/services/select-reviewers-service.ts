@@ -1,4 +1,4 @@
-import type { ReviewerConfig } from "@/types.js";
+import type { ReviewerConfig, SelectReviewersInput, Service } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 
@@ -13,13 +13,12 @@ import { errors } from "@/helpers/errors-helper.js";
  * @param only - A reviewer name to narrow to; omitted uses all of them
  * @throws PraxisError naming what is wrong and what is available
  */
-export default function selectReviewers({
-  configured,
-  only,
-}: {
-  configured: ReviewerConfig[];
-  only?: string;
-}): ReviewerConfig[] {
+const selectReviewersService: Service<SelectReviewersInput, ReviewerConfig[]> = (
+  config,
+  { only },
+) => {
+  const configured = config.reviewers;
+
   if (configured.length === 0) {
     throw errors.missingReviewers();
   }
@@ -40,4 +39,6 @@ export default function selectReviewers({
   }
 
   return selected;
-}
+};
+
+export default selectReviewersService;

@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import buildOrientationService from "@/services/build-orientation-service.js";
 import { seedAxiom } from "@tests/helpers/axiom-fixtures.js";
 import { seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 describe("buildOrientationService", () => {
   let root: string;
@@ -21,7 +22,7 @@ describe("buildOrientationService", () => {
   });
 
   it("orients an empty project honestly: no runs, nothing pending", () => {
-    const orientation = buildOrientationService({ root });
+    const orientation = buildOrientationService(testConfig(root), {});
 
     expect(orientation).toMatchObject({
       lastRun: null,
@@ -45,7 +46,7 @@ describe("buildOrientationService", () => {
       commitSha: "a".repeat(40),
     });
 
-    const { lastRun } = buildOrientationService({ root });
+    const { lastRun } = buildOrientationService(testConfig(root), {});
 
     expect(lastRun).toEqual({
       at: "2026-09-03T10:00:00.000Z",
@@ -59,7 +60,7 @@ describe("buildOrientationService", () => {
     seedAxiom(root, "AX-bbbb22", { status: "proposed", proposed: true });
     seedLedgerRun(root, { name: "flash", hash: "aaaa1111", failCount: 3 });
 
-    const orientation = buildOrientationService({ root });
+    const orientation = buildOrientationService(testConfig(root), {});
 
     expect(orientation.activeAxioms).toBe(1);
     expect(orientation.proposalsPending).toBe(1);

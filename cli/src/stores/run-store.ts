@@ -1,3 +1,4 @@
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type {
   LedgerCritiqueRecord,
   LedgerRecord,
@@ -22,8 +23,8 @@ import { RunFile } from "@/models/run-file.js";
 export class RunStore {
   private readonly runsDir: string;
 
-  constructor({ projectRoot }: { projectRoot: string }) {
-    this.runsDir = joinPath(projectRoot, ".praxis", "ledger", "runs");
+  constructor(config: PraxisConfig) {
+    this.runsDir = joinPath(config.root, ".praxis", "ledger", "runs");
   }
 
   /** Sortable, filename-safe, collision-safe — see `sortableId`. */

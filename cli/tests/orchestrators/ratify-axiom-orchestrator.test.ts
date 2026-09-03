@@ -10,6 +10,7 @@ import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
@@ -60,7 +61,7 @@ function ratifyProject(plan: Parameters<typeof curatorProviderModule>[0]): strin
       }),
     ],
   });
-  new TriageStore({ projectRoot: root }).appendSession([
+  new TriageStore(testConfig(root)).appendSession([
     {
       kind: "assignment",
       critique_id: "r1:1",

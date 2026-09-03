@@ -45,12 +45,23 @@ const DEFAULT_CONFIG: NormalizedConfig = {
  * backward compatibility with projects that predate the config file.
  */
 export class PraxisConfig {
-  private readonly root: string;
+  /** The project root every relative field resolves against. */
+  readonly root: string;
+
   private readonly data: NormalizedConfig;
 
-  constructor(root: string) {
+  constructor(root: string, raw?: RawConfig) {
     this.root = root;
-    this.data = this.load();
+    this.data = raw === undefined ? this.load() : this.normalize(raw);
+  }
+
+  /**
+   * A config assembled from raw fields rather than read from disk —
+   * the seam a test uses to override one value without writing a
+   * config file, with the same defaults and validation as a real read.
+   */
+  static inMemory(root: string, raw: RawConfig = {}): PraxisConfig {
+    return new PraxisConfig(root, raw);
   }
 
   /**
@@ -92,6 +103,11 @@ export class PraxisConfig {
   /** Project-root-relative glob patterns to exclude from all source scans. */
   get ignore(): string[] {
     return this.data.ignore;
+  }
+
+  /** The ignore patterns resolved absolute — what path comparisons use. */
+  get absoluteIgnore(): string[] {
+    return this.data.ignore.map((pattern) => resolvePath(this.root, pattern));
   }
 
   /** Absolute path to the experts directory for compilation. */
@@ -137,7 +153,7 @@ export class PraxisConfig {
       root: this.root,
       sources: this.sources,
       specFilePattern: this.specFilePattern,
-      absoluteIgnore: this.ignore.map((pattern) => resolvePath(this.root, pattern)),
+      absoluteIgnore: this.absoluteIgnore,
     };
   }
 
@@ -160,6 +176,15 @@ export class PraxisConfig {
       throw errors.invalidConfigJson(configPath, (err as Error).message);
     }
 
+    return this.normalize(raw);
+  }
+
+  /**
+   * Applies defaults and validation to raw config fields.
+   *
+   * @throws PraxisError on invalid reviewer or curator declarations
+   */
+  private normalize(raw: RawConfig): NormalizedConfig {
     return {
       agentProfilesOutputDir: raw.agentProfilesOutputDir ?? DEFAULT_CONFIG.agentProfilesOutputDir,
       plugins: this.normalizePlugins(raw.plugins ?? []),

@@ -15,7 +15,7 @@ export const showAxiomOrchestrator: Orchestrator<ShowAxiomOptions> = async (
   ctx,
   { id, json = false },
 ) => {
-  const { axioms } = new AxiomStore({ projectRoot: ctx.root }).all();
+  const { axioms } = new AxiomStore(ctx.config).all();
   const axiom = axioms.find((candidate) => candidate.id === id);
 
   if (!axiom) throw errors.axiomNotFound(id);

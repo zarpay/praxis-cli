@@ -1,4 +1,4 @@
-import type { Epoch, EpochSeries, LedgerRunRecord } from "@/types.js";
+import type { DeriveEpochsInput, Epoch, EpochSeries, LedgerRunRecord, Service } from "@/types.js";
 
 /**
  * Epochs, derived — never stored (02): per reviewer name, the maximal
@@ -12,7 +12,7 @@ import type { Epoch, EpochSeries, LedgerRunRecord } from "@/types.js";
  * else is config or prompt surface. Rule 6's engine: nothing charts
  * across these boundaries, and each renders as a first-class event.
  */
-export default function deriveEpochs(runs: LedgerRunRecord[]): EpochSeries[] {
+const deriveEpochsService: Service<DeriveEpochsInput, EpochSeries[]> = (_config, { runs }) => {
   const byReviewer = new Map<string, LedgerRunRecord[]>();
 
   for (const run of [...runs].sort((a, b) => a.timestamp.localeCompare(b.timestamp))) {
@@ -25,7 +25,9 @@ export default function deriveEpochs(runs: LedgerRunRecord[]): EpochSeries[] {
     reviewerName,
     epochs: epochsOf(reviewerRuns),
   }));
-}
+};
+
+export default deriveEpochsService;
 
 /** One reviewer's epochs: grouped by hash, ordered by first appearance. */
 function epochsOf(runs: LedgerRunRecord[]): Epoch[] {

@@ -1,4 +1,9 @@
-import type { DetectEpochBoundariesInput, EpochBoundary, LedgerRunRecord } from "@/types.js";
+import type {
+  DetectEpochBoundariesInput,
+  EpochBoundary,
+  LedgerRunRecord,
+  Service,
+} from "@/types.js";
 
 import { Reviewer } from "@/models/reviewer.js";
 import { RunStore } from "@/stores/run-store.js";
@@ -13,15 +18,15 @@ import { RunStore } from "@/stores/run-store.js";
  * history. A reviewer with no history at all is bootstrap, not a
  * boundary — a new instrument, not a change to one.
  */
-export default function detectEpochBoundariesService({
-  root,
-  reviewers,
-}: DetectEpochBoundariesInput): EpochBoundary[] {
-  const runs = new RunStore({ projectRoot: root }).runs();
+const detectEpochBoundariesService: Service<DetectEpochBoundariesInput, EpochBoundary[]> = (
+  config,
+  { reviewers },
+) => {
+  const runs = new RunStore(config).runs();
   const boundaries: EpochBoundary[] = [];
 
-  for (const config of reviewers) {
-    const { name, model, hash } = Reviewer.fromConfig(config).cacheIdentity();
+  for (const reviewerConfig of reviewers) {
+    const { name, model, hash } = Reviewer.fromConfig(reviewerConfig).cacheIdentity();
     const history = runs.filter((run) => run.reviewer_name === name);
 
     if (history.length === 0) continue;
@@ -41,7 +46,9 @@ export default function detectEpochBoundariesService({
   }
 
   return boundaries;
-}
+};
+
+export default detectEpochBoundariesService;
 
 /** The most recent run — what the boundary is named against. */
 function latestRun(history: LedgerRunRecord[]): LedgerRunRecord {

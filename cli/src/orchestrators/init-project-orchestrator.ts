@@ -3,6 +3,7 @@ import type { InitProjectOptions, Orchestrator } from "@/types.js";
 import { ensureDir } from "@/helpers/files-helper.js";
 import { joinPath, resolvePath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
+import { PraxisConfig } from "@/models/praxis-config.js";
 import { SCAFFOLD_DIR } from "@/models/project-paths.js";
 import copyScaffoldService from "@/services/copy-scaffold-service.js";
 import initView from "@/views/init-view.js";
@@ -26,9 +27,13 @@ export const initProjectOrchestrator: Orchestrator<InitProjectOptions> = async (
 
   ensureDir(targetDir);
 
+  // Init runs before the project's config exists, so it builds the
+  // new project's default config in memory rather than asking ctx.
+  const config = PraxisConfig.inMemory(targetDir);
+
   // "eval" holds the minimal .praxis/ tree; "core" adds the spec-layer
   // authoring taxonomy (experts, practices, context).
-  const { created, skipped } = copyScaffoldService({
+  const { created, skipped } = copyScaffoldService(config, {
     sourceDir: joinPath(scaffoldDir, specLayer ? "core" : "eval"),
     targetDir,
   });

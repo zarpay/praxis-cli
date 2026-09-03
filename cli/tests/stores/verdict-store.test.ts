@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { Reviewer } from "@/models/reviewer.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 describe("VerdictStore", () => {
   let projectRoot: string;
@@ -16,7 +17,7 @@ describe("VerdictStore", () => {
     projectRoot = join(tmpdir(), `praxis-cache-test-${randomUUID()}`);
     mkdirSync(projectRoot, { recursive: true });
     cacheRoot = join(projectRoot, ".praxis", "cache", "validation");
-    cache = new VerdictStore({ cacheRoot, projectRoot });
+    cache = new VerdictStore(testConfig(projectRoot));
   });
 
   afterEach(() => {
@@ -25,7 +26,7 @@ describe("VerdictStore", () => {
 
   describe("addressing", () => {
     it("defaults its root to .praxis/cache/validation under the project root", () => {
-      const bare = new VerdictStore({ projectRoot: "/project" });
+      const bare = new VerdictStore(testConfig("/project"));
 
       expect(bare.root).toBe("/project/.praxis/cache/validation");
     });
@@ -50,14 +51,10 @@ describe("VerdictStore", () => {
       });
 
       it("gives every reviewer the same file for one target", () => {
-        const a = new VerdictStore({
-          cacheRoot,
-          projectRoot,
+        const a = new VerdictStore(testConfig(projectRoot), {
           reviewer: { name: "a", model: "m", hash: "aaaa1111" },
         });
-        const b = new VerdictStore({
-          cacheRoot,
-          projectRoot,
+        const b = new VerdictStore(testConfig(projectRoot), {
           reviewer: { name: "b", model: "m", hash: "bbbb2222" },
         });
         const targetPath = join(projectRoot, "roles", "shared.md");
@@ -69,14 +66,10 @@ describe("VerdictStore", () => {
 
     describe("keyFor", () => {
       it("keys an entry on the spec and the bound reviewer's hash", () => {
-        const a = new VerdictStore({
-          cacheRoot,
-          projectRoot,
+        const a = new VerdictStore(testConfig(projectRoot), {
           reviewer: { name: "a", model: "m", hash: "aaaa1111" },
         });
-        const b = new VerdictStore({
-          cacheRoot,
-          projectRoot,
+        const b = new VerdictStore(testConfig(projectRoot), {
           reviewer: { name: "b", model: "m", hash: "bbbb2222" },
         });
 
@@ -154,14 +147,10 @@ describe("VerdictStore", () => {
     });
 
     it("never returns another reviewer's verdict", () => {
-      const cacheA = new VerdictStore({
-        cacheRoot,
-        projectRoot,
+      const cacheA = new VerdictStore(testConfig(projectRoot), {
         reviewer: { name: "a", model: "m", hash: "aaaa1111" },
       });
-      const cacheB = new VerdictStore({
-        cacheRoot,
-        projectRoot,
+      const cacheB = new VerdictStore(testConfig(projectRoot), {
         reviewer: { name: "b", model: "m", hash: "bbbb2222" },
       });
       const targetPath = join(projectRoot, "roles", "shared.md");
@@ -260,14 +249,10 @@ describe("VerdictStore", () => {
     });
 
     it("preserves another reviewer's verdict when writing its own", () => {
-      const cacheA = new VerdictStore({
-        cacheRoot,
-        projectRoot,
+      const cacheA = new VerdictStore(testConfig(projectRoot), {
         reviewer: { name: "a", model: "m", hash: "aaaa1111" },
       });
-      const cacheB = new VerdictStore({
-        cacheRoot,
-        projectRoot,
+      const cacheB = new VerdictStore(testConfig(projectRoot), {
         reviewer: { name: "b", model: "m", hash: "bbbb2222" },
       });
       const targetPath = join(projectRoot, "roles", "shared.md");
@@ -388,14 +373,10 @@ describe("VerdictStore", () => {
     });
 
     it("returns only the bound reviewer's entries", () => {
-      const cacheA = new VerdictStore({
-        cacheRoot,
-        projectRoot,
+      const cacheA = new VerdictStore(testConfig(projectRoot), {
         reviewer: { name: "a", model: "m", hash: "aaaa1111" },
       });
-      const cacheB = new VerdictStore({
-        cacheRoot,
-        projectRoot,
+      const cacheB = new VerdictStore(testConfig(projectRoot), {
         reviewer: { name: "b", model: "m", hash: "bbbb2222" },
       });
       const targetPath = join(projectRoot, "roles", "shared.md");
@@ -429,7 +410,7 @@ describe("VerdictStore", () => {
 
     /** A cache bound to the given reviewer identity. */
     function cacheFor(identity: { name: string; model: string; hash: string }): VerdictStore {
-      return new VerdictStore({ projectRoot, reviewer: identity });
+      return new VerdictStore(testConfig(projectRoot), { reviewer: identity });
     }
 
     /** The live reviewer's true cache identity, hash and all. */

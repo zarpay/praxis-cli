@@ -4,6 +4,7 @@ import type {
   LedgerRecord,
   LedgerRunRecord,
   ProviderUsage,
+  Service,
   WriteLedgerRunInput,
   WriteLedgerRunResult,
 } from "@/types.js";
@@ -24,15 +25,12 @@ import { RunStore } from "@/stores/run-store.js";
  * out no critiques — nothing new was reviewed. A write failure throws:
  * an eval store with optional gaps is not an eval store.
  */
-export default function writeLedgerRunService({
-  root,
-  reviewer,
-  trigger,
-  scope,
-  entries,
-  specUnits,
-}: WriteLedgerRunInput): WriteLedgerRunResult {
-  const runStore = new RunStore({ projectRoot: root });
+const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> = (
+  config,
+  { reviewer, trigger, scope, entries, specUnits },
+) => {
+  const root = config.root;
+  const runStore = new RunStore(config);
   const runId = runStore.mintRunId();
   const timestamp = new Date().toISOString();
   const { commitSha, branch } = gitFacts(root);
@@ -100,7 +98,9 @@ export default function writeLedgerRunService({
   const records: LedgerRecord[] = [run, ...critiques];
 
   return runStore.writeRun(runId, records);
-}
+};
+
+export default writeLedgerRunService;
 
 /**
  * Whether this run opens its reviewer's epoch (02): the first full run

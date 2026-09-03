@@ -1,3 +1,4 @@
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type {
   AssistFileRecord,
   CacheFileData,
@@ -41,22 +42,19 @@ export class VerdictStore {
   /** The reviewer whose entries this addresses. */
   readonly reviewer: CacheReviewerIdentity;
 
-  private readonly projectRoot: string | null;
+  private readonly projectRoot: string;
 
-  constructor({
-    cacheRoot,
-    projectRoot,
-    reviewer,
-  }: {
-    /** Base cache directory; defaults to {projectRoot}/.praxis/cache/validation. */
-    cacheRoot?: string;
-    /** Project root, which cache and spec paths are made relative to. */
-    projectRoot?: string;
-    /** The reviewer whose verdicts are addressed; tests may omit it. */
-    reviewer?: CacheReviewerIdentity;
-  } = {}) {
-    this.projectRoot = projectRoot ?? null;
-    this.root = cacheRoot ?? joinPath(projectRoot ?? process.cwd(), ".praxis/cache/validation");
+  constructor(
+    config: PraxisConfig,
+    {
+      reviewer,
+    }: {
+      /** The reviewer whose verdicts are addressed; readers of unbound state may omit it. */
+      reviewer?: CacheReviewerIdentity;
+    } = {},
+  ) {
+    this.projectRoot = config.root;
+    this.root = joinPath(config.root, ".praxis/cache/validation");
     this.reviewer = reviewer ?? UNBOUND;
   }
 

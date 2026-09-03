@@ -16,7 +16,7 @@ export const analyzeProjectOrchestrator: Orchestrator<StatusOptions> = async (
   ctx,
   { json = false },
 ) => {
-  const report = await buildStatusReportService({ root: ctx.root, config: ctx.config });
+  const report = await buildStatusReportService(ctx.config, {});
 
   const view = statusView({ ...report, json });
   ctx.render(view);

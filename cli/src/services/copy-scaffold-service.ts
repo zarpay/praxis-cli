@@ -1,4 +1,4 @@
-import type { CopyScaffoldInput, CopyScaffoldResult } from "@/types.js";
+import type { CopyScaffoldInput, CopyScaffoldResult, Service } from "@/types.js";
 
 import { copyFile, exists, listFilesRecursive } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
@@ -10,10 +10,10 @@ import { joinPath } from "@/helpers/paths-helper.js";
  * seeds a project, it does not maintain one — so the copy is safe to
  * re-run and reports exactly what it added.
  */
-export default function copyScaffoldService({
-  sourceDir,
-  targetDir,
-}: CopyScaffoldInput): CopyScaffoldResult {
+const copyScaffoldService: Service<CopyScaffoldInput, CopyScaffoldResult> = (
+  _config,
+  { sourceDir, targetDir },
+) => {
   const created: string[] = [];
   let skipped = 0;
 
@@ -30,4 +30,6 @@ export default function copyScaffoldService({
   }
 
   return { created, skipped };
-}
+};
+
+export default copyScaffoldService;

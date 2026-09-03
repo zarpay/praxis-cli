@@ -38,12 +38,12 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
   ctx,
   { yes = false, reject },
 ) => {
-  const { root, config } = ctx;
+  const { config } = ctx;
   const curator = config.curator;
 
   if (!curator) throw errors.curatorNotConfigured();
 
-  const state = deriveTriageStateService({ root });
+  const state = deriveTriageStateService(config, {});
 
   if (state.pending.length === 0) {
     ctx.render([{ channel: "content", entries: ["Nothing pending triage."] }]);
@@ -59,8 +59,7 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
 
   const session: TriageSession = {
     ctx,
-    root,
-    curator,
+    config,
     yes,
     prompter,
     suggestedBy: curator.model,
@@ -81,7 +80,7 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
   prompter.close();
 
   if (session.records.length > 0) {
-    new TriageStore({ projectRoot: root }).appendSession(session.records);
+    new TriageStore(config).appendSession(session.records);
   }
 
   const pendingLeft = state.pending.length - session.assigned - session.dismissed;
@@ -119,14 +118,14 @@ async function organizeAndDecide(
   session: TriageSession,
   pending: PendingCritique[],
 ): Promise<void> {
-  const { axioms } = new AxiomStore({ projectRoot: session.root }).all();
+  const { axioms } = new AxiomStore(session.config).all();
   const established = axioms
     .filter((axiom) => axiom.status === "active")
     .map((axiom) => ({ id: axiom.id, statement: axiom.statement() }));
   const versions = new Map(axioms.map((axiom) => [axiom.id, axiom.version]));
 
   for (const [specPath, critiques] of groupBySpec(pending)) {
-    const specFile = joinPath(session.root, specPath);
+    const specFile = joinPath(session.config.root, specPath);
 
     if (!exists(specFile)) {
       session.ctx.render([
@@ -142,9 +141,7 @@ async function organizeAndDecide(
     let organization;
 
     try {
-      organization = await organizeTriageService({
-        root: session.root,
-        curator: session.curator,
+      organization = await organizeTriageService(session.config, {
         specPath,
         specContent: readText(specFile),
         critiques,
@@ -287,9 +284,7 @@ async function propose(
   let gate;
 
   try {
-    gate = await assessAxiomGateService({
-      root: session.root,
-      curator: session.curator,
+    gate = await assessAxiomGateService(session.config, {
       statement: draft.statement,
       violatingExample: draft.violatingExample,
       compliantExample: draft.compliantExample,
@@ -323,7 +318,7 @@ async function propose(
 
   const statement =
     gate.assessment === "split" && gate.judgmentHalf ? gate.judgmentHalf : draft.statement;
-  const store = new AxiomStore({ projectRoot: session.root });
+  const store = new AxiomStore(session.config);
   const { id } = store.propose({
     statement,
     severity: draft.severity,

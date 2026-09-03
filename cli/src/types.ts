@@ -555,8 +555,6 @@ export interface ReviewUnitInput {
   reviewerConfig: ReviewerConfig;
   /** This reviewer's cache, or null when the cache is disabled. */
   cache: VerdictStore | null;
-  /** Project root. */
-  root: string;
   /** Called as the review progresses, for streamed output. */
   onProgress?: (event: EvalProgress) => void;
 }
@@ -569,8 +567,14 @@ export interface ReviewTargetInput {
   reviewer: Reviewer;
   /** Reviewer-namespaced cache, or null to always call the provider. */
   cache: VerdictStore | null;
-  /** Project root, for resolving a `./relative` provider. */
-  root?: string;
+}
+
+/** One review call: the resolved subject and the instrument. */
+export interface RequestVerdictInput {
+  /** What is being reviewed, already resolved. */
+  target: ReviewSubject;
+  /** The instrument doing the reviewing. */
+  reviewer: Reviewer;
 }
 
 /** A verdict, and how it was obtained. */
@@ -591,7 +595,6 @@ export interface ReviewTargetResult {
 export interface ReviewProjectInput {
   /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
   ledger?: boolean;
-  config: PraxisConfig;
   /** Run only this configured reviewer; omitted runs all of them. */
   reviewer?: string;
   /** Review only the domains of this type; omitted reviews everything. */
@@ -604,7 +607,7 @@ export interface ReviewProjectInput {
   onProgress?: (event: EvalProgress) => void;
 }
 
-export interface ReviewAllInput extends DiscoveryScope {
+export interface ReviewAllInput {
   /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
   ledger?: boolean;
   /** The reviewers to run; every reviewer reviews every unit. */
@@ -657,10 +660,6 @@ export interface ReviewNamedInput {
   ledger?: boolean;
   /** Absolute or cwd-relative target paths. */
   targets: string[];
-  /** Project root. */
-  root: string;
-  /** The project's config: reviewers and spec pattern. */
-  config: PraxisConfig;
   /** Spec override; honored only when exactly one target was named. */
   spec?: string;
   /** Narrow to one configured reviewer by name. */
@@ -699,10 +698,6 @@ export interface ReviewNamedResult {
 export interface CollectVerdictReportsInput {
   /** The target to report on. */
   targetPath: string;
-  /** Project root. */
-  root: string;
-  /** The project's config: reviewers and spec pattern. */
-  config: PraxisConfig;
 }
 
 /** Every reviewer's last recorded opinion of one target. */
@@ -721,15 +716,6 @@ export interface BuildVerdictReportInput {
   targetPath: string;
   /** What the cache holds, or null when it holds nothing. */
   cacheData: CacheFileData | null;
-  /** Filename or glob identifying spec files. */
-  specFilePattern: string;
-  /**
-   * Project root the spec's assist globs resolve against.
-   *
-   * Without it, a spec declaring `context:` or `exemplars:` cannot be
-   * rehashed, and the staleness check is skipped rather than guessed.
-   */
-  root?: string;
 }
 
 /** How `praxis eval run` and `praxis eval ci` were invoked. */
@@ -840,14 +826,16 @@ export type PluginConstructor = new (options: PluginOptions) => CompilerPlugin;
 // Service payloads (domains/spec/services/)
 // ---------------------------------------------------------------------------
 
-/** Where glob patterns are resolved, and what never counts as a match. */
+/** The glob patterns to resolve. */
 export interface ExpandGlobsInput {
   /** Patterns to expand, in the order the author declared them. */
   patterns: string[];
-  /** Project root the patterns resolve against. */
-  root: string;
-  /** Filename or glob identifying spec files, which are never matched. */
-  specFilePattern?: string;
+}
+
+/** The declared references to resolve and read. */
+export interface InlineReferencesInput extends ExpandGlobsInput {
+  /** Prefix for the not-found warning, naming what kind of reference it was. */
+  missingLabel: string;
 }
 
 /** What one declared pattern turned out to match. */
@@ -887,21 +875,11 @@ export interface InlineReferencesResult {
 // ---------------------------------------------------------------------------
 
 /** What compiling needs to know about the project it is compiling in. */
-export interface CompileScope {
-  /** Project root all relative paths resolve against. */
-  root: string;
-  /** Where pure profiles are written, or null to skip them. */
-  agentProfilesOutputDir: string | null;
-  /** Filename or glob identifying spec files, which are never compiled. */
-  specFilePattern: string;
-  /** The enabled output plugins, already constructed. */
-  plugins: CompilerPlugin[];
-}
-
-/** One expert to compile. */
-export interface CompileExpertInput extends CompileScope {
+export interface CompileExpertInput {
   /** Absolute path to the expert markdown file. */
   expertFile: string;
+  /** The enabled output plugins, already constructed. */
+  plugins: CompilerPlugin[];
 }
 
 /**
@@ -918,8 +896,6 @@ export interface WriteProfileOutputsInput {
   metadata: AgentMetadata | null;
   /** The expert's alias, which names the output file. */
   alias: string;
-  /** Resolved profile output directory, or null to skip it. */
-  agentProfilesOutputDir: string | null;
   /** The enabled output plugins, already constructed. */
   plugins: CompilerPlugin[];
 }
@@ -933,9 +909,9 @@ export interface CompileExpertResult {
 }
 
 /** Every expert in a directory. */
-export interface CompileExpertsInput extends CompileScope {
-  /** Directory holding the expert markdown files. */
-  expertsDir: string;
+export interface CompileExpertsInput {
+  /** The enabled output plugins, already constructed. */
+  plugins: CompilerPlugin[];
   /** Called as each expert resolves, for streamed output. */
   onProgress?: (event: CompileProgress) => void;
 }
@@ -956,8 +932,6 @@ export interface CompileExpertsResult {
 
 /** A watch session over a project's source directories. */
 export interface WatchAndCompileInput extends CompileExpertsInput {
-  /** Source directories to watch, relative to the project root. */
-  sources: string[];
   /** How long to wait for a burst of changes to settle. */
   debounceMs?: number;
   /** Called once per directory as watching begins. */
@@ -1005,6 +979,50 @@ export interface AddDocumentResult {
 export type Orchestrator<Options = NoOptions> = BaseOrchestrator<CommandContext, Options>;
 
 /**
+ * A service in this application: the project's config first — the one
+ * scope object every layer may hold — then the work's own input. One
+ * call shape across every service, mirroring `Orchestrator`; a service
+ * with no input of its own is still called with `{}`, and one that
+ * reads no project facts names its first parameter `_config`.
+ */
+export type Service<In, Out> = (config: PraxisConfig, input: In) => Out;
+
+/** The input of a service that needs nothing beyond the config. */
+export type NoInput = NoOptions;
+
+/** The domain whose units to resolve. */
+export interface ResolveUnitsInput {
+  domain: ValidationDomain;
+}
+
+/** How a run narrows the configured reviewers. */
+export interface SelectReviewersInput {
+  /** A reviewer name to narrow to; omitted uses all of them. */
+  only?: string;
+}
+
+/** The run records to segment into epochs. */
+export interface DeriveEpochsInput {
+  runs: LedgerRunRecord[];
+}
+
+/** The reviewers a boundary check covers — a run passes its selected subset. */
+export interface DetectEpochBoundariesInput {
+  reviewers: ReviewerConfig[];
+}
+
+/** The provider a reviewer declares. */
+export interface ResolveProviderInput {
+  /** A built-in registry name, or a ./relative local ESM module path. */
+  spec: string;
+}
+
+/** The diagnostic channel plugin constructors receive. */
+export interface ResolvePluginsInput {
+  logger: Logger;
+}
+
+/**
  * Overrides for a CommandContext. Both default to a fresh instance, so a
  * test can point a context at a tmpdir or collect its diagnostics.
  */
@@ -1012,12 +1030,6 @@ export interface CommandContextOptions {
   paths?: Paths;
   logger?: Logger;
   out?: Display;
-}
-
-/** What assembling a project's health report needs. */
-export interface BuildStatusReportInput {
-  root: string;
-  config: PraxisConfig;
 }
 
 /** What `praxis config show` renders: the file's location and its raw contents. */
@@ -1130,22 +1142,10 @@ export interface DocumentCounts {
   context: number;
 }
 
-/** A project whose cached verdicts should be counted. */
-export interface TallyValidationInput {
-  /** Project root the cache and targets resolve against. */
-  root: string;
-  /** The project's config: reviewers, sources, spec pattern, ignores. */
-  config: PraxisConfig;
-}
-
-/** The experts to audit, and the project they live in. */
+/** The experts to audit. */
 export interface AuditExpertsInput {
   /** Absolute paths to the expert files. */
   expertFiles: string[];
-  /** Project root all references resolve against. */
-  root: string;
-  /** Filename or glob identifying spec files, never a reference target. */
-  specFilePattern: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -1321,7 +1321,6 @@ export interface LedgerEntry {
 
 /** One reviewer's completed run, ready to persist. */
 export interface WriteLedgerRunInput {
-  root: string;
   reviewer: CacheReviewerIdentity;
   trigger: LedgerTrigger;
   scope: LedgerScope;
@@ -1334,12 +1333,6 @@ export interface WriteLedgerRunInput {
 export interface WriteLedgerRunResult {
   runId: string;
   path: string;
-}
-
-/** The reviewers a run is about to use, checked against the ledger. */
-export interface DetectEpochBoundariesInput {
-  root: string;
-  reviewers: ReviewerConfig[];
 }
 
 /**
@@ -1547,8 +1540,6 @@ export interface TraceabilityAssessment {
 
 /** One curator call: rendered prompts and tools in, one tool call out. */
 export interface RequestCuratorCompletionInput {
-  root: string;
-  curator: CuratorConfig;
   systemPrompt: string;
   userPrompt: string;
   tools: readonly unknown[];
@@ -1556,8 +1547,6 @@ export interface RequestCuratorCompletionInput {
 
 /** One spec's pending critiques, ready for the curator to organize. */
 export interface OrganizeTriageInput {
-  root: string;
-  curator: CuratorConfig;
   /** Project-relative spec path, as the critiques record it. */
   specPath: string;
   specContent: string;
@@ -1568,8 +1557,6 @@ export interface OrganizeTriageInput {
 
 /** One candidate axiom for the authoring gate (03). */
 export interface AssessAxiomGateInput {
-  root: string;
-  curator: CuratorConfig;
   statement: string;
   violatingExample: string;
   compliantExample: string;
@@ -1577,8 +1564,6 @@ export interface AssessAxiomGateInput {
 
 /** One proposal to trace against its spec at ratification. */
 export interface AssessTraceabilityInput {
-  root: string;
-  curator: CuratorConfig;
   /** Project-relative spec path the proposal claims to belong to. */
   specPath: string;
   specContent: string;
@@ -1649,11 +1634,6 @@ export interface GitFacts {
   branch: string | null;
 }
 
-/** Whose triage queue to derive. */
-export interface ListTriageStateInput {
-  root: string;
-}
-
 /** The derived triage queue and its residual counters. */
 export interface TriageState {
   /** Open-channel critiques no assignment or dismissal covers yet. */
@@ -1667,8 +1647,7 @@ export interface TriageState {
 /** What one interactive triage session accumulates as it walks clusters. */
 export interface TriageSession {
   ctx: CommandContext;
-  root: string;
-  curator: CuratorConfig;
+  config: PraxisConfig;
   yes: boolean;
   prompter: Prompter;
   /** The curator model, recorded as the suggester in every assignment. */
@@ -1735,19 +1714,12 @@ export interface EpochSeries {
 
 /** One file's population relative to one axiom's clock (01). */
 export interface DerivePopulationInput {
-  root: string;
   /** Project-relative, as critique records carry it. */
   filePath: string;
   /** The axiom's `introduced` date, YYYY-MM-DD. */
   axiomIntroduced: string;
   /** Shared memo across one report build. */
   birthdates: Map<string, string | null>;
-}
-
-/** Whose corpus to count opportunity denominators for. */
-export interface CountSpecUnitsInput {
-  root: string;
-  config: PraxisConfig;
 }
 
 /** One rate, floor-aware: rendered only with its denominator (07). */
@@ -1778,7 +1750,6 @@ export interface ReportScope {
 
 /** Everything `resolve-report-scope` needs to build a scope. */
 export interface ResolveReportScopeInput {
-  root: string;
   target?: string;
   since?: string;
   branch?: string;
@@ -1883,21 +1854,13 @@ export interface DebtReport {
 
 /** What the eval-report builder computes over. */
 export interface BuildEvalReportInput {
-  root: string;
-  config: PraxisConfig;
   scoped: ScopedLedger;
 }
 
 /** The single-axiom drill-down's inputs. */
 export interface BuildAxiomReportInput {
-  root: string;
   scoped: ScopedLedger;
   axiomId: string;
-}
-
-/** The debt report builder's inputs. */
-export interface BuildDebtReportInput {
-  root: string;
 }
 
 /** Options for `praxis eval report`. */

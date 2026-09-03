@@ -1,4 +1,4 @@
-import type { AssessTraceabilityInput, TraceabilityAssessment } from "@/types.js";
+import type { AssessTraceabilityInput, Service, TraceabilityAssessment } from "@/types.js";
 
 import curatorSystemPrompt from "@/prompts/curator-system-prompt.js";
 import traceabilityQuestion from "@/prompts/traceability-question.js";
@@ -13,16 +13,11 @@ import requestCuratorCompletionService from "@/services/request-curator-completi
  * location reads as not traceable — a generous reading here corrupts
  * every rate computed under the axiom later.
  */
-export default async function assessTraceability({
-  root,
-  curator,
-  specPath,
-  specContent,
-  statement,
-}: AssessTraceabilityInput): Promise<TraceabilityAssessment> {
-  const completion = await requestCuratorCompletionService({
-    root,
-    curator,
+const assessTraceabilityService: Service<
+  AssessTraceabilityInput,
+  Promise<TraceabilityAssessment>
+> = async (config, { specPath, specContent, statement }) => {
+  const completion = await requestCuratorCompletionService(config, {
     systemPrompt: curatorSystemPrompt(),
     userPrompt: traceabilityQuestion({ specPath, specContent, statement }),
     tools: traceabilityTools(),
@@ -45,4 +40,6 @@ export default async function assessTraceability({
     reasoning: wire.reasoning ?? "",
     usage: completion.usage,
   };
-}
+};
+
+export default assessTraceabilityService;

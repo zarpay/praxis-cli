@@ -10,6 +10,7 @@ import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
@@ -117,7 +118,7 @@ describe("triageAxiomsOrchestrator", () => {
 
     const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { yes: true });
 
-    const { axioms } = new AxiomStore({ projectRoot: root }).all();
+    const { axioms } = new AxiomStore(testConfig(root)).all();
     const proposal = axioms.find((axiom) => axiom.status === "proposed");
     const records = triageRecords(root);
     const assignments = records.filter((record) => record.kind === "assignment");
@@ -152,7 +153,7 @@ describe("triageAxiomsOrchestrator", () => {
 
     const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { yes: true });
 
-    const { axioms } = new AxiomStore({ projectRoot: root }).all();
+    const { axioms } = new AxiomStore(testConfig(root)).all();
 
     expect(outcome).toBe("ok");
     expect(axioms).toHaveLength(0);

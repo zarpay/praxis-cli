@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import derivePopulationService from "@/services/derive-population-service.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 /** Runs git quietly in the test repo, with a controllable commit date. */
 function git(root: string, env: Record<string, string>, ...args: string[]): void {
@@ -45,14 +46,12 @@ describe("derivePopulationService", () => {
     commitFile("new.ts", "2026-09-01");
     const birthdates = new Map<string, string | null>();
 
-    const old = derivePopulationService({
-      root,
+    const old = derivePopulationService(testConfig(root), {
       filePath: "old.ts",
       axiomIntroduced: "2026-06-01",
       birthdates,
     });
-    const fresh = derivePopulationService({
-      root,
+    const fresh = derivePopulationService(testConfig(root), {
       filePath: "new.ts",
       axiomIntroduced: "2026-06-01",
       birthdates,
@@ -67,14 +66,12 @@ describe("derivePopulationService", () => {
     commitFile("doc.ts", "2026-05-01");
     const birthdates = new Map<string, string | null>();
 
-    const underOldAxiom = derivePopulationService({
-      root,
+    const underOldAxiom = derivePopulationService(testConfig(root), {
       filePath: "doc.ts",
       axiomIntroduced: "2026-04-01",
       birthdates,
     });
-    const underNewAxiom = derivePopulationService({
-      root,
+    const underNewAxiom = derivePopulationService(testConfig(root), {
       filePath: "doc.ts",
       axiomIntroduced: "2026-06-01",
       birthdates,
@@ -85,8 +82,7 @@ describe("derivePopulationService", () => {
   });
 
   it("answers unknown outside git — never guessed", () => {
-    const population = derivePopulationService({
-      root,
+    const population = derivePopulationService(testConfig(root), {
       filePath: "doc.ts",
       axiomIntroduced: "2026-06-01",
       birthdates: new Map(),
@@ -100,8 +96,7 @@ describe("derivePopulationService", () => {
     commitFile("doc.ts", "2026-05-01");
     const birthdates = new Map<string, string | null>();
 
-    derivePopulationService({
-      root,
+    derivePopulationService(testConfig(root), {
       filePath: "doc.ts",
       axiomIntroduced: "2026-06-01",
       birthdates,

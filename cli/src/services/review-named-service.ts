@@ -5,6 +5,7 @@ import type {
   LedgerEntry,
   ReviewNamedInput,
   ReviewNamedResult,
+  Service,
   Verdict,
 } from "@/types.js";
 
@@ -36,18 +37,13 @@ import { VerdictStore } from "@/stores/verdict-store.js";
  *
  * @throws PraxisError when no reviewer is usable, or a target has no spec
  */
-export default async function reviewNamed({
-  targets,
-  root,
+const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> = async (
   config,
-  spec,
-  reviewer: only,
-  useCache = true,
-  ledger = true,
-  onTarget,
-}: ReviewNamedInput): Promise<ReviewNamedResult> {
-  const reviewers = selectReviewersService({ configured: config.reviewers, only });
-  const specStore = new SpecStore({ root, specFilePattern: config.specFilePattern });
+  { targets, spec, reviewer: only, useCache = true, ledger = true, onTarget },
+) => {
+  const root = config.root;
+  const reviewers = selectReviewersService(config, { only });
+  const specStore = new SpecStore(config);
   const specOverride = targets.length === 1 ? spec : undefined;
   const entriesByReviewer = new Map<string, LedgerEntry[]>();
   const specUnits: Record<string, number> = {};
@@ -60,8 +56,7 @@ export default async function reviewNamed({
       targetPath,
       specPath: specOverride ?? specStore.governingPath(targetPath),
       root,
-      checklistFor: (resolvedSpec) =>
-        new AxiomStore({ projectRoot: root }).checklistFor(resolvedSpec),
+      checklistFor: (resolvedSpec) => new AxiomStore(config).checklistFor(resolvedSpec),
     });
 
     const specKey = relativePath(root, subject.specPath);
@@ -70,16 +65,14 @@ export default async function reviewNamed({
     const verdicts: { reviewerName: string; verdict: Verdict }[] = [];
 
     for (const reviewerConfig of reviewers) {
-      const { verdict, cacheHit, usage } = await reviewTargetService({
+      const { verdict, cacheHit, usage } = await reviewTargetService(config, {
         target: subject,
         reviewer: Reviewer.fromConfig(reviewerConfig),
         cache: useCache
-          ? new VerdictStore({
-              projectRoot: root,
+          ? new VerdictStore(config, {
               reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
             })
           : null,
-        root,
       });
 
       verdicts.push({ reviewerName: reviewerConfig.name, verdict });
@@ -120,8 +113,7 @@ export default async function reviewNamed({
 
       if (!entries || entries.length === 0) continue;
 
-      writeLedgerRunService({
-        root,
+      writeLedgerRunService(config, {
         reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
         trigger: "manual",
         scope: "files",
@@ -132,7 +124,9 @@ export default async function reviewNamed({
   }
 
   return { errors, warnings };
-}
+};
+
+export default reviewNamedService;
 
 /**
  * Collapses one target's critiques into findings (08, 06).

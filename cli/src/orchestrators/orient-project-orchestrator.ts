@@ -13,10 +13,8 @@ import orientationView from "@/views/orientation-view.js";
  * degrades to the pointer that matters: `praxis init`.
  */
 export const orientProjectOrchestrator: Orchestrator = async (ctx) => {
-  let root: string;
-
   try {
-    root = ctx.root;
+    void ctx.root;
   } catch (err) {
     if (!(err instanceof PraxisError)) throw err;
 
@@ -32,7 +30,7 @@ export const orientProjectOrchestrator: Orchestrator = async (ctx) => {
     return "ok";
   }
 
-  const orientation = buildOrientationService({ root });
+  const orientation = buildOrientationService(ctx.config, {});
   const view = orientationView(orientation);
 
   ctx.render(view);

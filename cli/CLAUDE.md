@@ -91,11 +91,16 @@ skill and slash-command documents the Claude Code plugin installs. One emitted
 file, one typed function, one source.
 
 **Services and orchestrators are functions, not classes.** One file, one
-default-exported function, taking a single input payload and returning a single
-result — both declared in `src/types.ts`. Nothing to construct, nothing
-to inject, nothing to mock; a test calls the function with a literal. It is the
-same one-per-file rule the prompts already follow — and the commands too, each
-one a default-exported `CommandRegistrar` that `index.ts` is the only caller of.
+default-exported function. An orchestrator takes `(ctx, options)`; a service
+takes `(config, input)` — `PraxisConfig` first, the one scope object every
+layer may hold, then the work's own input, both declared in `src/types.ts`.
+Project facts (root, sources, specFilePattern, ignore, reviewers, curator)
+ride in the config and never reappear as input fields; the input carries only
+what is particular to the call. Nothing to construct, nothing to inject,
+nothing to mock; a test calls the function with `testConfig(root, overrides)`
+and a literal. It is the same one-per-file rule the prompts already follow —
+and the commands too, each one a default-exported `CommandRegistrar` that
+`index.ts` is the only caller of.
 
 Classes remain for four things, and only these:
 
@@ -124,12 +129,13 @@ supplies only what the CLI cannot, like `{ ci: true }`. A command therefore impo
 its orchestrators, and nothing else; the orchestrator owns the response, rendering
 included, and hands back only a `CommandOutcome` for the exit code.
 
-Both layers state their signature as a named type rather than a convention, each
-applied to the exported const: `CommandRegistrar` (`src/types.ts`) for a command
-file, and `Orchestrator<Options>` (`src/types.ts`) for what it
-calls. That fixes the arity, so an orchestrator taking no options is
-still called with `{}` — `analyzeProject(ctx, {})` — and there is one call shape
-across every command. They are all `async`, which gives `prepareOrchestrator` one shape to
+All three layers state their signature as a named type rather than a
+convention, each applied to the exported const: `CommandRegistrar`
+(`src/types.ts`) for a command file, `Orchestrator<Options>` for what it
+calls, and `Service<In, Out>` for what that delegates to. That fixes the
+arity, so an orchestrator taking no options is still called with `{}` —
+`analyzeProject(ctx, {})` — and a service with no input likewise —
+`buildStatusReportService(config, {})` — one call shape across every layer. They are all `async`, which gives `prepareOrchestrator` one shape to
 await and one channel for failures: a non-async function returning
 `Promise.resolve()` throws synchronously, which is a second signature in disguise.
 

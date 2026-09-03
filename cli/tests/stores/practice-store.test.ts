@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { PracticeStore } from "@/stores/practice-store.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 /** A minimal valid practice document. */
 function practiceContent(title: string): string {
@@ -18,7 +19,7 @@ describe("PracticeStore", () => {
   beforeEach(() => {
     practicesDir = join(tmpdir(), `praxis-practice-store-test-${randomUUID()}`);
     mkdirSync(practicesDir, { recursive: true });
-    store = new PracticeStore({ practicesDir, specFilePattern: "README.md" });
+    store = new PracticeStore(testConfig(practicesDir, { practicesDir: "." }));
   });
 
   afterEach(() => {
@@ -48,7 +49,7 @@ describe("PracticeStore", () => {
 
   describe("add", () => {
     it("scaffolds a practice from its template, placeholders filled", () => {
-      const created = store.add("review-pull-requests", tmpdir());
+      const created = store.add("review-pull-requests");
 
       const content = readFileSync(join(practicesDir, "review-pull-requests.md"), "utf-8");
 
@@ -61,7 +62,7 @@ describe("PracticeStore", () => {
       const existing = join(practicesDir, "existing.md");
       writeFileSync(existing, "# My custom content\n");
 
-      expect(() => store.add("existing", tmpdir())).toThrow("File already exists");
+      expect(() => store.add("existing")).toThrow("File already exists");
       expect(readFileSync(existing, "utf-8")).toBe("# My custom content\n");
     });
   });
@@ -70,9 +71,7 @@ describe("PracticeStore", () => {
     it("names the practices no expert references", () => {
       writeFileSync(join(practicesDir, "in-force.md"), practiceContent("In Force"));
       writeFileSync(join(practicesDir, "orphaned.md"), practiceContent("Orphaned"));
-      const inForce = join(practicesDir, "in-force.md").slice(tmpdir().length + 1);
-
-      const orphans = store.orphans(new Set([inForce]), tmpdir());
+      const orphans = store.orphans(new Set(["in-force.md"]));
 
       expect(orphans).toEqual(["orphaned.md"]);
     });

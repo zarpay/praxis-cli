@@ -1,4 +1,4 @@
-import type { ExpandGlobsInput, InlineReferencesResult } from "@/types.js";
+import type { InlineReferencesInput, InlineReferencesResult, Service } from "@/types.js";
 
 import { exists, readText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
@@ -16,20 +16,15 @@ import expandGlobsService from "@/services/expand-globs-service.js";
  * The two failures are distinct on purpose. A glob matching nothing is
  * a pattern the author expected to hit something. A plain path that
  * does not exist is a reference to a file that isn't there.
- *
- * @param missingLabel - Prefix for the not-found warning, naming what
- *   kind of reference it was
  */
-export default async function inlineReferences({
-  patterns,
-  root,
-  specFilePattern,
-  missingLabel,
-}: ExpandGlobsInput & { missingLabel: string }): Promise<InlineReferencesResult> {
+const inlineReferencesService: Service<
+  InlineReferencesInput,
+  Promise<InlineReferencesResult>
+> = async (config, { patterns, missingLabel }) => {
   const bodies: string[] = [];
   const warnings: string[] = [];
 
-  const expansions = await expandGlobsService({ patterns, root, specFilePattern });
+  const expansions = await expandGlobsService(config, { patterns });
 
   for (const { pattern, isGlob, matches } of expansions) {
     if (isGlob && matches.length === 0) {
@@ -37,7 +32,7 @@ export default async function inlineReferences({
     }
 
     for (const relPath of matches) {
-      const fullPath = joinPath(root, relPath);
+      const fullPath = joinPath(config.root, relPath);
 
       if (!exists(fullPath)) {
         warnings.push(`${missingLabel}: ${relPath}`);
@@ -49,4 +44,6 @@ export default async function inlineReferences({
   }
 
   return { bodies, warnings };
-}
+};
+
+export default inlineReferencesService;

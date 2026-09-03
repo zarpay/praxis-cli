@@ -37,13 +37,8 @@ describe("watchAndCompileService", () => {
 
     // The command renders these events; the test captures them the same way.
     watch = (debounceMs) =>
-      watchAndCompileService({
-        root: tmpdir,
-        sources: config.sources,
-        expertsDir: config.expertsDir,
-        specFilePattern: config.specFilePattern,
-        agentProfilesOutputDir: config.agentProfilesOutputDir,
-        plugins: resolvePluginsService(config.plugins, tmpdir, logger),
+      watchAndCompileService(config, {
+        plugins: resolvePluginsService(config, { logger }),
         debounceMs,
         onWatch: (dir) => logger.info(`Watching ${dir} for changes...`),
         onRecompile: (filename) =>

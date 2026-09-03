@@ -1,6 +1,11 @@
-import type { ReviewSubject } from "@/models/review-subject.js";
-import type { Reviewer } from "@/models/reviewer.js";
-import type { ChecklistAxiom, Critique, ProviderRequest, ProviderResult } from "@/types.js";
+import type {
+  ChecklistAxiom,
+  Critique,
+  ProviderRequest,
+  ProviderResult,
+  RequestVerdictInput,
+  Service,
+} from "@/types.js";
 
 import { PraxisError, errors } from "@/helpers/errors-helper.js";
 import reviewTools from "@/prompts/review-tools.js";
@@ -17,16 +22,14 @@ import resolveProviderService from "@/services/resolve-provider-service.js";
  * the backend, and the usage comes back with the verdict rather than
  * being stashed for a later read.
  *
- * @param root - Project root, for resolving a `./relative` provider
  * @throws PraxisError when the key is missing, the provider cannot be
  *   resolved, or (wrapped) when the provider itself fails
  */
-export default async function requestVerdict(
-  target: ReviewSubject,
-  reviewer: Reviewer,
-  root?: string,
-): Promise<ProviderResult> {
-  const provider = await resolveProviderService(reviewer.provider, root);
+const requestVerdictService: Service<RequestVerdictInput, Promise<ProviderResult>> = async (
+  config,
+  { target, reviewer },
+) => {
+  const provider = await resolveProviderService(config, { spec: reviewer.provider });
 
   const request: ProviderRequest = {
     systemPrompt: systemPrompt(),
@@ -59,7 +62,9 @@ export default async function requestVerdict(
 
     throw errors.reviewProviderFailed(provider.name, (err as Error).message);
   }
-}
+};
+
+export default requestVerdictService;
 
 /**
  * Settles each critique's channel against the actual checklist.

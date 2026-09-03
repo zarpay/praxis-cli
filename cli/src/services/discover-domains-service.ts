@@ -1,11 +1,11 @@
-import type { DiscoveryScope, ValidationDomain } from "@/types.js";
+import type { PraxisConfig } from "@/models/praxis-config.js";
+import type { NoInput, Service, ValidationDomain } from "@/types.js";
 
 import fg from "fast-glob";
 
-import { isContentFile, readText } from "@/helpers/files-helper.js";
+import { isContentFile } from "@/helpers/files-helper.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/helpers/paths-helper.js";
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
-import { SpecFile } from "@/models/spec-file.js";
+import { SpecStore } from "@/stores/spec-store.js";
 
 /**
  * Every spec in the source directories, with what it governs.
@@ -17,44 +17,24 @@ import { SpecFile } from "@/models/spec-file.js";
  *
  * @throws PraxisError when a spec's frontmatter is malformed
  */
-export default function discoverDomains({
-  root,
-  sources,
-  specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
-  absoluteIgnore = [],
-}: DiscoveryScope): ValidationDomain[] {
-  const domains: ValidationDomain[] = [];
+const discoverDomainsService: Service<NoInput, ValidationDomain[]> = (config) => {
+  const store = new SpecStore(config);
 
-  for (const source of sources) {
-    const specPaths = fg.sync(`**/${specFilePattern}`, {
-      cwd: joinPath(root, source),
-      onlyFiles: true,
-      absolute: true,
-      dot: true,
-    });
+  return store.filesIn(config.sources).map((specPath) => domainFor(store, specPath, config));
+};
 
-    for (const specPath of specPaths) {
-      domains.push(domainFor(specPath, root, specFilePattern, absoluteIgnore));
-    }
-  }
-
-  return domains;
-}
+export default discoverDomainsService;
 
 /** One spec's domain: what it governs, and what is shielded from it. */
-function domainFor(
-  specPath: string,
-  root: string,
-  specFilePattern: string,
-  absoluteIgnore: string[],
-): ValidationDomain {
-  const spec = SpecFile.fromContent(readText(specPath), specPath, root);
+function domainFor(store: SpecStore, specPath: string, config: PraxisConfig): ValidationDomain {
+  const root = config.root;
+  const spec = store.read(specPath);
   const dir = parentDir(specPath);
   const excludes = spec.excludes.map((p) => joinPath(root, p));
   const exemplars = spec.exemplars.map((p) => joinPath(root, p));
   // Exemplars are shielded from adverse review exactly like excludes;
   // they reach the reviewer only as inlined positives.
-  const ignore = [...absoluteIgnore, ...excludes, ...exemplars];
+  const ignore = [...config.absoluteIgnore, ...excludes, ...exemplars];
 
   const domain: ValidationDomain = {
     dir,
@@ -72,7 +52,7 @@ function domainFor(
   } else if (spec.paths.length > 0) {
     domain.targetFiles = fg
       .sync(spec.paths, { cwd: root, onlyFiles: true, absolute: true, dot: true, ignore })
-      .filter((file) => isContentFile(file, specFilePattern));
+      .filter((file) => isContentFile(file, config.specFilePattern));
   }
 
   return domain;

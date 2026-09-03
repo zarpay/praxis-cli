@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Reviewer } from "@/models/reviewer.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
 import { seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 const FLASH: ReviewerConfig = { name: "flash", model: "some/model", apiKeyEnvVar: "KEY" };
 
@@ -30,7 +31,7 @@ describe("detectEpochBoundariesService", () => {
   });
 
   it("finds no boundary in an empty ledger — bootstrap is not a change", () => {
-    const boundaries = detectEpochBoundariesService({ root, reviewers: [FLASH] });
+    const boundaries = detectEpochBoundariesService(testConfig(root), { reviewers: [FLASH] });
 
     expect(boundaries).toEqual([]);
   });
@@ -38,7 +39,7 @@ describe("detectEpochBoundariesService", () => {
   it("finds no boundary when the current hash has run before", () => {
     seedLedgerRun(root, { name: "flash", hash: currentHash(FLASH) });
 
-    const boundaries = detectEpochBoundariesService({ root, reviewers: [FLASH] });
+    const boundaries = detectEpochBoundariesService(testConfig(root), { reviewers: [FLASH] });
 
     expect(boundaries).toEqual([]);
   });
@@ -46,7 +47,7 @@ describe("detectEpochBoundariesService", () => {
   it("finds a boundary when the reviewer has history and its hash is new", () => {
     seedLedgerRun(root, { name: "flash", hash: "00000000" });
 
-    const boundaries = detectEpochBoundariesService({ root, reviewers: [FLASH] });
+    const boundaries = detectEpochBoundariesService(testConfig(root), { reviewers: [FLASH] });
 
     expect(boundaries).toHaveLength(1);
     expect(boundaries[0].reviewerName).toBe("flash");
@@ -60,7 +61,7 @@ describe("detectEpochBoundariesService", () => {
     seedLedgerRun(root, { name: "flash", hash: "00000000", timestamp: "2026-09-01T10:00:00.000Z" });
     seedLedgerRun(root, { name: "flash", hash: known, timestamp: "2026-09-01T11:00:00.000Z" });
 
-    const boundaries = detectEpochBoundariesService({ root, reviewers: [FLASH] });
+    const boundaries = detectEpochBoundariesService(testConfig(root), { reviewers: [FLASH] });
 
     expect(boundaries).toEqual([]);
   });
@@ -69,7 +70,9 @@ describe("detectEpochBoundariesService", () => {
     const newcomer: ReviewerConfig = { name: "v32", model: "other/model", apiKeyEnvVar: "KEY" };
     seedLedgerRun(root, { name: "flash", hash: currentHash(FLASH) });
 
-    const boundaries = detectEpochBoundariesService({ root, reviewers: [FLASH, newcomer] });
+    const boundaries = detectEpochBoundariesService(testConfig(root), {
+      reviewers: [FLASH, newcomer],
+    });
 
     expect(boundaries).toEqual([]);
   });
@@ -88,7 +91,7 @@ describe("detectEpochBoundariesService", () => {
       timestamp: "2026-07-01T00:00:00.000Z",
     });
 
-    const boundaries = detectEpochBoundariesService({ root, reviewers: [FLASH] });
+    const boundaries = detectEpochBoundariesService(testConfig(root), { reviewers: [FLASH] });
 
     expect(boundaries[0].previousHash).toBe("00000000");
     expect(boundaries[0].previousModel).toBe("old/model");

@@ -1,4 +1,4 @@
-import type { AssessAxiomGateInput, GateAssessment } from "@/types.js";
+import type { AssessAxiomGateInput, GateAssessment, Service } from "@/types.js";
 
 import curatorSystemPrompt from "@/prompts/curator-system-prompt.js";
 import gateQuestion from "@/prompts/gate-question.js";
@@ -13,16 +13,11 @@ import requestCuratorCompletionService from "@/services/request-curator-completi
  * An unrecognized wire value reads as `not_appropriate`: the gate's
  * fail-safe direction is refusing a candidate, never admitting one.
  */
-export default async function assessAxiomGate({
-  root,
-  curator,
-  statement,
-  violatingExample,
-  compliantExample,
-}: AssessAxiomGateInput): Promise<GateAssessment> {
-  const completion = await requestCuratorCompletionService({
-    root,
-    curator,
+const assessAxiomGateService: Service<AssessAxiomGateInput, Promise<GateAssessment>> = async (
+  config,
+  { statement, violatingExample, compliantExample },
+) => {
+  const completion = await requestCuratorCompletionService(config, {
     systemPrompt: curatorSystemPrompt(),
     userPrompt: gateQuestion({ statement, violatingExample, compliantExample }),
     tools: gateTools(),
@@ -45,4 +40,6 @@ export default async function assessAxiomGate({
     judgmentHalf: assessment === "split" ? (wire.judgment_half ?? null) : null,
     usage: completion.usage,
   };
-}
+};
+
+export default assessAxiomGateService;

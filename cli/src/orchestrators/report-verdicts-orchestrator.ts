@@ -16,11 +16,7 @@ export const reportVerdictsOrchestrator: Orchestrator<ReportVerdictsOptions> = a
   ctx,
   { target, verbose = false },
 ) => {
-  const { reports, named } = collectVerdictReportsService({
-    targetPath: target,
-    root: ctx.root,
-    config: ctx.config,
-  });
+  const { reports, named } = collectVerdictReportsService(ctx.config, { targetPath: target });
 
   const view = verdictReportsView({ reports, named, verbose });
 

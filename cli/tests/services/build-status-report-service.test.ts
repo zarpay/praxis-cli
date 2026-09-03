@@ -11,8 +11,7 @@ describe("buildStatusReportService", () => {
   let tmpdir: string;
   let cleanup: () => void;
   /** The report for a project root, read fresh from its config file. */
-  const reportFor = (root: string) =>
-    buildStatusReportService({ root, config: new PraxisConfig(root) });
+  const reportFor = (root: string) => buildStatusReportService(new PraxisConfig(root), {});
 
   beforeEach(() => {
     const dir = createCompilerTmpdir();
@@ -238,7 +237,7 @@ describe("buildStatusReportService", () => {
   it("carries the situational-poll facts (09-ae)", async () => {
     const { root, cleanup } = createValidatorTmpdir({ sources: ["docs"], files: {} });
 
-    const report = await buildStatusReportService({ root, config: new PraxisConfig(root) });
+    const report = await buildStatusReportService(new PraxisConfig(root), {});
 
     cleanup();
 

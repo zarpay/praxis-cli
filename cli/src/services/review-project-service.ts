@@ -1,4 +1,4 @@
-import type { ReviewAllResult, ReviewProjectInput } from "@/types.js";
+import type { ReviewAllResult, ReviewProjectInput, Service } from "@/types.js";
 
 import reviewAllService from "@/services/review-all-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
@@ -14,20 +14,13 @@ import selectReviewersService from "@/services/select-reviewers-service.js";
  * @throws PraxisError when no reviewer is usable, or `type` matches no
  *   discovered domain
  */
-export default async function reviewProjectService({
+const reviewProjectService: Service<ReviewProjectInput, Promise<ReviewAllResult>> = async (
   config,
-  reviewer,
-  type,
-  failFast = false,
-  useCache = true,
-  ledger = true,
-  onProgress,
-}: ReviewProjectInput): Promise<ReviewAllResult> {
-  const scope = config.discoveryScope();
-  const reviewers = selectReviewersService({ configured: config.reviewers, only: reviewer });
+  { reviewer, type, failFast = false, useCache = true, ledger = true, onProgress },
+) => {
+  const reviewers = selectReviewersService(config, { only: reviewer });
 
-  return reviewAllService({
-    ...scope,
+  return reviewAllService(config, {
     reviewers,
     type,
     failFast,
@@ -35,4 +28,6 @@ export default async function reviewProjectService({
     ledger,
     onProgress,
   });
-}
+};
+
+export default reviewProjectService;

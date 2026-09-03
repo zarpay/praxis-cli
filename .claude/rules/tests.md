@@ -32,7 +32,9 @@ nothing.
   project-internal module.
 - Fixtures: build throwaway projects with the `@tests/helpers/*` tmpdir
   builders; never compute paths by counting `..` past one level — that has
-  broken on every directory move.
+  broken on every directory move. The config a service or store needs is
+  `testConfig(root, overrides)` (`@tests/helpers/test-config`) — assembled in
+  memory, so overriding one field never means writing a config file.
 - **Domain fixtures are shared factories, not per-file literals.** An axiom
   document is `axiomContent`/`seedAxiom` (`@tests/helpers/axiom-fixtures`); a
   ledger record is `seedLedgerRun`/`critiqueLine` (`@tests/helpers/ledger-runs`).

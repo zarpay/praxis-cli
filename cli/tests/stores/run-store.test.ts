@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { RunStore } from "@/stores/run-store.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 describe("RunStore", () => {
   let root: string;
@@ -14,7 +15,7 @@ describe("RunStore", () => {
   beforeEach(() => {
     root = join(tmpdir(), `praxis-run-store-test-${randomUUID()}`);
     mkdirSync(root, { recursive: true });
-    store = new RunStore({ projectRoot: root });
+    store = new RunStore(testConfig(root));
   });
 
   afterEach(() => {

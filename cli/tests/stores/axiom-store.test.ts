@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { AxiomFile } from "@/models/axiom-file.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { seedAxiom as seedSharedAxiom } from "@tests/helpers/axiom-fixtures.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 /** A draft as triage would accept it. */
 function draft() {
@@ -26,7 +27,7 @@ describe("AxiomStore", () => {
   beforeEach(() => {
     root = join(tmpdir(), `praxis-axiom-store-test-${randomUUID()}`);
     mkdirSync(root, { recursive: true });
-    store = new AxiomStore({ projectRoot: root });
+    store = new AxiomStore(testConfig(root));
   });
 
   afterEach(() => {

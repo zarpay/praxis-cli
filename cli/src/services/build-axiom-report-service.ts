@@ -1,8 +1,7 @@
-import type { AxiomReport, AxiomReportRow, BuildAxiomReportInput } from "@/types.js";
+import type { AxiomReport, AxiomReportRow, BuildAxiomReportInput, Service } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { rateCell } from "@/helpers/metrics-helper.js";
-import { PraxisConfig } from "@/models/praxis-config.js";
 import buildEvalReportService from "@/services/build-eval-report-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 
@@ -14,17 +13,16 @@ import { AxiomStore } from "@/stores/axiom-store.js";
  *
  * @throws PraxisError when no axiom carries the id
  */
-export default function buildAxiomReport({
-  root,
-  scoped,
-  axiomId,
-}: BuildAxiomReportInput): AxiomReport {
-  const { axioms } = new AxiomStore({ projectRoot: root }).all();
+const buildAxiomReportService: Service<BuildAxiomReportInput, AxiomReport> = (
+  config,
+  { scoped, axiomId },
+) => {
+  const { axioms } = new AxiomStore(config).all();
   const axiom = axioms.find((candidate) => candidate.id === axiomId);
 
   if (!axiom) throw errors.axiomNotFound(axiomId);
 
-  const report = buildEvalReportService({ root, config: new PraxisConfig(root), scoped });
+  const report = buildEvalReportService(config, { scoped });
   const evidenceRows = report.axioms.filter((row) => row.axiomId === axiomId);
 
   // An axiom nobody has violated in scope still reports: one empty row,
@@ -64,4 +62,6 @@ export default function buildAxiomReport({
     rows,
     examples,
   };
-}
+};
+
+export default buildAxiomReportService;

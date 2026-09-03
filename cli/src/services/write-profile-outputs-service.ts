@@ -1,4 +1,4 @@
-import type { WriteProfileOutputsInput } from "@/types.js";
+import type { Service, WriteProfileOutputsInput } from "@/types.js";
 
 import { writeText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
@@ -12,13 +12,12 @@ import evalTargetingTemplate from "@/templates/eval-targeting-template.js";
  * read as a spec, which is why it carries the targeting frontmatter:
  * `validates:` compiles through as `paths:` here.
  */
-export default function writeProfileOutputs({
-  profile,
-  metadata,
-  alias,
-  agentProfilesOutputDir,
-  plugins,
-}: WriteProfileOutputsInput): void {
+const writeProfileOutputsService: Service<WriteProfileOutputsInput, void> = (
+  config,
+  { profile, metadata, alias, plugins },
+) => {
+  const agentProfilesOutputDir = config.agentProfilesOutputDir;
+
   if (agentProfilesOutputDir) {
     const targeting = metadata ? evalTargetingTemplate(metadata) : [];
     const content =
@@ -30,4 +29,6 @@ export default function writeProfileOutputs({
   for (const plugin of plugins) {
     plugin.compile(profile, metadata, alias);
   }
-}
+};
+
+export default writeProfileOutputsService;

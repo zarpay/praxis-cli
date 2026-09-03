@@ -1,4 +1,4 @@
-import type { CompileScope } from "@/types.js";
+import type { CompilerPlugin } from "@/types.js";
 import type { Logger } from "@framework/views/logger.js";
 
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -20,7 +20,8 @@ describe("compileExpertsService", () => {
   let cleanup: () => void;
   let logOutput: () => string;
   let logger: Logger;
-  let scope: CompileScope;
+  let config: PraxisConfig;
+  let plugins: CompilerPlugin[];
 
   beforeEach(() => {
     const ctx = createCompilerTmpdir();
@@ -33,18 +34,13 @@ describe("compileExpertsService", () => {
     const capture = createCaptureLogger();
     logger = capture.logger;
     logOutput = capture.output;
-    const config = new PraxisConfig(tmpdir);
-    scope = {
-      root: tmpdir,
-      specFilePattern: config.specFilePattern,
-      agentProfilesOutputDir: config.agentProfilesOutputDir,
-      plugins: resolvePluginsService(config.plugins, tmpdir, logger),
-    };
+    config = new PraxisConfig(tmpdir);
+    plugins = resolvePluginsService(config, { logger });
   });
 
   /** Compiles one expert, routing its warnings to the capture logger. */
   async function compileFile(expertFile: string) {
-    const result = await compileExpertService({ ...scope, expertFile });
+    const result = await compileExpertService(config, { expertFile, plugins });
 
     for (const message of result.warnings) logger.warn(message);
 
@@ -53,9 +49,8 @@ describe("compileExpertsService", () => {
 
   /** Compiles every expert, routing warnings and skips to the capture logger. */
   async function compileAll() {
-    return compileExpertsService({
-      ...scope,
-      expertsDir,
+    return compileExpertsService(config, {
+      plugins,
       onProgress: (event) => {
         if (event.kind === "warning") logger.warn(event.message);
         else if (event.kind === "skipped") logger.warn(`Skipping ${event.file}: ${event.reason}`);
@@ -397,12 +392,9 @@ describe("compileExpertsService", () => {
       const reloaded = new PraxisConfig(tmpdir);
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await compileExpertService({
+      await compileExpertService(reloaded, {
         expertFile,
-        root: tmpdir,
-        specFilePattern: reloaded.specFilePattern,
-        agentProfilesOutputDir: reloaded.agentProfilesOutputDir,
-        plugins: resolvePluginsService(reloaded.plugins, tmpdir, logger),
+        plugins: resolvePluginsService(reloaded, { logger }),
       });
 
       // Plugin output exists, profile dir does not
@@ -423,12 +415,9 @@ describe("compileExpertsService", () => {
       const reloaded = new PraxisConfig(tmpdir);
       const expertFile = join(expertsDir, "test-expert.md");
 
-      await compileExpertService({
+      await compileExpertService(reloaded, {
         expertFile,
-        root: tmpdir,
-        specFilePattern: reloaded.specFilePattern,
-        agentProfilesOutputDir: reloaded.agentProfilesOutputDir,
-        plugins: resolvePluginsService(reloaded.plugins, tmpdir, logger),
+        plugins: resolvePluginsService(reloaded, { logger }),
       });
 
       // Profile exists, plugin output does not

@@ -26,7 +26,7 @@ describe("countSpecUnitsService", () => {
     });
     cleanups.push(cleanup);
 
-    const counts = countSpecUnitsService({ root, config: new PraxisConfig(root) });
+    const counts = countSpecUnitsService(new PraxisConfig(root), {});
 
     expect(counts["docs/README.md"]).toBe(2);
     expect(counts["src/README.md"]).toBe(3);
@@ -36,7 +36,7 @@ describe("countSpecUnitsService", () => {
     const { root, cleanup } = createValidatorTmpdir({ sources: ["docs"], files: {} });
     cleanups.push(cleanup);
 
-    const counts = countSpecUnitsService({ root, config: new PraxisConfig(root) });
+    const counts = countSpecUnitsService(new PraxisConfig(root), {});
 
     expect(counts).toEqual({});
   });

@@ -24,34 +24,30 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
   ctx,
   { alias, watch = false },
 ) => {
-  const { root, config, logger } = ctx;
+  const { config, logger } = ctx;
 
   // Plugins are constructed once per invocation, not per expert: the
   // Claude Code plugin writes its manifest on first compile and must not
   // repeat it for every agent.
   const input = {
-    root,
-    expertsDir: config.expertsDir,
-    specFilePattern: config.specFilePattern,
-    agentProfilesOutputDir: config.agentProfilesOutputDir,
-    plugins: resolvePluginsService(config.plugins, root, logger),
+    plugins: resolvePluginsService(config, { logger }),
     onProgress: (event: CompileProgress) => ctx.render(compileProgressView(event)),
   };
 
   // When an alias is given, compile only that expert and skip the watch mode.
   // Otherwise, compile every expert and optionally watch for changes.
   if (alias) {
-    const store = new ExpertStore({
-      expertsDir: config.expertsDir,
-      specFilePattern: config.specFilePattern,
-    });
+    const store = new ExpertStore(config);
     const expert = store.byAlias(alias);
 
     if (!expert) {
       throw errors.expertNotFound(alias);
     }
 
-    const result = await compileExpertService({ ...input, expertFile: expert.path });
+    const result = await compileExpertService(config, {
+      plugins: input.plugins,
+      expertFile: expert.path,
+    });
 
     const view = compileResultView(result);
     ctx.render(view);
@@ -61,7 +57,7 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
     return "ok";
   }
 
-  const { compiled } = await compileExpertsService(input);
+  const { compiled } = await compileExpertsService(config, input);
 
   const view = compileResultView({ compiled });
   ctx.render(view);
@@ -86,12 +82,11 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
     ctx.render(view);
   };
 
-  watchAndCompileService({
+  watchAndCompileService(config, {
     ...input,
     onWatch,
     onRecompile,
-    sources: config.sources,
-    onError: (message) => logger.error(message),
+    onError: (message: string) => logger.error(message),
   });
 
   return "ok";

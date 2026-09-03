@@ -14,7 +14,7 @@ export const pruneCacheOrchestrator: Orchestrator = async (ctx) => {
   const liveHashes = new Set(
     ctx.config.reviewers.map((reviewer) => Reviewer.fromConfig(reviewer).hash()),
   );
-  const store = new VerdictStore({ projectRoot: ctx.root });
+  const store = new VerdictStore(ctx.config);
   const result = store.prune(liveHashes);
 
   ctx.render(pruneView(result));

@@ -13,7 +13,7 @@ export const reportDebtOrchestrator: Orchestrator<DebtReportOptions> = async (
   ctx,
   { json = false },
 ) => {
-  const report = buildDebtReportService({ root: ctx.root });
+  const report = buildDebtReportService(ctx.config, {});
   const view = debtReportView({ ...report, json });
 
   ctx.render(view);

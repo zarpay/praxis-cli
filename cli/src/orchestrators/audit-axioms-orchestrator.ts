@@ -20,20 +20,17 @@ export const auditAxiomsOrchestrator: Orchestrator<AuditAxiomsOptions> = async (
   ctx,
   { json = false },
 ) => {
-  const { root, config } = ctx;
-  const curator = config.curator;
+  const { config } = ctx;
 
-  if (!curator) throw errors.curatorNotConfigured();
+  if (!config.curator) throw errors.curatorNotConfigured();
 
-  const { axioms } = new AxiomStore({ projectRoot: root }).all();
+  const { axioms } = new AxiomStore(config).all();
   const active = axioms.filter((axiom) => axiom.status === "active");
 
   const rows = [];
 
   for (const axiom of active) {
-    const gate = await assessAxiomGateService({
-      root,
-      curator,
+    const gate = await assessAxiomGateService(config, {
       statement: axiom.statement(),
       violatingExample: axiom.violatingExample(),
       compliantExample: axiom.compliantExample(),

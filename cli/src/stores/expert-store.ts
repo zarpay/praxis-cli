@@ -1,3 +1,4 @@
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { AddDocumentResult, StoreProblem } from "@/types.js";
 
 import fg from "fast-glob";
@@ -20,25 +21,16 @@ import expertFileTemplate from "@/templates/expert-file-template.js";
  * message, not a search that happened past it).
  */
 export class ExpertStore {
+  private readonly root: string;
   private readonly expertsDir: string;
   private readonly specFilePattern: string;
   private readonly ignore: string[];
 
-  constructor({
-    expertsDir,
-    specFilePattern,
-    ignore = [],
-  }: {
-    /** Absolute path of the experts directory. */
-    expertsDir: string;
-    /** Spec filename or glob, never listed as an expert. */
-    specFilePattern: string;
-    /** Absolute glob patterns to exclude, from the project's ignore config. */
-    ignore?: string[];
-  }) {
-    this.expertsDir = expertsDir;
-    this.specFilePattern = specFilePattern;
-    this.ignore = ignore;
+  constructor(config: PraxisConfig) {
+    this.root = config.root;
+    this.expertsDir = config.expertsDir;
+    this.specFilePattern = config.specFilePattern;
+    this.ignore = config.absoluteIgnore;
   }
 
   /** Absolute paths of every expert document, sorted. */
@@ -76,12 +68,11 @@ export class ExpertStore {
    * editing it.
    *
    * @param name - Kebab-case name for the new file
-   * @param root - Project root the reported path is relative to
    * @throws PraxisError when the target already exists
    */
-  add(name: string, root: string): AddDocumentResult {
+  add(name: string): AddDocumentResult {
     const targetFile = joinPath(this.expertsDir, `${name}.md`);
-    const path = relativePath(root, targetFile);
+    const path = relativePath(this.root, targetFile);
 
     if (exists(targetFile)) {
       throw errors.fileAlreadyExists(path);

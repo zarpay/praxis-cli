@@ -1,4 +1,4 @@
-import type { CompileExpertInput, CompileExpertResult } from "@/types.js";
+import type { CompileExpertInput, CompileExpertResult, Service } from "@/types.js";
 
 import { readText } from "@/helpers/files-helper.js";
 import { ExpertFile } from "@/models/expert-file.js";
@@ -16,17 +16,14 @@ import writeProfileOutputsService from "@/services/write-profile-outputs-service
  *
  * @throws PraxisError when the file is not a valid expert document
  */
-export default async function compileExpert({
-  expertFile,
-  root,
-  specFilePattern,
-  agentProfilesOutputDir,
-  plugins,
-}: CompileExpertInput): Promise<CompileExpertResult> {
+const compileExpertService: Service<CompileExpertInput, Promise<CompileExpertResult>> = async (
+  config,
+  { expertFile, plugins },
+) => {
   const expert = ExpertFile.fromContent(readText(expertFile), expertFile);
 
   const inline = (patterns: string[], missingLabel: string) =>
-    inlineReferencesService({ patterns, root, specFilePattern, missingLabel });
+    inlineReferencesService(config, { patterns, missingLabel });
 
   const [responsibilities, constitution, context, reference] = await Promise.all([
     inline(expert.refs("practices"), "Referenced file not found"),
@@ -47,7 +44,7 @@ export default async function compileExpert({
     ...reference.warnings,
   ];
 
-  const profile = buildProfileService({
+  const profile = buildProfileService(config, {
     role: expert.body(),
     responsibilities: responsibilities.bodies,
     constitution: constitution.bodies,
@@ -55,16 +52,17 @@ export default async function compileExpert({
     reference: reference.bodies,
   });
 
-  writeProfileOutputsService({
+  writeProfileOutputsService(config, {
     profile,
     metadata,
     alias: expert.alias,
-    agentProfilesOutputDir,
     plugins,
   });
 
   return { alias: expert.alias, warnings };
-}
+};
+
+export default compileExpertService;
 
 /**
  * The whole-key warning for a constitution that resolved to nothing.

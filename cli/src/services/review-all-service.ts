@@ -6,6 +6,7 @@ import type {
   ReviewAllInput,
   ReviewAllResult,
   ReviewUnitInput,
+  Service,
   TargetVerdict,
   ValidationDomain,
 } from "@/types.js";
@@ -13,7 +14,6 @@ import type {
 import { errors } from "@/helpers/errors-helper.js";
 import { readText } from "@/helpers/files-helper.js";
 import { baseName, relativePath } from "@/helpers/paths-helper.js";
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import discoverDomainsService from "@/services/discover-domains-service.js";
@@ -43,37 +43,23 @@ import { VerdictStore } from "@/stores/verdict-store.js";
  *
  * @throws PraxisError only when `type` matches no discovered domain
  */
-export default async function reviewAll({
-  root,
-  sources,
-  specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
-  absoluteIgnore = [],
-  reviewers,
-  useCache = true,
-  failFast = false,
-  ledger = true,
-  type,
-  onProgress,
-}: ReviewAllInput): Promise<ReviewAllResult> {
-  const scope = { root, sources, specFilePattern, absoluteIgnore };
-  const domains = selectDomains(discoverDomainsService(scope), type);
+const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = async (
+  config,
+  { reviewers, useCache = true, failFast = false, ledger = true, type, onProgress },
+) => {
+  const root = config.root;
+  const domains = selectDomains(discoverDomainsService(config, {}), type);
 
   // Each reviewer gets its own cache bound to its identity: verdicts share
   // one file per target, keyed by (spec, reviewer) so they never collide.
   const caches = reviewers.map((reviewer) =>
     useCache
-      ? new VerdictStore({
-          projectRoot: root,
-          reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
-        })
+      ? new VerdictStore(config, { reviewer: Reviewer.fromConfig(reviewer).cacheIdentity() })
       : null,
   );
 
   const queue = domains.flatMap((domain) =>
-    resolveUnitsService({ domain, specFilePattern, absoluteIgnore }).map((unit) => ({
-      unit,
-      domain,
-    })),
+    resolveUnitsService(config, { domain }).map((unit) => ({ unit, domain })),
   );
 
   const specUnits: Record<string, number> = {};
@@ -106,13 +92,12 @@ export default async function reviewAll({
         reviewerName: reviewers.length > 1 ? reviewerConfig.name : undefined,
       });
 
-      const { verdict, cacheHit, evidence } = await reviewUnit({
+      const { verdict, cacheHit, evidence } = await reviewUnit(config, {
         unit,
         specPath: domain.specPath,
         type: domain.type,
         reviewerConfig,
         cache: caches[reviewerIndex] ?? null,
-        root,
         onProgress,
       });
 
@@ -130,8 +115,7 @@ export default async function reviewAll({
     }
 
     if (ledger && entries.length > 0) {
-      writeLedgerRunService({
-        root,
+      writeLedgerRunService(config, {
         reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
         trigger: "manual",
         scope: "corpus",
@@ -141,12 +125,7 @@ export default async function reviewAll({
     }
   }
 
-  const documentStore = new DocumentStore({
-    root,
-    sources,
-    specFilePattern,
-    ignore: absoluteIgnore,
-  });
+  const documentStore = new DocumentStore(config);
   const sourceDocs = new Set(documentStore.paths());
 
   return {
@@ -155,7 +134,9 @@ export default async function reviewAll({
     stoppedEarly,
     summary: summarize(verdicts, sourceDocs),
   };
-}
+};
+
+export default reviewAllService;
 
 /** Whether a unit reviews a set of files rather than the one at its path. */
 function isCohort(unit: EvalUnit): boolean {
@@ -187,19 +168,15 @@ function selectDomains(domains: ValidationDomain[], type?: string): ValidationDo
  * real money. Returns what happened and whether the cache answered, and
  * mutates nothing: the caller keeps its own tallies.
  */
-async function reviewUnit({
-  unit,
-  specPath,
-  type,
-  reviewerConfig,
-  cache,
-  root,
-  onProgress,
-}: ReviewUnitInput): Promise<{
-  verdict: TargetVerdict;
-  cacheHit: boolean;
-  evidence: LedgerEvidence | null;
-}> {
+const reviewUnit: Service<
+  ReviewUnitInput,
+  Promise<{
+    verdict: TargetVerdict;
+    cacheHit: boolean;
+    evidence: LedgerEvidence | null;
+  }>
+> = async (config, { unit, specPath, type, reviewerConfig, cache, onProgress }) => {
+  const root = config.root;
   const identity = {
     path: unit.path,
     type,
@@ -215,14 +192,13 @@ async function reviewUnit({
       kind: cohort ? "cohort" : "file",
       specPath,
       root,
-      checklistFor: (spec) => new AxiomStore({ projectRoot: root }).checklistFor(spec),
+      checklistFor: (spec) => new AxiomStore(config).checklistFor(spec),
     });
 
-    const { verdict, cacheHit, usage } = await reviewTargetService({
+    const { verdict, cacheHit, usage } = await reviewTargetService(config, {
       target,
       reviewer: Reviewer.fromConfig(reviewerConfig),
       cache,
-      root,
     });
 
     onProgress?.({ kind: "verdict", verdict });
@@ -255,7 +231,7 @@ async function reviewUnit({
       },
     };
   }
-}
+};
 
 /**
  * Assembles a cohort's members into one review input, each labeled

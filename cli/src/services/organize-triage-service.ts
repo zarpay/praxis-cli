@@ -5,6 +5,7 @@ import type {
   Severity,
   TriageCluster,
   TriageOrganization,
+  Service,
   TriageSuggestion,
   TriageWireCluster,
 } from "@/types.js";
@@ -23,12 +24,11 @@ import requestCuratorCompletionService from "@/services/request-curator-completi
  * trusted — a curator hallucination must cost human attention, never
  * corrupt an assignment.
  */
-export default async function organizeTriage(
-  input: OrganizeTriageInput,
-): Promise<TriageOrganization> {
-  const completion = await requestCuratorCompletionService({
-    root: input.root,
-    curator: input.curator,
+const organizeTriageService: Service<OrganizeTriageInput, Promise<TriageOrganization>> = async (
+  config,
+  input,
+) => {
+  const completion = await requestCuratorCompletionService(config, {
     systemPrompt: curatorSystemPrompt(),
     userPrompt: triageQuestion(input),
     tools: triageTools(),
@@ -43,7 +43,9 @@ export default async function organizeTriage(
     .filter((cluster) => cluster.critiqueIds.length > 0);
 
   return { clusters, usage: completion.usage };
-}
+};
+
+export default organizeTriageService;
 
 /** One wire cluster, validated into the domain shape. */
 function normalizeCluster(

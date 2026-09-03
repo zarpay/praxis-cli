@@ -1,9 +1,8 @@
-import type { DiscoveryScope, EvalUnit, ValidationDomain } from "@/types.js";
+import type { EvalUnit, ResolveUnitsInput, Service } from "@/types.js";
 
 import fg from "fast-glob";
 
 import { isContentFile } from "@/helpers/files-helper.js";
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
 
 /**
  * The review units a domain should review.
@@ -13,12 +12,9 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
  * is nothing to review. `by_file` yields one unit per target file, from
  * `paths:` when declared, otherwise the spec's sibling .md files.
  */
-export default function resolveUnits({
-  domain,
-  specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
-  absoluteIgnore = [],
-}: Omit<DiscoveryScope, "root" | "sources"> & { domain: ValidationDomain }): EvalUnit[] {
-  const shielded = [...absoluteIgnore, ...domain.excludes, ...domain.exemplars];
+const resolveUnitsService: Service<ResolveUnitsInput, EvalUnit[]> = (config, { domain }) => {
+  const specFilePattern = config.specFilePattern;
+  const shielded = [...config.absoluteIgnore, ...domain.excludes, ...domain.exemplars];
 
   if (domain.cohort === "by_directory") {
     return (domain.targetDirs ?? [])
@@ -34,7 +30,9 @@ export default function resolveUnits({
     path: file,
     files: [file],
   }));
-}
+};
+
+export default resolveUnitsService;
 
 /** A cohort directory's member files, sorted. */
 function members(dir: string, shielded: string[], specFilePattern: string): string[] {

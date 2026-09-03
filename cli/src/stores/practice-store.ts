@@ -1,3 +1,4 @@
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { AddDocumentResult, StoreProblem } from "@/types.js";
 
 import fg from "fast-glob";
@@ -18,25 +19,16 @@ import practiceFileTemplate from "@/templates/practice-file-template.js";
  * file is reported, never fatal to the sweep.
  */
 export class PracticeStore {
+  private readonly root: string;
   private readonly practicesDir: string;
   private readonly specFilePattern: string;
   private readonly ignore: string[];
 
-  constructor({
-    practicesDir,
-    specFilePattern,
-    ignore = [],
-  }: {
-    /** Absolute path of the practices directory. */
-    practicesDir: string;
-    /** Spec filename or glob, never listed as a practice. */
-    specFilePattern: string;
-    /** Absolute glob patterns to exclude, from the project's ignore config. */
-    ignore?: string[];
-  }) {
-    this.practicesDir = practicesDir;
-    this.specFilePattern = specFilePattern;
-    this.ignore = ignore;
+  constructor(config: PraxisConfig) {
+    this.root = config.root;
+    this.practicesDir = config.practicesDir;
+    this.specFilePattern = config.specFilePattern;
+    this.ignore = config.absoluteIgnore;
   }
 
   /** Absolute paths of every practice document, sorted. */
@@ -61,12 +53,11 @@ export class PracticeStore {
    * overwrite: an existing document is the author's work.
    *
    * @param name - Kebab-case name for the new file
-   * @param root - Project root the reported path is relative to
    * @throws PraxisError when the target already exists
    */
-  add(name: string, root: string): AddDocumentResult {
+  add(name: string): AddDocumentResult {
     const targetFile = joinPath(this.practicesDir, `${name}.md`);
-    const path = relativePath(root, targetFile);
+    const path = relativePath(this.root, targetFile);
 
     if (exists(targetFile)) {
       throw errors.fileAlreadyExists(path);
@@ -85,11 +76,10 @@ export class PracticeStore {
    * agent carries it — it is written but not in force.
    *
    * @param referenced - Project-relative paths some expert points at
-   * @param root - Project root the practice paths are made relative to
    */
-  orphans(referenced: Set<string>, root: string): string[] {
+  orphans(referenced: Set<string>): string[] {
     return this.files()
-      .filter((file) => !referenced.has(relativePath(root, file)))
+      .filter((file) => !referenced.has(relativePath(this.root, file)))
       .map((file) => baseName(file));
   }
 

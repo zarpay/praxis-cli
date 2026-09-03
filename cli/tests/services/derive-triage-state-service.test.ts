@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import { TriageStore } from "@/stores/triage-store.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 describe("deriveTriageStateService", () => {
   let root: string;
@@ -23,7 +24,7 @@ describe("deriveTriageStateService", () => {
   });
 
   it("derives an empty queue from an empty ledger", () => {
-    expect(deriveTriageStateService({ root })).toEqual({
+    expect(deriveTriageStateService(testConfig(root), {})).toEqual({
       pending: [],
       assignments: [],
       dismissed: 0,
@@ -41,7 +42,7 @@ describe("deriveTriageStateService", () => {
       ],
     });
 
-    const { pending } = deriveTriageStateService({ root });
+    const { pending } = deriveTriageStateService(testConfig(root), {});
     const ids = pending.map((critique) => critique.id);
 
     expect(ids).toEqual(["r1:1"]);
@@ -79,9 +80,9 @@ describe("deriveTriageStateService", () => {
         timestamp: "2026-09-03T10:00:00.000Z",
       },
     ];
-    new TriageStore({ projectRoot: root }).appendSession(records);
+    new TriageStore(testConfig(root)).appendSession(records);
 
-    const state = deriveTriageStateService({ root });
+    const state = deriveTriageStateService(testConfig(root), {});
     const ids = state.pending.map((critique) => critique.id);
 
     expect(ids).toEqual(["r1:3"]);
@@ -90,7 +91,7 @@ describe("deriveTriageStateService", () => {
   });
 
   it("counts rejections for the residual signal", () => {
-    new TriageStore({ projectRoot: root }).appendSession([
+    new TriageStore(testConfig(root)).appendSession([
       {
         kind: "rejection",
         axiom_id: "AX-bbbb22",
@@ -99,6 +100,6 @@ describe("deriveTriageStateService", () => {
       },
     ]);
 
-    expect(deriveTriageStateService({ root }).rejectedProposals).toBe(1);
+    expect(deriveTriageStateService(testConfig(root), {}).rejectedProposals).toBe(1);
   });
 });

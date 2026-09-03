@@ -1,3 +1,4 @@
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { DocumentCounts } from "@/types.js";
 
 import fg from "fast-glob";
@@ -5,7 +6,6 @@ import fg from "fast-glob";
 import { isContentFile, readText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { DocumentFile } from "@/models/document-file.js";
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
 
 /**
  * The source trees' documents, swept untyped: every authored markdown
@@ -27,25 +27,11 @@ export class DocumentStore {
   private readonly specFilePattern: string;
   private readonly ignore: string[];
 
-  constructor({
-    root,
-    sources,
-    specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
-    ignore = [],
-  }: {
-    /** Project root the source directories resolve against. */
-    root: string;
-    /** Source directories, relative to the root. */
-    sources: string[];
-    /** Spec filename or glob, never listed as a document. */
-    specFilePattern?: string;
-    /** Absolute glob patterns to exclude, from the project's ignore config. */
-    ignore?: string[];
-  }) {
-    this.root = root;
-    this.sources = sources;
-    this.specFilePattern = specFilePattern;
-    this.ignore = ignore;
+  constructor(config: PraxisConfig) {
+    this.root = config.root;
+    this.sources = config.sources;
+    this.specFilePattern = config.specFilePattern;
+    this.ignore = config.absoluteIgnore;
   }
 
   /** Absolute paths of every document across the source directories. */

@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { TriageStore } from "@/stores/triage-store.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 describe("TriageStore", () => {
   let root: string;
@@ -13,7 +14,7 @@ describe("TriageStore", () => {
   beforeEach(() => {
     root = join(tmpdir(), `praxis-triage-store-test-${randomUUID()}`);
     mkdirSync(root, { recursive: true });
-    store = new TriageStore({ projectRoot: root });
+    store = new TriageStore(testConfig(root));
   });
 
   afterEach(() => {

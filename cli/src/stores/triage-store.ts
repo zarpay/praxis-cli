@@ -1,3 +1,4 @@
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { TriageRecord, WriteLedgerRunResult } from "@/types.js";
 
 import { exists, listFilesRecursive, readText, writeText } from "@/helpers/files-helper.js";
@@ -18,8 +19,8 @@ import { TriageSessionFile } from "@/models/triage-session-file.js";
 export class TriageStore {
   private readonly triageDir: string;
 
-  constructor({ projectRoot }: { projectRoot: string }) {
-    this.triageDir = joinPath(projectRoot, ".praxis", "ledger", "triage");
+  constructor(config: PraxisConfig) {
+    this.triageDir = joinPath(config.root, ".praxis", "ledger", "triage");
   }
 
   /** Every triage decision on record, across all session files. */

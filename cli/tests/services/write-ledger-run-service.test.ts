@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 const REVIEWER = { name: "flash", model: "some/model", hash: "abcd1234" };
 
@@ -44,8 +45,7 @@ describe("writeLedgerRunService", () => {
     entries: LedgerEntry[],
     scope: "corpus" | "files" = "corpus",
   ): { runId: string; path: string; run: LedgerRunRecord; critiques: LedgerCritiqueRecord[] } {
-    const { runId, path } = writeLedgerRunService({
-      root,
+    const { runId, path } = writeLedgerRunService(testConfig(root), {
       reviewer: REVIEWER,
       trigger: "manual",
       scope,
@@ -94,8 +94,7 @@ describe("writeLedgerRunService", () => {
   });
 
   it("stamps spec_units onto the run record when the caller supplies them", () => {
-    const { path } = writeLedgerRunService({
-      root,
+    const { path } = writeLedgerRunService(testConfig(root), {
       reviewer: REVIEWER,
       trigger: "manual",
       scope: "corpus",
@@ -126,8 +125,7 @@ describe("writeLedgerRunService", () => {
     it("re-baselines when a new hash opens its epoch after history", () => {
       writeAndRead([entry()], "corpus");
 
-      const { runId, path } = writeLedgerRunService({
-        root,
+      const { runId, path } = writeLedgerRunService(testConfig(root), {
         reviewer: { ...REVIEWER, hash: "ffff9999" },
         trigger: "manual",
         scope: "corpus",

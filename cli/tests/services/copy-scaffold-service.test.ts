@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import copyScaffoldService from "@/services/copy-scaffold-service.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 describe("copyScaffoldService", () => {
   let sourceDir: string;
@@ -27,7 +28,7 @@ describe("copyScaffoldService", () => {
   });
 
   it("copies the whole tree, dotfiles included, reporting what it added", () => {
-    const result = copyScaffoldService({ sourceDir, targetDir });
+    const result = copyScaffoldService(testConfig(targetDir), { sourceDir, targetDir });
 
     expect(result.created.sort()).toEqual([".praxis/config.json", "README.md", "nested/deep.md"]);
     expect(result.skipped).toBe(0);
@@ -37,7 +38,7 @@ describe("copyScaffoldService", () => {
   it("never overwrites — an existing file is skipped and kept", () => {
     writeFileSync(join(targetDir, "README.md"), "# Mine");
 
-    const result = copyScaffoldService({ sourceDir, targetDir });
+    const result = copyScaffoldService(testConfig(targetDir), { sourceDir, targetDir });
 
     expect(result.skipped).toBe(1);
     expect(result.created).not.toContain("README.md");
@@ -45,9 +46,9 @@ describe("copyScaffoldService", () => {
   });
 
   it("is idempotent: a second run creates nothing", () => {
-    copyScaffoldService({ sourceDir, targetDir });
+    copyScaffoldService(testConfig(targetDir), { sourceDir, targetDir });
 
-    const again = copyScaffoldService({ sourceDir, targetDir });
+    const again = copyScaffoldService(testConfig(targetDir), { sourceDir, targetDir });
 
     expect(again.created).toEqual([]);
     expect(again.skipped).toBe(3);

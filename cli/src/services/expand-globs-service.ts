@@ -1,10 +1,9 @@
-import type { ExpandGlobsInput, GlobExpansion } from "@/types.js";
+import type { ExpandGlobsInput, GlobExpansion, Service } from "@/types.js";
 
 import fg from "fast-glob";
 
 import { hasGlobChars, matchesFilename } from "@/helpers/files-helper.js";
 import { baseName } from "@/helpers/paths-helper.js";
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
 
 /**
  * Resolves an expert's declared patterns to the files they match.
@@ -22,27 +21,28 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
  *
  * @returns One entry per input pattern, in declaration order
  */
-export default async function expandGlobs({
-  patterns,
-  root,
-  specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
-}: ExpandGlobsInput): Promise<GlobExpansion[]> {
+const expandGlobsService: Service<ExpandGlobsInput, Promise<GlobExpansion[]>> = (
+  config,
+  { patterns },
+) => {
   return Promise.all(
     patterns.map(async (pattern) => {
       if (!hasGlobChars(pattern)) {
         return { pattern, isGlob: false, matches: [pattern] };
       }
 
-      const matched = await fg(pattern, { cwd: root, onlyFiles: true });
+      const matched = await fg(pattern, { cwd: config.root, onlyFiles: true });
 
       return {
         pattern,
         isGlob: true,
-        matches: matched.filter((match) => !isExcluded(match, specFilePattern)).sort(),
+        matches: matched.filter((match) => !isExcluded(match, config.specFilePattern)).sort(),
       };
     }),
   );
-}
+};
+
+export default expandGlobsService;
 
 /** Whether a matched path is a template or a spec, never inlined content. */
 function isExcluded(filePath: string, specFilePattern: string): boolean {

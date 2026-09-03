@@ -10,11 +10,8 @@ import documentCreatedView from "@/views/document-created-view.js";
  * template and say where it landed.
  */
 export const addExpertOrchestrator: Orchestrator<AddDocumentOptions> = async (ctx, { name }) => {
-  const store = new ExpertStore({
-    expertsDir: ctx.config.expertsDir,
-    specFilePattern: ctx.config.specFilePattern,
-  });
-  const created = store.add(name, ctx.root);
+  const store = new ExpertStore(ctx.config);
+  const created = store.add(name);
 
   const view = documentCreatedView(created);
   ctx.render(view);

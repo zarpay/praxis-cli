@@ -1,4 +1,4 @@
-import type { CompileExpertsInput, CompileExpertsResult } from "@/types.js";
+import type { CompileExpertsInput, CompileExpertsResult, Service } from "@/types.js";
 
 import { baseName } from "@/helpers/paths-helper.js";
 import compileExpertService from "@/services/compile-expert-service.js";
@@ -15,15 +15,11 @@ import { ExpertStore } from "@/stores/expert-store.js";
  * outcome through `onProgress` as it happens, and the failures again in
  * the result.
  */
-export default async function compileExperts({
-  expertsDir,
-  root,
-  specFilePattern,
-  agentProfilesOutputDir,
-  plugins,
-  onProgress,
-}: CompileExpertsInput): Promise<CompileExpertsResult> {
-  const store = new ExpertStore({ expertsDir, specFilePattern });
+const compileExpertsService: Service<CompileExpertsInput, Promise<CompileExpertsResult>> = async (
+  config,
+  { plugins, onProgress },
+) => {
+  const store = new ExpertStore(config);
   const expertFiles = store.files();
   const skipped: CompileExpertsResult["skipped"] = [];
   let compiled = 0;
@@ -32,13 +28,7 @@ export default async function compileExperts({
     const name = baseName(expertFile);
 
     try {
-      const result = await compileExpertService({
-        expertFile,
-        root,
-        specFilePattern,
-        agentProfilesOutputDir,
-        plugins,
-      });
+      const result = await compileExpertService(config, { expertFile, plugins });
 
       for (const message of result.warnings) {
         onProgress?.({ kind: "warning", message });
@@ -55,4 +45,6 @@ export default async function compileExperts({
   }
 
   return { compiled, skipped };
-}
+};
+
+export default compileExpertsService;

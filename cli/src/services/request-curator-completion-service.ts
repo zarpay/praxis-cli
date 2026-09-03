@@ -2,6 +2,7 @@ import type {
   ProviderCompletion,
   ProviderRequest,
   RequestCuratorCompletionInput,
+  Service,
 } from "@/types.js";
 
 import { PraxisError, errors } from "@/helpers/errors-helper.js";
@@ -16,17 +17,19 @@ import resolveProviderService from "@/services/resolve-provider-service.js";
  * modules (the offline test seam) — but its calls are raw completions:
  * the curator's tools own their own shapes, so nothing here parses.
  *
- * @throws PraxisError when the provider cannot complete(), or fails
+ * @throws PraxisError without a curator, when the provider cannot
+ *   complete(), or when it fails
  */
-export default async function requestCuratorCompletion({
-  root,
-  curator,
-  systemPrompt,
-  userPrompt,
-  tools,
-}: RequestCuratorCompletionInput): Promise<ProviderCompletion> {
+const requestCuratorCompletionService: Service<
+  RequestCuratorCompletionInput,
+  Promise<ProviderCompletion>
+> = async (config, { systemPrompt, userPrompt, tools }) => {
+  const curator = config.curator;
+
+  if (!curator) throw errors.curatorNotConfigured();
+
   const identity = Reviewer.fromConfig({ name: "curator", ...curator });
-  const provider = await resolveProviderService(identity.provider, root);
+  const provider = await resolveProviderService(config, { spec: identity.provider });
 
   if (!provider.complete) {
     throw errors.providerCannotComplete(provider.name);
@@ -50,4 +53,6 @@ export default async function requestCuratorCompletion({
 
     throw errors.reviewProviderFailed(provider.name, (err as Error).message);
   }
-}
+};
+
+export default requestCuratorCompletionService;

@@ -1,4 +1,4 @@
-import type { ListTriageStateInput, TriageState } from "@/types.js";
+import type { NoInput, Service, TriageState } from "@/types.js";
 
 import { RunStore } from "@/stores/run-store.js";
 import { TriageStore } from "@/stores/triage-store.js";
@@ -12,15 +12,15 @@ import { TriageStore } from "@/stores/triage-store.js";
  * Checklist-born critiques were never pending: they arrived assigned.
  * The counters alongside are the residual signal's raw material.
  */
-export default function deriveTriageState({ root }: ListTriageStateInput): TriageState {
-  const records = new TriageStore({ projectRoot: root }).records();
+const deriveTriageStateService: Service<NoInput, TriageState> = (config) => {
+  const records = new TriageStore(config).records();
   const settled = new Set(
     records
       .filter((record) => record.kind === "assignment" || record.kind === "dismissal")
       .map((record) => record.critique_id),
   );
 
-  const pending = new RunStore({ projectRoot: root })
+  const pending = new RunStore(config)
     .critiques()
     .filter((critique) => critique.axiom_id === null)
     .filter((critique) => !settled.has(critique.id))
@@ -40,4 +40,6 @@ export default function deriveTriageState({ root }: ListTriageStateInput): Triag
     dismissed: records.filter((record) => record.kind === "dismissal").length,
     rejectedProposals: records.filter((record) => record.kind === "rejection").length,
   };
-}
+};
+
+export default deriveTriageStateService;

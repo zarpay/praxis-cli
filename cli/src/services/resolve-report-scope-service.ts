@@ -1,4 +1,4 @@
-import type { ResolveReportScopeInput, ScopedLedger } from "@/types.js";
+import type { ResolveReportScopeInput, ScopedLedger, Service } from "@/types.js";
 
 import picomatch from "picomatch";
 
@@ -15,15 +15,12 @@ import { RunStore } from "@/stores/run-store.js";
  * so the report can render 12's missing-commit note instead of erroring:
  * squash workflows orphan branch shas by policy.
  */
-export default function resolveReportScope({
-  root,
-  target,
-  since,
-  branch,
-  commit,
-  commits,
-}: ResolveReportScopeInput): ScopedLedger {
-  const runStore = new RunStore({ projectRoot: root });
+const resolveReportScopeService: Service<ResolveReportScopeInput, ScopedLedger> = (
+  config,
+  { target, since, branch, commit, commits },
+) => {
+  const root = config.root;
+  const runStore = new RunStore(config);
   const allRuns = runStore.runs();
 
   const requestedShas = commit ? [commit, ...(commits ?? [])] : (commits ?? null);
@@ -73,7 +70,9 @@ export default function resolveReportScope({
     runs,
     critiques,
   };
-}
+};
+
+export default resolveReportScopeService;
 
 /**
  * `--since` accepts an ISO date, or any git ref whose commit date

@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { ExpertStore } from "@/stores/expert-store.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 /** A minimal valid expert document. */
 function expertContent(title: string, alias: string): string {
@@ -27,7 +28,7 @@ describe("ExpertStore", () => {
   beforeEach(() => {
     expertsDir = join(tmpdir(), `praxis-expert-store-test-${randomUUID()}`);
     mkdirSync(expertsDir, { recursive: true });
-    store = new ExpertStore({ expertsDir, specFilePattern: "README.md" });
+    store = new ExpertStore(testConfig(expertsDir, { expertsDir: "." }));
   });
 
   afterEach(() => {
@@ -35,10 +36,7 @@ describe("ExpertStore", () => {
   });
 
   it("lists nothing for a missing directory — unused taxonomy is normal", () => {
-    const empty = new ExpertStore({
-      expertsDir: join(expertsDir, "nope"),
-      specFilePattern: "README.md",
-    });
+    const empty = new ExpertStore(testConfig(expertsDir, { expertsDir: "nope" }));
 
     expect(empty.files()).toEqual([]);
   });
@@ -78,7 +76,7 @@ describe("ExpertStore", () => {
 
   describe("add", () => {
     it("scaffolds an expert from its template, placeholders filled", () => {
-      const created = store.add("code-reviewer", tmpdir());
+      const created = store.add("code-reviewer");
 
       const content = readFileSync(join(expertsDir, "code-reviewer.md"), "utf-8");
 
@@ -89,16 +87,16 @@ describe("ExpertStore", () => {
     });
 
     it("reports the created path relative to the given root", () => {
-      const created = store.add("test-expert", tmpdir());
+      const created = store.add("test-expert");
 
-      expect(created.path).toBe(join(expertsDir, "test-expert.md").slice(tmpdir().length + 1));
+      expect(created.path).toBe("test-expert.md");
     });
 
     it("refuses to overwrite an existing document", () => {
       const existing = join(expertsDir, "existing.md");
       writeFileSync(existing, "# My custom content\n");
 
-      expect(() => store.add("existing", tmpdir())).toThrow("File already exists");
+      expect(() => store.add("existing")).toThrow("File already exists");
       expect(readFileSync(existing, "utf-8")).toBe("# My custom content\n");
     });
   });

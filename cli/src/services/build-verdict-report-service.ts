@@ -1,4 +1,5 @@
-import type { BuildVerdictReportInput, VerdictReport } from "@/types.js";
+import type { PraxisConfig } from "@/models/praxis-config.js";
+import type { BuildVerdictReportInput, Service, VerdictReport } from "@/types.js";
 
 import { ReviewSubject } from "@/models/review-subject.js";
 import { SpecStore } from "@/stores/spec-store.js";
@@ -15,18 +16,11 @@ import { SpecStore } from "@/stores/spec-store.js";
  * This reads the target and its spec, which is why it is a service and
  * not a view: deciding *what happened* is work, rendering it is not.
  */
-export default function buildVerdictReport({
-  targetPath,
-  cacheData,
-  specFilePattern,
-  root,
-}: BuildVerdictReportInput): VerdictReport {
-  const currentHash = recomputeHash({
-    targetPath,
-    specPath: cacheData?.document.spec_path,
-    specFilePattern,
-    root,
-  });
+const buildVerdictReportService: Service<BuildVerdictReportInput, VerdictReport> = (
+  config,
+  { targetPath, cacheData },
+) => {
+  const currentHash = recomputeHash(config, targetPath, cacheData?.document.spec_path);
 
   if (!cacheData) {
     return { targetPath, status: "not_validated", cacheData: null, currentHash, isStale: false };
@@ -47,7 +41,9 @@ export default function buildVerdictReport({
     currentHash,
     isStale: false,
   };
-}
+};
+
+export default buildVerdictReportService;
 
 /**
  * The content hash the target would produce right now.
@@ -59,22 +55,20 @@ export default function buildVerdictReport({
  * When the cache recorded which spec was used, that one is rehashed;
  * otherwise the spec is rediscovered the way a run would.
  */
-function recomputeHash({
-  targetPath,
-  specPath,
-  specFilePattern,
-  root,
-}: {
-  targetPath: string;
-  specPath?: string;
-  specFilePattern: string;
-  root?: string;
-}): string | null {
+function recomputeHash(
+  config: PraxisConfig,
+  targetPath: string,
+  specPath: string | undefined,
+): string | null {
   try {
-    const store = new SpecStore({ root: root ?? "", specFilePattern });
+    const store = new SpecStore(config);
     const governing = specPath ?? store.governingPath(targetPath);
 
-    return ReviewSubject.resolve({ targetPath, specPath: governing, root }).contentHash();
+    return ReviewSubject.resolve({
+      targetPath,
+      specPath: governing,
+      root: config.root,
+    }).contentHash();
   } catch {
     return null;
   }

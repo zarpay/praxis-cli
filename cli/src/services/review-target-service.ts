@@ -1,4 +1,4 @@
-import type { ReviewTargetInput, ReviewTargetResult } from "@/types.js";
+import type { ReviewTargetInput, ReviewTargetResult, Service } from "@/types.js";
 
 import requestVerdictService from "@/services/request-verdict-service.js";
 
@@ -13,12 +13,10 @@ import requestVerdictService from "@/services/request-verdict-service.js";
  * @param cache - Reviewer-namespaced cache, or null to always call
  * @throws PraxisError from `requestVerdictService` on a cache miss
  */
-export default async function reviewTarget({
-  target,
-  reviewer,
-  cache,
-  root,
-}: ReviewTargetInput): Promise<ReviewTargetResult> {
+const reviewTargetService: Service<ReviewTargetInput, Promise<ReviewTargetResult>> = async (
+  config,
+  { target, reviewer, cache },
+) => {
   const contentHash = target.contentHash();
 
   if (cache) {
@@ -33,7 +31,7 @@ export default async function reviewTarget({
     }
   }
 
-  const { verdict, usage } = await requestVerdictService(target, reviewer, root);
+  const { verdict, usage } = await requestVerdictService(config, { target, reviewer });
 
   if (cache) {
     cache.writeVerdict({
@@ -46,4 +44,6 @@ export default async function reviewTarget({
   }
 
   return { verdict, cacheHit: false, usage };
-}
+};
+
+export default reviewTargetService;

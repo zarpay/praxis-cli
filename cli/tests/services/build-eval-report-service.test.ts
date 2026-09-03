@@ -43,9 +43,10 @@ describe("buildEvalReportService", () => {
   });
 
   function report() {
-    const scoped = resolveReportScopeService({ root });
+    const config = new PraxisConfig(root);
+    const scoped = resolveReportScopeService(config, {});
 
-    return buildEvalReportService({ root, config: new PraxisConfig(root), scoped });
+    return buildEvalReportService(config, { scoped });
   }
 
   it("carries the calibration banner unconditionally (rule 4)", () => {

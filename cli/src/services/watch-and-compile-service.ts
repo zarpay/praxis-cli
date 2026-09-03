@@ -1,5 +1,5 @@
 import type { FSWatcher } from "@/helpers/files-helper.js";
-import type { WatchAndCompileInput } from "@/types.js";
+import type { Service, WatchAndCompileInput } from "@/types.js";
 
 import { watchDir } from "@/helpers/files-helper.js";
 import { resolvePath } from "@/helpers/paths-helper.js";
@@ -16,18 +16,14 @@ import compileExpertsService from "@/services/compile-experts-service.js";
  * @returns One watcher per source directory; callers that need to stop
  *   watching close them
  */
-export default function watchAndCompile({
-  sources,
-  debounceMs = 300,
-  onWatch,
-  onRecompile,
-  onError,
-  ...compile
-}: WatchAndCompileInput): FSWatcher[] {
+const watchAndCompileService: Service<WatchAndCompileInput, FSWatcher[]> = (
+  config,
+  { debounceMs = 300, onWatch, onRecompile, onError, ...compile },
+) => {
   let timer: ReturnType<typeof setTimeout> | null = null;
 
-  return sources.map((source) => {
-    const sourceDir = resolvePath(compile.root, source);
+  return config.sources.map((source) => {
+    const sourceDir = resolvePath(config.root, source);
 
     onWatch?.(sourceDir);
 
@@ -37,11 +33,13 @@ export default function watchAndCompile({
       timer = setTimeout(async () => {
         try {
           onRecompile?.(filename);
-          await compileExpertsService(compile);
+          await compileExpertsService(config, compile);
         } catch (err) {
           onError?.(err instanceof Error ? err.message : String(err));
         }
       }, debounceMs);
     });
   });
-}
+};
+
+export default watchAndCompileService;

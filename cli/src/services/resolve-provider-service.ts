@@ -1,4 +1,9 @@
-import type { ReviewProvider, ReviewProviderFactory } from "@/types.js";
+import type {
+  ResolveProviderInput,
+  ReviewProvider,
+  ReviewProviderFactory,
+  Service,
+} from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { fileUrl, resolvePath } from "@/helpers/paths-helper.js";
@@ -21,12 +26,12 @@ const BUILTIN_PROVIDERS: Record<string, ReviewProviderFactory> = {
  * @throws PraxisError on unknown names, unloadable modules, or modules
  *   that do not implement the contract
  */
-export default async function resolveProvider(
-  spec: string,
-  root?: string,
-): Promise<ReviewProvider> {
+const resolveProviderService: Service<ResolveProviderInput, Promise<ReviewProvider>> = async (
+  config,
+  { spec },
+) => {
   if (spec.startsWith("./") || spec.startsWith("../")) {
-    return loadLocalProvider(spec, root);
+    return loadLocalProvider(spec, config.root);
   }
 
   const factory = BUILTIN_PROVIDERS[spec];
@@ -36,14 +41,12 @@ export default async function resolveProvider(
   }
 
   return factory();
-}
+};
+
+export default resolveProviderService;
 
 /** Imports a local provider module and validates it against the contract. */
-async function loadLocalProvider(spec: string, root?: string): Promise<ReviewProvider> {
-  if (!root) {
-    throw errors.reviewProviderLoadFailed(spec, "no project root to resolve the path against");
-  }
-
+async function loadLocalProvider(spec: string, root: string): Promise<ReviewProvider> {
   let module: { default?: unknown };
 
   try {

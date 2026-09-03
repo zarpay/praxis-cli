@@ -1,6 +1,5 @@
-import type { StatusReport, TallyValidationInput } from "@/types.js";
+import type { NoInput, Service, StatusReport } from "@/types.js";
 
-import { joinPath } from "@/helpers/paths-helper.js";
 import { Reviewer } from "@/models/reviewer.js";
 import listTargetPathsService from "@/services/list-target-paths-service.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
@@ -17,16 +16,8 @@ import { VerdictStore } from "@/stores/verdict-store.js";
  * One row per reviewer, never pooled: reviewers are separate instruments, and
  * averaging them would hide exactly the disagreement worth seeing.
  */
-export default function tallyValidation({
-  root,
-  config,
-}: TallyValidationInput): StatusReport["validation"] {
-  const targets = listTargetPathsService({
-    root,
-    sources: config.sources,
-    specFilePattern: config.specFilePattern,
-    absoluteIgnore: config.ignore.map((p) => joinPath(root, p)),
-  });
+const tallyValidationService: Service<NoInput, StatusReport["validation"]> = (config) => {
+  const targets = listTargetPathsService(config, {});
 
   // One cache namespace per reviewer; the un-namespaced cache when no
   // reviewers are configured at all.
@@ -34,12 +25,11 @@ export default function tallyValidation({
     config.reviewers.length > 0
       ? config.reviewers.map((reviewer) => ({
           reviewer: reviewer.name,
-          cache: new VerdictStore({
-            projectRoot: root,
+          cache: new VerdictStore(config, {
             reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
           }),
         }))
-      : [{ reviewer: null, cache: new VerdictStore({ projectRoot: root }) }];
+      : [{ reviewer: null, cache: new VerdictStore(config) }];
 
   return readers.map(({ reviewer, cache }) => {
     const row = {
@@ -66,4 +56,6 @@ export default function tallyValidation({
 
     return row;
   });
-}
+};
+
+export default tallyValidationService;

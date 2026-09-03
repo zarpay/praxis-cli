@@ -32,11 +32,10 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
   { id, yes = false, reject, spec },
 ) => {
   const { root, config } = ctx;
-  const curator = config.curator;
 
-  if (!curator) throw errors.curatorNotConfigured();
+  if (!config.curator) throw errors.curatorNotConfigured();
 
-  const store = new AxiomStore({ projectRoot: root });
+  const store = new AxiomStore(config);
   const { axioms } = store.all();
   const proposal = axioms.find((axiom) => axiom.id === id && axiom.status === "proposed");
 
@@ -44,7 +43,7 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
 
   if (reject !== undefined) {
     removeFile(proposal.path);
-    new TriageStore({ projectRoot: root }).appendSession([
+    new TriageStore(config).appendSession([
       { kind: "rejection", axiom_id: id, reason: reject, timestamp: new Date().toISOString() },
     ]);
     ctx.render([
@@ -63,12 +62,12 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
     throw errors.notATty("praxis axioms ratify", '--yes or --reject "<reason>"');
   }
 
-  const { assignments } = deriveTriageStateService({ root });
+  const { assignments } = deriveTriageStateService(config, {});
   const supporting = assignments.filter((assignment) => assignment.axiom_id === id);
   const specPath =
     spec ??
     specFromSupport(
-      new RunStore({ projectRoot: root }),
+      new RunStore(config),
       supporting.map((record) => record.critique_id),
     );
 
@@ -91,17 +90,13 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
     throw errors.documentNotFound(specPath);
   }
 
-  const gate = await assessAxiomGateService({
-    root,
-    curator,
+  const gate = await assessAxiomGateService(config, {
     statement: proposal.statement(),
     violatingExample: proposal.violatingExample(),
     compliantExample: proposal.compliantExample(),
   });
 
-  const traceability = await assessTraceabilityService({
-    root,
-    curator,
+  const traceability = await assessTraceabilityService(config, {
     specPath,
     specContent: readText(specFile),
     statement: proposal.statement(),

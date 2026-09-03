@@ -1,4 +1,4 @@
-import type { BuildProfileInput } from "@/types.js";
+import type { BuildProfileInput, Service } from "@/types.js";
 
 /** Separator between items in Responsibilities, Context, and Reference sections. */
 const RULE = "\n---\n";
@@ -20,13 +20,10 @@ const BLANK = "\n";
  * The result is a *pure* profile. Platform-specific wrapping (Claude
  * Code frontmatter and the like) belongs to the compiler plugins.
  */
-export default function buildProfile({
-  role,
-  responsibilities,
-  constitution,
-  context,
-  reference,
-}: BuildProfileInput): string {
+const buildProfileService: Service<BuildProfileInput, string> = (
+  _config,
+  { role, responsibilities, constitution, context, reference },
+) => {
   const sections = [
     role && section("Role", [role], BLANK),
     responsibilities.length > 0 && section("Responsibilities", responsibilities, RULE),
@@ -36,7 +33,9 @@ export default function buildProfile({
   ];
 
   return sections.filter((s): s is string => Boolean(s)).join("\n");
-}
+};
+
+export default buildProfileService;
 
 /** One titled section: a heading, then its blocks joined by `separator`. */
 function section(title: string, contents: string[], separator: string): string {

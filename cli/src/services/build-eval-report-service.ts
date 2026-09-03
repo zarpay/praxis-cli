@@ -1,4 +1,5 @@
 import type { AxiomFile } from "@/models/axiom-file.js";
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type {
   AxiomReportRow,
   BuildEvalReportInput,
@@ -7,6 +8,7 @@ import type {
   LedgerCritiqueRecord,
   LedgerRunRecord,
   PopulationQualifier,
+  Service,
 } from "@/types.js";
 
 import { CALIBRATION_STATUS, rateCell } from "@/helpers/metrics-helper.js";
@@ -30,16 +32,12 @@ import { AxiomStore } from "@/stores/axiom-store.js";
  * (rule 6); and the calibration banner is unconditional until M6
  * (rule 4).
  */
-export default function buildEvalReport({
-  root,
-  config,
-  scoped,
-}: BuildEvalReportInput): EvalReport {
+const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (config, { scoped }) => {
   const { runs, critiques } = scoped;
-  const epochs = deriveEpochsService(runs);
-  const { axioms } = new AxiomStore({ projectRoot: root }).all();
-  const currentUnits = countSpecUnitsService({ root, config });
-  const state = deriveTriageStateService({ root });
+  const epochs = deriveEpochsService(config, { runs });
+  const { axioms } = new AxiomStore(config).all();
+  const currentUnits = countSpecUnitsService(config, {});
+  const state = deriveTriageStateService(config, {});
   const birthdates = new Map<string, string | null>();
 
   const matched = critiques.filter((critique) => critique.axiom_id !== null);
@@ -59,7 +57,7 @@ export default function buildEvalReport({
           runs,
           epochs,
           currentUnits,
-          root,
+          config,
           birthdates,
         }),
       );
@@ -89,7 +87,9 @@ export default function buildEvalReport({
     residual: rateCell(state.dismissed + state.rejectedProposals, critiques.length),
     epochs,
   };
-}
+};
+
+export default buildEvalReportService;
 
 /** One axiom × one reviewer: the row (07 rule 7 — never pooled). */
 function axiomRow({
@@ -99,7 +99,7 @@ function axiomRow({
   runs,
   epochs,
   currentUnits,
-  root,
+  config,
   birthdates,
 }: {
   axiom: AxiomFile;
@@ -108,7 +108,7 @@ function axiomRow({
   runs: LedgerRunRecord[];
   epochs: EpochSeries[];
   currentUnits: Record<string, number>;
-  root: string;
+  config: PraxisConfig;
   birthdates: Map<string, string | null>;
 }): AxiomReportRow {
   const spec = axiom.groundedIn?.split("#")[0] ?? null;
@@ -138,8 +138,7 @@ function axiomRow({
   };
 
   for (const critique of critiques) {
-    const population = derivePopulationService({
-      root,
+    const population = derivePopulationService(config, {
       filePath: critique.file_path,
       axiomIntroduced: axiom.introduced,
       birthdates,

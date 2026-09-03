@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import buildDebtReportService from "@/services/build-debt-report-service.js";
 import { seedAxiom } from "@tests/helpers/axiom-fixtures.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 
 /** One violation of the fixture axiom in one file. */
 function violation(runId: string, seq: number, filePath: string): string {
@@ -38,7 +39,7 @@ describe("buildDebtReportService", () => {
   it("reports nothing without a baselined epoch", () => {
     seedLedgerRun(root, { name: "flash", hash: "aaaa1111", runId: "r1" });
 
-    const report = buildDebtReportService({ root });
+    const report = buildDebtReportService(testConfig(root), {});
 
     expect(report.rows).toEqual([]);
   });
@@ -60,7 +61,7 @@ describe("buildDebtReportService", () => {
       extraLines: [violation("r2", 1, "docs/b.md"), violation("r2", 2, "docs/c.md")],
     });
 
-    const row = buildDebtReportService({ root }).rows[0];
+    const row = buildDebtReportService(testConfig(root), {}).rows[0];
 
     expect(row).toMatchObject({
       axiomId: "AX-aaaa11",
@@ -88,7 +89,7 @@ describe("buildDebtReportService", () => {
       timestamp: "2026-09-02T10:00:00.000Z",
     });
 
-    const report = buildDebtReportService({ root });
+    const report = buildDebtReportService(testConfig(root), {});
 
     expect(report.rows[0].paydown).toBe(1);
     expect(report.credits).toEqual([]);
@@ -131,7 +132,7 @@ describe("buildDebtReportService", () => {
       timestamp: "2026-09-02T10:00:00.000Z",
     });
 
-    const report = buildDebtReportService({ root });
+    const report = buildDebtReportService(testConfig(root), {});
 
     expect(report.credits).toEqual([{ author: "Fixer", resolved: 1 }]);
     expect(report.creditNote).toBeNull();
@@ -146,7 +147,7 @@ describe("buildDebtReportService", () => {
       extraLines: [violation("r1", 1, "docs/a.md"), violation("r1", 2, "docs/a.md")],
     });
 
-    const row = buildDebtReportService({ root }).rows[0];
+    const row = buildDebtReportService(testConfig(root), {}).rows[0];
 
     expect(row.baselineStock).toBe(1);
   });
@@ -170,7 +171,7 @@ describe("buildDebtReportService", () => {
       extraLines: [violation("r2", 1, "docs/a.md")],
     });
 
-    const report = buildDebtReportService({ root });
+    const report = buildDebtReportService(testConfig(root), {});
 
     expect(report.rebaseline).toEqual({
       boundaryLabel: "model → new/model",

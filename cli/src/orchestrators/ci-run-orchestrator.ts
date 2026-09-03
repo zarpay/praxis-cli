@@ -17,13 +17,13 @@ import runReportView from "@/views/run-report-view.js";
  * takes: whether warnings count as failure alongside errors.
  */
 export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { strict = false }) => {
-  const { root, config } = ctx;
+  const { config } = ctx;
 
   const evalView = evalHeadlineView({ ci: true });
   ctx.render(evalView);
 
   // Announce any epoch boundary before reviewing (02): warn, never block.
-  const boundaries = detectEpochBoundariesService({ root, reviewers: config.reviewers });
+  const boundaries = detectEpochBoundariesService(config, { reviewers: config.reviewers });
   const boundaryView = epochBoundaryView(boundaries);
 
   ctx.render(boundaryView);
@@ -36,8 +36,7 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
     ctx.render(progressView);
   };
 
-  const run = await reviewProjectService({
-    config,
+  const run = await reviewProjectService(config, {
     // CI verifies without writing (12): the branch's own runs are the evidence.
     ledger: false,
     onProgress,

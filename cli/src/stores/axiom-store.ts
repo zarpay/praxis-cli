@@ -1,3 +1,4 @@
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type {
   AxiomScope,
   ChecklistAxiom,
@@ -35,10 +36,10 @@ export class AxiomStore {
   private readonly axiomsDir: string;
   private readonly proposedDir: string;
 
-  constructor({ projectRoot }: { projectRoot: string }) {
-    this.projectRoot = projectRoot;
-    this.axiomsDir = joinPath(projectRoot, ".praxis", "axioms");
-    this.proposedDir = joinPath(projectRoot, ".praxis", "axioms", "proposed");
+  constructor(config: PraxisConfig) {
+    this.projectRoot = config.root;
+    this.axiomsDir = joinPath(config.root, ".praxis", "axioms");
+    this.proposedDir = joinPath(config.root, ".praxis", "axioms", "proposed");
   }
 
   /**

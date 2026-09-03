@@ -1,3 +1,4 @@
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { SpecFile as SpecFileType } from "@/models/spec-file.js";
 
 import fg from "fast-glob";
@@ -5,7 +6,6 @@ import fg from "fast-glob";
 import { errors } from "@/helpers/errors-helper.js";
 import { exists, hasGlobChars, readText } from "@/helpers/files-helper.js";
 import { joinPath, parentDir } from "@/helpers/paths-helper.js";
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
 import { SpecFile } from "@/models/spec-file.js";
 
 /**
@@ -23,16 +23,9 @@ export class SpecStore {
   private readonly root: string;
   private readonly specFilePattern: string;
 
-  constructor({
-    root,
-    specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
-  }: {
-    root: string;
-    /** Filename or glob identifying spec files. */
-    specFilePattern?: string;
-  }) {
-    this.root = root;
-    this.specFilePattern = specFilePattern;
+  constructor(config: PraxisConfig) {
+    this.root = config.root;
+    this.specFilePattern = config.specFilePattern;
   }
 
   /**

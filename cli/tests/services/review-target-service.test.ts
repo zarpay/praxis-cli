@@ -18,6 +18,7 @@ import {
   useOpenRouterResponse,
   validationToolCallResponse,
 } from "@tests/helpers/openrouter-msw.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 /** Canned tool-call responses used across the reviewing tests. */
@@ -77,15 +78,20 @@ describe("reviewTargetService", () => {
     config?: ReviewerConfig;
     cache?: VerdictStore | null;
   } = {}) {
+    const projectConfig = testConfig(root ?? tmpdir, { specFilePattern });
     const resolvedTarget = targetPath ?? join(tmpdir, "content", "experts", "test-expert.md");
-    const store = new SpecStore({ root: root ?? tmpdir, specFilePattern });
+    const store = new SpecStore(projectConfig);
     const target = ReviewSubject.resolve({
       targetPath: resolvedTarget,
       specPath: specPath ?? store.governingPath(resolvedTarget),
       root,
     });
 
-    return reviewTargetService({ target, reviewer: Reviewer.fromConfig(config), cache, root });
+    return reviewTargetService(projectConfig, {
+      target,
+      reviewer: Reviewer.fromConfig(config),
+      cache,
+    });
   }
 
   describe("verdicts", () => {
@@ -241,7 +247,7 @@ describe("reviewTargetService", () => {
       const targetPath = join(tmpdir, "content", "experts", "test-expert.md");
       const target = ReviewSubject.resolve({
         targetPath,
-        specPath: new SpecStore({ root: tmpdir }).governingPath(targetPath),
+        specPath: new SpecStore(testConfig(tmpdir)).governingPath(targetPath),
       });
       const hash = target.contentHash();
 
@@ -301,7 +307,7 @@ describe("reviewTargetService", () => {
           targetPath: abs("src/events/signup_event.rb"),
           specPath: abs("docs/events.sme.md"),
           root,
-          cache: new VerdictStore({ projectRoot: root }),
+          cache: new VerdictStore(testConfig(root)),
         });
 
       await reviewed();
@@ -356,7 +362,7 @@ describe("reviewTargetService", () => {
         targetPath: abs("src/events/signup_event.rb"),
         specPath: abs("docs/events.sme.md"),
         root,
-        cache: new VerdictStore({ projectRoot: root }),
+        cache: new VerdictStore(testConfig(root)),
       });
     }
 
@@ -492,7 +498,7 @@ describe("reviewTargetService", () => {
           targetPath: abs("docs/guide.md"),
           root,
           config: echoReviewer,
-          cache: new VerdictStore({ projectRoot: root }),
+          cache: new VerdictStore(testConfig(root)),
         });
 
       await reviewed();
@@ -523,9 +529,7 @@ describe("reviewTargetService", () => {
     it("uses cached result on second call with same content", async () => {
       useOpenRouterResponse(server, fixtures.pass);
 
-      const cache = new VerdictStore({
-        cacheRoot: join(tmpdir, ".praxis", "cache", "validation"),
-      });
+      const cache = new VerdictStore(testConfig(tmpdir));
       const reviewed = () =>
         evaluate({ targetPath: join(tmpdir, "content", "experts", "test-expert.md"), cache });
 

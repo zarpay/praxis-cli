@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import buildProfileService from "@/services/build-profile-service.js";
+import { testConfig } from "@tests/helpers/test-config.js";
+
+const CONFIG = testConfig("/project");
 
 describe("buildProfileService", () => {
   describe("role", () => {
     it("renders the role section", () => {
-      const output = buildProfileService({
+      const output = buildProfileService(CONFIG, {
         role: "# Test Role\n\nRole content here.",
         responsibilities: [],
         constitution: [],
@@ -20,7 +23,7 @@ describe("buildProfileService", () => {
 
   describe("responsibilities", () => {
     it("adds responsibilities with --- separators between items", () => {
-      const output = buildProfileService({
+      const output = buildProfileService(CONFIG, {
         role: "",
         responsibilities: ["First responsibility content.", "Second responsibility content."],
         constitution: [],
@@ -35,7 +38,7 @@ describe("buildProfileService", () => {
     });
 
     it("handles single responsibility without separator", () => {
-      const output = buildProfileService({
+      const output = buildProfileService(CONFIG, {
         role: "",
         responsibilities: ["Only responsibility."],
         constitution: [],
@@ -48,7 +51,7 @@ describe("buildProfileService", () => {
     });
 
     it("skips section if empty array", () => {
-      const output = buildProfileService({
+      const output = buildProfileService(CONFIG, {
         role: "",
         responsibilities: [],
         constitution: [],
@@ -62,7 +65,7 @@ describe("buildProfileService", () => {
 
   describe("constitution", () => {
     it("adds constitution with blank line separators (not ---)", () => {
-      const output = buildProfileService({
+      const output = buildProfileService(CONFIG, {
         role: "",
         responsibilities: [],
         constitution: ["Identity content.", "Principles content."],
@@ -79,7 +82,7 @@ describe("buildProfileService", () => {
 
   describe("context", () => {
     it("adds context with --- separators", () => {
-      const output = buildProfileService({
+      const output = buildProfileService(CONFIG, {
         role: "",
         responsibilities: [],
         constitution: [],
@@ -96,7 +99,7 @@ describe("buildProfileService", () => {
 
   describe("reference", () => {
     it("adds reference with --- separators", () => {
-      const output = buildProfileService({
+      const output = buildProfileService(CONFIG, {
         role: "",
         responsibilities: [],
         constitution: [],
@@ -113,7 +116,7 @@ describe("buildProfileService", () => {
 
   describe("assembly", () => {
     it("assembles sections in a fixed order", () => {
-      const profile = buildProfileService({
+      const profile = buildProfileService(CONFIG, {
         role: "Role body",
         responsibilities: ["Resp 1"],
         constitution: ["Const 1"],
@@ -134,7 +137,7 @@ describe("buildProfileService", () => {
     });
 
     it("produces no frontmatter — platform wrapping belongs to plugins", () => {
-      const profile = buildProfileService({
+      const profile = buildProfileService(CONFIG, {
         role: "Role body",
         responsibilities: [],
         constitution: [],
@@ -147,7 +150,7 @@ describe("buildProfileService", () => {
     });
 
     it("omits empty sections", () => {
-      const profile = buildProfileService({
+      const profile = buildProfileService(CONFIG, {
         role: "Role body",
         responsibilities: [],
         constitution: [],
@@ -161,7 +164,7 @@ describe("buildProfileService", () => {
     });
 
     it("returns an empty string when every section is empty", () => {
-      const profile = buildProfileService({
+      const profile = buildProfileService(CONFIG, {
         role: "",
         responsibilities: [],
         constitution: [],
