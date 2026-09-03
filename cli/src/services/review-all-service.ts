@@ -113,7 +113,6 @@ export default async function reviewAll({
         reviewerConfig,
         cache: caches[reviewerIndex] ?? null,
         root,
-        specFilePattern,
         onProgress,
       });
 
@@ -187,7 +186,6 @@ async function reviewUnit({
   reviewerConfig,
   cache,
   root,
-  specFilePattern,
   onProgress,
 }: ReviewUnitInput): Promise<{
   verdict: TargetVerdict;
@@ -208,7 +206,6 @@ async function reviewUnit({
       targetContent: cohort ? assembleCohort(unit, root) : undefined,
       kind: cohort ? "cohort" : "file",
       specPath,
-      specFilePattern,
       root,
       checklistFor: (spec) => new AxiomStore({ projectRoot: root }).checklistFor(spec),
     });

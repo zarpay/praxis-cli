@@ -557,8 +557,6 @@ export interface ReviewUnitInput {
   cache: VerdictStore | null;
   /** Project root. */
   root: string;
-  /** Filename or glob naming spec files. */
-  specFilePattern: string;
   /** Called as the review progresses, for streamed output. */
   onProgress?: (event: EvalProgress) => void;
 }

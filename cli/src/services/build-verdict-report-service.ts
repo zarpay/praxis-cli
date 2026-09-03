@@ -1,6 +1,7 @@
 import type { BuildVerdictReportInput, VerdictReport } from "@/types.js";
 
 import { ReviewSubject } from "@/models/review-subject.js";
+import { SpecStore } from "@/stores/spec-store.js";
 
 /**
  * Classifies a target's cached verdict, including whether it is stale.
@@ -70,7 +71,10 @@ function recomputeHash({
   root?: string;
 }): string | null {
   try {
-    return ReviewSubject.resolve({ targetPath, specPath, specFilePattern, root }).contentHash();
+    const store = new SpecStore({ root: root ?? "", specFilePattern });
+    const governing = specPath ?? store.governingPath(targetPath);
+
+    return ReviewSubject.resolve({ targetPath, specPath: governing, root }).contentHash();
   } catch {
     return null;
   }

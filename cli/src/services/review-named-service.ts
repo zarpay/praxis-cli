@@ -15,6 +15,7 @@ import reviewTargetService from "@/services/review-target-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
+import { SpecStore } from "@/stores/spec-store.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
 
 /**
@@ -46,7 +47,8 @@ export default async function reviewNamed({
   onTarget,
 }: ReviewNamedInput): Promise<ReviewNamedResult> {
   const reviewers = selectReviewersService({ configured: config.reviewers, only });
-  const specPath = targets.length === 1 ? spec : undefined;
+  const specStore = new SpecStore({ root, specFilePattern: config.specFilePattern });
+  const specOverride = targets.length === 1 ? spec : undefined;
   const entriesByReviewer = new Map<string, LedgerEntry[]>();
   const specUnits: Record<string, number> = {};
 
@@ -56,8 +58,7 @@ export default async function reviewNamed({
   for (const targetPath of targets) {
     const subject = ReviewSubject.resolve({
       targetPath,
-      specPath,
-      specFilePattern: config.specFilePattern,
+      specPath: specOverride ?? specStore.governingPath(targetPath),
       root,
       checklistFor: (resolvedSpec) =>
         new AxiomStore({ projectRoot: root }).checklistFor(resolvedSpec),

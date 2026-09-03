@@ -4,9 +4,8 @@ import fg from "fast-glob";
 import { createHash } from "node:crypto";
 
 import { errors } from "@/helpers/errors-helper.js";
-import { exists, hasGlobChars, readText } from "@/helpers/files-helper.js";
-import { joinPath, parentDir, relativePath } from "@/helpers/paths-helper.js";
-import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
+import { readText } from "@/helpers/files-helper.js";
+import { relativePath } from "@/helpers/paths-helper.js";
 import { SpecFile } from "@/models/spec-file.js";
 
 /**
@@ -66,7 +65,6 @@ export class ReviewSubject {
     targetContent,
     kind = "file",
     specPath,
-    specFilePattern = DEFAULT_SPEC_FILE_PATTERN,
     root,
     checklistFor,
   }: {
@@ -74,8 +72,8 @@ export class ReviewSubject {
     /** Pre-assembled input (cohorts); read from targetPath when omitted. */
     targetContent?: string;
     kind?: "file" | "cohort";
-    specPath?: string;
-    specFilePattern?: string;
+    /** The governing spec, located by the caller (SpecStore.governingPath). */
+    specPath: string;
     /** Project root; required when the spec declares scoping globs. */
     root?: string;
     /**
@@ -85,17 +83,16 @@ export class ReviewSubject {
      */
     checklistFor?: (specPath: string) => ChecklistAxiom[];
   }): ReviewSubject {
-    const resolvedSpec = specPath ?? findSpec(targetPath, specFilePattern);
-    const specContent = readText(resolvedSpec);
+    const specContent = readText(specPath);
 
     return new ReviewSubject({
       targetPath,
-      specPath: resolvedSpec,
+      specPath,
       targetContent: targetContent ?? readText(targetPath),
       specContent,
       kind,
-      assist: resolveAssist(specContent, resolvedSpec, root),
-      checklist: checklistFor?.(resolvedSpec) ?? [],
+      assist: resolveAssist(specContent, specPath, root),
+      checklist: checklistFor?.(specPath) ?? [],
     });
   }
 
@@ -197,29 +194,6 @@ function resolveAssistKey(
     .sync(patterns, { cwd: root, onlyFiles: true, absolute: true, dot: true })
     .sort()
     .map((file) => ({ path: relativePath(root, file), content: readText(file) }));
-}
-
-/**
- * Finds the spec file governing a target, by the configured pattern.
- *
- * @throws PraxisError when the directory holds no matching spec
- */
-function findSpec(targetPath: string, specFilePattern: string): string {
-  const baseDir = parentDir(targetPath);
-
-  if (!hasGlobChars(specFilePattern)) {
-    const specPath = joinPath(baseDir, specFilePattern);
-
-    if (exists(specPath)) return specPath;
-
-    throw errors.specNotFound(specFilePattern, baseDir, targetPath);
-  }
-
-  const matches = fg.sync(specFilePattern, { cwd: baseDir, onlyFiles: true, absolute: true });
-
-  if (matches.length > 0) return matches[0];
-
-  throw errors.specPatternNotFound(specFilePattern, baseDir, targetPath);
 }
 
 /**

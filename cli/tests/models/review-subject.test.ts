@@ -22,7 +22,11 @@ function subjectWith(frontmatter: string[], files: Record<string, string> = {}):
   });
   cleanups.push(cleanup);
 
-  return ReviewSubject.resolve({ targetPath: abs("specs/doc.md"), root });
+  return ReviewSubject.resolve({
+    targetPath: abs("specs/doc.md"),
+    specPath: abs("specs/README.md"),
+    root,
+  });
 }
 
 describe("assistProvenance", () => {
@@ -105,7 +109,8 @@ describe("assist", () => {
     });
     cleanups.push(cleanup);
 
-    const resolveWithoutRoot = () => ReviewSubject.resolve({ targetPath: abs("specs/doc.md") });
+    const resolveWithoutRoot = () =>
+      ReviewSubject.resolve({ targetPath: abs("specs/doc.md"), specPath: abs("specs/README.md") });
 
     expect(resolveWithoutRoot).toThrow(/declares "exemplars" but no project root/);
   });
@@ -120,7 +125,10 @@ describe("assist", () => {
     });
     cleanups.push(cleanup);
 
-    const subject = ReviewSubject.resolve({ targetPath: abs("specs/doc.md") });
+    const subject = ReviewSubject.resolve({
+      targetPath: abs("specs/doc.md"),
+      specPath: abs("specs/README.md"),
+    });
 
     expect(subject.assist).toEqual({ exemplars: [], context: [] });
   });
@@ -196,7 +204,12 @@ describe("checklist (04)", () => {
     });
     cleanups.push(cleanup);
 
-    return ReviewSubject.resolve({ targetPath: abs("specs/doc.md"), root, checklistFor });
+    return ReviewSubject.resolve({
+      targetPath: abs("specs/doc.md"),
+      specPath: abs("specs/README.md"),
+      root,
+      checklistFor,
+    });
   }
 
   it("an empty checklist leaves the content hash exactly as before — bootstrap caches survive", () => {

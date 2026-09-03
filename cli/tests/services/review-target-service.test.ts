@@ -1,15 +1,14 @@
 import type { ReviewerConfig } from "@/types.js";
 
 import { HttpResponse, http } from "msw";
-import { randomUUID } from "node:crypto";
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir as osTmpdir } from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import reviewTargetService from "@/services/review-target-service.js";
+import { SpecStore } from "@/stores/spec-store.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
@@ -78,10 +77,11 @@ describe("reviewTargetService", () => {
     config?: ReviewerConfig;
     cache?: VerdictStore | null;
   } = {}) {
+    const resolvedTarget = targetPath ?? join(tmpdir, "content", "experts", "test-expert.md");
+    const store = new SpecStore({ root: root ?? tmpdir, specFilePattern });
     const target = ReviewSubject.resolve({
-      targetPath: targetPath ?? join(tmpdir, "content", "experts", "test-expert.md"),
-      specPath,
-      specFilePattern,
+      targetPath: resolvedTarget,
+      specPath: specPath ?? store.governingPath(resolvedTarget),
       root,
     });
 
@@ -236,57 +236,12 @@ describe("reviewTargetService", () => {
     });
   });
 
-  describe("custom specFilePattern", () => {
-    it("finds spec file by exact custom name", () => {
-      const dir = join(osTmpdir(), `praxis-spec-test-${randomUUID()}`);
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(join(dir, "SPEC.md"), "# Spec\nRequired fields: name");
-      writeFileSync(join(dir, "doc.md"), "---\ntype: role\n---\n# Doc");
-
-      const target = ReviewSubject.resolve({
-        targetPath: join(dir, "doc.md"),
-        specFilePattern: "SPEC.md",
-      });
-
-      expect(target.specPath).toBe(join(dir, "SPEC.md"));
-
-      rmSync(dir, { recursive: true, force: true });
-    });
-
-    it("finds spec file by glob pattern", () => {
-      const dir = join(osTmpdir(), `praxis-spec-test-${randomUUID()}`);
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(join(dir, "README.roles.md"), "# Roles Spec");
-      writeFileSync(join(dir, "doc.md"), "---\ntype: role\n---\n# Doc");
-
-      const target = ReviewSubject.resolve({
-        targetPath: join(dir, "doc.md"),
-        specFilePattern: "README.*.md",
-      });
-
-      expect(target.specPath).toBe(join(dir, "README.roles.md"));
-
-      rmSync(dir, { recursive: true, force: true });
-    });
-
-    it("throws when custom spec file not found", () => {
-      const dir = join(osTmpdir(), `praxis-spec-test-${randomUUID()}`);
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(join(dir, "doc.md"), "---\ntype: role\n---\n# Doc");
-
-      const resolve = () =>
-        ReviewSubject.resolve({ targetPath: join(dir, "doc.md"), specFilePattern: "SPEC.md" });
-
-      expect(resolve).toThrow("No SPEC.md found");
-
-      rmSync(dir, { recursive: true, force: true });
-    });
-  });
-
   describe("content hash", () => {
     it("returns 8-character hex string", () => {
+      const targetPath = join(tmpdir, "content", "experts", "test-expert.md");
       const target = ReviewSubject.resolve({
-        targetPath: join(tmpdir, "content", "experts", "test-expert.md"),
+        targetPath,
+        specPath: new SpecStore({ root: tmpdir }).governingPath(targetPath),
       });
       const hash = target.contentHash();
 
