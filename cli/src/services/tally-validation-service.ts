@@ -9,7 +9,7 @@ import { VerdictStore } from "@/stores/verdict-store.js";
  *
  * Reads only: no API keys, no reviewing. The targets come from the eval
  * layer's own discovery, so coverage counts what a run would actually
- * reviewer rather than a second guess at it — a file with no cached
+ * review rather than a second-guess at it — a file with no cached
  * verdict is "not validated", which is the number that tells you a run
  * is overdue.
  *

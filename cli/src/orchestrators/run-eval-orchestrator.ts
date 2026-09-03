@@ -1,4 +1,4 @@
-import type { Orchestrator, ReviewNamedInput, RunEvalOptions } from "@/types.js";
+import type { EvalProgress, Orchestrator, ReviewedTarget, RunEvalOptions } from "@/types.js";
 
 import { gitFacts } from "@/helpers/git-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
@@ -48,7 +48,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 
     ctx.render(headlineView);
 
-    const onTarget = (event: Parameters<NonNullable<ReviewNamedInput["onTarget"]>>[0]) => {
+    const onTarget = (event: ReviewedTarget) => {
       const targetView = reviewedTargetView({ ...event, verbose: options.verbose ?? false });
 
       ctx.render(targetView);
@@ -69,7 +69,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 
   ctx.render(headlineView);
 
-  const onProgress = (event: Parameters<typeof runProgressView>[0]) => {
+  const onProgress = (event: EvalProgress) => {
     const progressView = runProgressView(event);
 
     ctx.render(progressView);

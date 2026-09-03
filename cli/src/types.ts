@@ -1455,6 +1455,53 @@ export interface ListAxiomsResult {
   problems: StoreProblem[];
 }
 
+/** One axiom, shown in full. */
+export interface ShownAxiom {
+  axiom: AxiomFile;
+}
+
+/** One row of the gate re-assessment over active axioms (03). */
+export interface AxiomAuditRow {
+  id: string;
+  assessment: string;
+  reasoning: string;
+}
+
+/** The audit's advisory rows, for a human to act on. */
+export interface AxiomAudit {
+  rows: AxiomAuditRow[];
+}
+
+/** Everything the ratifier weighs before the human call (04). */
+export interface RatifyReview {
+  axiom: AxiomFile;
+  /** How many assigned critiques back the proposal. */
+  supportingCritiques: number;
+  gate: GateAssessment;
+  traceability: TraceabilityAssessment;
+}
+
+/** One cluster of a triage session, framed for its decision. */
+export interface TriageClusterCard {
+  /** 1-based position in the session. */
+  index: number;
+  total: number;
+  cluster: TriageCluster;
+  critiques: PendingCritique[];
+}
+
+/** A triage session's counted outcome. */
+export interface TriageOutcome {
+  assigned: number;
+  proposed: number;
+  dismissed: number;
+  skipped: number;
+  /** Open-channel critiques still waiting after the session. */
+  pendingLeft: number;
+  /** Curator spend across the session, or null when nothing reported. */
+  costUsd: number | null;
+}
+
 /** Where the proposal landed. */
 export interface WriteAxiomProposalResult {
   id: string;

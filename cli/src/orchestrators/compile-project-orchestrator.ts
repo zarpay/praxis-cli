@@ -30,9 +30,13 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
   // Plugins are constructed once per invocation, not per expert: the
   // Claude Code plugin writes its manifest on first compile and must not
   // repeat it for every agent.
+  const onProgress = (event: CompileProgress) => {
+    const progressView = compileProgressView(event);
+    ctx.render(progressView);
+  };
   const input = {
     plugins: resolvePluginsService(cfg, { logger }),
-    onProgress: (event: CompileProgress) => ctx.render(compileProgressView(event)),
+    onProgress,
   };
 
   // When an alias is given, compile only that expert and skip the watch mode.

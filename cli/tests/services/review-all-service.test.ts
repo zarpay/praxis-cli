@@ -62,7 +62,7 @@ describe("reviewAllService", () => {
   });
 
   describe("reviewers", () => {
-    it("reviewers with every reviewer it is given", async () => {
+    it("reviews with every reviewer it is given", async () => {
       useCompliantFixture();
       const run = await reviewAllService(cfg, {
         useCache: false,
@@ -73,7 +73,7 @@ describe("reviewAllService", () => {
       expect(reviewerNames).toEqual(cfg.reviewers.map((j) => j.name));
     });
 
-    it("reviewers with only the reviews it is given", async () => {
+    it("reviews with only the reviewers it is given", async () => {
       useCompliantFixture();
       const only = cfg.reviewers.slice(0, 1);
       const run = await reviewAllService(cfg, {
@@ -103,7 +103,7 @@ describe("reviewAllService", () => {
   });
 
   describe("type filter", () => {
-    it("reviewers only documents of the specified type", async () => {
+    it("reviews only documents of the specified type", async () => {
       useCompliantFixture();
 
       const run = await reviewAllService(cfg, {

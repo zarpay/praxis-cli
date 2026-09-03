@@ -1,4 +1,4 @@
-import type { CiRunOptions } from "@/types.js";
+import type { CiRunOptions, EvalProgress } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
@@ -31,7 +31,7 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
   // The progress event is emitted when a target is reviewed, and the
   // verdict is available. It is emitted for every target, so the view
   // can be updated in real time.
-  const onProgress = (event: Parameters<typeof runProgressView>[0]) => {
+  const onProgress = (event: EvalProgress) => {
     const progressView = runProgressView(event);
     ctx.render(progressView);
   };

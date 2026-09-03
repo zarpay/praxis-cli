@@ -31,7 +31,7 @@ const SENTINEL_INPUT = {
  * system prompt, tool definitions, and every question template rendered
  * with sentinel inputs (both subject variants, both assist sections).
  *
- * This is the prompt component of the reviewer hash (hash-reviewer.ts).
+ * This is the prompt component of the reviewer hash (reviewer.ts).
  * Rewording ANY reviewer-facing prompt text — a tool description as much
  * as the system prompt — changes the reviewer's behavior, so it must
  * change the reviewer's identity (05): no version constant to forget

@@ -26,7 +26,7 @@ const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
 export class SpecFile {
   /** Absolute path to the spec file. */
   readonly path: string;
-  /** Glob patterns naming the targets this spec reviewers (`paths:`). */
+  /** Glob patterns naming the targets this spec reviews (`paths:`). */
   readonly paths: string[];
   /** How this spec's targets group into units; `by_file` when undeclared. */
   readonly cohort: CohortMode;

@@ -127,8 +127,9 @@ describe("findings", () => {
     );
   });
 
-  it("counts findings as the sum of every block's items", () => {
+  it("closes with the report's own issueCount — the exit-code fact, never recomputed", () => {
     const text = rendered({
+      issueCount: 3,
       orphanedPractices: ["a.md", "b.md"],
       expertsMissingDescription: ["c.md"],
     });
@@ -161,14 +162,14 @@ describe("the whole report", () => {
   });
 
   it("closes with the count when something is", () => {
-    const lines = statusView(report({ orphanedPractices: ["a.md", "b.md"] }));
+    const lines = statusView(report({ issueCount: 2, orphanedPractices: ["a.md", "b.md"] }));
 
     expect(lines.at(-1)).toEqual({ channel: "heading", text: "2 issue(s) found" });
   });
 
   it("counts a malformed expert in the closing line, matching the exit code", () => {
     const lines = statusView(
-      report({ invalidExperts: [{ expert: "broken.md", reason: "missing alias" }] }),
+      report({ issueCount: 1, invalidExperts: [{ expert: "broken.md", reason: "missing alias" }] }),
     );
 
     expect(lines.at(-1)).toEqual({ channel: "heading", text: "1 issue(s) found" });

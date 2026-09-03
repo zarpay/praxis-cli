@@ -5,10 +5,11 @@ import { createHash } from "node:crypto";
 /**
  * Current cache format version.
  *
- * 4.0 renamed each entry's `judge` field to `reviewer`. Older files are
- * ignored rather than migrated — a 3.0 entry has no `reviewer` to match
- * against, so reading one would silently miss every time. Discarding
- * them costs one re-review and cannot be got wrong.
+ * 5.0 made each issue a structured critique carrying its axiom channel
+ * (04-t); 4.0 renamed each entry's `judge` field to `reviewer`. Older
+ * files are ignored rather than migrated — their entries lack fields
+ * current readers match on, so reading one would silently miss every
+ * time. Discarding them costs one re-review and cannot be got wrong.
  */
 export const CACHE_VERSION = "5.0";
 

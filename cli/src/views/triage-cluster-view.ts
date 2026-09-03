@@ -1,4 +1,4 @@
-import type { PendingCritique, TriageCluster } from "@/types.js";
+import type { TriageCluster, TriageClusterCard } from "@/types.js";
 import type { ReportLine, View } from "@framework/types.js";
 
 import chalk from "chalk";
@@ -8,12 +8,7 @@ import chalk from "chalk";
  * suggestion, with the critiques as evidence — everything the human
  * needs on screen to fold, dismiss, or accept.
  */
-const triageClusterView: View<{
-  index: number;
-  total: number;
-  cluster: TriageCluster;
-  critiques: PendingCritique[];
-}> = ({ index, total, cluster, critiques }) => {
+const triageClusterView: View<TriageClusterCard> = ({ index, total, cluster, critiques }) => {
   const lines: ReportLine[] = [
     { channel: "heading", text: `Cluster ${index}/${total} — ${cluster.rationale}` },
     {

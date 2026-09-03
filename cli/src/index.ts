@@ -18,8 +18,9 @@ const VERSION = pkg.version;
 /**
  * Creates and configures the root CLI program.
  *
- * Wires all subcommands (init, compile, validate) and
- * provides top-level --version / --help flags.
+ * Wires every command group — init, compile, eval, axioms, debt, add,
+ * status, config — and provides the top-level --version / --help flags.
+ * Bare `praxis` is a command too: the orientation screen.
  */
 function createProgram(): Command {
   const program = new Command();

@@ -71,10 +71,9 @@ export class ClaudeCodePlugin implements CompilerPlugin {
   }
 
   /**
-   * Writes slash command files to `{outputDir}/commands/`.
-   *
-   * Creates the validate command that lets Claude Code users validate
-   * documents without needing an OpenRouter API key.
+   * Writes the agent-facing surface: the /praxis-resolve slash command
+   * and the praxis skill, so an agent in the project knows the CLI
+   * without being taught it in every session.
    */
   private ensureCommands(): void {
     writeText(

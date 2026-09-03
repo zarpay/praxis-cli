@@ -49,7 +49,7 @@ export class ExpertFile {
   readonly agentModel: string | undefined;
   /** Permission mode the compiled agent runs under (`agent_permission_mode:`). */
   readonly agentPermissionMode: string | undefined;
-  /** Targets this expert reviewers; compiled out as the spec's `paths:`. */
+  /** Targets this expert reviews; compiled out as the spec's `paths:`. */
   readonly validates: string[];
   /** How compiled targets group into units; undeclared stays unwritten. */
   readonly cohort: CohortMode | undefined;
@@ -92,7 +92,6 @@ export class ExpertFile {
     };
   }
 
-  /** Reads and validates an expert from disk. */
   /** Reads and validates an expert from already-loaded content. */
   static fromContent(content: string, path: string): ExpertFile {
     return ExpertFile.fromDocument(MarkdownFile.fromContent(content, path), path);

@@ -12,7 +12,8 @@ import { statLines } from "@framework/views/stats.js";
  * Framework health only renders when the spec-layer compiler is in use —
  * an eval-only project has no taxonomy to be asked about. The closing
  * line carries the same issue count the command maps to its exit code,
- * so what a reader sees and what CI does can never disagree.
+ * so what a reader sees and what CI does can never disagree — both
+ * render `issueCount`, computed once where the report is built.
  */
 const statusView: View<StatusReport & { json?: boolean }> = (report) => {
   if (report.json) {
@@ -39,9 +40,7 @@ const statusView: View<StatusReport & { json?: boolean }> = (report) => {
 
   if (!report.compilerInUse) return lines;
 
-  const blocks = findings(report);
-
-  for (const { heading, items } of blocks) {
+  for (const { heading, items } of findings(report)) {
     lines.push(
       { channel: "blank" },
       { channel: "warning", text: heading },
@@ -49,13 +48,11 @@ const statusView: View<StatusReport & { json?: boolean }> = (report) => {
     );
   }
 
-  const issues = blocks.reduce((total, block) => total + block.items.length, 0);
-
   lines.push({ channel: "blank" });
   lines.push(
-    issues === 0
+    report.issueCount === 0
       ? { channel: "success", text: "No issues found" }
-      : { channel: "heading", text: `${issues} issue(s) found` },
+      : { channel: "heading", text: `${report.issueCount} issue(s) found` },
   );
 
   return lines;

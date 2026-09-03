@@ -1,3 +1,4 @@
+import type { AxiomAudit } from "@/types.js";
 import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
@@ -7,10 +8,7 @@ import chalk from "chalk";
  * acts on. `not_appropriate` names a removal candidate — the standard
  * became mechanically checkable, or never needed judgment.
  */
-const auditView: View<{
-  rows: { id: string; assessment: string; reasoning: string }[];
-  json?: boolean;
-}> = ({ rows, json }) => {
+const auditView: View<AxiomAudit & { json?: boolean }> = ({ rows, json }) => {
   if (json) {
     return [{ channel: "content", entries: [JSON.stringify(rows, null, 2)] }];
   }

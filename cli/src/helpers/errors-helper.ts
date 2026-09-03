@@ -71,7 +71,7 @@ export const errors = {
 
   // --- Validator ---
 
-  /** `validate report` was given a path that does not exist. */
+  /** `eval verdict` was given a path that does not exist. */
   documentNotFound(path: string): PraxisError {
     return new PraxisError("DOCUMENT_NOT_FOUND", `Document not found: ${path}`);
   },
@@ -83,8 +83,8 @@ export const errors = {
       [
         `Missing ${envVarName} environment variable`,
         "",
-        "To use document validation, you need an OpenRouter API key:",
-        "  1. Get a key at https://openrouter.ai/keys",
+        "To run reviews, the reviewer needs its API key:",
+        "  1. Get a key from the provider (OpenRouter: https://openrouter.ai/keys)",
         `  2. Set it: export ${envVarName}=your-key-here`,
       ].join("\n"),
     );
@@ -129,7 +129,7 @@ export const errors = {
     );
   },
 
-  /** A spec declares root-relative scoping globs but the Reviewer was built without a project root. */
+  /** A spec declares assist globs but the ReviewSubject was resolved without a project root. */
   missingProjectRoot(key: string, specPath: string): PraxisError {
     return new PraxisError(
       "MISSING_PROJECT_ROOT",

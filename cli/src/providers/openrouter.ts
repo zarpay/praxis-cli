@@ -34,37 +34,7 @@ export class OpenRouterProvider implements ReviewProvider {
    *   tool outside the three validation tools
    */
   async review(request: ProviderRequest): Promise<ProviderResult> {
-    const response = await fetch(`${request.baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${request.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...request.options,
-        model: request.model,
-        messages: [
-          { role: "system", content: request.systemPrompt },
-          { role: "user", content: request.userPrompt },
-        ],
-        tools: request.tools,
-        tool_choice: "required",
-        temperature: request.temperature,
-        ...(this.supportsUsageAccounting(request.baseUrl) && { usage: { include: true } }),
-      }),
-    });
-
-    if (!response.ok) {
-      const body = await response.text();
-      throw errors.reviewerApiError(this.name, response.status, body);
-    }
-
-    const data = (await response.json()) as ChatCompletionResponse;
-    const toolCall = data.choices[0]?.message?.tool_calls?.[0];
-
-    if (!toolCall) {
-      throw errors.noToolCall();
-    }
+    const { toolCall, data } = await this.requestToolCall(request);
 
     return {
       verdict: this.verdictFromToolCall(toolCall, this.parseArguments(toolCall, data)),
@@ -80,6 +50,23 @@ export class OpenRouterProvider implements ReviewProvider {
    * @throws PraxisError on non-OK responses or a missing tool call
    */
   async complete(request: ProviderRequest): Promise<ProviderCompletion> {
+    const { toolCall, data } = await this.requestToolCall(request);
+
+    return {
+      toolName: toolCall.function.name,
+      args: this.parseArguments(toolCall, data),
+      usage: this.normalizeUsage(data.usage),
+    };
+  }
+
+  /**
+   * The shared wire exchange: one POST, one required tool call back.
+   *
+   * @throws PraxisError on a non-OK response or a missing tool call
+   */
+  private async requestToolCall(
+    request: ProviderRequest,
+  ): Promise<{ toolCall: ToolCall; data: ChatCompletionResponse }> {
     const response = await fetch(`${request.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -112,11 +99,7 @@ export class OpenRouterProvider implements ReviewProvider {
       throw errors.noToolCall();
     }
 
-    return {
-      toolName: toolCall.function.name,
-      args: this.parseArguments(toolCall, data),
-      usage: this.normalizeUsage(data.usage),
-    };
+    return { toolCall, data };
   }
 
   /**

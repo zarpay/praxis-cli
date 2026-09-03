@@ -1,5 +1,4 @@
-import type { AxiomFile } from "@/models/axiom-file.js";
-import type { GateAssessment, TraceabilityAssessment } from "@/types.js";
+import type { RatifyReview } from "@/types.js";
 import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
@@ -9,12 +8,7 @@ import chalk from "chalk";
  * evidence, the authoring gate's verdict, and the curator's
  * traceability assessment — rendered before the human decides.
  */
-const ratifyView: View<{
-  axiom: AxiomFile;
-  supportingCritiques: number;
-  gate: GateAssessment;
-  traceability: TraceabilityAssessment;
-}> = ({ axiom, supportingCritiques, gate, traceability }) => {
+const ratifyView: View<RatifyReview> = ({ axiom, supportingCritiques, gate, traceability }) => {
   const gateColor = colorFor(gate.assessment);
 
   const traceLine = traceability.traceable

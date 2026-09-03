@@ -9,7 +9,8 @@ import type { Logger } from "@framework/views/logger.js";
  * Framework level and generic in its context, so an orchestrator can
  * export itself already wrapped and a command has only to import it and
  * hand it to `.action()`. What a context *is* belongs to the application:
- * `domains/workspace/prepare-orchestrator.ts` binds this to Praxis's.
+ * Praxis's `helpers/prepare-orchestrator-helper.ts` binds this to its
+ * `CommandContext`.
  *
  * Both sides of the action have a fixed shape — commander parses into
  * named arguments and options, an orchestrator takes `(ctx, options)` —

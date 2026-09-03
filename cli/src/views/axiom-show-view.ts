@@ -1,4 +1,4 @@
-import type { AxiomFile } from "@/models/axiom-file.js";
+import type { ShownAxiom } from "@/types.js";
 import type { View } from "@framework/types.js";
 
 /**
@@ -7,7 +7,7 @@ import type { View } from "@framework/types.js";
  * teaching material the fast loop deliberately leaves behind this
  * drill-down (08, 09).
  */
-const axiomShowView: View<{ axiom: AxiomFile; json?: boolean }> = ({ axiom, json }) => {
+const axiomShowView: View<ShownAxiom & { json?: boolean }> = ({ axiom, json }) => {
   if (json) {
     const payload = {
       id: axiom.id,

@@ -17,7 +17,8 @@ export const pruneCacheOrchestrator: Orchestrator = async (ctx) => {
   const store = new VerdictStore(ctx.config);
   const result = store.prune(liveHashes);
 
-  ctx.render(pruneView(result));
+  const view = pruneView(result);
+  ctx.render(view);
 
   return "ok";
 };
