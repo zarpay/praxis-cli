@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
 import buildStatusReportService from "@/services/build-status-report-service.js";
-import countStatusIssuesService from "@/services/count-status-issues-service.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
@@ -90,7 +89,7 @@ describe("buildStatusReportService", () => {
 
     // It is reported in the output, so it must also fail the exit code —
     // otherwise CI passes on a project the compiler cannot read.
-    expect(countStatusIssuesService(report)).toBeGreaterThan(0);
+    expect(report.issueCount).toBeGreaterThan(0);
   });
 
   it("reports a malformed expert instead of dying on it", async () => {
@@ -212,7 +211,7 @@ describe("buildStatusReportService", () => {
       expect(report.compilerInUse).toBe(false);
       expect(report.counts).toEqual({ experts: 0, practices: 0, references: 0, context: 0 });
       expect(report.orphanedPractices).toEqual([]);
-      expect(countStatusIssuesService(report)).toBe(0);
+      expect(report.issueCount).toBe(0);
 
       cleanup();
     });

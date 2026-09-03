@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -44,5 +44,37 @@ describe("PracticeStore", () => {
 
     expect(practices.map((practice) => practice.title)).toEqual(["Review PRs"]);
     expect(problems).toHaveLength(1);
+  });
+
+  describe("add", () => {
+    it("scaffolds a practice from its template, placeholders filled", () => {
+      const created = store.add("review-pull-requests", tmpdir());
+
+      const content = readFileSync(join(practicesDir, "review-pull-requests.md"), "utf-8");
+
+      expect(created.type).toBe("practice");
+      expect(content).toContain('title: "Review Pull Requests"');
+      expect(content).toContain("# Review Pull Requests");
+    });
+
+    it("refuses to overwrite an existing document", () => {
+      const existing = join(practicesDir, "existing.md");
+      writeFileSync(existing, "# My custom content\n");
+
+      expect(() => store.add("existing", tmpdir())).toThrow("File already exists");
+      expect(readFileSync(existing, "utf-8")).toBe("# My custom content\n");
+    });
+  });
+
+  describe("orphans", () => {
+    it("names the practices no expert references", () => {
+      writeFileSync(join(practicesDir, "in-force.md"), practiceContent("In Force"));
+      writeFileSync(join(practicesDir, "orphaned.md"), practiceContent("Orphaned"));
+      const inForce = join(practicesDir, "in-force.md").slice(tmpdir().length + 1);
+
+      const orphans = store.orphans(new Set([inForce]), tmpdir());
+
+      expect(orphans).toEqual(["orphaned.md"]);
+    });
   });
 });

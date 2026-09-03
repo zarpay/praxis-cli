@@ -2,7 +2,7 @@ import type { AddDocumentOptions } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import addDocumentService from "@/services/add-document-service.js";
+import { ExpertStore } from "@/stores/expert-store.js";
 import documentCreatedView from "@/views/document-created-view.js";
 
 /**
@@ -10,13 +10,11 @@ import documentCreatedView from "@/views/document-created-view.js";
  * template and say where it landed.
  */
 export const addExpertOrchestrator: Orchestrator<AddDocumentOptions> = async (ctx, { name }) => {
-  const created = addDocumentService({
-    type: "expert",
-    name,
-    root: ctx.root,
+  const store = new ExpertStore({
     expertsDir: ctx.config.expertsDir,
-    practicesDir: ctx.config.practicesDir,
+    specFilePattern: ctx.config.specFilePattern,
   });
+  const created = store.add(name, ctx.root);
 
   const view = documentCreatedView(created);
   ctx.render(view);

@@ -18,6 +18,7 @@ function report(fields: Partial<StatusReport> = {}): StatusReport {
       epoch_boundary_detected: false,
       last_run_at: null,
     },
+    issueCount: 0,
     orphanedPractices: [],
     danglingRefs: [],
     expertsMissingDescription: [],

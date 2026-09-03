@@ -1,16 +1,14 @@
 import type { CompileExpertsInput, CompileExpertsResult } from "@/types.js";
 
-import fg from "fast-glob";
-
-import { matchesFilename } from "@/helpers/files-helper.js";
 import { baseName } from "@/helpers/paths-helper.js";
 import compileExpertService from "@/services/compile-expert-service.js";
+import { ExpertStore } from "@/stores/expert-store.js";
 
 /**
  * Compiles every expert in a directory.
  *
- * Templates (underscore-prefixed) and spec files are skipped — the same
- * rule the eval layer applies when collecting targets.
+ * What counts as an expert — templates and spec files never do — is
+ * `ExpertStore`'s listing rule, stated once there.
  *
  * A malformed expert is reported and skipped, never fatal: one bad file
  * must not abandon every other agent in the directory. Callers see each
@@ -25,16 +23,13 @@ export default async function compileExperts({
   plugins,
   onProgress,
 }: CompileExpertsInput): Promise<CompileExpertsResult> {
-  const expertFiles = await fg("*.md", { cwd: expertsDir, onlyFiles: true, absolute: true });
+  const store = new ExpertStore({ expertsDir, specFilePattern });
+  const expertFiles = store.files();
   const skipped: CompileExpertsResult["skipped"] = [];
   let compiled = 0;
 
   for (const expertFile of expertFiles) {
     const name = baseName(expertFile);
-
-    if (name.startsWith("_") || matchesFilename(name, specFilePattern)) {
-      continue;
-    }
 
     try {
       const result = await compileExpertService({

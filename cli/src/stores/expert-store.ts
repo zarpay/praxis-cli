@@ -1,10 +1,13 @@
-import type { StoreProblem } from "@/types.js";
+import type { AddDocumentResult, StoreProblem } from "@/types.js";
 
 import fg from "fast-glob";
 
-import { exists, matchesFilename, readText } from "@/helpers/files-helper.js";
-import { baseName } from "@/helpers/paths-helper.js";
+import { errors } from "@/helpers/errors-helper.js";
+import { exists, matchesFilename, readText, writeText } from "@/helpers/files-helper.js";
+import { baseName, joinPath, relativePath } from "@/helpers/paths-helper.js";
+import { kebabToTitleCase } from "@/helpers/text-helper.js";
 import { ExpertFile } from "@/models/expert-file.js";
+import expertFileTemplate from "@/templates/expert-file-template.js";
 
 /**
  * The experts directory: the spec layer's source definitions (11).
@@ -63,6 +66,32 @@ export class ExpertStore {
     }
 
     return { experts, problems };
+  }
+
+  /**
+   * Scaffolds one expert from its template — the taxonomy's entry
+   * point, so an author starts from the shape the compiler expects
+   * rather than a blank file. Refuses to overwrite: an existing
+   * document is the author's work, and `add` is not the command for
+   * editing it.
+   *
+   * @param name - Kebab-case name for the new file
+   * @param root - Project root the reported path is relative to
+   * @throws PraxisError when the target already exists
+   */
+  add(name: string, root: string): AddDocumentResult {
+    const targetFile = joinPath(this.expertsDir, `${name}.md`);
+    const path = relativePath(root, targetFile);
+
+    if (exists(targetFile)) {
+      throw errors.fileAlreadyExists(path);
+    }
+
+    const document = expertFileTemplate({ title: kebabToTitleCase(name), alias: name });
+
+    writeText(targetFile, document);
+
+    return { type: "expert", path };
   }
 
   /**

@@ -40,19 +40,17 @@ frontmatter keys are spelled.
   model needs lives module-private beside the class — `Reviewer.hash()`'s
   canonical hashing and `ReviewSubject`'s assist-glob resolution were services
   until this rule; both are private functions in their model files now.
-- **A store gets a handle model, and its lifecycle events are methods.**
-  `VerdictCache`, `Ledger`, and `AxiomStore` each own one store: its layout,
-  its id minting, its read sweeps, its writes and moves. A service whose whole
-  job is one lifecycle event of one store — list it, mint for it, append to it,
-  move a file within it — is **falsely externalized**: nine such services
-  (list-axioms, new-axiom-id, write-axiom-proposal, ratify-axiom,
-  resolve-checklist, list-ledger-runs, list-ledger-critiques,
-  list-triage-state, write-triage-records) collapsed into these two models on
-  2026-09-03. What stays a service: cross-model workflows, external I/O the
-  store doesn't own (LLM calls, git), record _assembly_, and caller-context
-  policy (`write-ledger-run` builds and decides; `Ledger.writeRun` lands
-  bytes). Promote the handle when several services share one store's layout —
-  that sharing is the model announcing itself.
+- **A model's file IO lives in its store, not here.** Every file-backed
+  model pairs with a class in `src/stores/` that owns the layout, the id
+  minting, and the reads and writes; the model keeps `fromContent` (pure
+  construction) and its data helpers. A service whose whole job is one
+  lifecycle event of one store — list it, mint for it, append to it, prune
+  it, scaffold into it — is **falsely externalized**: it is a store method
+  (nine services collapsed on 2026-09-03, seven more on 2026-09-04). What
+  stays a service: cross-store workflows, external I/O the store doesn't
+  own (LLM calls, git), record _assembly_, and caller-context policy
+  (`write-ledger-run` builds and decides; `RunStore.writeRun` lands bytes).
+  `.claude/rules/stores.md` carries the store contract.
 
 ## `reviewer` is a noun
 

@@ -17,11 +17,11 @@ import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import discoverDomainsService from "@/services/discover-domains-service.js";
-import listSourceDocumentsService from "@/services/list-source-documents-service.js";
 import resolveUnitsService from "@/services/resolve-units-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
+import { DocumentStore } from "@/stores/document-store.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
 
 /**
@@ -141,11 +141,19 @@ export default async function reviewAll({
     }
   }
 
+  const documentStore = new DocumentStore({
+    root,
+    sources,
+    specFilePattern,
+    ignore: absoluteIgnore,
+  });
+  const sourceDocs = new Set(documentStore.paths());
+
   return {
     verdicts,
     cacheStats,
     stoppedEarly,
-    summary: summarize(verdicts, listSourceDocumentsService(scope)),
+    summary: summarize(verdicts, sourceDocs),
   };
 }
 

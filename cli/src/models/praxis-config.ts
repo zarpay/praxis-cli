@@ -1,5 +1,6 @@
 import type {
   CuratorConfig,
+  DiscoveryScope,
   ReviewerConfig,
   NormalizedConfig,
   PluginConfigEntry,
@@ -122,6 +123,22 @@ export class PraxisConfig {
   /** The spec file pattern (default: "README.md"). */
   get specFilePattern(): string {
     return this.data.specFilePattern;
+  }
+
+  /**
+   * The scope a full run covers, projected from this config.
+   *
+   * `ignore` is declared relative to the project root and resolved to
+   * absolute here, because every consumer downstream compares absolute
+   * paths.
+   */
+  discoveryScope(): DiscoveryScope {
+    return {
+      root: this.root,
+      sources: this.sources,
+      specFilePattern: this.specFilePattern,
+      absoluteIgnore: this.ignore.map((pattern) => resolvePath(this.root, pattern)),
+    };
   }
 
   /**

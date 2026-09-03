@@ -176,14 +176,6 @@ export const errors = {
     );
   },
 
-  /** `praxis add` was given a type it has no template for. */
-  invalidDocumentType(type: string): PraxisError {
-    return new PraxisError(
-      "INVALID_DOCUMENT_TYPE",
-      `Cannot scaffold "${type}" — praxis add creates experts and practices`,
-    );
-  },
-
   /** No spec file matching a literal specFilePattern exists in the document's directory. */
   specNotFound(pattern: string, dir: string, targetPath: string): PraxisError {
     return new PraxisError("SPEC_NOT_FOUND", `No ${pattern} found in ${dir} for ${targetPath}`);

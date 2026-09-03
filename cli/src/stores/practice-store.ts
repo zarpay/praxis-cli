@@ -1,10 +1,13 @@
-import type { StoreProblem } from "@/types.js";
+import type { AddDocumentResult, StoreProblem } from "@/types.js";
 
 import fg from "fast-glob";
 
-import { exists, matchesFilename, readText } from "@/helpers/files-helper.js";
-import { baseName } from "@/helpers/paths-helper.js";
+import { errors } from "@/helpers/errors-helper.js";
+import { exists, matchesFilename, readText, writeText } from "@/helpers/files-helper.js";
+import { baseName, joinPath, relativePath } from "@/helpers/paths-helper.js";
+import { kebabToTitleCase } from "@/helpers/text-helper.js";
 import { PracticeFile } from "@/models/practice-file.js";
+import practiceFileTemplate from "@/templates/practice-file-template.js";
 
 /**
  * The practices directory: the recurring pieces of work experts own
@@ -50,6 +53,44 @@ export class PracticeStore {
       .filter((path) => !matchesFilename(path, this.specFilePattern))
       .filter((path) => !baseName(path).startsWith("_"))
       .sort();
+  }
+
+  /**
+   * Scaffolds one practice from its template, so an author starts from
+   * the shape the compiler expects rather than a blank file. Refuses to
+   * overwrite: an existing document is the author's work.
+   *
+   * @param name - Kebab-case name for the new file
+   * @param root - Project root the reported path is relative to
+   * @throws PraxisError when the target already exists
+   */
+  add(name: string, root: string): AddDocumentResult {
+    const targetFile = joinPath(this.practicesDir, `${name}.md`);
+    const path = relativePath(root, targetFile);
+
+    if (exists(targetFile)) {
+      throw errors.fileAlreadyExists(path);
+    }
+
+    const document = practiceFileTemplate({ title: kebabToTitleCase(name) });
+
+    writeText(targetFile, document);
+
+    return { type: "practice", path };
+  }
+
+  /**
+   * Practices no expert references, by filename. An orphan is a
+   * practice that exists but nothing points at, which means no compiled
+   * agent carries it — it is written but not in force.
+   *
+   * @param referenced - Project-relative paths some expert points at
+   * @param root - Project root the practice paths are made relative to
+   */
+  orphans(referenced: Set<string>, root: string): string[] {
+    return this.files()
+      .filter((file) => !referenced.has(relativePath(root, file)))
+      .map((file) => baseName(file));
   }
 
   /** Every practice, validated; one malformed file never hides the rest. */

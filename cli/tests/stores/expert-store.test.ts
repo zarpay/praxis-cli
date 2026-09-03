@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -74,5 +74,32 @@ describe("ExpertStore", () => {
 
     expect(found?.alias).toBe("Sundae");
     expect(missing).toBeNull();
+  });
+
+  describe("add", () => {
+    it("scaffolds an expert from its template, placeholders filled", () => {
+      const created = store.add("code-reviewer", tmpdir());
+
+      const content = readFileSync(join(expertsDir, "code-reviewer.md"), "utf-8");
+
+      expect(created.type).toBe("expert");
+      expect(content).toContain('title: "Code Reviewer"');
+      expect(content).toContain('alias: "code-reviewer"');
+      expect(content).toContain("# Code Reviewer (a.k.a **Code Reviewer**)");
+    });
+
+    it("reports the created path relative to the given root", () => {
+      const created = store.add("test-expert", tmpdir());
+
+      expect(created.path).toBe(join(expertsDir, "test-expert.md").slice(tmpdir().length + 1));
+    });
+
+    it("refuses to overwrite an existing document", () => {
+      const existing = join(expertsDir, "existing.md");
+      writeFileSync(existing, "# My custom content\n");
+
+      expect(() => store.add("existing", tmpdir())).toThrow("File already exists");
+      expect(readFileSync(existing, "utf-8")).toBe("# My custom content\n");
+    });
   });
 });

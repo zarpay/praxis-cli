@@ -6,7 +6,6 @@ import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
-import listSourceDocumentsService from "@/services/list-source-documents-service.js";
 import reviewAllService from "@/services/review-all-service.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
@@ -334,28 +333,6 @@ describe("reviewAllService", () => {
   });
 
   describe("ignore patterns", () => {
-    it("excludes files matching ignore from document count", () => {
-      const { root, cleanup } = createValidatorTmpdir({
-        sources: ["docs"],
-        files: {
-          "docs/roles.praxis.md": "# Spec\nAll docs need a title.",
-          "docs/counted.md": "# Counted",
-          "docs/generated/output.md": "# Generated — should be ignored",
-        },
-      });
-
-      const docs = listSourceDocumentsService({
-        root,
-        sources: ["docs"],
-        specFilePattern: "*.praxis.md",
-        absoluteIgnore: [join(root, "docs/generated/**")],
-      });
-
-      expect(docs.size).toBe(1); // only counted.md; generated/output.md is ignored
-
-      cleanup();
-    });
-
     it("excludes ignored directories from spec discovery", async () => {
       const { root, cleanup } = createValidatorTmpdir({
         sources: ["docs"],

@@ -2,11 +2,18 @@ import type {
   AssistFileRecord,
   CacheFileData,
   CacheReviewerIdentity,
+  PruneCacheResult,
   Verdict,
   VerdictEntry,
 } from "@/types.js";
 
-import { exists, readText, removeFile, writeText } from "@/helpers/files-helper.js";
+import {
+  exists,
+  listFilesRecursive,
+  readText,
+  removeFile,
+  writeText,
+} from "@/helpers/files-helper.js";
 import { baseName, joinPath, parentDir } from "@/helpers/paths-helper.js";
 import { CACHE_VERSION, CacheFile } from "@/models/cache-file.js";
 
@@ -191,6 +198,47 @@ export class VerdictStore {
       document: { path: targetPath, spec_path: entry.spec_path },
       result: entry.result,
     };
+  }
+
+  /**
+   * Removes every cached verdict no hash in the live set can ever hit
+   * again. An entry is keyed by its reviewer's behavioral hash, so a
+   * config change writes new keys and orphans the old ones — this is
+   * where they finally go. Files of an unreadable or outdated format
+   * are removed whole, and a file with nothing left is deleted rather
+   * than kept as an empty husk.
+   *
+   * @param liveHashes - The behavioral hashes of the configured reviewers
+   */
+  prune(liveHashes: Set<string>): PruneCacheResult {
+    let entriesPruned = 0;
+    let filesRemoved = 0;
+
+    if (!exists(this.root)) {
+      return { entriesPruned, filesRemoved };
+    }
+
+    for (const relPath of listFilesRecursive(this.root)) {
+      const path = joinPath(this.root, relPath);
+      const file = this.readFile(path, { discardCorrupt: false });
+
+      if (!file) {
+        removeFile(path);
+        filesRemoved++;
+        continue;
+      }
+
+      entriesPruned += file.prune((entry) => liveHashes.has(entry.reviewer.hash));
+
+      if (file.isEmpty()) {
+        removeFile(path);
+        filesRemoved++;
+      } else {
+        writeText(path, file.toJson());
+      }
+    }
+
+    return { entriesPruned, filesRemoved };
   }
 
   /**

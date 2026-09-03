@@ -80,7 +80,6 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
   };
 
   const run = await reviewProjectService({
-    root,
     config,
     reviewer: options.reviewer,
     type: options.type,

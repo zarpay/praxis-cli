@@ -1,6 +1,5 @@
 import type { ReviewAllResult, ReviewProjectInput } from "@/types.js";
 
-import buildReviewScopeService from "@/services/build-review-scope-service.js";
 import reviewAllService from "@/services/review-all-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
 
@@ -16,7 +15,6 @@ import selectReviewersService from "@/services/select-reviewers-service.js";
  *   discovered domain
  */
 export default async function reviewProjectService({
-  root,
   config,
   reviewer,
   type,
@@ -25,9 +23,12 @@ export default async function reviewProjectService({
   ledger = true,
   onProgress,
 }: ReviewProjectInput): Promise<ReviewAllResult> {
+  const scope = config.discoveryScope();
+  const reviewers = selectReviewersService({ configured: config.reviewers, only: reviewer });
+
   return reviewAllService({
-    ...buildReviewScopeService({ root, config }),
-    reviewers: selectReviewersService({ configured: config.reviewers, only: reviewer }),
+    ...scope,
+    reviewers,
     type,
     failFast,
     useCache,

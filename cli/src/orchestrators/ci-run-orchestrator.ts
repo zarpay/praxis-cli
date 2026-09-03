@@ -37,7 +37,6 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
   };
 
   const run = await reviewProjectService({
-    root,
     config,
     // CI verifies without writing (12): the branch's own runs are the evidence.
     ledger: false,

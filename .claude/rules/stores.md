@@ -10,9 +10,11 @@ paths:
 minting, its reads, writes, and moves — the IO half of a model family.
 `VerdictStore` owns the verdict cache, `RunStore` and `TriageStore` the
 ledger's two partitions, `AxiomStore` the axiom lifecycle,
-`ExpertStore`/`PracticeStore` their document directories. Every model with
-a file backing gets its store here; IO for a file kind scattered across
-services is the smell this directory exists to end. One store, one
+`ExpertStore`/`PracticeStore` their document directories, `SpecStore` the
+specs in the user's tree (found and read, never written), and
+`DocumentStore` the untyped sweep across the source trees. Every model
+with a file backing gets its store here; IO for a file kind scattered
+across services is the smell this directory exists to end. One store, one
 partition, one file format: the original `Ledger` class mixed two
 partitions, two formats, and a cross-store derivation under a name that
 described none of them — it is `RunFile`/`TriageSessionFile` (models),
@@ -25,7 +27,9 @@ described none of them — it is `RunFile`/`TriageSessionFile` (models),
   templates, and models — never services, prompts, orchestrators, or views
   (ESLint-enforced). Services construct stores and call their methods; a
   service whose whole body is one verb against one store's own contents is
-  a method wearing a service's filename.
+  a method wearing a service's filename — the 2026-09-04 fold turned seven
+  of those into `VerdictStore.prune`, `ExpertStore.add`,
+  `PracticeStore.add`/`orphans`, and `DocumentStore` outright.
 - **The store owns its policy, and states it**: the verdict cache fails
   soft in both directions and its two read paths carry different corruption
   policy; the run store's reads never raise and its writes always do. Policy

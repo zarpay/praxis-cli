@@ -1,11 +1,13 @@
 import type { CompileProgress, CompileProjectOptions } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
+import { errors } from "@/helpers/errors-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import compileByAliasService from "@/services/compile-by-alias-service.js";
+import compileExpertService from "@/services/compile-expert-service.js";
 import compileExpertsService from "@/services/compile-experts-service.js";
 import resolvePluginsService from "@/services/resolve-plugins-service.js";
 import watchAndCompileService from "@/services/watch-and-compile-service.js";
+import { ExpertStore } from "@/stores/expert-store.js";
 import compileProgressView from "@/views/compile-progress-view.js";
 import compileResultView from "@/views/compile-result-view.js";
 import watchView from "@/views/watch-view.js";
@@ -39,7 +41,17 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
   // When an alias is given, compile only that expert and skip the watch mode.
   // Otherwise, compile every expert and optionally watch for changes.
   if (alias) {
-    const result = await compileByAliasService({ ...input, alias, expertsDir: config.expertsDir });
+    const store = new ExpertStore({
+      expertsDir: config.expertsDir,
+      specFilePattern: config.specFilePattern,
+    });
+    const expert = store.byAlias(alias);
+
+    if (!expert) {
+      throw errors.expertNotFound(alias);
+    }
+
+    const result = await compileExpertService({ ...input, expertFile: expert.path });
 
     const view = compileResultView(result);
     ctx.render(view);

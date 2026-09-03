@@ -2,7 +2,6 @@ import type { Orchestrator, StatusOptions } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import buildStatusReportService from "@/services/build-status-report-service.js";
-import countStatusIssuesService from "@/services/count-status-issues-service.js";
 import statusView from "@/views/status-view.js";
 
 /**
@@ -22,7 +21,7 @@ export const analyzeProjectOrchestrator: Orchestrator<StatusOptions> = async (
   const view = statusView({ ...report, json });
   ctx.render(view);
 
-  return countStatusIssuesService(report) > 0 ? "failed" : "ok";
+  return report.issueCount > 0 ? "failed" : "ok";
 };
 
 export default prepareOrchestrator(analyzeProjectOrchestrator);

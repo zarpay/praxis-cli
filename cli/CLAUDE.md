@@ -103,10 +103,10 @@ Classes remain for four things, and only these:
 - **Extension-point contracts** — `CompilerPlugin`, `ReviewProvider`. A third
   party implements these against a documented interface; implementations live in
   `src/plugins/` and `src/providers/`, not under `services/`.
-- **`VerdictCache`** — where one reviewer's verdicts live and under what key,
-  bound to one reviewer identity. As functions, every call would re-thread
-  `{ projectRoot, reviewer }`; the reads and writes themselves are services
-  (`read-verdict`, `write-verdict`) that take it.
+- **Stores** (`src/stores/`) — one file-backed subsystem's handle each: its
+  layout, id minting, reads, writes, and stated policy. As functions, every
+  call would re-thread the same construction payload. `.claude/rules/stores.md`
+  carries the full contract.
 - Anything else genuinely better expressed as a smart data object.
 
 **A command calls exactly one orchestrator, and does nothing with what comes
@@ -180,7 +180,7 @@ The measurement layer (07) is pure read-side: `eval report` (three scope levels 
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
-Key files: `services/request-verdict-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile, AxiomFile, PracticeFile, CacheFile), `stores/` (VerdictStore, RunStore, TriageStore, AxiomStore, ExpertStore, PracticeStore), `services/` (discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
+Key files: `services/request-verdict-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile, AxiomFile, PracticeFile, CacheFile), `stores/` (VerdictStore, RunStore, TriageStore, AxiomStore, ExpertStore, PracticeStore, SpecStore, DocumentStore), `services/` (discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
 
 ### Project Root Detection
 

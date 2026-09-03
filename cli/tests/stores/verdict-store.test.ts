@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { Reviewer } from "@/models/reviewer.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
 
 describe("VerdictStore", () => {
@@ -418,6 +419,90 @@ describe("VerdictStore", () => {
 
       expect(cache.readEntry({ targetPath })).toBeNull();
       expect(existsSync(cachePath)).toBe(true);
+    });
+  });
+
+  describe("prune", () => {
+    const LIVE = { name: "live", model: "live-model", apiKeyEnvVar: "KEY" };
+    const RESULT = { compliant: true, issues: [], reason: "ok" };
+    const SPEC = "docs/README.md";
+
+    /** A cache bound to the given reviewer identity. */
+    function cacheFor(identity: { name: string; model: string; hash: string }): VerdictStore {
+      return new VerdictStore({ projectRoot, reviewer: identity });
+    }
+
+    /** The live reviewer's true cache identity, hash and all. */
+    function liveIdentity(): { name: string; model: string; hash: string } {
+      return Reviewer.fromConfig(LIVE).cacheIdentity();
+    }
+
+    /** The behavioral hashes a prune keeps. */
+    function liveHashes(): Set<string> {
+      return new Set([liveIdentity().hash]);
+    }
+
+    it("does nothing on a project with no cache", () => {
+      expect(cache.prune(liveHashes())).toEqual({ entriesPruned: 0, filesRemoved: 0 });
+    });
+
+    it("keeps entries whose reviewer hash is live", () => {
+      const store = cacheFor(liveIdentity());
+      const targetPath = join(projectRoot, "docs", "guide.md");
+      store.writeVerdict({ targetPath, contentHash: "abcd1234", result: RESULT, specPath: SPEC });
+
+      const result = store.prune(liveHashes());
+
+      expect(result).toEqual({ entriesPruned: 0, filesRemoved: 0 });
+      expect(store.readVerdict({ targetPath, contentHash: "abcd1234", specPath: SPEC })).toEqual(
+        RESULT,
+      );
+    });
+
+    it("drops an epoch-rolled entry but keeps the current one in the same file", () => {
+      const targetPath = join(projectRoot, "docs", "guide.md");
+      const stale = { name: "live", model: "live-model", hash: "0ldep0ch" };
+      cacheFor(stale).writeVerdict({
+        targetPath,
+        contentHash: "aaaa1111",
+        result: RESULT,
+        specPath: SPEC,
+      });
+      const store = cacheFor(liveIdentity());
+      store.writeVerdict({ targetPath, contentHash: "bbbb2222", result: RESULT, specPath: SPEC });
+
+      const result = store.prune(liveHashes());
+
+      expect(result).toEqual({ entriesPruned: 1, filesRemoved: 0 });
+      expect(store.readVerdict({ targetPath, contentHash: "bbbb2222", specPath: SPEC })).toEqual(
+        RESULT,
+      );
+    });
+
+    it("deletes a file once nothing in it survives", () => {
+      const targetPath = join(projectRoot, "docs", "gone.md");
+      const retired = { name: "retired", model: "old-model", hash: "deadbeef" };
+      const store = cacheFor(retired);
+      store.writeVerdict({ targetPath, contentHash: "aaaa1111", result: RESULT, specPath: SPEC });
+
+      const result = store.prune(liveHashes());
+
+      expect(result).toEqual({ entriesPruned: 1, filesRemoved: 1 });
+      expect(existsSync(store.pathFor(targetPath))).toBe(false);
+    });
+
+    it("removes unreadable and outdated-format files whole", () => {
+      const corrupt = join(cacheRoot, "docs", "corrupt.json");
+      const outdated = join(cacheRoot, "docs", "outdated.json");
+      mkdirSync(join(cacheRoot, "docs"), { recursive: true });
+      writeFileSync(corrupt, "not json{{{");
+      writeFileSync(outdated, JSON.stringify({ version: "3.0", verdicts: {} }));
+
+      const result = cache.prune(liveHashes());
+
+      expect(result).toEqual({ entriesPruned: 0, filesRemoved: 2 });
+      expect(existsSync(corrupt)).toBe(false);
+      expect(existsSync(outdated)).toBe(false);
     });
   });
 });

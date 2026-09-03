@@ -591,7 +591,6 @@ export interface ReviewTargetResult {
 export interface ReviewProjectInput {
   /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
   ledger?: boolean;
-  root: string;
   config: PraxisConfig;
   /** Run only this configured reviewer; omitted runs all of them. */
   reviewer?: string;
@@ -955,14 +954,6 @@ export interface CompileExpertsResult {
   skipped: { file: string; reason: string }[];
 }
 
-/** One expert to compile, named by its alias. */
-export interface CompileByAliasInput extends CompileScope {
-  /** The alias to compile, matched case-insensitively. */
-  alias: string;
-  /** Directory holding the expert markdown files. */
-  expertsDir: string;
-}
-
 /** A watch session over a project's source directories. */
 export interface WatchAndCompileInput extends CompileExpertsInput {
   /** Source directories to watch, relative to the project root. */
@@ -989,20 +980,6 @@ export interface CompileProjectOptions {
 export interface AddDocumentOptions {
   /** Kebab-case name for the new file, e.g. "code-reviewer". */
   name: string;
-}
-
-/** Everything scaffolding one document needs. */
-export interface AddDocumentInput {
-  /** Which template to use. */
-  type: "expert" | "practice";
-  /** Kebab-case name for the new file. */
-  name: string;
-  /** Project root the reported path is relative to. */
-  root: string;
-  /** Where experts live. */
-  expertsDir: string;
-  /** Where practices live. */
-  practicesDir: string;
 }
 
 /** What was created. */
@@ -1099,6 +1076,8 @@ export interface StatusReport {
     fail: number;
     notValidated: number;
   }[];
+  /** Structural problems found in total — what maps to the exit code. */
+  issueCount: number;
   /** The situational-poll facts an agent reads from one call (09-ae). */
   evalState: {
     pending_triage: number;
@@ -1145,44 +1124,10 @@ export interface ExpertAudit {
 // Service payloads (domains/workspace/services/)
 // ---------------------------------------------------------------------------
 
-/** Where documents are looked for, and what never counts as one. */
-export interface DocumentScope {
-  /** Project root all relative paths resolve against. */
-  root: string;
-  /** Filename or glob identifying spec files, which are not documents. */
-  specFilePattern: string;
-  /** Ignore patterns, relative to the root. */
-  ignore?: string[];
-}
-
-/** One directory to list documents in. */
-export interface ListDocumentsInput extends DocumentScope {
-  /** Absolute directory path; a missing directory yields nothing. */
-  dir: string;
-  /** Whether to descend into subdirectories. */
-  recursive: boolean;
-}
-
-/** The source trees to classify documents across. */
-export interface CountDocumentsInput extends DocumentScope {
-  /** Source directories, relative to the project root. */
-  sources: string[];
-}
-
 /** How many documents of each non-authored kind a project holds. */
 export interface DocumentCounts {
   references: number;
   context: number;
-}
-
-/** The practices to check for orphans, and what references exist. */
-export interface FindOrphanedPracticesInput {
-  /** Absolute paths to the practice files. */
-  practiceFiles: string[];
-  /** Project-relative paths some expert points at. */
-  referenced: Set<string>;
-  /** Project root the practice paths are made relative to. */
-  root: string;
 }
 
 /** A project whose cached verdicts should be counted. */
@@ -1453,12 +1398,6 @@ export interface ReviewerReports {
   named: boolean;
   /** Show the full reasoning. */
   verbose: boolean;
-}
-
-/** The project whose verdict cache is being pruned. */
-export interface PruneCacheInput {
-  root: string;
-  config: PraxisConfig;
 }
 
 /** What a prune removed. */
