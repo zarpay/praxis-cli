@@ -2,7 +2,7 @@ import type { Orchestrator, ShowAxiomOptions } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import { AxiomStore } from "@/models/axiom-store.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
 import axiomShowView from "@/views/axiom-show-view.js";
 
 /**

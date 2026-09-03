@@ -10,7 +10,7 @@ import type {
 
 import { gitFacts } from "@/helpers/git-helper.js";
 import { relativePath } from "@/helpers/paths-helper.js";
-import { Ledger } from "@/models/ledger.js";
+import { Ledger } from "@/stores/ledger.js";
 
 /**
  * Persists one reviewer's completed run to the ledger (05).

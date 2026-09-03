@@ -1,8 +1,6 @@
 import type { ReviewTargetInput, ReviewTargetResult } from "@/types.js";
 
-import readVerdictService from "@/services/read-verdict-service.js";
 import requestVerdictService from "@/services/request-verdict-service.js";
-import writeVerdictService from "@/services/write-verdict-service.js";
 
 /**
  * A verdict for one target, from cache when the inputs are unchanged.
@@ -24,8 +22,7 @@ export default async function reviewTarget({
   const contentHash = target.contentHash();
 
   if (cache) {
-    const cached = readVerdictService({
-      cache,
+    const cached = cache.readVerdict({
       targetPath: target.targetPath,
       specPath: target.specPath,
       contentHash,
@@ -39,8 +36,7 @@ export default async function reviewTarget({
   const { verdict, usage } = await requestVerdictService(target, reviewer, root);
 
   if (cache) {
-    writeVerdictService({
-      cache,
+    cache.writeVerdict({
       targetPath: target.targetPath,
       specPath: target.specPath,
       contentHash,

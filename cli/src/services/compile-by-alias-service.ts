@@ -2,7 +2,7 @@ import type { CompileByAliasInput, CompileExpertResult } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import compileExpertService from "@/services/compile-expert-service.js";
-import findExpertByAliasService from "@/services/find-expert-by-alias-service.js";
+import { ExpertStore } from "@/stores/expert-store.js";
 
 /**
  * Compiles the one expert declaring an alias.
@@ -18,11 +18,12 @@ export default async function compileByAlias({
   expertsDir,
   ...scope
 }: CompileByAliasInput): Promise<CompileExpertResult> {
-  const expertFile = await findExpertByAliasService({ alias, expertsDir });
+  const store = new ExpertStore({ expertsDir, specFilePattern: scope.specFilePattern });
+  const expert = store.byAlias(alias);
 
-  if (!expertFile) {
+  if (!expert) {
     throw errors.expertNotFound(alias);
   }
 
-  return compileExpertService({ ...scope, expertFile });
+  return compileExpertService({ ...scope, expertFile: expert.path });
 }

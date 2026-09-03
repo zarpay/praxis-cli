@@ -63,9 +63,18 @@ function bodyFor(options: { statement?: string; body?: string }): string {
 export function seedAxiom(
   root: string,
   id: string,
-  fields: Record<string, string | null> & { proposed?: boolean; statement?: string } = {},
+  fields: Record<string, string | null | boolean | undefined> & {
+    proposed?: boolean;
+    statement?: string;
+  } = {},
 ): string {
-  const { proposed, statement, ...overrides } = fields;
+  const { proposed, statement, ...rest } = fields;
+  const overrides = Object.fromEntries(
+    Object.entries(rest).filter(
+      (entry): entry is [string, string | null] =>
+        typeof entry[1] === "string" || entry[1] === null,
+    ),
+  );
 
   const dir = proposed
     ? join(root, ".praxis", "axioms", "proposed")
@@ -73,7 +82,7 @@ export function seedAxiom(
   const path = join(dir, `${id}.md`);
   const content = axiomContent(
     { id, ...overrides },
-    { statement: statement ?? `Statement of ${id}.` },
+    { statement: typeof statement === "string" ? statement : `Statement of ${id}.` },
   );
 
   mkdirSync(dirname(path), { recursive: true });

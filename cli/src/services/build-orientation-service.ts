@@ -1,8 +1,8 @@
 import type { BuildDebtReportInput, Orientation } from "@/types.js";
 
 import { CALIBRATION_STATUS } from "@/helpers/metrics-helper.js";
-import { AxiomStore } from "@/models/axiom-store.js";
-import { Ledger } from "@/models/ledger.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
+import { Ledger } from "@/stores/ledger.js";
 
 /**
  * The orientation screen's facts (09-h): counts and staleness at a

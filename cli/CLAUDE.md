@@ -51,7 +51,7 @@ src/
 **Dependencies flow one way, and ESLint enforces it:**
 
 ```
-@framework (package)  →  helpers, templates  →  models  →  services  →  orchestrators  →  commands
+@framework (package)  →  helpers, templates  →  models  →  stores  →  services  →  orchestrators  →  commands
 (views, prompts, providers and plugins are side branches that never reach forward into services or orchestrators)
 ```
 
@@ -180,7 +180,7 @@ The measurement layer (07) is pure read-side: `eval report` (three scope levels 
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
-Key files: `services/request-verdict-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile, Ledger, AxiomStore, VerdictCache), `services/` (discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
+Key files: `services/request-verdict-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile, AxiomFile, PracticeFile, CacheFile), `stores/` (VerdictStore, Ledger, AxiomStore, ExpertStore, PracticeStore), `services/` (discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
 
 ### Project Root Detection
 

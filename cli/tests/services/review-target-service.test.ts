@@ -9,8 +9,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
-import { VerdictCache } from "@/models/verdict-cache.js";
 import reviewTargetService from "@/services/review-target-service.js";
+import { VerdictStore } from "@/stores/verdict-store.js";
 import { createCompilerTmpdir } from "@tests/helpers/compiler-tmpdir.js";
 import {
   OPENROUTER_URL,
@@ -76,7 +76,7 @@ describe("reviewTargetService", () => {
     specFilePattern?: string;
     root?: string;
     config?: ReviewerConfig;
-    cache?: VerdictCache | null;
+    cache?: VerdictStore | null;
   } = {}) {
     const target = ReviewSubject.resolve({
       targetPath: targetPath ?? join(tmpdir, "content", "experts", "test-expert.md"),
@@ -346,7 +346,7 @@ describe("reviewTargetService", () => {
           targetPath: abs("src/events/signup_event.rb"),
           specPath: abs("docs/events.sme.md"),
           root,
-          cache: new VerdictCache({ projectRoot: root }),
+          cache: new VerdictStore({ projectRoot: root }),
         });
 
       await reviewed();
@@ -401,7 +401,7 @@ describe("reviewTargetService", () => {
         targetPath: abs("src/events/signup_event.rb"),
         specPath: abs("docs/events.sme.md"),
         root,
-        cache: new VerdictCache({ projectRoot: root }),
+        cache: new VerdictStore({ projectRoot: root }),
       });
     }
 
@@ -537,7 +537,7 @@ describe("reviewTargetService", () => {
           targetPath: abs("docs/guide.md"),
           root,
           config: echoReviewer,
-          cache: new VerdictCache({ projectRoot: root }),
+          cache: new VerdictStore({ projectRoot: root }),
         });
 
       await reviewed();
@@ -568,7 +568,7 @@ describe("reviewTargetService", () => {
     it("uses cached result on second call with same content", async () => {
       useOpenRouterResponse(server, fixtures.pass);
 
-      const cache = new VerdictCache({
+      const cache = new VerdictStore({
         cacheRoot: join(tmpdir, ".praxis", "cache", "validation"),
       });
       const reviewed = () =>

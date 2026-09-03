@@ -3,7 +3,7 @@ import type { ResolveReportScopeInput, ScopedLedger } from "@/types.js";
 import picomatch from "picomatch";
 
 import { commitDateOf, commitExists } from "@/helpers/git-helper.js";
-import { Ledger } from "@/models/ledger.js";
+import { Ledger } from "@/stores/ledger.js";
 
 /**
  * Scopes the ledger for one report invocation (07's three levels).

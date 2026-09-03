@@ -3,6 +3,7 @@ import type {
   ChecklistAxiom,
   ListAxiomsResult,
   Severity,
+  StoreProblem,
   WriteAxiomProposalResult,
 } from "@/types.js";
 
@@ -51,7 +52,7 @@ export class AxiomStore {
     if (!exists(this.axiomsDir)) return { axioms: [], problems: [] };
 
     const axioms: AxiomFile[] = [];
-    const problems: ListAxiomsResult["problems"] = [];
+    const problems: StoreProblem[] = [];
 
     for (const file of listFilesRecursive(this.axiomsDir)) {
       if (!file.endsWith(".md")) continue;

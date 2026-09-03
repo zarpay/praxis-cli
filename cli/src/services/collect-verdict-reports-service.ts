@@ -4,9 +4,8 @@ import { errors } from "@/helpers/errors-helper.js";
 import { exists } from "@/helpers/files-helper.js";
 import { resolvePath } from "@/helpers/paths-helper.js";
 import { Reviewer } from "@/models/reviewer.js";
-import { VerdictCache } from "@/models/verdict-cache.js";
 import buildVerdictReportService from "@/services/build-verdict-report-service.js";
-import readVerdictEntryService from "@/services/read-verdict-entry-service.js";
+import { VerdictStore } from "@/stores/verdict-store.js";
 
 /**
  * What every reviewer last recorded about one target.
@@ -44,13 +43,10 @@ export default function collectVerdictReports({
       reviewer: reviewer.name,
       report: buildVerdictReportService({
         targetPath: absolutePath,
-        cacheData: readVerdictEntryService({
-          cache: new VerdictCache({
-            projectRoot: root,
-            reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
-          }),
-          targetPath: absolutePath,
-        }),
+        cacheData: new VerdictStore({
+          projectRoot: root,
+          reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
+        }).readEntry({ targetPath: absolutePath }),
         specFilePattern: config.specFilePattern,
         root,
       }),

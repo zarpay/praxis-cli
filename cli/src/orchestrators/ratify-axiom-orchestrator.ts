@@ -4,10 +4,10 @@ import { errors } from "@/helpers/errors-helper.js";
 import { exists, readText, removeFile } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import { AxiomStore } from "@/models/axiom-store.js";
-import { Ledger } from "@/models/ledger.js";
 import assessAxiomGateService from "@/services/assess-axiom-gate-service.js";
 import assessTraceabilityService from "@/services/assess-traceability-service.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
+import { Ledger } from "@/stores/ledger.js";
 import ratifyView from "@/views/ratify-view.js";
 import { Prompter } from "@framework/views/prompter.js";
 

@@ -2,9 +2,8 @@ import type { StatusReport, TallyValidationInput } from "@/types.js";
 
 import { joinPath } from "@/helpers/paths-helper.js";
 import { Reviewer } from "@/models/reviewer.js";
-import { VerdictCache } from "@/models/verdict-cache.js";
 import listTargetPathsService from "@/services/list-target-paths-service.js";
-import readVerdictEntryService from "@/services/read-verdict-entry-service.js";
+import { VerdictStore } from "@/stores/verdict-store.js";
 
 /**
  * Counts each reviewer's cached verdicts across every spec target.
@@ -35,12 +34,12 @@ export default function tallyValidation({
     config.reviewers.length > 0
       ? config.reviewers.map((reviewer) => ({
           reviewer: reviewer.name,
-          cache: new VerdictCache({
+          cache: new VerdictStore({
             projectRoot: root,
             reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
           }),
         }))
-      : [{ reviewer: null, cache: new VerdictCache({ projectRoot: root }) }];
+      : [{ reviewer: null, cache: new VerdictStore({ projectRoot: root }) }];
 
   return readers.map(({ reviewer, cache }) => {
     const row = {
@@ -52,7 +51,7 @@ export default function tallyValidation({
     };
 
     for (const targetPath of targets) {
-      const cached = readVerdictEntryService({ cache, targetPath });
+      const cached = cache.readEntry({ targetPath });
 
       if (!cached) {
         row.notValidated++;

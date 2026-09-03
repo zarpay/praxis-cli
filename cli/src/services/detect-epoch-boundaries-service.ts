@@ -1,7 +1,7 @@
 import type { DetectEpochBoundariesInput, EpochBoundary, LedgerRunRecord } from "@/types.js";
 
-import { Ledger } from "@/models/ledger.js";
 import { Reviewer } from "@/models/reviewer.js";
+import { Ledger } from "@/stores/ledger.js";
 
 /**
  * The reviewers whose behavioral hash the ledger has never seen (02).

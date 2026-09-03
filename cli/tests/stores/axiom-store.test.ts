@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { AxiomFile } from "@/models/axiom-file.js";
-import { AxiomStore } from "@/models/axiom-store.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
 import { seedAxiom as seedSharedAxiom } from "@tests/helpers/axiom-fixtures.js";
 
 /** A draft as triage would accept it. */

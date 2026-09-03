@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { Ledger } from "@/models/ledger.js";
+import { Ledger } from "@/stores/ledger.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
 
 describe("Ledger", () => {

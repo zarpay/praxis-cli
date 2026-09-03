@@ -1,7 +1,7 @@
 import type { ListAxiomsOptions, Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import { AxiomStore } from "@/models/axiom-store.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
 import axiomListView from "@/views/axiom-list-view.js";
 
 /**

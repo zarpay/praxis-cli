@@ -6,10 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
 import { Reviewer } from "@/models/reviewer.js";
-import { VerdictCache } from "@/models/verdict-cache.js";
 import pruneCacheService from "@/services/prune-cache-service.js";
-import readVerdictService from "@/services/read-verdict-service.js";
-import writeVerdictService from "@/services/write-verdict-service.js";
+import { VerdictStore } from "@/stores/verdict-store.js";
 
 const LIVE = { name: "live", model: "live-model", apiKeyEnvVar: "KEY" };
 const RESULT = { compliant: true, issues: [], reason: "ok" };
@@ -31,8 +29,8 @@ describe("pruneCacheService", () => {
   });
 
   /** A cache bound to the given reviewer identity. */
-  function cacheFor(identity: { name: string; model: string; hash: string }): VerdictCache {
-    return new VerdictCache({ projectRoot: root, reviewer: identity });
+  function cacheFor(identity: { name: string; model: string; hash: string }): VerdictStore {
+    return new VerdictStore({ projectRoot: root, reviewer: identity });
   }
 
   /** The live reviewer's true cache identity, hash and all. */
@@ -47,8 +45,7 @@ describe("pruneCacheService", () => {
   it("keeps entries whose reviewer is still configured", () => {
     const cache = cacheFor(liveIdentity());
     const targetPath = join(root, "docs", "guide.md");
-    writeVerdictService({
-      cache,
+    cache.writeVerdict({
       targetPath,
       contentHash: "abcd1234",
       result: RESULT,
@@ -58,23 +55,21 @@ describe("pruneCacheService", () => {
     const result = pruneCacheService({ root, config });
 
     expect(result).toEqual({ entriesPruned: 0, filesRemoved: 0 });
-    expect(
-      readVerdictService({ cache, targetPath, contentHash: "abcd1234", specPath: SPEC }),
-    ).toEqual(RESULT);
+    expect(cache.readVerdict({ targetPath, contentHash: "abcd1234", specPath: SPEC })).toEqual(
+      RESULT,
+    );
   });
 
   it("drops an epoch-rolled entry but keeps the current one in the same file", () => {
     const targetPath = join(root, "docs", "guide.md");
     const stale = { name: "live", model: "live-model", hash: "0ldep0ch" };
-    writeVerdictService({
-      cache: cacheFor(stale),
+    cacheFor(stale).writeVerdict({
       targetPath,
       contentHash: "aaaa1111",
       result: RESULT,
       specPath: SPEC,
     });
-    writeVerdictService({
-      cache: cacheFor(liveIdentity()),
+    cacheFor(liveIdentity()).writeVerdict({
       targetPath,
       contentHash: "bbbb2222",
       result: RESULT,
@@ -85,8 +80,7 @@ describe("pruneCacheService", () => {
 
     expect(result).toEqual({ entriesPruned: 1, filesRemoved: 0 });
     expect(
-      readVerdictService({
-        cache: cacheFor(liveIdentity()),
+      cacheFor(liveIdentity()).readVerdict({
         targetPath,
         contentHash: "bbbb2222",
         specPath: SPEC,
@@ -98,8 +92,7 @@ describe("pruneCacheService", () => {
     const targetPath = join(root, "docs", "gone.md");
     const retired = { name: "retired", model: "old-model", hash: "deadbeef" };
     const cache = cacheFor(retired);
-    writeVerdictService({
-      cache,
+    cache.writeVerdict({
       targetPath,
       contentHash: "aaaa1111",
       result: RESULT,
@@ -113,7 +106,7 @@ describe("pruneCacheService", () => {
   });
 
   it("removes unreadable and outdated-format files whole", () => {
-    const cacheRoot = new VerdictCache({ projectRoot: root }).root;
+    const cacheRoot = new VerdictStore({ projectRoot: root }).root;
     const corrupt = join(cacheRoot, "docs", "corrupt.json");
     const outdated = join(cacheRoot, "docs", "outdated.json");
     mkdirSync(dirname(corrupt), { recursive: true });

@@ -2,9 +2,9 @@ import type { AxiomReport, AxiomReportRow, BuildAxiomReportInput } from "@/types
 
 import { errors } from "@/helpers/errors-helper.js";
 import { rateCell } from "@/helpers/metrics-helper.js";
-import { AxiomStore } from "@/models/axiom-store.js";
 import { PraxisConfig } from "@/models/praxis-config.js";
 import buildEvalReportService from "@/services/build-eval-report-service.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
 
 /**
  * The single-axiom drill-down (07): the standard itself, its per-

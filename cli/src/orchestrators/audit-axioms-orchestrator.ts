@@ -2,8 +2,8 @@ import type { AuditAxiomsOptions, Orchestrator } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import { AxiomStore } from "@/models/axiom-store.js";
 import assessAxiomGateService from "@/services/assess-axiom-gate-service.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
 import auditView from "@/views/audit-view.js";
 
 /**

@@ -1,14 +1,16 @@
 import type { BuildStatusReportInput, StatusReport } from "@/types.js";
 
 import { exists } from "@/helpers/files-helper.js";
-import { AxiomStore } from "@/models/axiom-store.js";
-import { Ledger } from "@/models/ledger.js";
+import { resolvePath } from "@/helpers/paths-helper.js";
 import auditExpertsService from "@/services/audit-experts-service.js";
 import countDocumentsByTypeService from "@/services/count-documents-by-type-service.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
 import findOrphanedPracticesService from "@/services/find-orphaned-practices-service.js";
-import listDocumentsService from "@/services/list-documents-service.js";
 import tallyValidationService from "@/services/tally-validation-service.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
+import { ExpertStore } from "@/stores/expert-store.js";
+import { Ledger } from "@/stores/ledger.js";
+import { PracticeStore } from "@/stores/practice-store.js";
 
 /**
  * Assembles a project's health report.
@@ -37,16 +39,17 @@ export default async function buildStatusReport({
     return evalOnlyReport(validation, evalState);
   }
 
-  const expertFiles = await listDocumentsService({
-    ...scope,
-    dir: config.expertsDir,
-    recursive: false,
-  });
-  const practiceFiles = await listDocumentsService({
-    ...scope,
-    dir: config.practicesDir,
-    recursive: false,
-  });
+  const absoluteIgnore = config.ignore.map((pattern) => resolvePath(root, pattern));
+  const expertFiles = new ExpertStore({
+    expertsDir: config.expertsDir,
+    specFilePattern: config.specFilePattern,
+    ignore: absoluteIgnore,
+  }).files();
+  const practiceFiles = new PracticeStore({
+    practicesDir: config.practicesDir,
+    specFilePattern: config.specFilePattern,
+    ignore: absoluteIgnore,
+  }).files();
   const counts = await countDocumentsByTypeService({ ...scope, sources: config.sources });
   const audit = await auditExpertsService({
     expertFiles,

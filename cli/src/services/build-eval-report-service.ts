@@ -10,11 +10,11 @@ import type {
 } from "@/types.js";
 
 import { CALIBRATION_STATUS, rateCell } from "@/helpers/metrics-helper.js";
-import { AxiomStore } from "@/models/axiom-store.js";
-import { Ledger } from "@/models/ledger.js";
 import countSpecUnitsService from "@/services/count-spec-units-service.js";
 import deriveEpochsService from "@/services/derive-epochs-service.js";
 import derivePopulationService from "@/services/derive-population-service.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
+import { Ledger } from "@/stores/ledger.js";
 
 /**
  * The eval report (07): one structured payload the view renders and

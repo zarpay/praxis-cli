@@ -19,7 +19,7 @@ import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { Paths } from "@/models/project-paths.js";
 import type { ReviewSubject } from "@/models/review-subject.js";
 import type { Reviewer } from "@/models/reviewer.js";
-import type { VerdictCache } from "@/models/verdict-cache.js";
+import type { VerdictStore } from "@/stores/verdict-store.js";
 import type { NoOptions, Orchestrator as BaseOrchestrator } from "@framework/types.js";
 import type { Display } from "@framework/views/display.js";
 import type { Logger } from "@framework/views/logger.js";
@@ -266,7 +266,7 @@ export interface Verdict {
   severity?: Severity;
 }
 
-/** Identity of the reviewer whose verdicts a VerdictCache addresses. */
+/** Identity of the reviewer whose verdicts a VerdictStore addresses. */
 export interface CacheReviewerIdentity {
   name: string;
   model: string;
@@ -554,7 +554,7 @@ export interface ReviewUnitInput {
   /** The reviewer doing the work. */
   reviewerConfig: ReviewerConfig;
   /** This reviewer's cache, or null when the cache is disabled. */
-  cache: VerdictCache | null;
+  cache: VerdictStore | null;
   /** Project root. */
   root: string;
   /** Filename or glob naming spec files. */
@@ -570,7 +570,7 @@ export interface ReviewTargetInput {
   /** The instrument doing the reviewing. */
   reviewer: Reviewer;
   /** Reviewer-namespaced cache, or null to always call the provider. */
-  cache: VerdictCache | null;
+  cache: VerdictStore | null;
   /** Project root, for resolving a `./relative` provider. */
   root?: string;
 }
@@ -653,46 +653,6 @@ export interface ReviewAllResult {
 // ---------------------------------------------------------------------------
 // Verdict cache payloads (domains/eval/services/)
 // ---------------------------------------------------------------------------
-
-/** A cached verdict to look up. */
-export interface ReadVerdictInput {
-  /** Where this reviewer's verdicts live. */
-  cache: VerdictCache;
-  /** The target whose verdict is wanted. */
-  targetPath: string;
-  /** The spec it was reviewed against. */
-  specPath: string;
-  /** Hash of the full review input; a mismatch is a miss. */
-  contentHash: string;
-}
-
-/** A stored verdict to read back for reporting. */
-export interface ReadVerdictEntryInput {
-  /** Where this reviewer's verdicts live. */
-  cache: VerdictCache;
-  /** The target whose entry is wanted. */
-  targetPath: string;
-  /** The spec to read; omitted takes this reviewer's first entry. */
-  specPath?: string;
-}
-
-/** A verdict to store, with the provenance of what produced it. */
-export interface WriteVerdictInput {
-  /** Where this reviewer's verdicts live. */
-  cache: VerdictCache;
-  /** The target that was reviewed. */
-  targetPath: string;
-  /** The spec it was reviewed against. */
-  specPath: string;
-  /** Hash of the full review input this verdict is keyed on. */
-  contentHash: string;
-  /** The verdict itself. */
-  result: Verdict;
-  /** Resolved exemplar provenance, recorded when the spec blesses any. */
-  exemplarFiles?: AssistFileRecord[];
-  /** Resolved context provenance, recorded when the spec declares any. */
-  contextFiles?: AssistFileRecord[];
-}
 
 /** The targets to review, and the project they live in. */
 export interface ReviewNamedInput {
@@ -1551,12 +1511,18 @@ export interface AxiomTemplateVars {
   compliantExample: string;
 }
 
+/** One unreadable file in a store sweep: reported, never fatal. */
+export interface StoreProblem {
+  path: string;
+  message: string;
+}
+
 /** The store's contents, plus what could not be read. */
 export interface ListAxiomsResult {
   /** Sorted by introduced date, id as tiebreak — random ids carry no order. */
   axioms: AxiomFile[];
   /** Files that failed validation: reported, never fatal to the sweep. */
-  problems: { path: string; message: string }[];
+  problems: StoreProblem[];
 }
 
 /** Where the proposal landed. */

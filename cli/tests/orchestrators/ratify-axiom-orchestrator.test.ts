@@ -3,8 +3,8 @@ import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { AxiomFile } from "@/models/axiom-file.js";
-import { Ledger } from "@/models/ledger.js";
 import { ratifyAxiomOrchestrator } from "@/orchestrators/ratify-axiom-orchestrator.js";
+import { Ledger } from "@/stores/ledger.js";
 import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";

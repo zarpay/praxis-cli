@@ -10,7 +10,7 @@ import {
 import { joinPath } from "@/helpers/paths-helper.js";
 import { CacheFile } from "@/models/cache-file.js";
 import { Reviewer } from "@/models/reviewer.js";
-import { VerdictCache } from "@/models/verdict-cache.js";
+import { VerdictStore } from "@/stores/verdict-store.js";
 
 /**
  * Removes cached verdicts no configured reviewer can ever hit again.
@@ -23,7 +23,7 @@ import { VerdictCache } from "@/models/verdict-cache.js";
  * kept as an empty husk.
  */
 export default function pruneCacheService({ root, config }: PruneCacheInput): PruneCacheResult {
-  const cacheRoot = new VerdictCache({ projectRoot: root }).root;
+  const cacheRoot = new VerdictStore({ projectRoot: root }).root;
   const liveHashes = new Set(
     config.reviewers.map((reviewer) => Reviewer.fromConfig(reviewer).hash()),
   );

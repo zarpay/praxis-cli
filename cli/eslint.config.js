@@ -322,9 +322,37 @@ export default tseslint.config(
               message: "Use the @/ path alias instead of relative imports.",
             },
             {
-              group: ["@/services/*", "@/orchestrators/*", "@/views/*", "@/commands/*"],
+              group: ["@/stores/*", "@/services/*", "@/orchestrators/*", "@/views/*", "@/commands/*"],
               message:
-                "services act on models, never the reverse: a model must not import services, orchestrators, views or commands.",
+                "stores and services act on models, never the reverse: a model must not import stores, services, orchestrators, views or commands.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // A store is one file-backed subsystem's handle: its layout, id
+    // minting, reads and writes. Stores act on models and never reach
+    // upward into services or rendering.
+    files: ["src/stores/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "node:fs", message: "Use the helpers in @/helpers/files-helper.js instead." },
+            { name: "node:path", message: "Use the helpers in @/helpers/paths-helper.js instead." },
+          ],
+          patterns: [
+            {
+              group: ["./*", "../*", "!../package.json"],
+              message: "Use the @/ path alias instead of relative imports.",
+            },
+            {
+              group: ["@/services/*", "@/orchestrators/*", "@/views/*", "@/commands/*", "@/prompts/*"],
+              message:
+                "a store owns one file-backed subsystem's IO: it must not import services, orchestrators, views, prompts or commands.",
             },
           ],
         },

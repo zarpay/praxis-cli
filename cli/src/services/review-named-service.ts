@@ -9,13 +9,13 @@ import type {
 } from "@/types.js";
 
 import { relativePath } from "@/helpers/paths-helper.js";
-import { AxiomStore } from "@/models/axiom-store.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
-import { VerdictCache } from "@/models/verdict-cache.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
+import { VerdictStore } from "@/stores/verdict-store.js";
 
 /**
  * Reviews the named targets, each against its own spec.
@@ -73,7 +73,7 @@ export default async function reviewNamed({
         target: subject,
         reviewer: Reviewer.fromConfig(reviewerConfig),
         cache: useCache
-          ? new VerdictCache({
+          ? new VerdictStore({
               projectRoot: root,
               reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
             })
