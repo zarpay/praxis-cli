@@ -1,6 +1,6 @@
 # praxis eval
 
-AI-powered evaluation: reviewers targets against their specs.
+The eval loop: LLM reviewers read targets against their specs, verdicts are cached, and every run leaves evidence in the ledger.
 
 ## Prerequisites
 
@@ -16,13 +16,13 @@ Each reviewer names its own variable via `apiKeyEnvVar` — see [Configuration �
 
 ### `praxis eval run <targets...>`
 
-Reviewers one or more targets against their specs.
+Reviews one or more named targets against their specs — the **fast loop**, the command you (or your agent) run between edits.
 
 ```bash
-praxis eval run experts/code-reviewer.md
-praxis eval run experts/code-reviewer.md --spec custom-spec.md
-praxis eval run experts/code-reviewer.md --verbose
-praxis eval run experts/code-reviewer.md --no-cache
+praxis eval run src/services/redeem-coupon.ts
+praxis eval run src/services/redeem-coupon.ts --spec custom-spec.md
+praxis eval run src/services/redeem-coupon.ts --verbose
+praxis eval run src/services/redeem-coupon.ts --no-cache
 ```
 
 **Options:**
@@ -40,7 +40,7 @@ praxis eval run experts/code-reviewer.md --no-cache
 
 ### `praxis eval run` (no targets — full run)
 
-Reviewers every spec-covered target across all configured sources.
+Reviews every spec-governed target across all configured sources — the full run that opens epochs and measures the corpus.
 
 ```bash
 praxis eval run
@@ -54,7 +54,7 @@ praxis eval run --fail-fast
 
 | Flag                | Description                                                     |
 | ------------------- | --------------------------------------------------------------- |
-| `--type <type>`     | Validate only documents matching this type                      |
+| `--type <type>`     | Review only one domain (the "By type:" label from a full run)   |
 | `--reviewer <name>` | Run only the named reviewer (default: all configured reviewers) |
 | `--verbose`         | Show full AI reasoning for each document                        |
 | `--no-cache`        | Skip the cache for all documents                                |
@@ -65,20 +65,26 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 **Output:**
 
 ```
-[PASS] experts/code-reviewer.md
-[WARN] practices/review-pull-requests.md
-    - Missing "Inputs" section (recommended by spec)
-[FAIL] reference/pricing.md
-    - Frontmatter field "type" is missing (required)
+[1/4] create-review.ts
+	✓ PASS
+[2/4] rank-parlors.ts
+	⚠ WARN
+	· The happy path begins before the parlor id is validated.
+[3/4] redeem-coupon.ts
+	✗ FAIL
+	· [AX-b951db] Error messages name what was wrong and what would be
+	  accepted instead.
 
 ==================================================
-Summary
+Summary — corpus conformance (includes pre-spec debt)
 ==================================================
-Total documents: 12
-[Compliant]     9
-[Warnings]      2
-[Errors]        1
+Total documents: 4
+[Compliant] 2
+[Warnings] 1
+[Errors] 1
 ```
+
+A `[AX-…]` citation marks a **matched** finding — a ratified axiom, drill-down at `praxis axioms show <id>`. Unmarked critiques are open-channel and flow onward to [triage](/commands/axioms).
 
 **Exit code:** 0 if no errors, 1 if any errors (warnings do not fail).
 
@@ -105,11 +111,11 @@ praxis eval ci --strict
 
 ### `praxis eval verdict <path>`
 
-Displays a formatted report of a document's cached validation status. Does not call any API.
+Displays a target's cached verdict. Does not call any API.
 
 ```bash
-praxis eval verdict experts/code-reviewer.md
-praxis eval verdict experts/code-reviewer.md --verbose
+praxis eval verdict src/services/redeem-coupon.ts
+praxis eval verdict src/services/redeem-coupon.ts --verbose
 ```
 
 Shows one of five states:
@@ -119,7 +125,7 @@ Shows one of five states:
 | **PASS**          | Document is compliant                                                      |
 | **WARN**          | Document has warnings but no hard errors                                   |
 | **FAIL**          | Document has errors                                                        |
-| **STALE**         | Document changed since last validation (cached result may no longer apply) |
+| **STALE**         | Target changed since last review (cached verdict may no longer apply)      |
 | **NOT VALIDATED** | No cached result exists yet                                                |
 
 Use `--verbose` to include the full AI reasoning from the cached result.
@@ -179,9 +185,9 @@ The right move after a boundary is a full `praxis eval run`: the first full run 
 
 Team note: the hash is content-addressed, so teammates on different praxis versions only split hashes when a release actually changed the reviewer-facing prompts. If you see a boundary with no config diff, check CLI versions across the team — and once a hash is in the ledger, teammates running the older version won't re-trigger the warning.
 
-## How validation works
+## How a review works
 
-1. The spec file (default: `README.md`) in the document's directory defines the validation criteria — plus any scoping frontmatter (`paths`, `cohort`, `excludes`, `exemplars`, `context`).
+1. The spec file (default: `README.md`) defines the standards — plus any scoping frontmatter (`paths`, `cohort`, `excludes`, `exemplars`, `context`).
 2. Praxis sends the spec, the target, and any exemplar/context files to each configured reviewer via its provider (OpenRouter by default).
 3. The reviewer answers through a required tool call — pass, warn, or fail — with specific issues.
 4. The verdict is written to the cache at `.praxis/cache/validation/`, keyed by spec and reviewer.
@@ -193,4 +199,4 @@ On subsequent runs, cached verdicts are used for any target whose review input (
 - [Writing Specs](/validation/writing-specs)
 - [Caching](/validation/caching)
 - [CI Integration](/validation/ci)
-- [Validation Domains](/concepts/validation-domains)
+- [The Evidence Loop](/concepts/evidence-loop)

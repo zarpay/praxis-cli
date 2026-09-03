@@ -37,14 +37,14 @@ Practices are designed to be reusable. The same practice can be claimed by multi
 
 Reference documents are lookup tables, vocabulary lists, policy excerpts, and indices. They are not instructions — they are facts that an agent needs to consult while doing its job.
 
-Examples: product catalog, refund policy, API endpoint list, team member directory.
+Examples: Scoop Society's API shape reference, a refund policy, a vocabulary list, a team directory.
 
 ## Why the separation matters
 
 The separation is not cosmetic. It reflects how knowledge actually works:
 
-- **Context changes rarely.** When your company identity changes, you want to update one file and have every agent pick it up on the next compile — not hunt down thirty prompts.
-- **Practices are reusable.** "Review pull requests" is a real unit of work that the code reviewer, the tech lead, and the senior engineer all share. Write it once, declare it in multiple experts.
+- **Context changes rarely.** When the identity or the result-handling convention changes, you update one file and every agent picks it up on the next compile — no hunting down thirty prompts.
+- **Practices are reusable.** "Review service quality" is a real unit of work that Scoop Society's service steward and its feature steward both draw on. Write it once, declare it in multiple experts.
 - **Reference is consulted, not internalized.** An agent that needs your refund policy should reference it at runtime, not have it hardcoded into its identity.
 
 ## What a document looks like
@@ -53,12 +53,12 @@ Every Praxis document is a markdown file with YAML frontmatter. The frontmatter 
 
 ```yaml
 ---
-title: Code Reviewer
+title: Service Steward
 type: expert
-alias: reviewer
-description: "Reviews pull requests against team conventions."
+alias: Scooper
+description: "Use this agent to review Scoop Society services for convention adherence."
 ---
-# Code Reviewer
+# Service Steward
 ...
 ```
 

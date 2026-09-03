@@ -68,21 +68,21 @@ my-org/
 
 `praxis init` skips any file that already exists. It is safe to run on an existing project to scaffold new sections or restore accidentally deleted templates.
 
-## Claude Code plugin scaffolding
+## Plugin output comes from compile, not init
 
-If the `claude-code` plugin is listed in `.praxis/config.json` at init time, Praxis also scaffolds the plugin directory structure:
+Plugin directories are written by the first `praxis compile` with the plugin enabled — never by init. With the `claude-code` plugin configured, compile produces:
 
 ```
 plugins/
 └── praxis/
-    ├── agents/                  ← compiled agent files land here
+    ├── agents/                  ← compiled agent files
     ├── .claude-plugin/
     │   └── plugin.json
-    └── commands/
-        └── validate.md          ← /praxis:validate slash command
+    ├── commands/
+    │   └── praxis-resolve.md    ← /praxis-resolve slash command
+    └── skills/
+        └── praxis/SKILL.md      ← the agent-facing CLI reference
 ```
-
-Re-running `praxis init` after adding the plugin to config will scaffold these directories without touching your existing agent files.
 
 ## Default config
 
@@ -101,6 +101,8 @@ The eval-layer `.praxis/config.json` (default init):
   ]
 }
 ```
+
+Point `sources` at the directories your specs live in — Scoop Society uses `["knowledge", "src", "tests"]` — and rename or multiply the reviewers as you see fit.
 
 With `--spec-layer`, the config also wires the authoring taxonomy:
 

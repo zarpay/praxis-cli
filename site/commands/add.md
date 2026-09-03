@@ -14,12 +14,14 @@ The `<name>` argument should be kebab-case. It is used as the filename and pre-f
 ## Examples
 
 ```bash
-praxis add expert code-reviewer
-# Creates: experts/code-reviewer.md
+praxis add expert service-steward
+# Creates: knowledge/experts/service-steward.md
 
-praxis add practice review-pull-requests
-# Creates: practices/review-pull-requests.md
+praxis add practice review-service-quality
+# Creates: knowledge/practices/review-service-quality.md
 ```
+
+(Paths follow `expertsDir`/`practicesDir` — Scoop Society keeps its taxonomy under `knowledge/`.)
 
 ## Output paths
 
@@ -27,10 +29,12 @@ Output paths are determined by the `expertsDir` and `practicesDir` fields in `.p
 
 ```json
 {
-  "expertsDir": "experts",
-  "practicesDir": "practices"
+  "expertsDir": "knowledge/experts",
+  "practicesDir": "knowledge/practices"
 }
 ```
+
+An existing file is never overwritten — `add` scaffolds, it does not edit.
 
 If you've configured a custom directory (e.g., `"expertsDir": "agents/experts"`), `praxis add expert` writes there instead.
 

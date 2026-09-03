@@ -1,78 +1,77 @@
 # praxis status
 
-Shows a project health dashboard without requiring any API keys.
+The project health dashboard — no API key, no network, exit 1 on any structural issue so CI can gate on it for free.
 
 ## Usage
 
 ```bash
 praxis status
+praxis status --json
 ```
 
 ## What it reports
 
-`praxis status` scans all configured `sources` directories and produces a summary of:
-
-- **Validation coverage** — pass / warn / fail / not-validated counts per reviewer, read from the local cache. Always shown.
-- **Document counts** — how many documents exist per type. Only shown when the spec-layer compiler is in use (the configured experts directory exists).
-- **Issues** — structural problems detected without any LLM calls. Also compiler-only — an eval-layer project is never asked about a taxonomy it doesn't have:
-  - Dangling references (expert frontmatter points to a file that doesn't exist)
-  - Orphaned practices (practice not claimed by any expert)
-  - Missing `description` fields on experts
-  - Missing `alias` fields on experts
+- **Situational facts** — last run, pending triage count, proposals awaiting ratification, and whether an epoch boundary is waiting for a baseline run. Always shown.
+- **Review coverage** — pass / warn / fail / not-validated counts per reviewer, read from the committed cache. One block per reviewer, never pooled.
+- **Document counts** — only when the spec-layer compiler is in use (the configured experts directory exists).
+- **Structural issues** — found without any LLM call, compiler projects only: dangling references, orphaned practices, experts missing descriptions, experts that fail to parse, globs matching nothing.
 
 ## Example output
 
 ```
-Praxis Project Status
-=====================
+[INFO] Praxis Project Status
 
-Context
-  constitution:   3 documents
-  conventions:    4 documents
-  lenses:         2 documents
+Last run: 2026-09-03 · Pending triage: 11 · Proposals awaiting ratification: 0
 
-Experts             5 documents
-  [PASS]          3
-  [WARN]          1
-  [FAIL]          0
-  [NOT VALIDATED] 1
+  Experts:          3
+  Practices:        3
+  References:       1
+  Context files:    4
 
-Practices  8 documents
-  [PASS]          6
-  [WARN]          0
-  [FAIL]          1
-  [NOT VALIDATED] 1
+[INFO] Validation (reviewer: flash)
+  [PASS] 15
+  [WARN] 1
+  [FAIL] 2
+  [NOT VALIDATED] 0
 
-Reference         3 documents
-  [PASS]          3
+[INFO] Validation (reviewer: v32)
+  [PASS] 14
+  [WARN] 0
+  [FAIL] 4
+  [NOT VALIDATED] 0
 
-Issues
-------
-  ⚠  experts/code-reviewer.md — missing description field
-  ⚠  practices/handle-escalations.md — not claimed by any expert
-  ✗  experts/support-agent.md — refs reference/pricing.md not found
+[OK] No issues found
 ```
 
 ## Exit code
 
-`praxis status` exits with code 1 if any issues are found. This makes it suitable for CI:
+Exit 1 when any structural issue is found — the same count the closing line prints, so what you read and what CI does can never disagree.
 
-```bash
-praxis status || exit 1
+## `--json`: the situational poll
+
+`praxis status --json` is an agent's cheapest situational poll. Alongside the full report, `evalState` answers "what needs doing" in one call:
+
+```json
+{
+  "evalState": {
+    "pending_triage": 11,
+    "proposals_pending": 0,
+    "calibration_stale": true,
+    "epoch_boundary_detected": false,
+    "last_run_at": "2026-09-03T23:21:21.989Z"
+  },
+  "issueCount": 0
+}
 ```
 
-## Validation coverage
+Bare `praxis` is the same orientation for humans — counts and staleness at a glance, each line naming the command that acts on it.
 
-Validation counts are read from the local cache (`.praxis/cache/validation/`) and do not require an API key or network access. A document shows as NOT VALIDATED if it has never been validated or if the cache entry for it is stale.
+## Coverage without keys
 
-Run `praxis eval run` to populate or refresh the cache before running `praxis status` in CI if you want accurate validation counts.
+Coverage counts are read from `.praxis/cache/validation/` — no API key, no network. A target shows NOT VALIDATED when nothing has reviewed it yet. Run `praxis eval run` to populate the cache; from then on `status` tracks it.
 
 ## See also
 
-- [praxis eval run](/commands/eval)
+- [praxis eval](/commands/eval)
 - [Caching](/validation/caching)
 - [Configuration](/reference/config)
-
-## --json and the situational poll
-
-`praxis status --json` is an agent's cheapest situational poll: alongside the health report, `evalState` carries `pending_triage`, `proposals_pending`, `calibration_stale`, `epoch_boundary_detected`, and `last_run_at` — what needs doing, from one call. Bare `praxis` is the same orientation for humans: counts and staleness at a glance, each line naming the command that acts on it.

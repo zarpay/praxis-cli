@@ -53,13 +53,9 @@ Set `agentProfilesOutputDir: false` in config to disable pure profile output.
 
 Each enabled plugin receives the compiled profile content and writes its own output. The Claude Code plugin writes to `{outputDir}/agents/{alias}.md`.
 
-## Errors
+## Warnings and failures
 
-The compiler exits with a non-zero code and a helpful message if:
-
-- A referenced file or glob matches nothing
-- An expert is missing required frontmatter fields
-- A file cannot be read
+One malformed expert never abandons the batch: it is reported and skipped, and every other expert still compiles. Reference problems come back as warnings — a glob matching nothing, a declared file that doesn't exist — because a typo'd reference shouldn't cost you the rest of the profile, but you still have to hear about it.
 
 ## Example output
 
@@ -68,15 +64,18 @@ praxis compile
 ```
 
 ```
-Compiling reviewer...
-  ✓ agent-profiles/reviewer.md
-  ✓ plugins/praxis/agents/reviewer.md
+[OK] Compiled scooper.md
+[OK] Compiled sundae.md
+[OK] Compiled taster.md
+[INFO] Compiled 3 agent(s) (up-to-date)
+```
 
-Compiling support-agent...
-  ✓ agent-profiles/support-agent.md
-  ✓ plugins/praxis/agents/support-agent.md
+```bash
+praxis compile --alias scooper
+```
 
-Done. 2 experts compiled.
+```
+[OK] Compiled scooper.md
 ```
 
 ## See also

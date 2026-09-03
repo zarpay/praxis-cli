@@ -3,7 +3,7 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   base: "/praxis-cli/",
   title: "Praxis",
-  description: "Structured knowledge for humans and AI agents",
+  description: "Judgment standards, enforced — LLM review with evidence, axioms, and compiled SME agents",
   lang: "en-US",
   cleanUrls: true,
   lastUpdated: true,
@@ -21,9 +21,9 @@ export default defineConfig({
     nav: [
       { text: "Home", link: "/" },
       { text: "Quick Start", link: "/getting-started/" },
-      { text: "Concepts", link: "/concepts/knowledge-primitives" },
+      { text: "Concepts", link: "/concepts/evidence-loop" },
       { text: "Commands", link: "/commands/init" },
-      { text: "Validation", link: "/validation/writing-specs" },
+      { text: "Evaluation", link: "/validation/writing-specs" },
       { text: "Plugins", link: "/plugins/overview" },
       { text: "Design", link: "/design/decisions" },
       { text: "Reference", link: "/reference/config" },
@@ -39,6 +39,8 @@ export default defineConfig({
       {
         text: "Concepts",
         items: [
+          { text: "The Evidence Loop", link: "/concepts/evidence-loop" },
+          { text: "Review Domains", link: "/concepts/validation-domains" },
           {
             text: "Knowledge Primitives",
             link: "/concepts/knowledge-primitives",
@@ -47,7 +49,6 @@ export default defineConfig({
             text: "The Compiler Pipeline",
             link: "/concepts/compiler-pipeline",
           },
-          { text: "Validation Domains", link: "/concepts/validation-domains" },
           { text: "Agent Profiles", link: "/concepts/agent-profiles" },
         ],
       },
@@ -65,11 +66,11 @@ export default defineConfig({
         ],
       },
       {
-        text: "Validation",
+        text: "Evaluation",
         items: [
           { text: "Writing Specs", link: "/validation/writing-specs" },
           {
-            text: "Cross-Directory Validation",
+            text: "Cross-Directory Review",
             link: "/validation/cross-directory",
           },
           { text: "Caching", link: "/validation/caching" },

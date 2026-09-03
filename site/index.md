@@ -2,77 +2,51 @@
 layout: home
 hero:
   name: Praxis
-  text: Conceptual linting and knowledge compilation
-  tagline: Define what valid looks like in any directory. Enforce it with AI. Compile knowledge documents into agent profiles that are subject matter experts of their source material.
+  text: The standards your linter can't hold
+  tagline: Write what correct looks like next to the code it governs. Praxis has LLM reviewers enforce it, keeps the evidence, and turns recurring findings into named, ratified standards.
   actions:
     - theme: brand
       text: Quick Start
       link: /getting-started/
     - theme: alt
-      text: Learn the Concepts
-      link: /concepts/knowledge-primitives
+      text: The Evidence Loop
+      link: /concepts/evidence-loop
 ---
 
 ## The problem
 
-Every codebase has patterns that can't be caught by a syntax checker.
+Every codebase has standards no static tool can check.
 
-Your service objects are supposed to follow a specific architectural shape. Your architecture decision records have a format everyone agreed on. Your agent expert definitions declare what each agent owns, its boundaries, and its authorities. Your API specs follow a structure your team designed.
+Take Scoop Society, a small API for rating ice-cream parlors — the example these docs build on throughout. Its `src/services/README.md` says every service validates its input before any work happens, returns domain failures as values rather than exceptions, and writes error messages *for the API consumer*: "rating must be a whole number from 1 to 5", never "invalid input".
 
-Nobody enforces any of it. The README says one thing. Half the files do another. The conventions document was updated in March but three places still follow the old pattern. This is **conceptual drift** — and it compounds silently.
+A linter can verify none of that. It can check that a function named `run` exists; it cannot check that an error message would actually help the person who hit it. So the README stays aspirational, three contributors and two agents drift from it in different directions, and nothing says so. That is **conceptual drift** — and it compounds silently, in exactly the code your AI agents are now writing at volume.
 
-## Two capabilities
+## What Praxis does
 
-Praxis addresses this with two distinct tools that are designed to work together.
+**It enforces judgment standards.** A spec is a README that states what correct looks like for the files around it. `praxis eval run` has one or more LLM reviewers read each file against its spec and return a verdict — pass, warn, or fail — with specific critiques. Verdicts are cached by content hash: unchanged files are free, and editing a file (or its spec) re-reviews exactly what changed.
 
-### Conceptual linting
+**It refuses the mechanical.** Reviewers are told the *judgment boundary*: anything a linter, regex, or type check could decide is out of scope, even when the spec states it. If you can write the check, write the check. Praxis holds the standards you can only describe.
 
-Write a README spec for any directory that describes what valid documents look like — required fields, required sections, structural conventions, content expectations. Then run `praxis eval run` to check every document in that directory against it.
+**It keeps the evidence.** Every run appends to a committed ledger — what ran, against which commit, what it cost, and one critique record per finding with full provenance. The cache answers "is this compliant now"; the ledger answers "what has ever happened".
 
-This works for any organized body of files, not just AI knowledge documents:
+**It grows a taxonomy.** Recurring critiques triage into **axioms** — named, ratified standards with stable ids. Once ratified, an axiom joins the reviewers' checklist: the same violation returns with the same id and the same words every run, `praxis axioms show AX-b951db` explains it with examples, and `praxis eval report` can finally chart it — as a rate with a denominator, per reviewer, never pooled.
 
-| Directory       | What the spec enforces                                        |
-| --------------- | ------------------------------------------------------------- |
-| `app/services/` | Architectural patterns, method naming, interface conventions  |
-| `decisions/`    | ADR format, required context and status sections              |
-| `experts/`      | Required frontmatter, scope structure, authority declarations |
-| `api/specs/`    | Endpoint naming, request/response shape requirements          |
+**And, for teams authoring agent knowledge, it compiles.** Expert documents assemble into self-contained SME agent profiles, and a compiled profile can itself be the spec its subject matter is reviewed against. The spec layer is optional; the eval loop stands on its own.
 
-The spec is your `.eslintrc` for concepts. `praxis eval run` is the linter that checks every document against it — and can run in CI, blocking merges that violate the standard.
+## Who it's for
 
-### Knowledge compilation
+You, first — the developer who wrote the README and watched it stop being true. Point `sources` at the directories your specs live in and run `praxis eval run` before you push.
 
-When those documents are knowledge files — experts, practices, context, reference — `praxis compile` assembles them into **agent profiles**: self-contained documents that are subject matter experts of their source material.
+Your team, second: the cache and the ledger are committed, so a verdict paid for on one machine is a cache hit on every other, and the evidence of who found what, when, accumulates in git like everything else.
 
-The code reviewer agent compiled from your conventions, principles, and practice definitions becomes the SME on code review for your team. One source of truth. One compile step. One deployable profile that any LLM platform can consume.
-
-The propagation story is what makes compilation worthwhile: update your coding conventions once, recompile, and every agent that references those conventions is updated. No hunting down twelve prompts. No drift between agents.
-
-## How they fit together
-
-You don't need compilation to use conceptual linting. You can add a `README.md` spec to your `app/services/` directory and run `praxis eval run` against it without ever touching the agent profile features.
-
-But for teams building with AI agents, the two reinforce each other: linting keeps the source knowledge honest, and compilation turns trusted knowledge into deployable SME agents.
-
-## The knowledge primitives
-
-When using Praxis for knowledge compilation, documents are organized into four types:
-
-| Primitive     | What it captures              | Example                                                  |
-| ------------- | ----------------------------- | -------------------------------------------------------- |
-| **Context**   | Who you are and how you think | Company identity, coding conventions, mental models      |
-| **Experts**   | Who an agent is               | A code reviewer with scope, authorities, and personality |
-| **Practices** | What an expert owns           | Reviewing pull requests, enforcing standards             |
-| **Reference** | What things mean              | Vocabulary, indices, policy excerpts                     |
-
-Experts are the compilation unit. An expert's frontmatter declares which context, practices, and references to include. The compiler resolves all of it and produces one standalone profile.
+Your agents, third: findings cite stable axiom ids an agent can look up, `--json` surfaces are stable contracts, and `praxis status --json` is a one-call situational poll. The compiled skill and slash command (via the Claude Code plugin) teach an agent the whole workflow.
 
 ## How to read the docs
 
-- **Quick Start** walks through conceptual linting and compilation end-to-end.
-- **Concepts** explains the knowledge model before you customize anything.
-- **Commands** is the full CLI reference.
-- **Validation** covers writing specs and running checks in CI.
-- **Plugins** covers platform-specific output (Claude Code today).
-- **Design** explains the reasoning behind the tool's key choices.
+- **[Quick Start](/getting-started/)** stands up Scoop Society's service standards end to end: spec → review → findings → fix → evidence.
+- **[Concepts](/concepts/evidence-loop)** explains the evidence loop, review scoping, the knowledge model, and agent profiles.
+- **[Commands](/commands/init)** is the full CLI reference.
+- **[Evaluation](/validation/writing-specs)** covers writing specs that survive the judgment boundary, caching, and CI.
+- **[Plugins](/plugins/overview)** covers platform output (Claude Code today).
+- **[Design](/design/decisions)** explains the reasoning behind the key choices.
 - **[CHANGELOG](https://github.com/zarpay/praxis-cli/blob/main/CHANGELOG.md)** lists what changed in each release.

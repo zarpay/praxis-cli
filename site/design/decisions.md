@@ -51,15 +51,21 @@ One file means:
 
 The tradeoff is that the README must serve two audiences — human readers and the LLM validator. In practice, writing clearly for humans also works well for LLMs. If you prefer to separate them, use `specFilePattern: "SPEC.md"` in config to point at a dedicated spec file instead.
 
-## LLM validation, not schema validation
+## LLM review, not schema validation — and the judgment boundary
 
-Praxis uses an LLM to eval runs against specs, not a schema validator or linter.
+Praxis uses LLM reviewers, not a schema validator. Schema validators can check field presence and type; they cannot check whether an error message would help the consumer who hit it, whether a service really does one thing, or whether an ADR's "Consequences" section is genuinely thoughtful.
 
-Schema validators can check field presence and type. They cannot check whether a `description` field is actually descriptive, whether a `## Scope` section actually explains the agent's scope, whether an ADR's "Consequences" section is genuinely thoughtful, or whether a service object's header comment explains when to use it.
+The boundary is enforced in both directions. Reviewers are explicitly told that mechanical criteria — anything a linter, regex, or type check could decide — are out of scope and must not be reported, *even where the spec states them*. A reviewer that is never asked mechanical questions cannot answer them wrongly, which removes the surface hallucinations grow on; and a team is never tempted to pay LLM prices for what a regex does free. The same rule gates the axiom taxonomy: a proposal a linter could enforce is refused at authoring. *If you can write the check, write the check.*
 
-The LLM reads your spec as instructions and exercises judgment — the same kind a senior developer would bring to a review.
+The remaining tradeoffs — an API key, per-call cost, non-determinism at the margin — are handled structurally: the content-hash cache makes unchanged targets free, multiple reviewers make disagreement visible instead of hidden, and every report carries its calibration status rather than pretending the instrument is precise.
 
-The tradeoff is that LLM validation requires an API key, costs money per call, and is non-deterministic at the margin. The content hash cache mitigates the cost by only calling the API when content changes. The non-determinism is acceptable for documentation quality checks.
+## Evidence over amnesia
+
+Most review tooling reports and forgets. Praxis appends every run to a committed ledger — run records with commit, cost, and counts; critique records with full provenance — because the questions that matter later ("when did this start", "did that spec change help", "what did this cost") can only be answered by evidence kept at the time. The cache answers *is this compliant now*; the ledger answers *what has ever happened*. Reports (`eval report`, `debt report`) are pure reads over it: never a reviewer call, rates always with denominators, reviewers never pooled, and nothing charted across an epoch boundary.
+
+## LLM proposes, human ratifies
+
+Every step that shapes the taxonomy — clustering critiques, drafting axioms, assessing traceability — is done by the curator model and **decided by a human**. Nothing enters the checklist without ratification against the spec's own text, and every decision (including `--yes` bulk-accepts) is recorded as what it was. The reviewers' job is to see; the curator's job is to organize; naming what your team's standards *are* stays yours.
 
 ## One output file per expert
 
@@ -85,4 +91,4 @@ Use the compiled profiles with any platform: Claude Code, the Anthropic API, Ope
 
 - [Knowledge Primitives](/concepts/knowledge-primitives)
 - [The Compiler Pipeline](/concepts/compiler-pipeline)
-- [Validation Domains](/concepts/validation-domains)
+- [Review Domains](/concepts/validation-domains)

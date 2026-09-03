@@ -1,93 +1,59 @@
-# Validation Domains
+# Review Domains
 
-A validation domain is a directory (or set of files) governed by a single spec. The spec is the lint rule; the domain is the scope it applies to.
+A review domain is a directory (or set of files) governed by a single spec. The spec is the standard; the domain is the scope it applies to.
 
 ## The rule
 
-Any directory within your configured `sources` that contains a spec file (default: `README.md`) becomes a validation domain. Every `.md` file in that directory — excluding the spec itself and `_`-prefixed templates — is linted against that spec.
+Any directory within your configured `sources` that contains a spec file (default: `README.md`) becomes a review domain. Every sibling `.md` file — excluding the spec itself and `_`-prefixed templates — is reviewed against that spec. With `paths:` frontmatter, the domain instead becomes the matched files, of any extension, anywhere in the project:
 
 ```
-experts/
-├── README.md          ← the lint rule for this domain
-├── code-reviewer.md   ← linted against README.md
-├── support-agent.md   ← linted against README.md
-└── _template.md       ← skipped (template)
+src/services/
+├── README.md            ← the standard (paths: "src/services/*.ts")
+├── create-review.ts     ← reviewed (exemplar — shielded, shown as the positive)
+├── rank-parlors.ts      ← reviewed
+├── redeem-coupon.ts     ← reviewed
+└── legacy-import.ts     ← excluded by the spec's excludes:
 ```
 
-The same pattern works for any directory with organized documents — `app/services/`, `decisions/`, `api/specs/`. Any directory that has a README describing what valid documents look like can be a validation domain.
+The same pattern works for any organized body of files — `decisions/`, `api/specs/`, `knowledge/experts/`. Any directory whose README says what correct looks like can be a domain.
 
 ## The spec file
 
-The spec file defines what the LLM should check. Write it in clear human language — the LLM reads it as instructions for a code reviewer who knows nothing else about the project:
-
-```markdown
-# Experts
-
-Documents in this directory define agent experts.
-
-## Required frontmatter
-
-- `title` (string) — display name of the expert
-- `type` (string) — must be `"expert"`
-- `alias` (string) — short identifier used for compiled output
-- `description` (string) — one-sentence summary of what the agent does
-
-## Required sections
-
-Every expert must have a `## Scope` section that contains both:
-
-- A `### Responsible For` subsection
-- A `### Not Responsible For` subsection
-```
-
-When `praxis eval run` runs, it sends this spec and the document content to each configured reviewer and asks whether the document conforms. The reviewer answers through a required tool call — pass, warn, or fail — with specific issues.
+The spec defines what the reviewers check — judgment standards, written in clear human language (see [Writing Specs](/validation/writing-specs), especially the judgment boundary: mechanical criteria are refused by design). When `praxis eval run` runs, every configured reviewer reads the spec and each governed file, and answers through a required tool call — pass, warn, or fail — with specific critiques on two channels: matched to a ratified axiom's id, or open-channel prose.
 
 ## Configurable spec file name
 
-By default, the spec file is named `README.md`. You can change this globally with the top-level `specFilePattern` config key:
+By default the spec file is `README.md`. Change it globally with the top-level `specFilePattern` key:
 
 ```json
-{
-  "specFilePattern": "SPEC.md"
-}
+{ "specFilePattern": "SPEC.md" }
 ```
 
-Glob patterns are also supported, which is useful if specs live at different nesting levels:
+Globs are supported, including alternation — Scoop Society accepts both hand-written READMEs and compiled SME profiles as specs:
 
 ```json
-{ "specFilePattern": "*.spec.md" }
+{ "specFilePattern": "{README.md,*.sme.md}" }
 ```
 
 ## Cross-directory domains
 
-Spec files can declare a `paths` frontmatter field to govern files outside their own directory. This is useful when one lint rule should apply across multiple directories:
+A spec's `paths:` globs are resolved against the project root, so one standard can govern files far from where the spec lives — a technical-writing spec covering both `docs/` and `runbooks/`, an events spec in `docs/` governing `src/events/`. See [Cross-Directory Review](/validation/cross-directory).
 
-```yaml
----
-paths:
-  - docs/**/*.md
-  - guides/**/*.md
----
-# Documentation Standard
+## Cohorts
 
-All docs and guides must have a title, a summary paragraph, and ...
-```
-
-The glob patterns are resolved against the project root. Any file matched by `paths` is linted against this spec regardless of where it physically lives.
-
-::: tip When to use cross-directory domains
-Use `paths` when the same quality standard applies across multiple directories — a "technical writing" spec that covers both `docs/` and `guides/`, or an "ADR format" spec that covers records spread across several team folders.
-:::
+`cohort: by_directory` makes each matched directory one review unit — every member file reviewed together, one verdict, for relational standards ("no orphaned files", "one entry point per feature") that no single file can answer.
 
 ## How multiple specs interact
 
-A document can be linted by more than one spec — either because it lives in a directory with a local spec and is also matched by another spec's `paths` glob, or because multiple specs have overlapping `paths` patterns.
+A file can be governed by more than one spec — a local README plus a cross-directory spec whose `paths:` matches it. Each (file, spec) pair is reviewed and cached independently, and both verdicts appear in the run.
 
-Each (document, spec) pair is validated and cached independently. The results are displayed separately in `praxis eval run`.
+## What is never a target
+
+Spec files themselves, `_`-prefixed templates, files matched by the config's `ignore` patterns, and anything in a spec's `excludes:`. Exemplars are inlined as positive references but never receive verdicts.
 
 ## See also
 
 - [Writing Specs](/validation/writing-specs)
-- [Cross-Directory Validation](/validation/cross-directory)
+- [Cross-Directory Review](/validation/cross-directory)
 - [Caching](/validation/caching)
-- [praxis eval run](/commands/eval)
+- [praxis eval](/commands/eval)

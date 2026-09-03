@@ -1,6 +1,6 @@
-# Cross-Directory Validation
+# Cross-Directory Review
 
-By default, a spec file governs only the documents in its own directory. Cross-directory validation lets a single spec govern files anywhere in the project.
+By default, a spec file governs only the documents in its own directory. Cross-directory review lets a single spec govern files anywhere in the project — which is also how a spec governs *code*: Scoop Society's `src/services/README.md` targets `src/services/*.ts` with a `paths:` glob.
 
 ## The `paths` frontmatter field
 
@@ -26,15 +26,16 @@ By default (`cohort: by_file`, usually omitted), each file matched by `paths` is
 ```yaml
 ---
 paths:
-  - "src/services/*"
+  - "src/features/*"
 cohort: by_directory
 ---
 # Feature Directory Spec
 
-Every service directory must contain a single entry point, and no orphaned files...
+Every feature directory hangs together: one entry point, no orphaned
+files, tests beside what they test...
 ```
 
-Here each first-layer directory under `src/services/` is evaluated as a set — the shape for relational standards ("no orphans," "one entry point per namespace") that no single file can answer. Editing any member file invalidates that directory's cached verdict. An unknown `cohort` value fails with an error listing the accepted options.
+Here each first-layer directory under `src/features/` is evaluated as a set — the shape for relational standards ("no orphans," "one entry point per namespace") that no single file can answer. Editing any member file invalidates that directory's cached verdict. An unknown `cohort` value fails with an error listing the accepted options.
 
 `paths` and `cohort` combine with the scoping keys `excludes:`, `exemplars:`, and `context:` — see [Writing Specs — Scoping frontmatter](/validation/writing-specs#scoping-frontmatter).
 
@@ -66,7 +67,7 @@ paths:
 All documents in docs/ and runbooks/ must meet these criteria...
 ```
 
-When `praxis eval run` runs, every file matched by those globs is validated against this spec — even though none of them live in `specs/`.
+When `praxis eval run` runs, every file matched by those globs is reviewed against this spec — even though none of them live in `specs/`.
 
 ## Including `specs/` in sources
 
@@ -78,16 +79,16 @@ For Praxis to discover the spec, `specs/` must appear in your `sources` config:
 }
 ```
 
-The spec file itself is excluded from validation (spec files are never validated against themselves).
+The spec file itself is never a review target (specs are never reviewed against themselves).
 
 ## Multiple specs on the same document
 
-A document can be validated by more than one spec simultaneously — for example, if it lives in a directory with its own local spec and is also matched by a cross-directory spec's `paths` glob.
+A document can be reviewed by more than one spec simultaneously — for example, if it lives in a directory with its own local spec and is also matched by a cross-directory spec's `paths` glob.
 
-Each (document, spec) pair is validated and cached independently. Both results appear in `praxis eval run` output.
+Each (document, spec) pair is reviewed and cached independently. Both results appear in `praxis eval run` output.
 
 ::: tip Use sparingly
-Cross-directory specs are powerful but can make validation coverage harder to reason about. Prefer local specs when documents are cohesive within a directory. Reach for `paths` when you have a genuine shared standard that spans multiple directories.
+Cross-directory specs are powerful but can make review coverage harder to reason about. Prefer local specs when files are cohesive within a directory. Reach for `paths` when you have a genuine shared standard that spans multiple directories.
 :::
 
 ## Configurable spec filename
@@ -110,10 +111,10 @@ This applies to all spec discovery — both local and cross-directory.
 
 ## Excluding files from `paths`
 
-Files prefixed with `_` and files that match the `specFilePattern` are always excluded from `paths` results, even if they match the glob. You do not need to add explicit exclusions for templates or spec files.
+Files prefixed with `_` and files matching the `specFilePattern` are always excluded from `paths` results, even when the glob matches them — as is anything in the config's `ignore` patterns or the spec's own `excludes:`. You never need explicit exclusions for templates or spec files.
 
 ## See also
 
-- [Validation Domains](/concepts/validation-domains)
+- [Review Domains](/concepts/validation-domains)
 - [Writing Specs](/validation/writing-specs)
 - [Configuration](/reference/config)

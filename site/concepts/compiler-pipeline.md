@@ -1,79 +1,71 @@
 # The Compiler Pipeline
 
-`praxis compile` reads expert files, resolves every reference declared in their frontmatter, and assembles standalone agent profiles. This page explains exactly what happens.
+`praxis compile` reads expert files, resolves every reference declared in their frontmatter, and assembles standalone agent profiles. This page explains exactly what happens, using Scoop Society's *service steward*.
 
 ## Input: an expert file
 
-The compiler starts with any `.md` file in the configured `expertsDir` that has a `type: expert` frontmatter field (or that lives in the experts directory by convention).
+The compiler starts from every `.md` file in the configured `expertsDir` (skipping templates and spec files). `knowledge/experts/service-steward.md`:
 
 ```yaml
 ---
-title: Code Reviewer
+title: Service Steward
 type: expert
-alias: reviewer
-description: "Reviews pull requests against team conventions and coding standards."
+alias: Scooper
+description: "Use this agent to review Scoop Society services for convention adherence, or for advice when writing a new service."
 
-constitution:
-  - context/constitution/*.md
+constitution: "knowledge/context/constitution/*.md"
 context:
-  - context/conventions/code-style.md
+  - knowledge/context/conventions/result-handling.md
 practices:
-  - practices/review-pull-requests.md
-  - practices/enforce-standards.md
+  - knowledge/practices/review-service-quality.md
 refs:
-  - reference/architecture-decisions.md
----
-# Code Reviewer
+  - knowledge/reference/api-shape.md
 
-Reviews pull requests with an eye for correctness and alignment with team conventions.
+validates:
+  - src/services/*.ts
+exemplars:
+  - src/services/create-review.ts
+excludes:
+  - src/services/legacy-import.ts
+---
+# Service Steward (a.k.a **Scooper**)
+
+The subject-matter expert on how Scoop Society services are written
+and reviewed.
 ```
 
-Each frontmatter array is a list of paths or glob patterns, all relative to the project root.
+Each reference key is a path or glob pattern (or a list of them), relative to the project root. A bare value and its one-element list form are the same declaration.
 
 ## Resolution
 
-The compiler resolves each list against the filesystem:
-
-1. **Glob expansion** — patterns like `context/constitution/*.md` are expanded to all matching files.
-2. **Alphabetical ordering** — expanded results are sorted so compilation is deterministic.
-3. **Exclusions** — files named `README.md` or prefixed with `_` (templates) are skipped automatically.
-4. **Missing file errors** — if a declared path matches nothing, the compiler exits with an error.
+1. **Glob expansion** — patterns like `knowledge/context/constitution/*.md` expand to every matching file.
+2. **Deterministic ordering** — expanded matches are sorted, so recompiling without changes is a no-op diff.
+3. **Exclusions** — spec files (per `specFilePattern`) and `_`-prefixed templates are never inlined.
+4. **Problems are warnings, not aborts** — a glob matching nothing or a declared file that doesn't exist is reported per reference, and the rest of the profile still compiles. A typo shouldn't cost you the whole agent, but you do get told.
 
 ## Assembly
 
-Resolved files are assembled in a fixed section order:
+Resolved bodies are assembled in a fixed section order, each referenced file's frontmatter stripped:
 
 ```
-1. Expert body          (the expert file's own markdown body)
-2. Practices   (inlined from the practices array)
-3. Constitution       (inlined from the constitution array)
-4. Context            (inlined from the context array)
-5. Reference          (inlined from the refs array)
+# Role             ← the expert file's own body
+# Responsibilities ← inlined from practices:
+# Constitution     ← inlined from constitution:
+# Context          ← inlined from context:
+# Reference        ← inlined from refs:
 ```
 
-Each referenced file's frontmatter is stripped; only its markdown body is inlined under a section heading.
+Constitution blocks flow together as one continuous statement of identity; the other sections separate their documents with rules. An empty section is omitted, never rendered as a bare heading.
 
 ## Output: the agent profile
 
-The assembled content is written to `{agentProfilesOutputDir}/{alias}.md`. With the example above:
+The assembled profile is written to `{agentProfilesOutputDir}/{alias}.md` — here, `agent-profiles/scooper.md`. Because this expert declares `validates:`, the profile also opens with the eval-targeting frontmatter (`paths:`, `exemplars:`, `excludes:`) that makes it a working **spec**: the compiled agent and the standard that reviews `src/services/*.ts` are the same file. See [Profiles as spec files](/concepts/agent-profiles#profiles-as-spec-files).
 
-```
-agent-profiles/reviewer.md
-```
-
-The output file is plain markdown — no special syntax, no runtime dependency. It can be:
-
-- Dropped into Claude Code as a project instruction
-- Loaded as a system prompt via any LLM API
-- Read by a human who wants to understand what the agent does
+The output is plain markdown — no special syntax, no runtime dependency. It can be dropped into Claude Code, loaded as a system prompt via any LLM API, or read by a human who wants to know what the agent knows.
 
 ## Plugin output
 
-After writing the pure profile, the compiler passes the same content to each enabled plugin. Plugins wrap or transform the profile for specific platforms.
-
-The Claude Code plugin, for example, prepends YAML frontmatter with the agent's name, description, tools, and model — and writes a separate file to the plugin output directory.
-
-See [Plugins](/plugins/overview) for details.
+After the pure profile, the compiler hands the same content to each enabled plugin. The Claude Code plugin prepends agent frontmatter (name, description, tools, model) and writes to its own output directory. See [Plugins](/plugins/overview).
 
 ## Watch mode
 
@@ -81,15 +73,15 @@ See [Plugins](/plugins/overview) for details.
 praxis compile --watch
 ```
 
-In watch mode, the compiler sets up a file watcher on every directory listed in `sources`. Any change to a `.md` file triggers a debounced recompile of all affected experts. Changes to shared context files (like constitution docs) recompile every expert that includes them.
+Watches every directory in `sources` and recompiles on change, debounced. Editing a shared constitution file recompiles every expert that includes it — the propagation that makes compilation worthwhile.
 
 ## Single expert compilation
 
 ```bash
-praxis compile --alias reviewer
+praxis compile --alias scooper
 ```
 
-Compiles only the expert with `alias: reviewer`. Useful during authoring when you don't need to recompile every expert on every save.
+Compiles only the matching expert (aliases match case-insensitively). Useful during authoring.
 
 ## See also
 

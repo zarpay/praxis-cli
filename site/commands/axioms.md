@@ -6,6 +6,8 @@ Axioms are the named, stable standards critiques attach to: a spec is prose for 
 
 **LLM proposes, human ratifies.** Reviewers produce open-channel critiques; `triage` clusters them into axiom candidates; `ratify` traces a proposal to the spec and activates it; active axioms become the reviewer's checklist, so the same violation returns with the same id and the same ratified words every run. Removal is deprecation — history stays frozen.
 
+Concretely, on Scoop Society: a week of runs produces the same complaint about five services' error messages. Triage clusters them; you accept the drafted proposal; ratify grounds it in `src/services/README.md#behavior` and activates `AX-b951db` — *"Error messages name what was wrong and what would be accepted instead."* From then on every finding of it cites the id, `axioms show AX-b951db` teaches it with both examples, and `eval report --axiom AX-b951db` charts it. The full walkthrough is [The Evidence Loop](/concepts/evidence-loop).
+
 ## The curator
 
 Triage, the authoring gate, and ratification assistance run on the **curator** — a dedicated model configured beside your reviewers, worth pointing at a frontier model since it does the taxonomy's thinking:
@@ -40,3 +42,9 @@ Use `--spec <path>` for human-authored proposals with no critique parentage.
 ## praxis axioms list · show \<id\> · audit
 
 `list` is the store at a glance (proposals counted, ratify command named); `show <id>` is the drill-down every finding cites — statement, both examples, grounding, lifecycle; `audit` re-runs the authoring gate over active axioms and flags removal candidates (tooling grows — an axiom appropriate last year may be a lint rule now). All take `--json`.
+
+## See also
+
+- [The Evidence Loop](/concepts/evidence-loop)
+- [praxis eval](/commands/eval) — where critiques come from, and `eval report --axiom <id>`
+- [praxis debt](/commands/debt) — pre-spec stock per axiom

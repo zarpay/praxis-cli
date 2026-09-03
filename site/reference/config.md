@@ -20,14 +20,25 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
   ],
   "reviewers": [
     {
-      "name": "default",
-      "model": "x-ai/grok-4.1-fast",
+      "name": "flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    },
+    {
+      "name": "v32",
+      "model": "deepseek/deepseek-v3.2",
       "apiKeyEnvVar": "OPENROUTER_API_KEY"
     }
   ],
-  "specFilePattern": "README.md"
+  "curator": {
+    "model": "anthropic/claude-sonnet-4.5",
+    "apiKeyEnvVar": "OPENROUTER_API_KEY"
+  },
+  "specFilePattern": "{README.md,*.sme.md}"
 }
 ```
+
+(This is Scoop Society's shape: two reviewers, a frontier curator, and a spec pattern accepting both hand-authored READMEs and compiled `.sme.md` profiles.)
 
 ---
 
@@ -44,7 +55,7 @@ Sources are used for:
 - **Watch mode** — `praxis compile --watch` watches every source directory
 - **Status** — `praxis status` scans sources to count documents
 
-Any directory within sources that contains a spec file (default: `README.md`) becomes a [validation domain](/concepts/validation-domains).
+Any directory within sources that contains a spec file (default: `README.md`) becomes a [review domain](/concepts/validation-domains).
 
 ```json
 { "sources": ["agents/experts", "agents/practices", "knowledge/reference"] }
@@ -176,9 +187,7 @@ The reviewers — named inference backends that evaluate targets against specs. 
 | `baseUrl`      | no       | OpenAI-compatible endpoint base; defaults to OpenRouter                                            |
 | `temperature`  | no       | Sampling temperature for reviews; defaults to `0`                                                  |
 
-Each target's cache file holds every reviewer's verdicts, keyed by a hash of the reviewer's _behavioral_ settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the evaluating prompt. Renaming a reviewer or rotating a key keeps its cached verdicts; changing the model, endpoint, or temperature invalidates them.
-
-::: warning Breaking change in v2
+Each target's cache file holds every reviewer's verdicts, keyed by a hash of the reviewer's _behavioral_ settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the complete reviewer-facing prompt surface. Renaming a reviewer or rotating a key keeps its cached verdicts; changing the model, endpoint, temperature, provider, or options invalidates them (and rolls the reviewer's epoch).
 
 ### Providers
 
@@ -208,7 +217,7 @@ Each reviewer runs through a **provider** — the backend that executes the revi
 export default function internalProvider() {
   return {
     name: "internal",
-    async evaluate(request) {
+    async review(request) {
       // request: systemPrompt, userPrompt, tools, model, temperature,
       //          baseUrl, apiKey (resolved), options
       // call anything; return the normalized contract:
@@ -221,8 +230,11 @@ export default function internalProvider() {
 }
 ```
 
-`options` is passed to the provider verbatim. For the built-in OpenRouter provider it is spread into the request body first, so it can add backend fields (routing, reasoning settings) but never overrides `model`, `temperature`, or the tool-calling protocol. Both `provider` and `options` are part of the reviewer's behavioral identity: changing them re-evaluates that reviewer's targets. A local provider module is code your project runs — treat it with the same trust as an npm script.
+A provider may also implement `complete(request)` — the raw structured-output call the [curator](#curator) uses. Only providers that implement it can back the curator.
 
+`options` is passed to the provider verbatim. For the built-in OpenRouter provider it is spread into the request body first, so it can add backend fields (routing, reasoning settings) but never overrides `model`, `temperature`, or the tool-calling protocol. Both `provider` and `options` are part of the reviewer's behavioral identity: changing them re-reviews that reviewer's targets. A local provider module is code your project runs — treat it with the same trust as an npm script.
+
+::: warning Breaking change in v2
 The v1 `validation` section is removed. Configure `reviewers` instead, and move `specFilePattern` to the top level.
 :::
 
@@ -248,7 +260,7 @@ Glob patterns are supported:
 ## See also
 
 - [praxis init](/commands/init)
-- [Validation Domains](/concepts/validation-domains)
+- [Review Domains](/concepts/validation-domains)
 - [Claude Code Plugin](/plugins/claude-code)
 
 ## Breaking changes from 1.x
