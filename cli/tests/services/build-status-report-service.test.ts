@@ -235,4 +235,20 @@ describe("buildStatusReportService", () => {
       cleanup();
     });
   });
+
+  it("carries the situational-poll facts (09-ae)", async () => {
+    const { root, cleanup } = createValidatorTmpdir({ sources: ["docs"], files: {} });
+
+    const report = await buildStatusReportService({ root, config: new PraxisConfig(root) });
+
+    cleanup();
+
+    expect(report.evalState).toEqual({
+      pending_triage: 0,
+      proposals_pending: 0,
+      calibration_stale: true,
+      epoch_boundary_detected: false,
+      last_run_at: null,
+    });
+  });
 });

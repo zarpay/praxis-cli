@@ -1,8 +1,11 @@
 import type { BuildStatusReportInput, StatusReport } from "@/types.js";
 
 import { exists } from "@/helpers/files-helper.js";
+import { AxiomStore } from "@/models/axiom-store.js";
+import { Ledger } from "@/models/ledger.js";
 import auditExpertsService from "@/services/audit-experts-service.js";
 import countDocumentsByTypeService from "@/services/count-documents-by-type-service.js";
+import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
 import findOrphanedPracticesService from "@/services/find-orphaned-practices-service.js";
 import listDocumentsService from "@/services/list-documents-service.js";
 import tallyValidationService from "@/services/tally-validation-service.js";
@@ -28,9 +31,10 @@ export default async function buildStatusReport({
     ignore: config.ignore,
   };
   const validation = tallyValidationService({ root, config });
+  const evalState = evalStateOf(root, config);
 
   if (!exists(config.expertsDir)) {
-    return evalOnlyReport(validation);
+    return evalOnlyReport(validation, evalState);
   }
 
   const expertFiles = await listDocumentsService({
@@ -59,6 +63,7 @@ export default async function buildStatusReport({
       context: counts.context,
     },
     validation,
+    evalState,
     orphanedPractices: findOrphanedPracticesService({
       practiceFiles,
       referenced: audit.referencedPractices,
@@ -72,15 +77,41 @@ export default async function buildStatusReport({
 }
 
 /** The report for a project with no spec layer: validation state only. */
-function evalOnlyReport(validation: StatusReport["validation"]): StatusReport {
+function evalOnlyReport(
+  validation: StatusReport["validation"],
+  evalState: StatusReport["evalState"],
+): StatusReport {
   return {
     compilerInUse: false,
     counts: { experts: 0, practices: 0, references: 0, context: 0 },
     validation,
+    evalState,
     orphanedPractices: [],
     danglingRefs: [],
     expertsMissingDescription: [],
     invalidExperts: [],
     zeroMatchGlobs: [],
+  };
+}
+
+/** The situational-poll facts (09-ae), derived from the stores. */
+function evalStateOf(
+  root: string,
+  config: BuildStatusReportInput["config"],
+): StatusReport["evalState"] {
+  const ledger = new Ledger({ projectRoot: root });
+  const { axioms } = new AxiomStore({ projectRoot: root }).all();
+  const state = ledger.triageState();
+  const runs = ledger.runs();
+  const boundaries = detectEpochBoundariesService({ root, reviewers: config.reviewers });
+
+  const lastRun = runs.map((run) => run.timestamp).sort()[runs.length - 1] ?? null;
+
+  return {
+    pending_triage: state.pending.length,
+    proposals_pending: axioms.filter((axiom) => axiom.status === "proposed").length,
+    calibration_stale: true,
+    epoch_boundary_detected: boundaries.length > 0,
+    last_run_at: lastRun,
   };
 }

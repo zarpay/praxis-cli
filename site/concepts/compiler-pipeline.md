@@ -23,7 +23,6 @@ practices:
 refs:
   - reference/architecture-decisions.md
 ---
-
 # Code Reviewer
 
 Reviews pull requests with an eye for correctness and alignment with team conventions.
@@ -63,6 +62,7 @@ agent-profiles/reviewer.md
 ```
 
 The output file is plain markdown — no special syntax, no runtime dependency. It can be:
+
 - Dropped into Claude Code as a project instruction
 - Loaded as a system prompt via any LLM API
 - Read by a human who wants to understand what the agent does

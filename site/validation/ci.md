@@ -41,10 +41,10 @@ name: Validate Knowledge
 on:
   pull_request:
     paths:
-      - 'experts/**'
-      - 'practices/**'
-      - 'reference/**'
-      - 'context/**'
+      - "experts/**"
+      - "practices/**"
+      - "reference/**"
+      - "context/**"
 
 jobs:
   validate:

@@ -33,5 +33,12 @@ nothing.
 - Fixtures: build throwaway projects with the `@tests/helpers/*` tmpdir
   builders; never compute paths by counting `..` past one level — that has
   broken on every directory move.
+- **Domain fixtures are shared factories, not per-file literals.** An axiom
+  document is `axiomContent`/`seedAxiom` (`@tests/helpers/axiom-fixtures`); a
+  ledger record is `seedLedgerRun`/`critiqueLine` (`@tests/helpers/ledger-runs`).
+  A test file that redeclares one of these shapes inline is duplicating a
+  contract nine other files already depend on — extend the factory's overrides
+  instead. Local wrappers that pin a suite's defaults (`guideCritique`,
+  `matchedCritique`) are encouraged; local re-implementations are not.
 - `tests/helpers/` holds test-support utilities (not `.test.ts`); they
   coexist with the mirrored helper tests.

@@ -12,7 +12,6 @@ paths:
   - docs/**/*.md
   - guides/**/*.md
 ---
-
 # Documentation Spec
 
 All docs and guides must have a descriptive title and a summary paragraph...
@@ -22,7 +21,7 @@ Glob patterns are resolved against the project root. Any file matched by `paths`
 
 ## The `cohort` frontmatter field
 
-By default (`cohort: by_file`, usually omitted), each file matched by `paths` is evaluated on its own. Set `cohort: by_directory` to make `paths` match *directories* instead — each matched directory becomes **one evaluation unit**: every file it contains is evaluated together in a single call, receiving a single verdict cached against the member set.
+By default (`cohort: by_file`, usually omitted), each file matched by `paths` is evaluated on its own. Set `cohort: by_directory` to make `paths` match _directories_ instead — each matched directory becomes **one evaluation unit**: every file it contains is evaluated together in a single call, receiving a single verdict cached against the member set.
 
 ```yaml
 ---
@@ -30,7 +29,6 @@ paths:
   - "src/services/*"
 cohort: by_directory
 ---
-
 # Feature Directory Spec
 
 Every service directory must contain a single entry point, and no orphaned files...
@@ -63,7 +61,6 @@ paths:
   - docs/**/*.md
   - runbooks/**/*.md
 ---
-
 # Technical Writing Standard
 
 All documents in docs/ and runbooks/ must meet these criteria...

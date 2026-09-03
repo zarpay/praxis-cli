@@ -7,23 +7,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { Ledger } from "@/models/ledger.js";
-import { seedLedgerRun } from "@tests/helpers/ledger-runs.js";
-
-/** One open-channel critique line for a seeded run. */
-function critiqueLine(id: string, fields: { axiomId?: string | null; spec?: string } = {}): string {
-  return JSON.stringify({
-    kind: "critique",
-    id,
-    run_id: "r1",
-    timestamp: "2026-09-02T10:00:00.000Z",
-    file_path: "src/a.ts",
-    spec_path: fields.spec ?? "src/README.md",
-    severity: "error",
-    text: `Critique ${id}`,
-    reviewer_name: "flash",
-    axiom_id: fields.axiomId ?? null,
-  });
-}
+import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
 
 describe("Ledger", () => {
   let root: string;
@@ -62,7 +46,11 @@ describe("Ledger", () => {
     });
 
     it("returns each file's run record, never its critique records", () => {
-      seedLedgerRun(root, { name: "flash", hash: "aaaa1111", extraLines: [critiqueLine("r1:1")] });
+      seedLedgerRun(root, {
+        name: "flash",
+        hash: "aaaa1111",
+        extraLines: [critiqueLine({ runId: "r1", seq: 1 })],
+      });
       seedLedgerRun(root, { name: "v32", hash: "bbbb2222" });
 
       const runs = ledger.runs();
@@ -82,7 +70,7 @@ describe("Ledger", () => {
     });
 
     it("skips a file whose first line is not a run record", () => {
-      seedRawFile("odd.jsonl", critiqueLine("x:1") + "\n");
+      seedRawFile("odd.jsonl", critiqueLine({ runId: "x", seq: 1 }) + "\n");
 
       expect(ledger.runs()).toEqual([]);
     });
@@ -93,7 +81,7 @@ describe("Ledger", () => {
       seedLedgerRun(root, {
         name: "flash",
         hash: "aaaa1111",
-        extraLines: [critiqueLine("r1:2"), critiqueLine("r1:1")],
+        extraLines: [critiqueLine({ runId: "r1", seq: 2 }), critiqueLine({ runId: "r1", seq: 1 })],
       });
 
       const ids = ledger.critiques().map((critique) => critique.id);
@@ -127,7 +115,10 @@ describe("Ledger", () => {
       seedLedgerRun(root, {
         name: "flash",
         hash: "aaaa1111",
-        extraLines: [critiqueLine("r1:1"), critiqueLine("r1:2", { axiomId: "AX-aaaa11" })],
+        extraLines: [
+          critiqueLine({ runId: "r1", seq: 1 }),
+          critiqueLine({ runId: "r1", seq: 2, axiomId: "AX-aaaa11" }),
+        ],
       });
 
       const { pending } = ledger.triageState();
@@ -145,7 +136,11 @@ describe("Ledger", () => {
       seedLedgerRun(root, {
         name: "flash",
         hash: "aaaa1111",
-        extraLines: [critiqueLine("r1:1"), critiqueLine("r1:2"), critiqueLine("r1:3")],
+        extraLines: [
+          critiqueLine({ runId: "r1", seq: 1 }),
+          critiqueLine({ runId: "r1", seq: 2 }),
+          critiqueLine({ runId: "r1", seq: 3 }),
+        ],
       });
 
       const records: TriageRecord[] = [

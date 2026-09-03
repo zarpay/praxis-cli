@@ -72,3 +72,7 @@ Run `praxis eval run` to populate or refresh the cache before running `praxis st
 - [praxis eval run](/commands/eval)
 - [Caching](/validation/caching)
 - [Configuration](/reference/config)
+
+## --json and the situational poll
+
+`praxis status --json` is an agent's cheapest situational poll: alongside the health report, `evalState` carries `pending_triage`, `proposals_pending`, `calibration_stale`, `epoch_boundary_detected`, and `last_run_at` — what needs doing, from one call. Bare `praxis` is the same orientation for humans: counts and staleness at a glance, each line naming the command that acts on it.

@@ -30,6 +30,7 @@ export default function writeLedgerRunService({
   trigger,
   scope,
   entries,
+  specUnits,
 }: WriteLedgerRunInput): WriteLedgerRunResult {
   const ledger = new Ledger({ projectRoot: root });
   const runId = ledger.mintRunId();
@@ -91,6 +92,7 @@ export default function writeLedgerRunService({
     cache_misses: entries.filter((entry) => !entry.cacheHit && entry.evidence).length,
     ...verdictCounts(entries),
     critique_count: critiques.length,
+    ...(specUnits && { spec_units: specUnits }),
     calibration_status_at_run: "uncalibrated",
     baseline: isBaseline(ledger, scope, reviewer.hash),
   };

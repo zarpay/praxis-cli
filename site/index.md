@@ -31,12 +31,12 @@ Write a README spec for any directory that describes what valid documents look l
 
 This works for any organized body of files, not just AI knowledge documents:
 
-| Directory | What the spec enforces |
-| --- | --- |
-| `app/services/` | Architectural patterns, method naming, interface conventions |
-| `decisions/` | ADR format, required context and status sections |
-| `experts/` | Required frontmatter, scope structure, authority declarations |
-| `api/specs/` | Endpoint naming, request/response shape requirements |
+| Directory       | What the spec enforces                                        |
+| --------------- | ------------------------------------------------------------- |
+| `app/services/` | Architectural patterns, method naming, interface conventions  |
+| `decisions/`    | ADR format, required context and status sections              |
+| `experts/`      | Required frontmatter, scope structure, authority declarations |
+| `api/specs/`    | Endpoint naming, request/response shape requirements          |
 
 The spec is your `.eslintrc` for concepts. `praxis eval run` is the linter that checks every document against it — and can run in CI, blocking merges that violate the standard.
 
@@ -58,12 +58,12 @@ But for teams building with AI agents, the two reinforce each other: linting kee
 
 When using Praxis for knowledge compilation, documents are organized into four types:
 
-| Primitive | What it captures | Example |
-| --- | --- | --- |
-| **Context** | Who you are and how you think | Company identity, coding conventions, mental models |
-| **Experts** | Who an agent is | A code reviewer with scope, authorities, and personality |
-| **Practices** | What an expert owns | Reviewing pull requests, enforcing standards |
-| **Reference** | What things mean | Vocabulary, indices, policy excerpts |
+| Primitive     | What it captures              | Example                                                  |
+| ------------- | ----------------------------- | -------------------------------------------------------- |
+| **Context**   | Who you are and how you think | Company identity, coding conventions, mental models      |
+| **Experts**   | Who an agent is               | A code reviewer with scope, authorities, and personality |
+| **Practices** | What an expert owns           | Reviewing pull requests, enforcing standards             |
+| **Reference** | What things mean              | Vocabulary, indices, policy excerpts                     |
 
 Experts are the compilation unit. An expert's frontmatter declares which context, practices, and references to include. The compiler resolves all of it and produces one standalone profile.
 

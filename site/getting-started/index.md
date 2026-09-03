@@ -106,6 +106,7 @@ Open `experts/README.md`. It already exists from `praxis init`. Tighten the spec
 ## Required sections
 
 Every expert must have `## Scope` with both:
+
 - `### Responsible For`
 - `### Not Responsible For`
 ```

@@ -114,7 +114,7 @@ You can disable pure profile output entirely if you only want plugin output:
 
 ## Profiles as spec files
 
-A compiled profile is the SME on its source material. The natural extension is to let that same file serve as the spec that validates the code it knows about — collapsing two artifacts into one. The agent you chat with *is* the spec that runs `praxis eval run`.
+A compiled profile is the SME on its source material. The natural extension is to let that same file serve as the spec that validates the code it knows about — collapsing two artifacts into one. The agent you chat with _is_ the spec that runs `praxis eval run`.
 
 Add a `validates:` key to the expert's frontmatter with an array of glob patterns:
 

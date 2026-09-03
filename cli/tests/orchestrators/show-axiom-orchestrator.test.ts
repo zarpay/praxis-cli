@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { showAxiomOrchestrator } from "@/orchestrators/show-axiom-orchestrator.js";
+import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
@@ -9,17 +10,7 @@ vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
 
 /** A project whose store holds one active axiom. */
 function projectWithAxiom(): { root: string; cleanup: () => void } {
-  const axiom = [
-    "---",
-    "id: AX-3f9c2d",
-    "version: 1",
-    "status: active",
-    "severity: error",
-    "introduced: 2026-08-29",
-    "---",
-    "",
-    "Statement.",
-  ].join("\n");
+  const axiom = axiomContent({ id: "AX-3f9c2d", grounded_in: null }, { statement: "Statement." });
 
   return createValidatorTmpdir({
     sources: ["docs"],

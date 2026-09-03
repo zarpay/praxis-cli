@@ -2,30 +2,20 @@ import { describe, expect, it } from "vitest";
 
 import { AxiomFile } from "@/models/axiom-file.js";
 import axiomShowView from "@/views/axiom-show-view.js";
+import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { reportText } from "@tests/helpers/report-text.js";
 
 /** A ratified axiom with both examples. */
 function axiom(): AxiomFile {
-  const content = [
-    "---",
-    "id: AX-3f9c2d",
-    "version: 2",
-    "status: active",
-    "severity: warning",
-    "grounded_in: src/services/README.md#behavior",
-    "introduced: 2026-08-29",
-    "---",
-    "",
-    "Error messages name what would be accepted instead.",
-    "",
-    "## Violating example",
-    "",
-    "bad subject",
-    "",
-    "## Compliant example",
-    "",
-    "subject must be a non-empty string",
-  ].join("\n");
+  const content = axiomContent(
+    {
+      id: "AX-3f9c2d",
+      version: "2",
+      severity: "warning",
+      grounded_in: "src/services/README.md#behavior",
+    },
+    { statement: "Error messages name what would be accepted instead." },
+  );
 
   return AxiomFile.fromContent(content, "AX-3f9c2d.md");
 }
@@ -42,17 +32,10 @@ describe("axiomShowView", () => {
 
   it("marks an unratified proposal's missing grounding", () => {
     const proposal = AxiomFile.fromContent(
-      [
-        "---",
-        "id: AX-aaaa11",
-        "version: 1",
-        "status: proposed",
-        "severity: error",
-        "introduced: 2026-09-02",
-        "---",
-        "",
-        "S.",
-      ].join("\n"),
+      axiomContent(
+        { status: "proposed", grounded_in: null, introduced: "2026-09-02" },
+        { body: "S." },
+      ),
       "AX-aaaa11.md",
     );
 

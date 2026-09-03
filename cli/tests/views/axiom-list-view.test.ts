@@ -2,21 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { AxiomFile } from "@/models/axiom-file.js";
 import axiomListView from "@/views/axiom-list-view.js";
+import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { reportText } from "@tests/helpers/report-text.js";
 
 /** One in-memory axiom for the view to arrange. */
 function axiom(id: string, fields: { status?: string; introduced?: string } = {}): AxiomFile {
-  const content = [
-    "---",
-    `id: ${id}`,
-    "version: 1",
-    `status: ${fields.status ?? "active"}`,
-    "severity: error",
-    `introduced: ${fields.introduced ?? "2026-08-29"}`,
-    "---",
-    "",
-    `Statement of ${id}.`,
-  ].join("\n");
+  const content = axiomContent(
+    { id, grounded_in: null, ...fields },
+    { statement: `Statement of ${id}.` },
+  );
 
   return AxiomFile.fromContent(content, `${id}.md`);
 }

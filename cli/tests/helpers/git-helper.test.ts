@@ -5,7 +5,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { gitFacts } from "@/helpers/git-helper.js";
+import {
+  authorsOfRange,
+  commitExists,
+  fileFirstCommitDate,
+  gitFacts,
+} from "@/helpers/git-helper.js";
 
 /** Runs git quietly in the test repo. */
 function git(root: string, ...args: string[]): string {
@@ -65,6 +70,35 @@ describe("gitFacts", () => {
     const facts = gitFacts(root);
 
     expect(facts).toMatchObject({ inRepo: true, commitSha: null, branch: "main" });
+  });
+
+  it("commitExists distinguishes reachable from unknown shas", () => {
+    initRepo();
+    const sha = git(root, "rev-parse", "HEAD");
+
+    expect(gitFacts(root).inRepo).toBe(true);
+    expect(commitExists(root, sha)).toBe(true);
+    expect(commitExists(root, "0".repeat(40))).toBe(false);
+  });
+
+  it("fileFirstCommitDate returns the first-touch date; null when untracked", () => {
+    initRepo();
+    writeFileSync(join(root, "untracked.md"), "x");
+
+    expect(fileFirstCommitDate(root, "doc.md")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(fileFirstCommitDate(root, "untracked.md")).toBeNull();
+  });
+
+  it("authorsOfRange names who touched a file between two commits", () => {
+    initRepo();
+    const from = git(root, "rev-parse", "HEAD");
+    writeFileSync(join(root, "doc.md"), "# Changed\n");
+    git(root, "add", "-A");
+    git(root, "-c", "user.name=Fixer", "-c", "user.email=f@example.com", "commit", "-qm", "fix");
+    const to = git(root, "rev-parse", "HEAD");
+
+    expect(authorsOfRange(root, from, to, "doc.md")).toEqual(["Fixer"]);
+    expect(authorsOfRange(root, from, to, "other.md")).toEqual([]);
   });
 
   it("withholds sha and branch on a detached HEAD", () => {

@@ -174,6 +174,8 @@ Every run also appends to the ledger (`.praxis/ledger/runs/<run_id>.jsonl`, 05):
 
 The axiom layer (04) sits on the ledger: open-channel critiques triage into `.praxis/axioms/` (ids `AX-` + 6 random hex — never sequential), ratification grounds a proposal in its spec and activates it, and active axioms become the reviewer's checklist — rendered into the prompt and folded into the content hash, so ratifying re-reviews what the spec governs. The `curator` config role (required for triage/ratify/audit; instructive error otherwise) runs the organizing, the authoring gate (03), and traceability via the provider's optional `complete()`. Triage decisions append to `.praxis/ledger/triage/`.
 
+The measurement layer (07) is pure read-side: `eval report` (three scope levels — files/glob, commit, PR set — plus --since/--branch/--axiom) and `debt report` derive everything from `Ledger` + `AxiomStore` + read-only git under the seven hard rules; `metrics-helper` owns the floor (n=5) and rate cells; populations derive per-axiom from git birthdates; bare `praxis` is the orientation screen and `status --json` carries the situational poll. No reviewer or curator call anywhere in a report.
+
 `praxis eval prune` is the epoch structure's other half: a behavioral change writes new cache keys and orphans the old ones, and pruning removes every entry whose reviewer hash matches no configured reviewer.
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).

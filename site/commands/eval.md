@@ -154,6 +154,19 @@ Two things never write the ledger: `eval ci` (CI verifies without writing — th
 
 A target that cannot be reviewed at all — unreadable, or a cohort too large for the model's context window — is reported **UNVERIFIED**: counted separately, never as a violation, and the run fails so it cannot pass unseen.
 
+## praxis eval report
+
+The read side of the ledger — never a reviewer call. Scopes compose: `eval report [path|glob]` for files, `--commit <sha>` / `--commits <shas...>` for a commit or a PR's set, `--branch`, `--since <date|ref>`, and `--axiom <id>` for the single-standard drill-down. Every invocation prints the same discipline:
+
+- rates as `violations/opportunities (x%)` with the denominator always shown; cells under the small-n floor (5) render **insufficient data**, never a number
+- one reviewer, one series — never pooled; every count qualified by population (pre-spec / post-spec / unknown, derived from git birthdates against each axiom's clock)
+- epoch boundaries as named furniture; nothing trends across one
+- the calibration banner on every report (uncalibrated until calibration lands)
+- costs, residual rate, and the pending-triage queue
+- a requested sha that no longer resolves renders the missing-commit note (squash workflows orphan branch shas by policy) — the run's attestation stays usable
+
+`--json` emits the built payload verbatim — the stable machine contract.
+
 ## The two channels
 
 Once axioms are ratified (see [praxis axioms](/commands/axioms)), the reviewer's prompt carries their checklist: violations of a checklist axiom come back **matched** — cited by id, rendered in the axiom's ratified words, deduplicated across reviewers into one finding with its witnesses counted. Everything else arrives on the **open channel** as raw critique prose and flows onward to triage — today's raw critique is tomorrow's axiom. The reviewer is also told the judgment boundary: mechanical criteria (anything a linter could decide) are out of scope and must not be reported.

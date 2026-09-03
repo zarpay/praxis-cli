@@ -14,11 +14,13 @@ Or with custom options:
 
 ```json
 {
-  "plugins": [{
-    "name": "claude-code",
-    "outputDir": "./plugins/my-agents",
-    "claudeCodePluginName": "my-org"
-  }]
+  "plugins": [
+    {
+      "name": "claude-code",
+      "outputDir": "./plugins/my-agents",
+      "claudeCodePluginName": "my-org"
+    }
+  ]
 }
 ```
 
@@ -36,7 +38,6 @@ tools: Read, Glob, Grep
 model: opus
 permissionMode: plan
 ---
-
 # Code Reviewer
 
 Reviews pull requests with an eye for correctness and alignment with team conventions.
@@ -50,12 +51,12 @@ The YAML frontmatter is what Claude Code reads to register the agent. The markdo
 
 The plugin reads optional fields from your expert frontmatter to populate the Claude Code agent frontmatter:
 
-| Expert frontmatter | Claude Code output | Example |
-| --- | --- | --- |
-| `description` | `description` | `"Reviews pull requests..."` |
-| `agent_tools` | `tools` | `Read, Glob, Grep` |
-| `agent_model` | `model` | `opus`, `sonnet` |
-| `agent_permission_mode` | `permissionMode` | `plan`, `bypassPermissions` |
+| Expert frontmatter      | Claude Code output | Example                      |
+| ----------------------- | ------------------ | ---------------------------- |
+| `description`           | `description`      | `"Reviews pull requests..."` |
+| `agent_tools`           | `tools`            | `Read, Glob, Grep`           |
+| `agent_model`           | `model`            | `opus`, `sonnet`             |
+| `agent_permission_mode` | `permissionMode`   | `plan`, `bypassPermissions`  |
 
 Example expert frontmatter:
 
@@ -107,10 +108,10 @@ This is useful for teams with Claude Code licenses who don't want to distribute 
 
 ## Plugin configuration options
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `outputDir` | `string` | `"./plugins/praxis"` | Full output directory path, resolved against project root |
-| `claudeCodePluginName` | `string` | `"praxis"` | The `name` field in `plugin.json` and the slash command namespace |
+| Option                 | Type     | Default              | Description                                                       |
+| ---------------------- | -------- | -------------------- | ----------------------------------------------------------------- |
+| `outputDir`            | `string` | `"./plugins/praxis"` | Full output directory path, resolved against project root         |
+| `claudeCodePluginName` | `string` | `"praxis"`           | The `name` field in `plugin.json` and the slash command namespace |
 
 ## See also
 

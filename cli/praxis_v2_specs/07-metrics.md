@@ -34,6 +34,8 @@
 
 **`praxis eval report --axiom AX-0007`** — one axiom across everything: rates per population, trend, residual critiques nearby, calibration scores, removal-candidacy signals (03).
 
+**Implementation notes (2026-09-03, flagged):** the small-n floor is **5** (`metrics-helper`, one constant — promote to config only when a real need appears); every renderer formats rates through the shared `rateCell`, which is how "enforced in every renderer" is enforced. Run records carry `spec_units` (05) — evaluated units per governing spec — as the applicable-opportunity denominator; records predating the field suppress as insufficient data rather than padding. The per-axiom rate reported is **current stock** (distinct violating files at the reviewer's latest scoped run over its spec's opportunities); flow metrics (introduction rate, violation flow) await M5's diff units, and the debt report's paydown is corpus-level set-difference until then. Open question 1 resolves as tentatively drawn: **run-indexed with calendar annotations**.
+
 ## Presentation idiom
 
 Follow the existing pattern (`VerdictReporter` in `verdict-reporter.ts`): a pure `build()` returning structured data, a separate `display()` renderer — `--json` falls out for free, and the structured form is what briefs (08) consume.

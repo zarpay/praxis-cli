@@ -19,6 +19,7 @@ The compilation capability — turning knowledge documents into agent profiles �
 Praxis input and output are both standard markdown. There is no custom AST, no special syntax, no binary format.
 
 This means:
+
 - You can read and edit any Praxis file in any editor
 - Compiled profiles can be pasted directly into any LLM interface
 - The entire knowledge base is legible to humans without running the CLI
@@ -31,6 +32,7 @@ The tradeoff is that frontmatter YAML has to carry the manifest, which is slight
 Praxis requires an explicit compile step rather than dynamically resolving references at agent invocation time.
 
 The reasons:
+
 - **The output is reviewable.** You can read `agent-profiles/reviewer.md` and verify that it contains what you expect before it reaches a production agent.
 - **The output is static.** A compiled profile doesn't have runtime dependencies. You don't need to run Praxis in your agent infrastructure.
 - **Compile-time errors are caught early.** Missing references fail at compile time, not silently at runtime.
@@ -42,6 +44,7 @@ The tradeoff is that you must recompile after any content change. The `--watch` 
 The same file that documents a directory's purpose also defines the validation criteria for that directory. This is a deliberate choice, not a limitation.
 
 One file means:
+
 - Specs are always where you expect them
 - Documentation and enforcement are synchronized — they can't drift from each other
 - There is no separate "spec format" to learn
@@ -63,6 +66,7 @@ The tradeoff is that LLM validation requires an API key, costs money per call, a
 Each expert compiles to one standalone file. There is no "shared context" that is loaded at runtime — everything is inlined.
 
 This simplifies deployment:
+
 - The file is self-contained
 - No runtime dependency on Praxis or the source documents
 - No file system access required at agent invocation time
@@ -73,7 +77,7 @@ The tradeoff is file size — an expert with many shared constitution docs will 
 
 Praxis produces markdown. It does not have a runtime SDK, an agent execution library, or an API client.
 
-This was deliberate. The problem Praxis solves is *authoring and maintaining structured knowledge* — not *running agents*. Coupling the knowledge compiler to a runtime would narrow what you can use the output for.
+This was deliberate. The problem Praxis solves is _authoring and maintaining structured knowledge_ — not _running agents_. Coupling the knowledge compiler to a runtime would narrow what you can use the output for.
 
 Use the compiled profiles with any platform: Claude Code, the Anthropic API, OpenAI, Gemini, a custom RAG system, or a document in a wiki.
 

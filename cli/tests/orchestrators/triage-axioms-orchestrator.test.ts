@@ -9,7 +9,7 @@ import { triageAxiomsOrchestrator } from "@/orchestrators/triage-axioms-orchestr
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
-import { seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
@@ -28,19 +28,14 @@ afterEach(() => {
   while (cleanups.length) cleanups.pop()?.();
 });
 
-/** One open-channel critique line for the seeded run. */
-function critiqueLine(id: string, text: string): string {
-  return JSON.stringify({
-    kind: "critique",
-    id,
-    run_id: "r1",
-    timestamp: "2026-09-02T10:00:00.000Z",
-    file_path: "docs/guide.md",
-    spec_path: "docs/README.md",
-    severity: "error",
+/** One open-channel critique on the guide, for the seeded run. */
+function guideCritique(seq: number, text: string): string {
+  return critiqueLine({
+    runId: "r1",
+    seq,
+    filePath: "docs/guide.md",
+    specPath: "docs/README.md",
     text,
-    reviewer_name: "flash",
-    axiom_id: null,
   });
 }
 
@@ -62,9 +57,9 @@ function triageProject(plan: Parameters<typeof curatorProviderModule>[0]): strin
     name: "flash",
     hash: "aaaa1111",
     extraLines: [
-      critiqueLine("r1:1", "Error message 'bad subject' names nothing."),
-      critiqueLine("r1:2", "Error text 'error' is not consumer-grade."),
-      critiqueLine("r1:3", "Recommended an async queue."),
+      guideCritique(1, "Error message 'bad subject' names nothing."),
+      guideCritique(2, "Error text 'error' is not consumer-grade."),
+      guideCritique(3, "Recommended an async queue."),
     ],
   });
 

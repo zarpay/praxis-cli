@@ -76,6 +76,13 @@ export default async function reviewAll({
     })),
   );
 
+  const specUnits: Record<string, number> = {};
+
+  for (const { domain } of queue) {
+    const spec = relativePath(root, domain.specPath);
+    specUnits[spec] = (specUnits[spec] ?? 0) + 1;
+  }
+
   const verdicts: TargetVerdict[] = [];
   const cacheStats = { hits: 0, misses: 0 };
   const total = queue.length * reviewers.length;
@@ -130,6 +137,7 @@ export default async function reviewAll({
         trigger: "manual",
         scope: "corpus",
         entries,
+        specUnits,
       });
     }
   }

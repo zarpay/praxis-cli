@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
 import reviewNamedService from "@/services/review-named-service.js";
+import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import {
   OPENROUTER_URL,
   createOpenRouterServer,
@@ -199,18 +200,10 @@ describe("reviewNamedService", () => {
       config: PraxisConfig;
       abs: (rel: string) => string;
     } {
-      const axiom = [
-        "---",
-        "id: AX-aaaa11",
-        "version: 2",
-        "status: active",
-        "severity: warning",
-        "grounded_in: specs/README.md#titles",
-        "introduced: 2026-08-29",
-        "---",
-        "",
-        "Titles say what the document is about.",
-      ].join("\n");
+      const axiom = axiomContent(
+        { version: "2", severity: "warning", grounded_in: "specs/README.md#titles" },
+        { statement: "Titles say what the document is about." },
+      );
 
       const { root, abs, cleanup } = createValidatorTmpdir({
         sources: ["specs"],

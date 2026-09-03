@@ -5,10 +5,11 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import { AxiomFile } from "@/models/axiom-file.js";
 import { Ledger } from "@/models/ledger.js";
 import { ratifyAxiomOrchestrator } from "@/orchestrators/ratify-axiom-orchestrator.js";
+import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
-import { seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
@@ -27,25 +28,10 @@ afterEach(() => {
   while (cleanups.length) cleanups.pop()?.();
 });
 
-const PROPOSAL = [
-  "---",
-  "id: AX-aaaa11",
-  "version: 1",
-  "status: proposed",
-  "severity: warning",
-  "introduced: 2026-09-03",
-  "---",
-  "",
-  "Error messages name what would be accepted instead.",
-  "",
-  "## Violating example",
-  "",
-  "bad subject",
-  "",
-  "## Compliant example",
-  "",
-  "subject must be a non-empty string",
-].join("\n");
+const PROPOSAL = axiomContent(
+  { status: "proposed", severity: "warning", grounded_in: null, introduced: "2026-09-03" },
+  { statement: "Error messages name what would be accepted instead." },
+);
 
 /** A project holding the proposal, its supporting evidence, and a scripted curator. */
 function ratifyProject(plan: Parameters<typeof curatorProviderModule>[0]): string {
@@ -64,17 +50,13 @@ function ratifyProject(plan: Parameters<typeof curatorProviderModule>[0]): strin
   seedLedgerRun(root, {
     name: "flash",
     hash: "aaaa1111",
+    runId: "r1",
     extraLines: [
-      JSON.stringify({
-        kind: "critique",
-        id: "r1:1",
-        run_id: "r1",
-        file_path: "docs/guide.md",
-        spec_path: "docs/README.md",
-        severity: "error",
+      critiqueLine({
+        runId: "r1",
+        filePath: "docs/guide.md",
+        specPath: "docs/README.md",
         text: "Error message 'bad subject' names nothing.",
-        reviewer_name: "flash",
-        axiom_id: null,
       }),
     ],
   });
