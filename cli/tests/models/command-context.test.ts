@@ -14,10 +14,10 @@ afterEach(() => {
 });
 
 /** A throwaway project root with a .praxis/ marker and a config. */
-function makeProject(config: object = {}): string {
+function makeProject(cfg: object = {}): string {
   const dir = join(tmpdir(), `praxis-ctx-test-${randomUUID()}`);
   mkdirSync(join(dir, ".praxis"), { recursive: true });
-  writeFileSync(join(dir, ".praxis", "config.json"), JSON.stringify(config));
+  writeFileSync(join(dir, ".praxis", "config.json"), JSON.stringify(cfg));
   dirs.push(dir);
 
   return dir;
@@ -38,14 +38,14 @@ describe("CommandContext", () => {
     expect(ctx.root).toBe(dir);
   });
 
-  it("reads config lazily from the project root", () => {
+  it("reads cfg lazily from the project root", () => {
     const dir = makeProject({ expertsDir: "people" });
     const ctx = new CommandContext({ paths: new Paths(dir) });
 
     expect(ctx.config.expertsDir).toBe(join(dir, "people"));
   });
 
-  it("reads the config file once — later edits are invisible to this context", () => {
+  it("reads the cfg file once — later edits are invisible to this context", () => {
     const dir = makeProject({ expertsDir: "people" });
     const ctx = new CommandContext({ paths: new Paths(dir) });
     const first = ctx.config;

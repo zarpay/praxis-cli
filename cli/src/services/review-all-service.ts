@@ -44,22 +44,22 @@ import { VerdictStore } from "@/stores/verdict-store.js";
  * @throws PraxisError only when `type` matches no discovered domain
  */
 const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = async (
-  config,
+  cfg,
   { reviewers, useCache = true, failFast = false, ledger = true, type, onProgress },
 ) => {
-  const root = config.root;
-  const domains = selectDomains(discoverDomainsService(config, {}), type);
+  const root = cfg.root;
+  const domains = selectDomains(discoverDomainsService(cfg, {}), type);
 
   // Each reviewer gets its own cache bound to its identity: verdicts share
   // one file per target, keyed by (spec, reviewer) so they never collide.
   const caches = reviewers.map((reviewer) =>
     useCache
-      ? new VerdictStore(config, { reviewer: Reviewer.fromConfig(reviewer).cacheIdentity() })
+      ? new VerdictStore(cfg, { reviewer: Reviewer.fromConfig(reviewer).cacheIdentity() })
       : null,
   );
 
   const queue = domains.flatMap((domain) =>
-    resolveUnitsService(config, { domain }).map((unit) => ({ unit, domain })),
+    resolveUnitsService(cfg, { domain }).map((unit) => ({ unit, domain })),
   );
 
   const specUnits: Record<string, number> = {};
@@ -92,7 +92,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
         reviewerName: reviewers.length > 1 ? reviewerConfig.name : undefined,
       });
 
-      const { verdict, cacheHit, evidence } = await reviewUnit(config, {
+      const { verdict, cacheHit, evidence } = await reviewUnit(cfg, {
         unit,
         specPath: domain.specPath,
         type: domain.type,
@@ -115,7 +115,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
     }
 
     if (ledger && entries.length > 0) {
-      writeLedgerRunService(config, {
+      writeLedgerRunService(cfg, {
         reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
         trigger: "manual",
         scope: "corpus",
@@ -125,7 +125,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
     }
   }
 
-  const documentStore = new DocumentStore(config);
+  const documentStore = new DocumentStore(cfg);
   const sourceDocs = new Set(documentStore.paths());
 
   return {
@@ -175,8 +175,8 @@ const reviewUnit: Service<
     cacheHit: boolean;
     evidence: LedgerEvidence | null;
   }>
-> = async (config, { unit, specPath, type, reviewerConfig, cache, onProgress }) => {
-  const root = config.root;
+> = async (cfg, { unit, specPath, type, reviewerConfig, cache, onProgress }) => {
+  const root = cfg.root;
   const identity = {
     path: unit.path,
     type,
@@ -192,10 +192,10 @@ const reviewUnit: Service<
       kind: cohort ? "cohort" : "file",
       specPath,
       root,
-      checklistFor: (spec) => new AxiomStore(config).checklistFor(spec),
+      checklistFor: (spec) => new AxiomStore(cfg).checklistFor(spec),
     });
 
-    const { verdict, cacheHit, usage } = await reviewTargetService(config, {
+    const { verdict, cacheHit, usage } = await reviewTargetService(cfg, {
       target,
       reviewer: Reviewer.fromConfig(reviewerConfig),
       cache,

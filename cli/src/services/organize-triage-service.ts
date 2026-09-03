@@ -25,10 +25,10 @@ import requestCuratorCompletionService from "@/services/request-curator-completi
  * corrupt an assignment.
  */
 const organizeTriageService: Service<OrganizeTriageInput, Promise<TriageOrganization>> = async (
-  config,
+  cfg,
   input,
 ) => {
-  const completion = await requestCuratorCompletionService(config, {
+  const completion = await requestCuratorCompletionService(cfg, {
     systemPrompt: curatorSystemPrompt(),
     userPrompt: triageQuestion(input),
     tools: triageTools(),

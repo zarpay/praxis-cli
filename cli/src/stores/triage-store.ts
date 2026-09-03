@@ -19,8 +19,8 @@ import { TriageSessionFile } from "@/models/triage-session-file.js";
 export class TriageStore {
   private readonly triageDir: string;
 
-  constructor(config: PraxisConfig) {
-    this.triageDir = joinPath(config.root, ".praxis", "ledger", "triage");
+  constructor(cfg: PraxisConfig) {
+    this.triageDir = joinPath(cfg.root, ".praxis", "ledger", "triage");
   }
 
   /** Every triage decision on record, across all session files. */

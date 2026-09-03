@@ -28,21 +28,21 @@ import { RunStore } from "@/stores/run-store.js";
  * an eval-only project gets validation state and nothing else, because
  * it has no taxonomy to be asked about.
  */
-const buildStatusReportService: Service<NoInput, Promise<StatusReport>> = async (config) => {
-  const validation = tallyValidationService(config, {});
-  const evalState = evalStateOf(config);
+const buildStatusReportService: Service<NoInput, Promise<StatusReport>> = async (cfg) => {
+  const validation = tallyValidationService(cfg, {});
+  const evalState = evalStateOf(cfg);
 
-  if (!exists(config.expertsDir)) {
+  if (!exists(cfg.expertsDir)) {
     return evalOnlyReport(validation, evalState);
   }
 
-  const expertStore = new ExpertStore(config);
-  const practiceStore = new PracticeStore(config);
-  const documentStore = new DocumentStore(config);
+  const expertStore = new ExpertStore(cfg);
+  const practiceStore = new PracticeStore(cfg);
+  const documentStore = new DocumentStore(cfg);
 
   const expertFiles = expertStore.files();
   const counts = documentStore.countsByType();
-  const audit = await auditExpertsService(config, { expertFiles });
+  const audit = await auditExpertsService(cfg, { expertFiles });
 
   const findings = {
     orphanedPractices: practiceStore.orphans(audit.referencedPractices),
@@ -106,11 +106,11 @@ function evalOnlyReport(
 }
 
 /** The situational-poll facts (09-ae), derived from the stores. */
-function evalStateOf(config: PraxisConfig): StatusReport["evalState"] {
-  const { axioms } = new AxiomStore(config).all();
-  const state = deriveTriageStateService(config, {});
-  const runs = new RunStore(config).runs();
-  const boundaries = detectEpochBoundariesService(config, { reviewers: config.reviewers });
+function evalStateOf(cfg: PraxisConfig): StatusReport["evalState"] {
+  const { axioms } = new AxiomStore(cfg).all();
+  const state = deriveTriageStateService(cfg, {});
+  const runs = new RunStore(cfg).runs();
+  const boundaries = detectEpochBoundariesService(cfg, { reviewers: cfg.reviewers });
 
   const lastRun = runs.map((run) => run.timestamp).sort()[runs.length - 1] ?? null;
 

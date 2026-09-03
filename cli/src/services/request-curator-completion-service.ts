@@ -23,13 +23,13 @@ import resolveProviderService from "@/services/resolve-provider-service.js";
 const requestCuratorCompletionService: Service<
   RequestCuratorCompletionInput,
   Promise<ProviderCompletion>
-> = async (config, { systemPrompt, userPrompt, tools }) => {
-  const curator = config.curator;
+> = async (cfg, { systemPrompt, userPrompt, tools }) => {
+  const curator = cfg.curator;
 
   if (!curator) throw errors.curatorNotConfigured();
 
   const identity = Reviewer.fromConfig({ name: "curator", ...curator });
-  const provider = await resolveProviderService(config, { spec: identity.provider });
+  const provider = await resolveProviderService(cfg, { spec: identity.provider });
 
   if (!provider.complete) {
     throw errors.providerCannotComplete(provider.name);

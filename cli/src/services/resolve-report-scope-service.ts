@@ -16,11 +16,11 @@ import { RunStore } from "@/stores/run-store.js";
  * squash workflows orphan branch shas by policy.
  */
 const resolveReportScopeService: Service<ResolveReportScopeInput, ScopedLedger> = (
-  config,
+  cfg,
   { target, since, branch, commit, commits },
 ) => {
-  const root = config.root;
-  const runStore = new RunStore(config);
+  const root = cfg.root;
+  const runStore = new RunStore(cfg);
   const allRuns = runStore.runs();
 
   const requestedShas = commit ? [commit, ...(commits ?? [])] : (commits ?? null);

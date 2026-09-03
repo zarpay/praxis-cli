@@ -29,11 +29,11 @@ export const initProjectOrchestrator: Orchestrator<InitProjectOptions> = async (
 
   // Init runs before the project's config exists, so it builds the
   // new project's default config in memory rather than asking ctx.
-  const config = PraxisConfig.inMemory(targetDir);
+  const cfg = PraxisConfig.inMemory(targetDir);
 
   // "eval" holds the minimal .praxis/ tree; "core" adds the spec-layer
   // authoring taxonomy (experts, practices, context).
-  const { created, skipped } = copyScaffoldService(config, {
+  const { created, skipped } = copyScaffoldService(cfg, {
     sourceDir: joinPath(scaffoldDir, specLayer ? "core" : "eval"),
     targetDir,
   });

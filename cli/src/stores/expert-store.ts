@@ -26,11 +26,11 @@ export class ExpertStore {
   private readonly specFilePattern: string;
   private readonly ignore: string[];
 
-  constructor(config: PraxisConfig) {
-    this.root = config.root;
-    this.expertsDir = config.expertsDir;
-    this.specFilePattern = config.specFilePattern;
-    this.ignore = config.absoluteIgnore;
+  constructor(cfg: PraxisConfig) {
+    this.root = cfg.root;
+    this.expertsDir = cfg.expertsDir;
+    this.specFilePattern = cfg.specFilePattern;
+    this.ignore = cfg.absoluteIgnore;
   }
 
   /** Absolute paths of every expert document, sorted. */

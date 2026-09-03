@@ -20,7 +20,7 @@ describe("compileExpertsService", () => {
   let cleanup: () => void;
   let logOutput: () => string;
   let logger: Logger;
-  let config: PraxisConfig;
+  let cfg: PraxisConfig;
   let plugins: CompilerPlugin[];
 
   beforeEach(() => {
@@ -34,13 +34,13 @@ describe("compileExpertsService", () => {
     const capture = createCaptureLogger();
     logger = capture.logger;
     logOutput = capture.output;
-    config = new PraxisConfig(tmpdir);
-    plugins = resolvePluginsService(config, { logger });
+    cfg = new PraxisConfig(tmpdir);
+    plugins = resolvePluginsService(cfg, { logger });
   });
 
   /** Compiles one expert, routing its warnings to the capture logger. */
   async function compileFile(expertFile: string) {
-    const result = await compileExpertService(config, { expertFile, plugins });
+    const result = await compileExpertService(cfg, { expertFile, plugins });
 
     for (const message of result.warnings) logger.warn(message);
 
@@ -49,7 +49,7 @@ describe("compileExpertsService", () => {
 
   /** Compiles every expert, routing warnings and skips to the capture logger. */
   async function compileAll() {
-    return compileExpertsService(config, {
+    return compileExpertsService(cfg, {
       plugins,
       onProgress: (event) => {
         if (event.kind === "warning") logger.warn(event.message);
@@ -354,7 +354,7 @@ describe("compileExpertsService", () => {
     });
   });
 
-  describe("config-driven output", () => {
+  describe("cfg-driven output", () => {
     it("writes pure profiles without frontmatter to agentProfilesDir", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 

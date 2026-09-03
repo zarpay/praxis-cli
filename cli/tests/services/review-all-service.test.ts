@@ -46,13 +46,13 @@ function useErrorFixture(): void {
 describe("reviewAllService", () => {
   let tmpdir: string;
   let cleanup: () => void;
-  let config: PraxisConfig;
+  let cfg: PraxisConfig;
 
   beforeAll(() => {
     const ctx = createCompilerTmpdir();
     tmpdir = ctx.tmpdir;
     cleanup = ctx.cleanup;
-    config = new PraxisConfig(tmpdir);
+    cfg = new PraxisConfig(tmpdir);
     process.env["OPENROUTER_API_KEY"] = "test-key";
   });
 
@@ -64,19 +64,19 @@ describe("reviewAllService", () => {
   describe("reviewers", () => {
     it("reviewers with every reviewer it is given", async () => {
       useCompliantFixture();
-      const run = await reviewAllService(config, {
+      const run = await reviewAllService(cfg, {
         useCache: false,
-        reviewers: config.reviewers,
+        reviewers: cfg.reviewers,
       });
       const reviewerNames = [...new Set(run.verdicts.map((r) => r.reviewer))];
 
-      expect(reviewerNames).toEqual(config.reviewers.map((j) => j.name));
+      expect(reviewerNames).toEqual(cfg.reviewers.map((j) => j.name));
     });
 
     it("reviewers with only the reviews it is given", async () => {
       useCompliantFixture();
-      const only = config.reviewers.slice(0, 1);
-      const run = await reviewAllService(config, {
+      const only = cfg.reviewers.slice(0, 1);
+      const run = await reviewAllService(cfg, {
         useCache: false,
         reviewers: only,
       });
@@ -90,7 +90,7 @@ describe("reviewAllService", () => {
     it("validates documents across all types", async () => {
       useCompliantFixture();
 
-      const run = await reviewAllService(config, {
+      const run = await reviewAllService(cfg, {
         useCache: false,
         reviewers: [TEST_REVIEWER],
       });
@@ -106,7 +106,7 @@ describe("reviewAllService", () => {
     it("reviewers only documents of the specified type", async () => {
       useCompliantFixture();
 
-      const run = await reviewAllService(config, {
+      const run = await reviewAllService(cfg, {
         useCache: false,
         reviewers: [TEST_REVIEWER],
         type: "experts",
@@ -117,7 +117,7 @@ describe("reviewAllService", () => {
     });
 
     it("throws for an unknown document type", async () => {
-      const run = reviewAllService(config, {
+      const run = reviewAllService(cfg, {
         useCache: false,
         reviewers: [TEST_REVIEWER],
         type: "bogus",
@@ -133,7 +133,7 @@ describe("reviewAllService", () => {
     it("stops on first error when fail-fast is enabled", async () => {
       useErrorFixture();
 
-      const run = await reviewAllService(config, {
+      const run = await reviewAllService(cfg, {
         failFast: true,
         useCache: false,
         reviewers: [TEST_REVIEWER],
@@ -937,7 +937,7 @@ describe("reviewAllService", () => {
     it("aggregates results correctly", async () => {
       useCompliantFixture();
 
-      const run = await reviewAllService(config, {
+      const run = await reviewAllService(cfg, {
         useCache: false,
         reviewers: [TEST_REVIEWER],
       });

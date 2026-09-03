@@ -22,7 +22,7 @@ import { baseName } from "@/helpers/paths-helper.js";
  * @returns One entry per input pattern, in declaration order
  */
 const expandGlobsService: Service<ExpandGlobsInput, Promise<GlobExpansion[]>> = (
-  config,
+  cfg,
   { patterns },
 ) => {
   return Promise.all(
@@ -31,12 +31,12 @@ const expandGlobsService: Service<ExpandGlobsInput, Promise<GlobExpansion[]>> = 
         return { pattern, isGlob: false, matches: [pattern] };
       }
 
-      const matched = await fg(pattern, { cwd: config.root, onlyFiles: true });
+      const matched = await fg(pattern, { cwd: cfg.root, onlyFiles: true });
 
       return {
         pattern,
         isGlob: true,
-        matches: matched.filter((match) => !isExcluded(match, config.specFilePattern)).sort(),
+        matches: matched.filter((match) => !isExcluded(match, cfg.specFilePattern)).sort(),
       };
     }),
   );

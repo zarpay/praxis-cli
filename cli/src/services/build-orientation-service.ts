@@ -10,10 +10,10 @@ import { RunStore } from "@/stores/run-store.js";
  * glance — the entry point for a human returning after a week, and an
  * agent's cheapest situational poll's human twin.
  */
-const buildOrientationService: Service<NoInput, Orientation> = (config) => {
-  const runs = new RunStore(config).runs().sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-  const state = deriveTriageStateService(config, {});
-  const { axioms } = new AxiomStore(config).all();
+const buildOrientationService: Service<NoInput, Orientation> = (cfg) => {
+  const runs = new RunStore(cfg).runs().sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  const state = deriveTriageStateService(cfg, {});
+  const { axioms } = new AxiomStore(cfg).all();
 
   const last = runs[runs.length - 1];
   const lastRun =

@@ -92,7 +92,8 @@ file, one typed function, one source.
 
 **Services and orchestrators are functions, not classes.** One file, one
 default-exported function. An orchestrator takes `(ctx, options)`; a service
-takes `(config, input)` — `PraxisConfig` first, the one scope object every
+takes `(cfg, input)` — `PraxisConfig` first (spelled `cfg`, the way the
+context is `ctx`), the one scope object every
 layer may hold, then the work's own input, both declared in `src/types.ts`.
 Project facts (root, sources, specFilePattern, ignore, reviewers, curator)
 ride in the config and never reappear as input fields; the input carries only
@@ -135,7 +136,7 @@ convention, each applied to the exported const: `CommandRegistrar`
 calls, and `Service<In, Out>` for what that delegates to. That fixes the
 arity, so an orchestrator taking no options is still called with `{}` —
 `analyzeProject(ctx, {})` — and a service with no input likewise —
-`buildStatusReportService(config, {})` — one call shape across every layer. They are all `async`, which gives `prepareOrchestrator` one shape to
+`buildStatusReportService(cfg, {})` — one call shape across every layer. They are all `async`, which gives `prepareOrchestrator` one shape to
 await and one channel for failures: a non-async function returning
 `Promise.resolve()` throws synchronously, which is a second signature in disguise.
 

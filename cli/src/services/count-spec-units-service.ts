@@ -13,13 +13,13 @@ import resolveUnitsService from "@/services/resolve-units-service.js";
  * for current-stock denominators. Keys are project-relative spec paths,
  * matching how critique records name their specs.
  */
-const countSpecUnitsService: Service<NoInput, Record<string, number>> = (config) => {
+const countSpecUnitsService: Service<NoInput, Record<string, number>> = (cfg) => {
   const counts: Record<string, number> = {};
 
-  for (const domain of discoverDomainsService(config, {})) {
-    const units = resolveUnitsService(config, { domain });
+  for (const domain of discoverDomainsService(cfg, {})) {
+    const units = resolveUnitsService(cfg, { domain });
 
-    counts[relativePath(config.root, domain.specPath)] = units.length;
+    counts[relativePath(cfg.root, domain.specPath)] = units.length;
   }
 
   return counts;

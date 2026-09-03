@@ -6,7 +6,7 @@ describe("initView", () => {
   const lines = initView({
     created: [".praxis/config.json", "experts/README.md", "experts/stewart.md"],
     skipped: 1,
-    nextSteps: ["  1. Edit config"],
+    nextSteps: ["  1. Edit cfg"],
   });
 
   it("confirms each created file on its own line", () => {
@@ -24,6 +24,6 @@ describe("initView", () => {
   it("carries the next steps as printable content", () => {
     const content = lines.find((line) => line.channel === "content");
 
-    expect(content && "entries" in content && content.entries).toContain("  1. Edit config");
+    expect(content && "entries" in content && content.entries).toContain("  1. Edit cfg");
   });
 });

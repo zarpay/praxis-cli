@@ -33,12 +33,12 @@ describe("watchAndCompileService", () => {
     const capture = createCaptureLogger();
     logger = capture.logger;
     logOutput = capture.output;
-    const config = new PraxisConfig(tmpdir);
+    const cfg = new PraxisConfig(tmpdir);
 
     // The command renders these events; the test captures them the same way.
     watch = (debounceMs) =>
-      watchAndCompileService(config, {
-        plugins: resolvePluginsService(config, { logger }),
+      watchAndCompileService(cfg, {
+        plugins: resolvePluginsService(cfg, { logger }),
         debounceMs,
         onWatch: (dir) => logger.info(`Watching ${dir} for changes...`),
         onRecompile: (filename) =>

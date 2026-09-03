@@ -13,10 +13,10 @@ import evalTargetingTemplate from "@/templates/eval-targeting-template.js";
  * `validates:` compiles through as `paths:` here.
  */
 const writeProfileOutputsService: Service<WriteProfileOutputsInput, void> = (
-  config,
+  cfg,
   { profile, metadata, alias, plugins },
 ) => {
-  const agentProfilesOutputDir = config.agentProfilesOutputDir;
+  const agentProfilesOutputDir = cfg.agentProfilesOutputDir;
 
   if (agentProfilesOutputDir) {
     const targeting = metadata ? evalTargetingTemplate(metadata) : [];

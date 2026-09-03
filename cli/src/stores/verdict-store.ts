@@ -45,7 +45,7 @@ export class VerdictStore {
   private readonly projectRoot: string;
 
   constructor(
-    config: PraxisConfig,
+    cfg: PraxisConfig,
     {
       reviewer,
     }: {
@@ -53,8 +53,8 @@ export class VerdictStore {
       reviewer?: CacheReviewerIdentity;
     } = {},
   ) {
-    this.projectRoot = config.root;
-    this.root = joinPath(config.root, ".praxis/cache/validation");
+    this.projectRoot = cfg.root;
+    this.root = joinPath(cfg.root, ".praxis/cache/validation");
     this.reviewer = reviewer ?? UNBOUND;
   }
 

@@ -27,11 +27,11 @@ export class DocumentStore {
   private readonly specFilePattern: string;
   private readonly ignore: string[];
 
-  constructor(config: PraxisConfig) {
-    this.root = config.root;
-    this.sources = config.sources;
-    this.specFilePattern = config.specFilePattern;
-    this.ignore = config.absoluteIgnore;
+  constructor(cfg: PraxisConfig) {
+    this.root = cfg.root;
+    this.sources = cfg.sources;
+    this.specFilePattern = cfg.specFilePattern;
+    this.ignore = cfg.absoluteIgnore;
   }
 
   /** Absolute paths of every document across the source directories. */

@@ -14,8 +14,8 @@ import { testConfig } from "@tests/helpers/test-config.js";
 const FLASH: ReviewerConfig = { name: "flash", model: "some/model", apiKeyEnvVar: "KEY" };
 
 /** The hash the reviewer would write to the ledger today. */
-function currentHash(config: ReviewerConfig): string {
-  return Reviewer.fromConfig(config).cacheIdentity().hash;
+function currentHash(cfg: ReviewerConfig): string {
+  return Reviewer.fromConfig(cfg).cacheIdentity().hash;
 }
 
 describe("detectEpochBoundariesService", () => {

@@ -20,11 +20,11 @@ import expandGlobsService from "@/services/expand-globs-service.js";
 const inlineReferencesService: Service<
   InlineReferencesInput,
   Promise<InlineReferencesResult>
-> = async (config, { patterns, missingLabel }) => {
+> = async (cfg, { patterns, missingLabel }) => {
   const bodies: string[] = [];
   const warnings: string[] = [];
 
-  const expansions = await expandGlobsService(config, { patterns });
+  const expansions = await expandGlobsService(cfg, { patterns });
 
   for (const { pattern, isGlob, matches } of expansions) {
     if (isGlob && matches.length === 0) {
@@ -32,7 +32,7 @@ const inlineReferencesService: Service<
     }
 
     for (const relPath of matches) {
-      const fullPath = joinPath(config.root, relPath);
+      const fullPath = joinPath(cfg.root, relPath);
 
       if (!exists(fullPath)) {
         warnings.push(`${missingLabel}: ${relPath}`);

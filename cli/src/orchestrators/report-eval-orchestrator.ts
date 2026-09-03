@@ -14,9 +14,9 @@ import evalReportView from "@/views/eval-report-view.js";
  * switches to the single-axiom drill-down.
  */
 export const reportEvalOrchestrator: Orchestrator<EvalReportOptions> = async (ctx, options) => {
-  const { config } = ctx;
+  const cfg = ctx.config;
 
-  const scoped = resolveReportScopeService(config, {
+  const scoped = resolveReportScopeService(cfg, {
     target: options.target,
     since: options.since,
     branch: options.branch,
@@ -25,7 +25,7 @@ export const reportEvalOrchestrator: Orchestrator<EvalReportOptions> = async (ct
   });
 
   if (options.axiom) {
-    const report = buildAxiomReportService(config, { scoped, axiomId: options.axiom });
+    const report = buildAxiomReportService(cfg, { scoped, axiomId: options.axiom });
     const view = axiomReportView({ ...report, json: options.json ?? false });
 
     ctx.render(view);
@@ -33,7 +33,7 @@ export const reportEvalOrchestrator: Orchestrator<EvalReportOptions> = async (ct
     return "ok";
   }
 
-  const report = buildEvalReportService(config, { scoped });
+  const report = buildEvalReportService(cfg, { scoped });
   const view = evalReportView({ ...report, json: options.json ?? false });
 
   ctx.render(view);

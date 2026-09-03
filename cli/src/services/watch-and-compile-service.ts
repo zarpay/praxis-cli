@@ -17,13 +17,13 @@ import compileExpertsService from "@/services/compile-experts-service.js";
  *   watching close them
  */
 const watchAndCompileService: Service<WatchAndCompileInput, FSWatcher[]> = (
-  config,
+  cfg,
   { debounceMs = 300, onWatch, onRecompile, onError, ...compile },
 ) => {
   let timer: ReturnType<typeof setTimeout> | null = null;
 
-  return config.sources.map((source) => {
-    const sourceDir = resolvePath(config.root, source);
+  return cfg.sources.map((source) => {
+    const sourceDir = resolvePath(cfg.root, source);
 
     onWatch?.(sourceDir);
 
@@ -33,7 +33,7 @@ const watchAndCompileService: Service<WatchAndCompileInput, FSWatcher[]> = (
       timer = setTimeout(async () => {
         try {
           onRecompile?.(filename);
-          await compileExpertsService(config, compile);
+          await compileExpertsService(cfg, compile);
         } catch (err) {
           onError?.(err instanceof Error ? err.message : String(err));
         }

@@ -11,7 +11,7 @@ import { joinPath } from "@/helpers/paths-helper.js";
  * re-run and reports exactly what it added.
  */
 const copyScaffoldService: Service<CopyScaffoldInput, CopyScaffoldResult> = (
-  _config,
+  _cfg,
   { sourceDir, targetDir },
 ) => {
   const created: string[] = [];

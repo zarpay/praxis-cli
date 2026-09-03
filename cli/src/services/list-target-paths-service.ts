@@ -11,12 +11,10 @@ import resolveUnitsService from "@/services/resolve-units-service.js";
  * verdict. It asks the eval layer rather than guessing, so the number
  * can never drift from what a run actually covers.
  */
-const listTargetPathsService: Service<NoInput, string[]> = (config) => {
-  const domains = discoverDomainsService(config, {});
+const listTargetPathsService: Service<NoInput, string[]> = (cfg) => {
+  const domains = discoverDomainsService(cfg, {});
 
-  return domains.flatMap((domain) =>
-    resolveUnitsService(config, { domain }).map((unit) => unit.path),
-  );
+  return domains.flatMap((domain) => resolveUnitsService(cfg, { domain }).map((unit) => unit.path));
 };
 
 export default listTargetPathsService;

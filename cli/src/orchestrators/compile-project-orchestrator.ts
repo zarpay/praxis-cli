@@ -24,27 +24,28 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
   ctx,
   { alias, watch = false },
 ) => {
-  const { config, logger } = ctx;
+  const { logger } = ctx;
+  const cfg = ctx.config;
 
   // Plugins are constructed once per invocation, not per expert: the
   // Claude Code plugin writes its manifest on first compile and must not
   // repeat it for every agent.
   const input = {
-    plugins: resolvePluginsService(config, { logger }),
+    plugins: resolvePluginsService(cfg, { logger }),
     onProgress: (event: CompileProgress) => ctx.render(compileProgressView(event)),
   };
 
   // When an alias is given, compile only that expert and skip the watch mode.
   // Otherwise, compile every expert and optionally watch for changes.
   if (alias) {
-    const store = new ExpertStore(config);
+    const store = new ExpertStore(cfg);
     const expert = store.byAlias(alias);
 
     if (!expert) {
       throw errors.expertNotFound(alias);
     }
 
-    const result = await compileExpertService(config, {
+    const result = await compileExpertService(cfg, {
       plugins: input.plugins,
       expertFile: expert.path,
     });
@@ -57,7 +58,7 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
     return "ok";
   }
 
-  const { compiled } = await compileExpertsService(config, input);
+  const { compiled } = await compileExpertsService(cfg, input);
 
   const view = compileResultView({ compiled });
   ctx.render(view);
@@ -82,7 +83,7 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
     ctx.render(view);
   };
 
-  watchAndCompileService(config, {
+  watchAndCompileService(cfg, {
     ...input,
     onWatch,
     onRecompile,

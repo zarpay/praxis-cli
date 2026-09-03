@@ -31,11 +31,12 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
   ctx,
   { id, yes = false, reject, spec },
 ) => {
-  const { root, config } = ctx;
+  const { root } = ctx;
+  const cfg = ctx.config;
 
-  if (!config.curator) throw errors.curatorNotConfigured();
+  if (!cfg.curator) throw errors.curatorNotConfigured();
 
-  const store = new AxiomStore(config);
+  const store = new AxiomStore(cfg);
   const { axioms } = store.all();
   const proposal = axioms.find((axiom) => axiom.id === id && axiom.status === "proposed");
 
@@ -43,7 +44,7 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
 
   if (reject !== undefined) {
     removeFile(proposal.path);
-    new TriageStore(config).appendSession([
+    new TriageStore(cfg).appendSession([
       { kind: "rejection", axiom_id: id, reason: reject, timestamp: new Date().toISOString() },
     ]);
     ctx.render([
@@ -62,12 +63,12 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
     throw errors.notATty("praxis axioms ratify", '--yes or --reject "<reason>"');
   }
 
-  const { assignments } = deriveTriageStateService(config, {});
+  const { assignments } = deriveTriageStateService(cfg, {});
   const supporting = assignments.filter((assignment) => assignment.axiom_id === id);
   const specPath =
     spec ??
     specFromSupport(
-      new RunStore(config),
+      new RunStore(cfg),
       supporting.map((record) => record.critique_id),
     );
 
@@ -90,13 +91,13 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
     throw errors.documentNotFound(specPath);
   }
 
-  const gate = await assessAxiomGateService(config, {
+  const gate = await assessAxiomGateService(cfg, {
     statement: proposal.statement(),
     violatingExample: proposal.violatingExample(),
     compliantExample: proposal.compliantExample(),
   });
 
-  const traceability = await assessTraceabilityService(config, {
+  const traceability = await assessTraceabilityService(cfg, {
     specPath,
     specContent: readText(specFile),
     statement: proposal.statement(),

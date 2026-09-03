@@ -12,7 +12,7 @@ import type { DeriveEpochsInput, Epoch, EpochSeries, LedgerRunRecord, Service } 
  * else is config or prompt surface. Rule 6's engine: nothing charts
  * across these boundaries, and each renders as a first-class event.
  */
-const deriveEpochsService: Service<DeriveEpochsInput, EpochSeries[]> = (_config, { runs }) => {
+const deriveEpochsService: Service<DeriveEpochsInput, EpochSeries[]> = (_cfg, { runs }) => {
   const byReviewer = new Map<string, LedgerRunRecord[]>();
 
   for (const run of [...runs].sort((a, b) => a.timestamp.localeCompare(b.timestamp))) {

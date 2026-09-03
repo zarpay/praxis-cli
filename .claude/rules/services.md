@@ -14,21 +14,22 @@ paths:
 - **One file, one default-exported `Service<In, Out>`.** Like an orchestrator,
   a service states its signature as the named type (`src/types.ts`) applied to
   an exported const: `const reviewProjectService: Service<ReviewProjectInput,
-  Promise<ReviewAllResult>> = async (config, input) => …`. A second export
+  Promise<ReviewAllResult>> = async (cfg, input) => …`. A second export
   means a second service and a second file.
 - **Importers bind the default to the filename in camelCase, suffix included** —
   `import reviewProjectService from "@/services/review-project-service.js"`,
   never `reviewProject`. The suffix is what lets a reader of an orchestrator or
   another service tell a service call from an in-file helper at the call site,
   the same way `…Orchestrator` and `…View` bindings already do.
-- **The config comes first, the work's own input second.** `PraxisConfig` is
+- **The config comes first — spelled `cfg`, the way the context is `ctx` —
+  and the work's own input second.** `PraxisConfig` is
   the one scope object every layer may hold: project facts (root, sources,
   specFilePattern, ignore, reviewers, curator, output dirs) ride in it and
   never reappear as input fields. The input carries only what is particular
   to this call — computed values (a selected reviewer list, a unit queue,
   records), overrides, callbacks. A service with no input of its own is
   still called with `{}` (the `NoInput` alias), and one that reads no
-  project facts names its first parameter `_config` — never the whole
+  project facts names its first parameter `_cfg` — never the whole
   `CommandContext`, whose output channels stay orchestrator-only.
 - The input and result are named types declared in `src/types.ts` — never an
   inline object literal in the signature, which is what lets a payload drift

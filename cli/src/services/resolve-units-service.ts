@@ -12,9 +12,9 @@ import { isContentFile } from "@/helpers/files-helper.js";
  * is nothing to review. `by_file` yields one unit per target file, from
  * `paths:` when declared, otherwise the spec's sibling .md files.
  */
-const resolveUnitsService: Service<ResolveUnitsInput, EvalUnit[]> = (config, { domain }) => {
-  const specFilePattern = config.specFilePattern;
-  const shielded = [...config.absoluteIgnore, ...domain.excludes, ...domain.exemplars];
+const resolveUnitsService: Service<ResolveUnitsInput, EvalUnit[]> = (cfg, { domain }) => {
+  const specFilePattern = cfg.specFilePattern;
+  const shielded = [...cfg.absoluteIgnore, ...domain.excludes, ...domain.exemplars];
 
   if (domain.cohort === "by_directory") {
     return (domain.targetDirs ?? [])

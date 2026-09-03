@@ -38,12 +38,12 @@ import { VerdictStore } from "@/stores/verdict-store.js";
  * @throws PraxisError when no reviewer is usable, or a target has no spec
  */
 const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> = async (
-  config,
+  cfg,
   { targets, spec, reviewer: only, useCache = true, ledger = true, onTarget },
 ) => {
-  const root = config.root;
-  const reviewers = selectReviewersService(config, { only });
-  const specStore = new SpecStore(config);
+  const root = cfg.root;
+  const reviewers = selectReviewersService(cfg, { only });
+  const specStore = new SpecStore(cfg);
   const specOverride = targets.length === 1 ? spec : undefined;
   const entriesByReviewer = new Map<string, LedgerEntry[]>();
   const specUnits: Record<string, number> = {};
@@ -56,7 +56,7 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
       targetPath,
       specPath: specOverride ?? specStore.governingPath(targetPath),
       root,
-      checklistFor: (resolvedSpec) => new AxiomStore(config).checklistFor(resolvedSpec),
+      checklistFor: (resolvedSpec) => new AxiomStore(cfg).checklistFor(resolvedSpec),
     });
 
     const specKey = relativePath(root, subject.specPath);
@@ -65,11 +65,11 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
     const verdicts: { reviewerName: string; verdict: Verdict }[] = [];
 
     for (const reviewerConfig of reviewers) {
-      const { verdict, cacheHit, usage } = await reviewTargetService(config, {
+      const { verdict, cacheHit, usage } = await reviewTargetService(cfg, {
         target: subject,
         reviewer: Reviewer.fromConfig(reviewerConfig),
         cache: useCache
-          ? new VerdictStore(config, {
+          ? new VerdictStore(cfg, {
               reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
             })
           : null,
@@ -113,7 +113,7 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
 
       if (!entries || entries.length === 0) continue;
 
-      writeLedgerRunService(config, {
+      writeLedgerRunService(cfg, {
         reviewer: Reviewer.fromConfig(reviewerConfig).cacheIdentity(),
         trigger: "manual",
         scope: "files",

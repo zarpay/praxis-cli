@@ -24,11 +24,11 @@ export class PracticeStore {
   private readonly specFilePattern: string;
   private readonly ignore: string[];
 
-  constructor(config: PraxisConfig) {
-    this.root = config.root;
-    this.practicesDir = config.practicesDir;
-    this.specFilePattern = config.specFilePattern;
-    this.ignore = config.absoluteIgnore;
+  constructor(cfg: PraxisConfig) {
+    this.root = cfg.root;
+    this.practicesDir = cfg.practicesDir;
+    this.specFilePattern = cfg.specFilePattern;
+    this.ignore = cfg.absoluteIgnore;
   }
 
   /** Absolute paths of every practice document, sorted. */

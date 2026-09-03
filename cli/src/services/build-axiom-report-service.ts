@@ -14,15 +14,15 @@ import { AxiomStore } from "@/stores/axiom-store.js";
  * @throws PraxisError when no axiom carries the id
  */
 const buildAxiomReportService: Service<BuildAxiomReportInput, AxiomReport> = (
-  config,
+  cfg,
   { scoped, axiomId },
 ) => {
-  const { axioms } = new AxiomStore(config).all();
+  const { axioms } = new AxiomStore(cfg).all();
   const axiom = axioms.find((candidate) => candidate.id === axiomId);
 
   if (!axiom) throw errors.axiomNotFound(axiomId);
 
-  const report = buildEvalReportService(config, { scoped });
+  const report = buildEvalReportService(cfg, { scoped });
   const evidenceRows = report.axioms.filter((row) => row.axiomId === axiomId);
 
   // An axiom nobody has violated in scope still reports: one empty row,

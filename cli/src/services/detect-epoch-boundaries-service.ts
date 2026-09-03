@@ -19,10 +19,10 @@ import { RunStore } from "@/stores/run-store.js";
  * boundary — a new instrument, not a change to one.
  */
 const detectEpochBoundariesService: Service<DetectEpochBoundariesInput, EpochBoundary[]> = (
-  config,
+  cfg,
   { reviewers },
 ) => {
-  const runs = new RunStore(config).runs();
+  const runs = new RunStore(cfg).runs();
   const boundaries: EpochBoundary[] = [];
 
   for (const reviewerConfig of reviewers) {

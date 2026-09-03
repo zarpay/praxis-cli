@@ -68,14 +68,14 @@ describe("reviewTargetService", () => {
     specPath,
     specFilePattern,
     root,
-    config = TEST_REVIEWER,
+    cfg = TEST_REVIEWER,
     cache = null,
   }: {
     targetPath?: string;
     specPath?: string;
     specFilePattern?: string;
     root?: string;
-    config?: ReviewerConfig;
+    cfg?: ReviewerConfig;
     cache?: VerdictStore | null;
   } = {}) {
     const projectConfig = testConfig(root ?? tmpdir, { specFilePattern });
@@ -89,7 +89,7 @@ describe("reviewTargetService", () => {
 
     return reviewTargetService(projectConfig, {
       target,
-      reviewer: Reviewer.fromConfig(config),
+      reviewer: Reviewer.fromConfig(cfg),
       cache,
     });
   }
@@ -138,7 +138,7 @@ describe("reviewTargetService", () => {
 
     it("throws when the API key environment variable is not set", async () => {
       const review = evaluate({
-        config: { name: "unset", model: "m", apiKeyEnvVar: "UNSET_KEY_VAR" },
+        cfg: { name: "unset", model: "m", apiKeyEnvVar: "UNSET_KEY_VAR" },
       });
 
       await expect(review).rejects.toThrow("UNSET_KEY_VAR environment variable not set");
@@ -149,7 +149,7 @@ describe("reviewTargetService", () => {
       process.env["CUSTOM_API_KEY"] = "test-key";
 
       const { verdict } = await evaluate({
-        config: { name: "custom", model: "m", apiKeyEnvVar: "CUSTOM_API_KEY" },
+        cfg: { name: "custom", model: "m", apiKeyEnvVar: "CUSTOM_API_KEY" },
       });
 
       expect(verdict.compliant).toBe(true);
@@ -212,7 +212,7 @@ describe("reviewTargetService", () => {
       );
 
       await evaluate({
-        config: {
+        cfg: {
           name: "local",
           model: "org-model",
           apiKeyEnvVar: "OPENROUTER_API_KEY",
@@ -234,9 +234,9 @@ describe("reviewTargetService", () => {
       );
 
       await evaluate({
-        config: { name: "hot", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY", temperature: 0.9 },
+        cfg: { name: "hot", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY", temperature: 0.9 },
       });
-      await evaluate({ config: { name: "cool", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" } });
+      await evaluate({ cfg: { name: "cool", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" } });
 
       expect(temperatures).toEqual([0.9, 0]);
     });
@@ -468,7 +468,7 @@ describe("reviewTargetService", () => {
       const { verdict } = await evaluate({
         targetPath: abs("docs/guide.md"),
         root,
-        config: echoReviewer,
+        cfg: echoReviewer,
       });
 
       expect(verdict).toEqual({ compliant: true, issues: [], reason: "echoed" });
@@ -482,7 +482,7 @@ describe("reviewTargetService", () => {
       const { usage } = await evaluate({
         targetPath: abs("docs/guide.md"),
         root,
-        config: echoReviewer,
+        cfg: echoReviewer,
       });
 
       expect(usage).toEqual({ promptTokens: 7, completionTokens: 3, costUsd: 0.0001 });
@@ -497,7 +497,7 @@ describe("reviewTargetService", () => {
         evaluate({
           targetPath: abs("docs/guide.md"),
           root,
-          config: echoReviewer,
+          cfg: echoReviewer,
           cache: new VerdictStore(testConfig(root)),
         });
 
@@ -516,7 +516,7 @@ describe("reviewTargetService", () => {
       const review = evaluate({
         targetPath: abs("docs/guide.md"),
         root,
-        config: echoReviewer,
+        cfg: echoReviewer,
       });
 
       await expect(review).rejects.toThrow('Reviewer provider "flaky" failed: socket hang up');

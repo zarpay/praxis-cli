@@ -14,10 +14,10 @@ import requestCuratorCompletionService from "@/services/request-curator-completi
  * fail-safe direction is refusing a candidate, never admitting one.
  */
 const assessAxiomGateService: Service<AssessAxiomGateInput, Promise<GateAssessment>> = async (
-  config,
+  cfg,
   { statement, violatingExample, compliantExample },
 ) => {
-  const completion = await requestCuratorCompletionService(config, {
+  const completion = await requestCuratorCompletionService(cfg, {
     systemPrompt: curatorSystemPrompt(),
     userPrompt: gateQuestion({ statement, violatingExample, compliantExample }),
     tools: gateTools(),

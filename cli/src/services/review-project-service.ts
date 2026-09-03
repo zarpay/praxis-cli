@@ -15,12 +15,12 @@ import selectReviewersService from "@/services/select-reviewers-service.js";
  *   discovered domain
  */
 const reviewProjectService: Service<ReviewProjectInput, Promise<ReviewAllResult>> = async (
-  config,
+  cfg,
   { reviewer, type, failFast = false, useCache = true, ledger = true, onProgress },
 ) => {
-  const reviewers = selectReviewersService(config, { only: reviewer });
+  const reviewers = selectReviewersService(cfg, { only: reviewer });
 
-  return reviewAllService(config, {
+  return reviewAllService(cfg, {
     reviewers,
     type,
     failFast,

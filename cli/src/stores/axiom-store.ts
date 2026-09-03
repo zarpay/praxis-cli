@@ -36,10 +36,10 @@ export class AxiomStore {
   private readonly axiomsDir: string;
   private readonly proposedDir: string;
 
-  constructor(config: PraxisConfig) {
-    this.projectRoot = config.root;
-    this.axiomsDir = joinPath(config.root, ".praxis", "axioms");
-    this.proposedDir = joinPath(config.root, ".praxis", "axioms", "proposed");
+  constructor(cfg: PraxisConfig) {
+    this.projectRoot = cfg.root;
+    this.axiomsDir = joinPath(cfg.root, ".praxis", "axioms");
+    this.proposedDir = joinPath(cfg.root, ".praxis", "axioms", "proposed");
   }
 
   /**

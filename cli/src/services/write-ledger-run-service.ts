@@ -26,11 +26,11 @@ import { RunStore } from "@/stores/run-store.js";
  * an eval store with optional gaps is not an eval store.
  */
 const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> = (
-  config,
+  cfg,
   { reviewer, trigger, scope, entries, specUnits },
 ) => {
-  const root = config.root;
-  const runStore = new RunStore(config);
+  const root = cfg.root;
+  const runStore = new RunStore(cfg);
   const runId = runStore.mintRunId();
   const timestamp = new Date().toISOString();
   const { commitSha, branch } = gitFacts(root);

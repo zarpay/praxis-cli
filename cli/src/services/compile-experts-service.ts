@@ -16,10 +16,10 @@ import { ExpertStore } from "@/stores/expert-store.js";
  * the result.
  */
 const compileExpertsService: Service<CompileExpertsInput, Promise<CompileExpertsResult>> = async (
-  config,
+  cfg,
   { plugins, onProgress },
 ) => {
-  const store = new ExpertStore(config);
+  const store = new ExpertStore(cfg);
   const expertFiles = store.files();
   const skipped: CompileExpertsResult["skipped"] = [];
   let compiled = 0;
@@ -28,7 +28,7 @@ const compileExpertsService: Service<CompileExpertsInput, Promise<CompileExperts
     const name = baseName(expertFile);
 
     try {
-      const result = await compileExpertService(config, { expertFile, plugins });
+      const result = await compileExpertService(cfg, { expertFile, plugins });
 
       for (const message of result.warnings) {
         onProgress?.({ kind: "warning", message });

@@ -983,9 +983,9 @@ export type Orchestrator<Options = NoOptions> = BaseOrchestrator<CommandContext,
  * scope object every layer may hold — then the work's own input. One
  * call shape across every service, mirroring `Orchestrator`; a service
  * with no input of its own is still called with `{}`, and one that
- * reads no project facts names its first parameter `_config`.
+ * reads no project facts names its first parameter `_cfg`.
  */
-export type Service<In, Out> = (config: PraxisConfig, input: In) => Out;
+export type Service<In, Out> = (cfg: PraxisConfig, input: In) => Out;
 
 /** The input of a service that needs nothing beyond the config. */
 export type NoInput = NoOptions;
@@ -1647,7 +1647,7 @@ export interface TriageState {
 /** What one interactive triage session accumulates as it walks clusters. */
 export interface TriageSession {
   ctx: CommandContext;
-  config: PraxisConfig;
+  cfg: PraxisConfig;
   yes: boolean;
   prompter: Prompter;
   /** The curator model, recorded as the suggester in every assignment. */

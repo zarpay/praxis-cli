@@ -50,9 +50,9 @@ describe("init → compile integration", () => {
     );
 
     // Compile all roles
-    const config = new PraxisConfig(dir);
-    const plugins = resolvePluginsService(config, { logger });
-    await compileExpertsService(config, { plugins });
+    const cfg = new PraxisConfig(dir);
+    const plugins = resolvePluginsService(cfg, { logger });
+    await compileExpertsService(cfg, { plugins });
   });
 
   afterAll(() => {

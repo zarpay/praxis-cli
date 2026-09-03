@@ -53,7 +53,7 @@ describe("reviewNamedService", () => {
   /** A project with one keyed reviewer and two documents to review. */
   function reviewingProject(): {
     root: string;
-    config: PraxisConfig;
+    cfg: PraxisConfig;
     abs: (rel: string) => string;
   } {
     const { root, abs, cleanup } = createValidatorTmpdir({
@@ -67,14 +67,14 @@ describe("reviewNamedService", () => {
     });
     cleanups.push(cleanup);
 
-    return { root, config: new PraxisConfig(root), abs };
+    return { root, cfg: new PraxisConfig(root), abs };
   }
 
   it("counts an error verdict for a named target", async () => {
     useVerdict("validation_fail");
-    const { config, abs } = reviewingProject();
+    const { cfg, abs } = reviewingProject();
 
-    const result = await reviewNamedService(config, {
+    const result = await reviewNamedService(cfg, {
       targets: [abs("specs/doc.md")],
       useCache: false,
     });
@@ -84,9 +84,9 @@ describe("reviewNamedService", () => {
 
   it("counts a warning separately from an error", async () => {
     useVerdict("validation_warn");
-    const { config, abs } = reviewingProject();
+    const { cfg, abs } = reviewingProject();
 
-    const result = await reviewNamedService(config, {
+    const result = await reviewNamedService(cfg, {
       targets: [abs("specs/doc.md")],
       useCache: false,
     });
@@ -96,9 +96,9 @@ describe("reviewNamedService", () => {
 
   it("reviews every named target, not just the first", async () => {
     useVerdict("validation_fail");
-    const { config, abs } = reviewingProject();
+    const { cfg, abs } = reviewingProject();
 
-    const result = await reviewNamedService(config, {
+    const result = await reviewNamedService(cfg, {
       targets: [abs("specs/doc.md"), abs("specs/other.md")],
       useCache: false,
     });
@@ -108,9 +108,9 @@ describe("reviewNamedService", () => {
 
   it("counts nothing for a compliant target", async () => {
     useVerdict("validation_pass");
-    const { config, abs } = reviewingProject();
+    const { cfg, abs } = reviewingProject();
 
-    const result = await reviewNamedService(config, {
+    const result = await reviewNamedService(cfg, {
       targets: [abs("specs/doc.md")],
       useCache: false,
     });
@@ -151,10 +151,10 @@ describe("reviewNamedService", () => {
 
   it("reports each target's findings as it lands", async () => {
     useVerdict("validation_fail", { reason: "no", issues: ["Bad thing"] });
-    const { config, abs } = reviewingProject();
+    const { cfg, abs } = reviewingProject();
     const seen: { path: string; findingTexts: string[] }[] = [];
 
-    await reviewNamedService(config, {
+    await reviewNamedService(cfg, {
       targets: [abs("specs/doc.md"), abs("specs/other.md")],
       useCache: false,
       onTarget: ({ path, findings }) =>
@@ -185,7 +185,7 @@ describe("reviewNamedService", () => {
     /** A reviewing project whose spec has one active axiom grounded in it. */
     function projectWithAxiom(reviewers = [KEYED]): {
       root: string;
-      config: PraxisConfig;
+      cfg: PraxisConfig;
       abs: (rel: string) => string;
     } {
       const axiom = axiomContent(
@@ -204,7 +204,7 @@ describe("reviewNamedService", () => {
       });
       cleanups.push(cleanup);
 
-      return { root, config: new PraxisConfig(root), abs };
+      return { root, cfg: new PraxisConfig(root), abs };
     }
 
     it("a cited checklist axiom lands matched: version resolved, provenance recorded", async () => {
@@ -212,17 +212,17 @@ describe("reviewNamedService", () => {
         reason: "no",
         issues: [{ axiom: "AX-aaaa11", text: "Title is vague." }],
       });
-      const { config, abs } = projectWithAxiom();
+      const { cfg, abs } = projectWithAxiom();
       const targets: ReviewedTarget[] = [];
 
-      await reviewNamedService(config, {
+      await reviewNamedService(cfg, {
         targets: [abs("specs/doc.md")],
         useCache: false,
         onTarget: (event) => targets.push(event),
       });
 
       const finding = targets[0].findings[0];
-      const critiqueRecords = ledgerRuns(config.root)
+      const critiqueRecords = ledgerRuns(cfg.root)
         .flat()
         .filter((record) => record.kind === "critique");
 
@@ -244,17 +244,17 @@ describe("reviewNamedService", () => {
         reason: "no",
         issues: [{ axiom: "AX-ffffff", text: "Invented citation." }],
       });
-      const { config, abs } = projectWithAxiom();
+      const { cfg, abs } = projectWithAxiom();
       const targets: ReviewedTarget[] = [];
 
-      await reviewNamedService(config, {
+      await reviewNamedService(cfg, {
         targets: [abs("specs/doc.md")],
         useCache: false,
         onTarget: (event) => targets.push(event),
       });
 
       const finding = targets[0].findings[0];
-      const critiqueRecords = ledgerRuns(config.root)
+      const critiqueRecords = ledgerRuns(cfg.root)
         .flat()
         .filter((record) => record.kind === "critique");
 
@@ -269,10 +269,10 @@ describe("reviewNamedService", () => {
         issues: [{ axiom: "AX-aaaa11", text: "Title is vague." }],
       });
       const second = { name: "v32", model: "m2", apiKeyEnvVar: "OPENROUTER_API_KEY" };
-      const { config, abs } = projectWithAxiom([KEYED, second]);
+      const { cfg, abs } = projectWithAxiom([KEYED, second]);
       const targets: ReviewedTarget[] = [];
 
-      await reviewNamedService(config, {
+      await reviewNamedService(cfg, {
         targets: [abs("specs/doc.md")],
         useCache: false,
         onTarget: (event) => targets.push(event),
@@ -287,11 +287,11 @@ describe("reviewNamedService", () => {
   describe("the ledger", () => {
     it("persists each reviewer's pass with scope files — fast-loop runs are evidence", async () => {
       useVerdict("validation_fail");
-      const { config, abs } = reviewingProject();
+      const { cfg, abs } = reviewingProject();
 
-      await reviewNamedService(config, { targets: [abs("specs/doc.md")], useCache: false });
+      await reviewNamedService(cfg, { targets: [abs("specs/doc.md")], useCache: false });
 
-      const runs = ledgerRuns(config.root);
+      const runs = ledgerRuns(cfg.root);
 
       expect(runs).toHaveLength(1);
       expect(runs[0][0]).toMatchObject({ kind: "run", scope: "files", trigger: "manual" });
@@ -301,15 +301,15 @@ describe("reviewNamedService", () => {
 
     it("writes nothing when ledger is false", async () => {
       useVerdict("validation_pass");
-      const { config, abs } = reviewingProject();
+      const { cfg, abs } = reviewingProject();
 
-      await reviewNamedService(config, {
+      await reviewNamedService(cfg, {
         targets: [abs("specs/doc.md")],
         useCache: false,
         ledger: false,
       });
 
-      expect(ledgerRuns(config.root)).toEqual([]);
+      expect(ledgerRuns(cfg.root)).toEqual([]);
     });
   });
 });

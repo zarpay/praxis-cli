@@ -21,7 +21,7 @@ const BLANK = "\n";
  * Code frontmatter and the like) belongs to the compiler plugins.
  */
 const buildProfileService: Service<BuildProfileInput, string> = (
-  _config,
+  _cfg,
   { role, responsibilities, constitution, context, reference },
 ) => {
   const sections = [

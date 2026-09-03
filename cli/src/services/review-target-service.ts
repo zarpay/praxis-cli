@@ -14,7 +14,7 @@ import requestVerdictService from "@/services/request-verdict-service.js";
  * @throws PraxisError from `requestVerdictService` on a cache miss
  */
 const reviewTargetService: Service<ReviewTargetInput, Promise<ReviewTargetResult>> = async (
-  config,
+  cfg,
   { target, reviewer, cache },
 ) => {
   const contentHash = target.contentHash();
@@ -31,7 +31,7 @@ const reviewTargetService: Service<ReviewTargetInput, Promise<ReviewTargetResult
     }
   }
 
-  const { verdict, usage } = await requestVerdictService(config, { target, reviewer });
+  const { verdict, usage } = await requestVerdictService(cfg, { target, reviewer });
 
   if (cache) {
     cache.writeVerdict({

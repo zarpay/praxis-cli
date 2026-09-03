@@ -16,20 +16,20 @@ import { VerdictStore } from "@/stores/verdict-store.js";
  * One row per reviewer, never pooled: reviewers are separate instruments, and
  * averaging them would hide exactly the disagreement worth seeing.
  */
-const tallyValidationService: Service<NoInput, StatusReport["validation"]> = (config) => {
-  const targets = listTargetPathsService(config, {});
+const tallyValidationService: Service<NoInput, StatusReport["validation"]> = (cfg) => {
+  const targets = listTargetPathsService(cfg, {});
 
   // One cache namespace per reviewer; the un-namespaced cache when no
   // reviewers are configured at all.
   const readers =
-    config.reviewers.length > 0
-      ? config.reviewers.map((reviewer) => ({
+    cfg.reviewers.length > 0
+      ? cfg.reviewers.map((reviewer) => ({
           reviewer: reviewer.name,
-          cache: new VerdictStore(config, {
+          cache: new VerdictStore(cfg, {
             reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
           }),
         }))
-      : [{ reviewer: null, cache: new VerdictStore(config) }];
+      : [{ reviewer: null, cache: new VerdictStore(cfg) }];
 
   return readers.map(({ reviewer, cache }) => {
     const row = {

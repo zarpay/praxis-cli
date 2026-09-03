@@ -32,12 +32,12 @@ import { AxiomStore } from "@/stores/axiom-store.js";
  * (rule 6); and the calibration banner is unconditional until M6
  * (rule 4).
  */
-const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (config, { scoped }) => {
+const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, { scoped }) => {
   const { runs, critiques } = scoped;
-  const epochs = deriveEpochsService(config, { runs });
-  const { axioms } = new AxiomStore(config).all();
-  const currentUnits = countSpecUnitsService(config, {});
-  const state = deriveTriageStateService(config, {});
+  const epochs = deriveEpochsService(cfg, { runs });
+  const { axioms } = new AxiomStore(cfg).all();
+  const currentUnits = countSpecUnitsService(cfg, {});
+  const state = deriveTriageStateService(cfg, {});
   const birthdates = new Map<string, string | null>();
 
   const matched = critiques.filter((critique) => critique.axiom_id !== null);
@@ -57,7 +57,7 @@ const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (confi
           runs,
           epochs,
           currentUnits,
-          config,
+          cfg,
           birthdates,
         }),
       );
@@ -99,7 +99,7 @@ function axiomRow({
   runs,
   epochs,
   currentUnits,
-  config,
+  cfg,
   birthdates,
 }: {
   axiom: AxiomFile;
@@ -108,7 +108,7 @@ function axiomRow({
   runs: LedgerRunRecord[];
   epochs: EpochSeries[];
   currentUnits: Record<string, number>;
-  config: PraxisConfig;
+  cfg: PraxisConfig;
   birthdates: Map<string, string | null>;
 }): AxiomReportRow {
   const spec = axiom.groundedIn?.split("#")[0] ?? null;
@@ -138,7 +138,7 @@ function axiomRow({
   };
 
   for (const critique of critiques) {
-    const population = derivePopulationService(config, {
+    const population = derivePopulationService(cfg, {
       filePath: critique.file_path,
       axiomIntroduced: axiom.introduced,
       birthdates,

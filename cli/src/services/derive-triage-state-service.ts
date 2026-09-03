@@ -12,15 +12,15 @@ import { TriageStore } from "@/stores/triage-store.js";
  * Checklist-born critiques were never pending: they arrived assigned.
  * The counters alongside are the residual signal's raw material.
  */
-const deriveTriageStateService: Service<NoInput, TriageState> = (config) => {
-  const records = new TriageStore(config).records();
+const deriveTriageStateService: Service<NoInput, TriageState> = (cfg) => {
+  const records = new TriageStore(cfg).records();
   const settled = new Set(
     records
       .filter((record) => record.kind === "assignment" || record.kind === "dismissal")
       .map((record) => record.critique_id),
   );
 
-  const pending = new RunStore(config)
+  const pending = new RunStore(cfg)
     .critiques()
     .filter((critique) => critique.axiom_id === null)
     .filter((critique) => !settled.has(critique.id))

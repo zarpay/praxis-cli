@@ -16,8 +16,8 @@ import requestCuratorCompletionService from "@/services/request-curator-completi
 const assessTraceabilityService: Service<
   AssessTraceabilityInput,
   Promise<TraceabilityAssessment>
-> = async (config, { specPath, specContent, statement }) => {
-  const completion = await requestCuratorCompletionService(config, {
+> = async (cfg, { specPath, specContent, statement }) => {
+  const completion = await requestCuratorCompletionService(cfg, {
     systemPrompt: curatorSystemPrompt(),
     userPrompt: traceabilityQuestion({ specPath, specContent, statement }),
     tools: traceabilityTools(),

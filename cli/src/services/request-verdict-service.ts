@@ -26,10 +26,10 @@ import resolveProviderService from "@/services/resolve-provider-service.js";
  *   resolved, or (wrapped) when the provider itself fails
  */
 const requestVerdictService: Service<RequestVerdictInput, Promise<ProviderResult>> = async (
-  config,
+  cfg,
   { target, reviewer },
 ) => {
-  const provider = await resolveProviderService(config, { spec: reviewer.provider });
+  const provider = await resolveProviderService(cfg, { spec: reviewer.provider });
 
   const request: ProviderRequest = {
     systemPrompt: systemPrompt(),

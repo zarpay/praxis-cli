@@ -17,24 +17,24 @@ import { SpecStore } from "@/stores/spec-store.js";
  *
  * @throws PraxisError when a spec's frontmatter is malformed
  */
-const discoverDomainsService: Service<NoInput, ValidationDomain[]> = (config) => {
-  const store = new SpecStore(config);
+const discoverDomainsService: Service<NoInput, ValidationDomain[]> = (cfg) => {
+  const store = new SpecStore(cfg);
 
-  return store.filesIn(config.sources).map((specPath) => domainFor(store, specPath, config));
+  return store.filesIn(cfg.sources).map((specPath) => domainFor(store, specPath, cfg));
 };
 
 export default discoverDomainsService;
 
 /** One spec's domain: what it governs, and what is shielded from it. */
-function domainFor(store: SpecStore, specPath: string, config: PraxisConfig): ValidationDomain {
-  const root = config.root;
+function domainFor(store: SpecStore, specPath: string, cfg: PraxisConfig): ValidationDomain {
+  const root = cfg.root;
   const spec = store.read(specPath);
   const dir = parentDir(specPath);
   const excludes = spec.excludes.map((p) => joinPath(root, p));
   const exemplars = spec.exemplars.map((p) => joinPath(root, p));
   // Exemplars are shielded from adverse review exactly like excludes;
   // they reach the reviewer only as inlined positives.
-  const ignore = [...config.absoluteIgnore, ...excludes, ...exemplars];
+  const ignore = [...cfg.absoluteIgnore, ...excludes, ...exemplars];
 
   const domain: ValidationDomain = {
     dir,
@@ -52,7 +52,7 @@ function domainFor(store: SpecStore, specPath: string, config: PraxisConfig): Va
   } else if (spec.paths.length > 0) {
     domain.targetFiles = fg
       .sync(spec.paths, { cwd: root, onlyFiles: true, absolute: true, dot: true, ignore })
-      .filter((file) => isContentFile(file, config.specFilePattern));
+      .filter((file) => isContentFile(file, cfg.specFilePattern));
   }
 
   return domain;

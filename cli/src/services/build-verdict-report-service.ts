@@ -17,10 +17,10 @@ import { SpecStore } from "@/stores/spec-store.js";
  * not a view: deciding *what happened* is work, rendering it is not.
  */
 const buildVerdictReportService: Service<BuildVerdictReportInput, VerdictReport> = (
-  config,
+  cfg,
   { targetPath, cacheData },
 ) => {
-  const currentHash = recomputeHash(config, targetPath, cacheData?.document.spec_path);
+  const currentHash = recomputeHash(cfg, targetPath, cacheData?.document.spec_path);
 
   if (!cacheData) {
     return { targetPath, status: "not_validated", cacheData: null, currentHash, isStale: false };
@@ -56,18 +56,18 @@ export default buildVerdictReportService;
  * otherwise the spec is rediscovered the way a run would.
  */
 function recomputeHash(
-  config: PraxisConfig,
+  cfg: PraxisConfig,
   targetPath: string,
   specPath: string | undefined,
 ): string | null {
   try {
-    const store = new SpecStore(config);
+    const store = new SpecStore(cfg);
     const governing = specPath ?? store.governingPath(targetPath);
 
     return ReviewSubject.resolve({
       targetPath,
       specPath: governing,
-      root: config.root,
+      root: cfg.root,
     }).contentHash();
   } catch {
     return null;

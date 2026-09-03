@@ -14,18 +14,15 @@ const PLUGINS: Record<string, PluginConstructor> = {
  *
  * @throws PraxisError if an unknown plugin name is encountered
  */
-const resolvePluginsService: Service<ResolvePluginsInput, CompilerPlugin[]> = (
-  config,
-  { logger },
-) => {
-  return config.plugins.map((entry) => {
+const resolvePluginsService: Service<ResolvePluginsInput, CompilerPlugin[]> = (cfg, { logger }) => {
+  return cfg.plugins.map((entry) => {
     const Constructor = PLUGINS[entry.name];
 
     if (!Constructor) {
       throw errors.unknownPlugin(entry.name, Object.keys(PLUGINS));
     }
 
-    return new Constructor({ root: config.root, logger, pluginConfig: entry });
+    return new Constructor({ root: cfg.root, logger, pluginConfig: entry });
   });
 };
 

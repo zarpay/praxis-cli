@@ -16,11 +16,11 @@ import { fileFirstCommitDate } from "@/helpers/git-helper.js";
  * because a report asks about the same files across many axioms.
  */
 const derivePopulationService: Service<DerivePopulationInput, PopulationQualifier> = (
-  config,
+  cfg,
   { filePath, axiomIntroduced, birthdates },
 ) => {
   if (!birthdates.has(filePath)) {
-    birthdates.set(filePath, fileFirstCommitDate(config.root, filePath));
+    birthdates.set(filePath, fileFirstCommitDate(cfg.root, filePath));
   }
 
   const born = birthdates.get(filePath) ?? null;

@@ -13,11 +13,8 @@ import { errors } from "@/helpers/errors-helper.js";
  * @param only - A reviewer name to narrow to; omitted uses all of them
  * @throws PraxisError naming what is wrong and what is available
  */
-const selectReviewersService: Service<SelectReviewersInput, ReviewerConfig[]> = (
-  config,
-  { only },
-) => {
-  const configured = config.reviewers;
+const selectReviewersService: Service<SelectReviewersInput, ReviewerConfig[]> = (cfg, { only }) => {
+  const configured = cfg.reviewers;
 
   if (configured.length === 0) {
     throw errors.missingReviewers();

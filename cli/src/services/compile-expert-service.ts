@@ -17,13 +17,13 @@ import writeProfileOutputsService from "@/services/write-profile-outputs-service
  * @throws PraxisError when the file is not a valid expert document
  */
 const compileExpertService: Service<CompileExpertInput, Promise<CompileExpertResult>> = async (
-  config,
+  cfg,
   { expertFile, plugins },
 ) => {
   const expert = ExpertFile.fromContent(readText(expertFile), expertFile);
 
   const inline = (patterns: string[], missingLabel: string) =>
-    inlineReferencesService(config, { patterns, missingLabel });
+    inlineReferencesService(cfg, { patterns, missingLabel });
 
   const [responsibilities, constitution, context, reference] = await Promise.all([
     inline(expert.refs("practices"), "Referenced file not found"),
@@ -44,7 +44,7 @@ const compileExpertService: Service<CompileExpertInput, Promise<CompileExpertRes
     ...reference.warnings,
   ];
 
-  const profile = buildProfileService(config, {
+  const profile = buildProfileService(cfg, {
     role: expert.body(),
     responsibilities: responsibilities.bodies,
     constitution: constitution.bodies,
@@ -52,7 +52,7 @@ const compileExpertService: Service<CompileExpertInput, Promise<CompileExpertRes
     reference: reference.bodies,
   });
 
-  writeProfileOutputsService(config, {
+  writeProfileOutputsService(cfg, {
     profile,
     metadata,
     alias: expert.alias,

@@ -23,26 +23,26 @@ import { VerdictStore } from "@/stores/verdict-store.js";
 const collectVerdictReportsService: Service<
   CollectVerdictReportsInput,
   CollectVerdictReportsResult
-> = (config, { targetPath }) => {
+> = (cfg, { targetPath }) => {
   const absolutePath = resolvePath(targetPath);
 
   if (!exists(absolutePath)) {
     throw errors.documentNotFound(targetPath);
   }
 
-  if (config.reviewers.length === 0) {
+  if (cfg.reviewers.length === 0) {
     throw errors.missingReviewers();
   }
 
   return {
     targetPath: absolutePath,
     // Named only when more than one reviewer could disagree.
-    named: config.reviewers.length > 1,
-    reports: config.reviewers.map((reviewer) => ({
+    named: cfg.reviewers.length > 1,
+    reports: cfg.reviewers.map((reviewer) => ({
       reviewer: reviewer.name,
-      report: buildVerdictReportService(config, {
+      report: buildVerdictReportService(cfg, {
         targetPath: absolutePath,
-        cacheData: new VerdictStore(config, {
+        cacheData: new VerdictStore(cfg, {
           reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
         }).readEntry({ targetPath: absolutePath }),
       }),

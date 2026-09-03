@@ -95,7 +95,7 @@ describe("initProjectOrchestrator", () => {
     }
   });
 
-  it("scaffolds the full taxonomy config with --spec-layer", async () => {
+  it("scaffolds the full taxonomy cfg with --spec-layer", async () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
@@ -108,7 +108,7 @@ describe("initProjectOrchestrator", () => {
     const configPath = join(dir, ".praxis", "config.json");
     expect(existsSync(configPath)).toBe(true);
 
-    const config = readJsonFile<{
+    const cfg = readJsonFile<{
       agentProfilesOutputDir: string;
       plugins: string[];
       sources: string[];
@@ -116,11 +116,11 @@ describe("initProjectOrchestrator", () => {
       practicesDir: string;
       reviewers: { name: string; model: string; apiKeyEnvVar: string }[];
     }>(configPath);
-    expect(config.agentProfilesOutputDir).toBe("./agent-profiles");
-    expect(config.plugins).toEqual([]);
-    expect(config.sources).toEqual(["experts", "practices", "reference", "context"]);
-    expect(config.expertsDir).toBe("experts");
-    expect(config.reviewers).toEqual([
+    expect(cfg.agentProfilesOutputDir).toBe("./agent-profiles");
+    expect(cfg.plugins).toEqual([]);
+    expect(cfg.sources).toEqual(["experts", "practices", "reference", "context"]);
+    expect(cfg.expertsDir).toBe("experts");
+    expect(cfg.reviewers).toEqual([
       { name: "default", model: "x-ai/grok-4.1-fast", apiKeyEnvVar: "OPENROUTER_API_KEY" },
     ]);
   });
@@ -134,23 +134,23 @@ describe("initProjectOrchestrator", () => {
     expect(walkDir(dir)).toEqual([join(".praxis", "config.json")]);
   });
 
-  it("default eval-layer config declares reviewers and empty sources", async () => {
+  it("default eval-layer cfg declares reviewers and empty sources", async () => {
     const dir = makeTmpdir();
     dirs.push(dir);
 
     await initProjectOrchestrator(ctx, { directory: dir, scaffoldDir: SCAFFOLD_DIR });
 
-    const config = readJsonFile<{
+    const cfg = readJsonFile<{
       sources: string[];
       specFilePattern: string;
       reviewers: { name: string }[];
       expertsDir?: string;
     }>(join(dir, ".praxis", "config.json"));
-    expect(config.sources).toEqual([]);
-    expect(config.specFilePattern).toBe("README.md");
-    expect(config.reviewers).toHaveLength(1);
+    expect(cfg.sources).toEqual([]);
+    expect(cfg.specFilePattern).toBe("README.md");
+    expect(cfg.reviewers).toHaveLength(1);
     // No taxonomy keys: the spec layer is opt-in.
-    expect(config.expertsDir).toBeUndefined();
+    expect(cfg.expertsDir).toBeUndefined();
   });
 
   it("does not scaffold Claude Code files by default", async () => {

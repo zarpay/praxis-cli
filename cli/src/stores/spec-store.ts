@@ -23,9 +23,9 @@ export class SpecStore {
   private readonly root: string;
   private readonly specFilePattern: string;
 
-  constructor(config: PraxisConfig) {
-    this.root = config.root;
-    this.specFilePattern = config.specFilePattern;
+  constructor(cfg: PraxisConfig) {
+    this.root = cfg.root;
+    this.specFilePattern = cfg.specFilePattern;
   }
 
   /**

@@ -21,7 +21,7 @@ const REF_KEYS: readonly RefKey[] = ["practices", "context", "refs"];
  * health is exactly the report you want when a document is broken.
  */
 const auditExpertsService: Service<AuditExpertsInput, Promise<ExpertAudit>> = async (
-  config,
+  cfg,
   { expertFiles },
 ) => {
   const audit: ExpertAudit = {
@@ -54,7 +54,7 @@ const auditExpertsService: Service<AuditExpertsInput, Promise<ExpertAudit>> = as
     }
 
     for (const key of REF_KEYS) {
-      const expansions = await expandGlobsService(config, { patterns: parsed.refs(key) });
+      const expansions = await expandGlobsService(cfg, { patterns: parsed.refs(key) });
 
       for (const { pattern, isGlob, matches } of expansions) {
         // A glob matching nothing is a typo; a plain path that does not
@@ -64,7 +64,7 @@ const auditExpertsService: Service<AuditExpertsInput, Promise<ExpertAudit>> = as
           audit.zeroMatchGlobs.push({ expert, pattern });
         }
 
-        if (!isGlob && !exists(joinPath(config.root, pattern))) {
+        if (!isGlob && !exists(joinPath(cfg.root, pattern))) {
           audit.danglingRefs.push({ expert, ref: pattern });
         }
 

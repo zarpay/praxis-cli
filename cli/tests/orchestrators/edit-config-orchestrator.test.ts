@@ -35,7 +35,7 @@ describe("editConfigOrchestrator", () => {
     delete process.env["EDITOR"];
   });
 
-  it("spawns the VISUAL editor with the config path", async () => {
+  it("spawns the VISUAL editor with the cfg path", async () => {
     process.env["VISUAL"] = "code";
     await editConfigOrchestrator(ctx, {});
     expect(spawnSync).toHaveBeenCalledWith("code", [configPath], { stdio: "inherit" });

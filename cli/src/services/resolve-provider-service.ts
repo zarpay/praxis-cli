@@ -27,11 +27,11 @@ const BUILTIN_PROVIDERS: Record<string, ReviewProviderFactory> = {
  *   that do not implement the contract
  */
 const resolveProviderService: Service<ResolveProviderInput, Promise<ReviewProvider>> = async (
-  config,
+  cfg,
   { spec },
 ) => {
   if (spec.startsWith("./") || spec.startsWith("../")) {
-    return loadLocalProvider(spec, config.root);
+    return loadLocalProvider(spec, cfg.root);
   }
 
   const factory = BUILTIN_PROVIDERS[spec];

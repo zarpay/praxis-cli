@@ -28,11 +28,12 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
   ctx,
   { targets = [], cache = true, ...options },
 ) => {
-  const { root, config } = ctx;
+  const { root } = ctx;
+  const cfg = ctx.config;
 
   // Announce any epoch boundary before reviewing (02): warn, never block.
-  const reviewers = selectReviewersService(config, { only: options.reviewer });
-  const boundaries = detectEpochBoundariesService(config, { reviewers });
+  const reviewers = selectReviewersService(cfg, { only: options.reviewer });
+  const boundaries = detectEpochBoundariesService(cfg, { reviewers });
   const boundaryView = epochBoundaryView(boundaries);
 
   ctx.render(boundaryView);
@@ -53,7 +54,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
       ctx.render(targetView);
     };
 
-    const { errors } = await reviewNamedService(config, {
+    const { errors } = await reviewNamedService(cfg, {
       targets,
       spec: options.spec,
       reviewer: options.reviewer,
@@ -74,7 +75,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
     ctx.render(progressView);
   };
 
-  const run = await reviewProjectService(config, {
+  const run = await reviewProjectService(cfg, {
     reviewer: options.reviewer,
     type: options.type,
     failFast: options.failFast ?? false,
