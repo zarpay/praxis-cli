@@ -13,9 +13,10 @@ import { exists, readText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import assessAxiomGateService from "@/services/assess-axiom-gate-service.js";
+import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import organizeTriageService from "@/services/organize-triage-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
-import { Ledger } from "@/stores/ledger.js";
+import { TriageStore } from "@/stores/triage-store.js";
 import triageClusterView from "@/views/triage-cluster-view.js";
 import triageSummaryView from "@/views/triage-summary-view.js";
 import { Prompter } from "@framework/views/prompter.js";
@@ -42,8 +43,7 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
 
   if (!curator) throw errors.curatorNotConfigured();
 
-  const ledger = new Ledger({ projectRoot: root });
-  const state = ledger.triageState();
+  const state = deriveTriageStateService({ root });
 
   if (state.pending.length === 0) {
     ctx.render([{ channel: "content", entries: ["Nothing pending triage."] }]);
@@ -81,7 +81,7 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
   prompter.close();
 
   if (session.records.length > 0) {
-    ledger.appendTriageSession(session.records);
+    new TriageStore({ projectRoot: root }).appendSession(session.records);
   }
 
   const pendingLeft = state.pending.length - session.assigned - session.dismissed;

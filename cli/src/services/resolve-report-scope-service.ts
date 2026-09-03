@@ -3,7 +3,7 @@ import type { ResolveReportScopeInput, ScopedLedger } from "@/types.js";
 import picomatch from "picomatch";
 
 import { commitDateOf, commitExists } from "@/helpers/git-helper.js";
-import { Ledger } from "@/stores/ledger.js";
+import { RunStore } from "@/stores/run-store.js";
 
 /**
  * Scopes the ledger for one report invocation (07's three levels).
@@ -23,8 +23,8 @@ export default function resolveReportScope({
   commit,
   commits,
 }: ResolveReportScopeInput): ScopedLedger {
-  const ledger = new Ledger({ projectRoot: root });
-  const allRuns = ledger.runs();
+  const runStore = new RunStore({ projectRoot: root });
+  const allRuns = runStore.runs();
 
   const requestedShas = commit ? [commit, ...(commits ?? [])] : (commits ?? null);
   const sinceDate = resolveSince(root, since);
@@ -52,7 +52,7 @@ export default function resolveReportScope({
   const runIds = new Set(runs.map((run) => run.run_id));
   const matchesTarget = target ? picomatch(target, { dot: true }) : null;
 
-  const critiques = ledger
+  const critiques = runStore
     .critiques()
     .filter((critique) => runIds.has(critique.run_id))
     .filter(

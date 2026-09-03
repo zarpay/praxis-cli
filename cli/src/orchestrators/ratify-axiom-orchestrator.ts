@@ -6,8 +6,10 @@ import { joinPath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import assessAxiomGateService from "@/services/assess-axiom-gate-service.js";
 import assessTraceabilityService from "@/services/assess-traceability-service.js";
+import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
-import { Ledger } from "@/stores/ledger.js";
+import { RunStore } from "@/stores/run-store.js";
+import { TriageStore } from "@/stores/triage-store.js";
 import ratifyView from "@/views/ratify-view.js";
 import { Prompter } from "@framework/views/prompter.js";
 
@@ -35,7 +37,6 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
   if (!curator) throw errors.curatorNotConfigured();
 
   const store = new AxiomStore({ projectRoot: root });
-  const ledger = new Ledger({ projectRoot: root });
   const { axioms } = store.all();
   const proposal = axioms.find((axiom) => axiom.id === id && axiom.status === "proposed");
 
@@ -43,7 +44,7 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
 
   if (reject !== undefined) {
     removeFile(proposal.path);
-    ledger.appendTriageSession([
+    new TriageStore({ projectRoot: root }).appendSession([
       { kind: "rejection", axiom_id: id, reason: reject, timestamp: new Date().toISOString() },
     ]);
     ctx.render([
@@ -62,12 +63,12 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
     throw errors.notATty("praxis axioms ratify", '--yes or --reject "<reason>"');
   }
 
-  const { assignments } = ledger.triageState();
+  const { assignments } = deriveTriageStateService({ root });
   const supporting = assignments.filter((assignment) => assignment.axiom_id === id);
   const specPath =
     spec ??
     specFromSupport(
-      ledger,
+      new RunStore({ projectRoot: root }),
       supporting.map((record) => record.critique_id),
     );
 
@@ -148,11 +149,11 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
 export default prepareOrchestrator(ratifyAxiomOrchestrator);
 
 /** The spec the proposal's supporting critiques were reviewed against. */
-function specFromSupport(ledger: Ledger, critiqueIds: string[]): string | null {
+function specFromSupport(runStore: RunStore, critiqueIds: string[]): string | null {
   if (critiqueIds.length === 0) return null;
 
   const ids = new Set(critiqueIds);
-  const critique = ledger.critiques().find((record) => ids.has(record.id));
+  const critique = runStore.critiques().find((record) => ids.has(record.id));
 
   return critique?.spec_path ?? null;
 }

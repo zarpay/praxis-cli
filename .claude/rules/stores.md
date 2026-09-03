@@ -8,16 +8,19 @@ paths:
 
 **A store is one file-backed subsystem's handle**: its layout, its id
 minting, its reads, writes, and moves — the IO half of a model family.
-`VerdictStore` owns the verdict cache, `Ledger` the append-only evidence,
-`AxiomStore` the axiom lifecycle, `ExpertStore`/`PracticeStore` their
-document directories. Every model with a file backing gets its store here;
-IO for a file kind scattered across services is the smell this directory
-exists to end.
+`VerdictStore` owns the verdict cache, `RunStore` and `TriageStore` the
+ledger's two partitions, `AxiomStore` the axiom lifecycle,
+`ExpertStore`/`PracticeStore` their document directories. Every model with
+a file backing gets its store here; IO for a file kind scattered across
+services is the smell this directory exists to end. One store, one
+partition, one file format: the original `Ledger` class mixed two
+partitions, two formats, and a cross-store derivation under a name that
+described none of them — it is `RunFile`/`TriageSessionFile` (models),
+`RunStore`/`TriageStore` (here), and `derive-triage-state-service` now.
 
-- **Named `{name}-store.ts`** (`ledger.ts` is grandfathered — it _is_ the
-  store), exporting the filename in PascalCase as a class. Constructed per
-  use from a `projectRoot` (or the specific directory), never held as a
-  singleton.
+- **Named `{name}-store.ts`**, exporting the filename in PascalCase as a
+  class. Constructed per use from a `projectRoot` (or the specific
+  directory), never held as a singleton.
 - **Layered between models and services**: a store imports helpers,
   templates, and models — never services, prompts, orchestrators, or views
   (ESLint-enforced). Services construct stores and call their methods; a
@@ -25,7 +28,7 @@ exists to end.
   a method wearing a service's filename.
 - **The store owns its policy, and states it**: the verdict cache fails
   soft in both directions and its two read paths carry different corruption
-  policy; the ledger's reads never raise and its writes always do. Policy
+  policy; the run store's reads never raise and its writes always do. Policy
   that depends on _caller context beyond the store's own contract_ — what a
   failed write means to a whole run, cross-store workflows, record assembly
   from external facts (git, LLM calls) — stays in services.

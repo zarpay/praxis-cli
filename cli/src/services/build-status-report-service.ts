@@ -4,13 +4,14 @@ import { exists } from "@/helpers/files-helper.js";
 import { resolvePath } from "@/helpers/paths-helper.js";
 import auditExpertsService from "@/services/audit-experts-service.js";
 import countDocumentsByTypeService from "@/services/count-documents-by-type-service.js";
+import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
 import findOrphanedPracticesService from "@/services/find-orphaned-practices-service.js";
 import tallyValidationService from "@/services/tally-validation-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { ExpertStore } from "@/stores/expert-store.js";
-import { Ledger } from "@/stores/ledger.js";
 import { PracticeStore } from "@/stores/practice-store.js";
+import { RunStore } from "@/stores/run-store.js";
 
 /**
  * Assembles a project's health report.
@@ -102,10 +103,9 @@ function evalStateOf(
   root: string,
   config: BuildStatusReportInput["config"],
 ): StatusReport["evalState"] {
-  const ledger = new Ledger({ projectRoot: root });
   const { axioms } = new AxiomStore({ projectRoot: root }).all();
-  const state = ledger.triageState();
-  const runs = ledger.runs();
+  const state = deriveTriageStateService({ root });
+  const runs = new RunStore({ projectRoot: root }).runs();
   const boundaries = detectEpochBoundariesService({ root, reviewers: config.reviewers });
 
   const lastRun = runs.map((run) => run.timestamp).sort()[runs.length - 1] ?? null;

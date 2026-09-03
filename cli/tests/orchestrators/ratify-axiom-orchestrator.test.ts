@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 
 import { AxiomFile } from "@/models/axiom-file.js";
 import { ratifyAxiomOrchestrator } from "@/orchestrators/ratify-axiom-orchestrator.js";
-import { Ledger } from "@/stores/ledger.js";
+import { TriageStore } from "@/stores/triage-store.js";
 import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
@@ -60,7 +60,7 @@ function ratifyProject(plan: Parameters<typeof curatorProviderModule>[0]): strin
       }),
     ],
   });
-  new Ledger({ projectRoot: root }).appendTriageSession([
+  new TriageStore({ projectRoot: root }).appendSession([
     {
       kind: "assignment",
       critique_id: "r1:1",

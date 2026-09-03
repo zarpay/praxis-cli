@@ -1,8 +1,9 @@
 import type { BuildDebtReportInput, Orientation } from "@/types.js";
 
 import { CALIBRATION_STATUS } from "@/helpers/metrics-helper.js";
+import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
-import { Ledger } from "@/stores/ledger.js";
+import { RunStore } from "@/stores/run-store.js";
 
 /**
  * The orientation screen's facts (09-h): counts and staleness at a
@@ -10,9 +11,10 @@ import { Ledger } from "@/stores/ledger.js";
  * agent's cheapest situational poll's human twin.
  */
 export default function buildOrientation({ root }: BuildDebtReportInput): Orientation {
-  const ledger = new Ledger({ projectRoot: root });
-  const runs = ledger.runs().sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-  const state = ledger.triageState();
+  const runs = new RunStore({ projectRoot: root })
+    .runs()
+    .sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  const state = deriveTriageStateService({ root });
   const { axioms } = new AxiomStore({ projectRoot: root }).all();
 
   const last = runs[runs.length - 1];

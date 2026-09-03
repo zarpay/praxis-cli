@@ -1712,6 +1712,11 @@ export interface GitFacts {
   branch: string | null;
 }
 
+/** Whose triage queue to derive. */
+export interface ListTriageStateInput {
+  root: string;
+}
+
 /** The derived triage queue and its residual counters. */
 export interface TriageState {
   /** Open-channel critiques no assignment or dismissal covers yet. */

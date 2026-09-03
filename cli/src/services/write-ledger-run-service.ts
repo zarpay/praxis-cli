@@ -10,7 +10,7 @@ import type {
 
 import { gitFacts } from "@/helpers/git-helper.js";
 import { relativePath } from "@/helpers/paths-helper.js";
-import { Ledger } from "@/stores/ledger.js";
+import { RunStore } from "@/stores/run-store.js";
 
 /**
  * Persists one reviewer's completed run to the ledger (05).
@@ -32,8 +32,8 @@ export default function writeLedgerRunService({
   entries,
   specUnits,
 }: WriteLedgerRunInput): WriteLedgerRunResult {
-  const ledger = new Ledger({ projectRoot: root });
-  const runId = ledger.mintRunId();
+  const runStore = new RunStore({ projectRoot: root });
+  const runId = runStore.mintRunId();
   const timestamp = new Date().toISOString();
   const { commitSha, branch } = gitFacts(root);
 
@@ -94,12 +94,12 @@ export default function writeLedgerRunService({
     critique_count: critiques.length,
     ...(specUnits && { spec_units: specUnits }),
     calibration_status_at_run: "uncalibrated",
-    baseline: isBaseline(ledger, scope, reviewer.hash),
+    baseline: isBaseline(runStore, scope, reviewer.hash),
   };
 
   const records: LedgerRecord[] = [run, ...critiques];
 
-  return ledger.writeRun(runId, records);
+  return runStore.writeRun(runId, records);
 }
 
 /**
@@ -109,10 +109,12 @@ export default function writeLedgerRunService({
  * merges cannot flip it. A files-scope fast loop never claims baseline —
  * an epoch without an opening full run has no denominator.
  */
-function isBaseline(ledger: Ledger, scope: string, reviewerHash: string): boolean {
+function isBaseline(runStore: RunStore, scope: string, reviewerHash: string): boolean {
   if (scope !== "corpus") return false;
 
-  return !ledger.runs().some((run) => run.reviewer_hash === reviewerHash && run.scope === "corpus");
+  return !runStore
+    .runs()
+    .some((run) => run.reviewer_hash === reviewerHash && run.scope === "corpus");
 }
 
 /** Per-field usage sums; a field nothing reported stays null. */
