@@ -36,6 +36,19 @@ frontmatter keys are spelled.
   model needs lives module-private beside the class — `Reviewer.hash()`'s
   canonical hashing and `ReviewSubject`'s assist-glob resolution were services
   until this rule; both are private functions in their model files now.
+- **A store gets a handle model, and its lifecycle events are methods.**
+  `VerdictCache`, `Ledger`, and `AxiomStore` each own one store: its layout,
+  its id minting, its read sweeps, its writes and moves. A service whose whole
+  job is one lifecycle event of one store — list it, mint for it, append to it,
+  move a file within it — is **falsely externalized**: nine such services
+  (list-axioms, new-axiom-id, write-axiom-proposal, ratify-axiom,
+  resolve-checklist, list-ledger-runs, list-ledger-critiques,
+  list-triage-state, write-triage-records) collapsed into these two models on
+  2026-09-03. What stays a service: cross-model workflows, external I/O the
+  store doesn't own (LLM calls, git), record _assembly_, and caller-context
+  policy (`write-ledger-run` builds and decides; `Ledger.writeRun` lands
+  bytes). Promote the handle when several services share one store's layout —
+  that sharing is the model announcing itself.
 
 ## `reviewer` is a noun
 

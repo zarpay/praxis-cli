@@ -13,13 +13,13 @@ import type {
 import { errors } from "@/helpers/errors-helper.js";
 import { readText } from "@/helpers/files-helper.js";
 import { baseName, relativePath } from "@/helpers/paths-helper.js";
+import { AxiomStore } from "@/models/axiom-store.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import { VerdictCache } from "@/models/verdict-cache.js";
 import discoverDomainsService from "@/services/discover-domains-service.js";
 import listSourceDocumentsService from "@/services/list-source-documents-service.js";
-import resolveChecklistService from "@/services/resolve-checklist-service.js";
 import resolveUnitsService from "@/services/resolve-units-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
@@ -202,7 +202,7 @@ async function reviewUnit({
       specPath,
       specFilePattern,
       root,
-      checklistFor: (spec) => resolveChecklistService({ root, specPath: spec }),
+      checklistFor: (spec) => new AxiomStore({ projectRoot: root }).checklistFor(spec),
     });
 
     const { verdict, cacheHit, usage } = await reviewTargetService({

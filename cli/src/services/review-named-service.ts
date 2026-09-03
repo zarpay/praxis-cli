@@ -8,10 +8,10 @@ import type {
   Verdict,
 } from "@/types.js";
 
+import { AxiomStore } from "@/models/axiom-store.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import { VerdictCache } from "@/models/verdict-cache.js";
-import resolveChecklistService from "@/services/resolve-checklist-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
@@ -57,7 +57,8 @@ export default async function reviewNamed({
       specPath,
       specFilePattern: config.specFilePattern,
       root,
-      checklistFor: (resolvedSpec) => resolveChecklistService({ root, specPath: resolvedSpec }),
+      checklistFor: (resolvedSpec) =>
+        new AxiomStore({ projectRoot: root }).checklistFor(resolvedSpec),
     });
 
     const verdicts: { reviewerName: string; verdict: Verdict }[] = [];

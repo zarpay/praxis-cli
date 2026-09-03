@@ -2,7 +2,7 @@ import type { Orchestrator, ShowAxiomOptions } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import listAxiomsService from "@/services/list-axioms-service.js";
+import { AxiomStore } from "@/models/axiom-store.js";
 import axiomShowView from "@/views/axiom-show-view.js";
 
 /**
@@ -15,7 +15,7 @@ export const showAxiomOrchestrator: Orchestrator<ShowAxiomOptions> = async (
   ctx,
   { id, json = false },
 ) => {
-  const { axioms } = listAxiomsService({ root: ctx.root });
+  const { axioms } = new AxiomStore({ projectRoot: ctx.root }).all();
   const axiom = axioms.find((candidate) => candidate.id === id);
 
   if (!axiom) throw errors.axiomNotFound(id);

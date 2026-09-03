@@ -4,8 +4,8 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
+import { AxiomStore } from "@/models/axiom-store.js";
 import { triageAxiomsOrchestrator } from "@/orchestrators/triage-axioms-orchestrator.js";
-import listAxiomsService from "@/services/list-axioms-service.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
@@ -122,7 +122,7 @@ describe("triageAxiomsOrchestrator", () => {
 
     const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { yes: true });
 
-    const { axioms } = listAxiomsService({ root });
+    const { axioms } = new AxiomStore({ projectRoot: root }).all();
     const proposal = axioms.find((axiom) => axiom.status === "proposed");
     const records = triageRecords(root);
     const assignments = records.filter((record) => record.kind === "assignment");
@@ -157,7 +157,7 @@ describe("triageAxiomsOrchestrator", () => {
 
     const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { yes: true });
 
-    const { axioms } = listAxiomsService({ root });
+    const { axioms } = new AxiomStore({ projectRoot: root }).all();
 
     expect(outcome).toBe("ok");
     expect(axioms).toHaveLength(0);

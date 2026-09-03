@@ -4,13 +4,10 @@ import { errors } from "@/helpers/errors-helper.js";
 import { exists, readText, removeFile } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
+import { AxiomStore } from "@/models/axiom-store.js";
+import { Ledger } from "@/models/ledger.js";
 import assessAxiomGateService from "@/services/assess-axiom-gate-service.js";
 import assessTraceabilityService from "@/services/assess-traceability-service.js";
-import listAxiomsService from "@/services/list-axioms-service.js";
-import listLedgerCritiquesService from "@/services/list-ledger-critiques-service.js";
-import listTriageStateService from "@/services/list-triage-state-service.js";
-import ratifyAxiomService from "@/services/ratify-axiom-service.js";
-import writeTriageRecordsService from "@/services/write-triage-records-service.js";
 import ratifyView from "@/views/ratify-view.js";
 import { Prompter } from "@framework/views/prompter.js";
 
@@ -37,19 +34,18 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
 
   if (!curator) throw errors.curatorNotConfigured();
 
-  const { axioms } = listAxiomsService({ root });
+  const store = new AxiomStore({ projectRoot: root });
+  const ledger = new Ledger({ projectRoot: root });
+  const { axioms } = store.all();
   const proposal = axioms.find((axiom) => axiom.id === id && axiom.status === "proposed");
 
   if (!proposal) throw errors.axiomNotFound(id);
 
   if (reject !== undefined) {
     removeFile(proposal.path);
-    writeTriageRecordsService({
-      root,
-      records: [
-        { kind: "rejection", axiom_id: id, reason: reject, timestamp: new Date().toISOString() },
-      ],
-    });
+    ledger.appendTriageSession([
+      { kind: "rejection", axiom_id: id, reason: reject, timestamp: new Date().toISOString() },
+    ]);
     ctx.render([
       {
         channel: "success",
@@ -66,12 +62,12 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
     throw errors.notATty("praxis axioms ratify", '--yes or --reject "<reason>"');
   }
 
-  const { assignments } = listTriageStateService({ root });
+  const { assignments } = ledger.triageState();
   const supporting = assignments.filter((assignment) => assignment.axiom_id === id);
   const specPath =
     spec ??
     specFromSupport(
-      root,
+      ledger,
       supporting.map((record) => record.critique_id),
     );
 
@@ -138,7 +134,7 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
 
   if (!confirmed) return "failed";
 
-  ratifyAxiomService({ root, id, groundedIn: traceability.grounding });
+  store.ratify(id, traceability.grounding);
   ctx.render([
     {
       channel: "success",
@@ -152,11 +148,11 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
 export default prepareOrchestrator(ratifyAxiomOrchestrator);
 
 /** The spec the proposal's supporting critiques were reviewed against. */
-function specFromSupport(root: string, critiqueIds: string[]): string | null {
+function specFromSupport(ledger: Ledger, critiqueIds: string[]): string | null {
   if (critiqueIds.length === 0) return null;
 
   const ids = new Set(critiqueIds);
-  const critique = listLedgerCritiquesService({ root }).find((record) => ids.has(record.id));
+  const critique = ledger.critiques().find((record) => ids.has(record.id));
 
   return critique?.spec_path ?? null;
 }

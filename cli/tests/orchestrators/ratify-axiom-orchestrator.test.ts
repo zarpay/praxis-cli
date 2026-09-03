@@ -3,8 +3,8 @@ import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { AxiomFile } from "@/models/axiom-file.js";
+import { Ledger } from "@/models/ledger.js";
 import { ratifyAxiomOrchestrator } from "@/orchestrators/ratify-axiom-orchestrator.js";
-import writeTriageRecordsService from "@/services/write-triage-records-service.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
@@ -78,19 +78,16 @@ function ratifyProject(plan: Parameters<typeof curatorProviderModule>[0]): strin
       }),
     ],
   });
-  writeTriageRecordsService({
-    root,
-    records: [
-      {
-        kind: "assignment",
-        critique_id: "r1:1",
-        axiom_id: "AX-aaaa11",
-        axiom_version: 1,
-        assigned_by: { decision: "human", suggested_by: "scripted" },
-        timestamp: "2026-09-03T10:00:00.000Z",
-      },
-    ],
-  });
+  new Ledger({ projectRoot: root }).appendTriageSession([
+    {
+      kind: "assignment",
+      critique_id: "r1:1",
+      axiom_id: "AX-aaaa11",
+      axiom_version: 1,
+      assigned_by: { decision: "human", suggested_by: "scripted" },
+      timestamp: "2026-09-03T10:00:00.000Z",
+    },
+  ]);
 
   return root;
 }

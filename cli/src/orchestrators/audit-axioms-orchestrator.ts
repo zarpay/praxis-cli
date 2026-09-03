@@ -2,8 +2,8 @@ import type { AuditAxiomsOptions, Orchestrator } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
+import { AxiomStore } from "@/models/axiom-store.js";
 import assessAxiomGateService from "@/services/assess-axiom-gate-service.js";
-import listAxiomsService from "@/services/list-axioms-service.js";
 import auditView from "@/views/audit-view.js";
 
 /**
@@ -25,7 +25,7 @@ export const auditAxiomsOrchestrator: Orchestrator<AuditAxiomsOptions> = async (
 
   if (!curator) throw errors.curatorNotConfigured();
 
-  const { axioms } = listAxiomsService({ root });
+  const { axioms } = new AxiomStore({ projectRoot: root }).all();
   const active = axioms.filter((axiom) => axiom.status === "active");
 
   const rows = [];

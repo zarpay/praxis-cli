@@ -1,7 +1,7 @@
 import type { ListAxiomsOptions, Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import listAxiomsService from "@/services/list-axioms-service.js";
+import { AxiomStore } from "@/models/axiom-store.js";
 import axiomListView from "@/views/axiom-list-view.js";
 
 /**
@@ -15,7 +15,7 @@ export const listAxiomsOrchestrator: Orchestrator<ListAxiomsOptions> = async (
   ctx,
   { json = false },
 ) => {
-  const { axioms, problems } = listAxiomsService({ root: ctx.root });
+  const { axioms, problems } = new AxiomStore({ projectRoot: ctx.root }).all();
   const view = axiomListView({ axioms, problems, json });
 
   ctx.render(view);

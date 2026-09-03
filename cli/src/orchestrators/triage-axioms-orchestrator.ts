@@ -12,12 +12,10 @@ import { errors } from "@/helpers/errors-helper.js";
 import { exists, readText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
+import { AxiomStore } from "@/models/axiom-store.js";
+import { Ledger } from "@/models/ledger.js";
 import assessAxiomGateService from "@/services/assess-axiom-gate-service.js";
-import listAxiomsService from "@/services/list-axioms-service.js";
-import listTriageStateService from "@/services/list-triage-state-service.js";
 import organizeTriageService from "@/services/organize-triage-service.js";
-import writeAxiomProposalService from "@/services/write-axiom-proposal-service.js";
-import writeTriageRecordsService from "@/services/write-triage-records-service.js";
 import triageClusterView from "@/views/triage-cluster-view.js";
 import triageSummaryView from "@/views/triage-summary-view.js";
 import { Prompter } from "@framework/views/prompter.js";
@@ -44,7 +42,8 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
 
   if (!curator) throw errors.curatorNotConfigured();
 
-  const state = listTriageStateService({ root });
+  const ledger = new Ledger({ projectRoot: root });
+  const state = ledger.triageState();
 
   if (state.pending.length === 0) {
     ctx.render([{ channel: "content", entries: ["Nothing pending triage."] }]);
@@ -82,7 +81,7 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
   prompter.close();
 
   if (session.records.length > 0) {
-    writeTriageRecordsService({ root, records: session.records });
+    ledger.appendTriageSession(session.records);
   }
 
   const pendingLeft = state.pending.length - session.assigned - session.dismissed;
@@ -120,7 +119,7 @@ async function organizeAndDecide(
   session: TriageSession,
   pending: PendingCritique[],
 ): Promise<void> {
-  const { axioms } = listAxiomsService({ root: session.root });
+  const { axioms } = new AxiomStore({ projectRoot: session.root }).all();
   const established = axioms
     .filter((axiom) => axiom.status === "active")
     .map((axiom) => ({ id: axiom.id, statement: axiom.statement() }));
@@ -324,8 +323,8 @@ async function propose(
 
   const statement =
     gate.assessment === "split" && gate.judgmentHalf ? gate.judgmentHalf : draft.statement;
-  const { id } = writeAxiomProposalService({
-    root: session.root,
+  const store = new AxiomStore({ projectRoot: session.root });
+  const { id } = store.propose({
     statement,
     severity: draft.severity,
     scope: draft.scope,

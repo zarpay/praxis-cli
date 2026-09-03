@@ -196,13 +196,6 @@ export interface ChecklistAxiom {
   body: string;
 }
 
-/** Which spec's checklist to assemble. */
-export interface ResolveChecklistInput {
-  root: string;
-  /** Absolute path of the governing spec. */
-  specPath: string;
-}
-
 /** Everything the reviewer's user prompt is built from. */
 export interface ValidationQuestionInput {
   /** The spec content the target is reviewed against. */
@@ -1422,11 +1415,6 @@ export interface WriteLedgerRunResult {
   path: string;
 }
 
-/** Whose ledger to list runs from. */
-export interface ListLedgerRunsInput {
-  root: string;
-}
-
 /** The reviewers a run is about to use, checked against the ledger. */
 export interface DetectEpochBoundariesInput {
   root: string;
@@ -1545,32 +1533,12 @@ export interface AxiomTemplateVars {
   compliantExample: string;
 }
 
-/** Whose axiom store to read. */
-export interface ListAxiomsInput {
-  root: string;
-}
-
 /** The store's contents, plus what could not be read. */
 export interface ListAxiomsResult {
   /** Sorted by introduced date, id as tiebreak — random ids carry no order. */
   axioms: AxiomFile[];
   /** Files that failed validation: reported, never fatal to the sweep. */
   problems: { path: string; message: string }[];
-}
-
-/** The project an id is minted for (uniqueness is checked in-store). */
-export interface NewAxiomIdInput {
-  root: string;
-}
-
-/** A draft accepted at triage, ready to become a proposal file. */
-export interface WriteAxiomProposalInput {
-  root: string;
-  statement: string;
-  severity: Severity;
-  scope: AxiomScope;
-  violatingExample: string;
-  compliantExample: string;
 }
 
 /** Where the proposal landed. */
@@ -1747,11 +1715,6 @@ export interface TriageWireCluster {
   why_unassignable?: string | null;
 }
 
-/** Whose triage queue to derive. */
-export interface ListTriageStateInput {
-  root: string;
-}
-
 /** The derived triage queue and its residual counters. */
 export interface TriageState {
   /** Open-channel critiques no assignment or dismissal covers yet. */
@@ -1777,19 +1740,6 @@ export interface TriageSession {
   dismissed: number;
   skipped: number;
   costUsd: number | null;
-}
-
-/** A session's records, ready to append. */
-export interface WriteTriageRecordsInput {
-  root: string;
-  records: TriageRecord[];
-}
-
-/** Ratification's store move: proposal → active, grounded (04). */
-export interface RatifyAxiomInput {
-  root: string;
-  id: string;
-  groundedIn: string;
 }
 
 /** Options for `praxis axioms triage`. */

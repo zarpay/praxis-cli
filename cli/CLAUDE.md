@@ -178,7 +178,7 @@ The axiom layer (04) sits on the ledger: open-channel critiques triage into `.pr
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
-Key files: `services/request-verdict-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile), `services/` (verdict-cache, discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
+Key files: `services/request-verdict-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile, Ledger, AxiomStore, VerdictCache), `services/` (discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
 
 ### Project Root Detection
 
