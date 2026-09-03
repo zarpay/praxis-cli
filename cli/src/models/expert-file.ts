@@ -93,10 +93,6 @@ export class ExpertFile {
   }
 
   /** Reads and validates an expert from disk. */
-  static at(path: string): ExpertFile {
-    return ExpertFile.fromDocument(MarkdownFile.at(path), path);
-  }
-
   /** Reads and validates an expert from already-loaded content. */
   static fromContent(content: string, path: string): ExpertFile {
     return ExpertFile.fromDocument(MarkdownFile.fromContent(content, path), path);

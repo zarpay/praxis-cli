@@ -166,7 +166,7 @@ describe("AxiomStore", () => {
       const { id } = store.propose(draft());
 
       const { path } = store.ratify(id, "docs/README.md#error-messages");
-      const ratified = AxiomFile.at(path);
+      const ratified = AxiomFile.fromContent(readFileSync(path, "utf8"), path);
 
       expect(ratified.status).toBe("active");
       expect(ratified.groundedIn).toBe("docs/README.md#error-messages");

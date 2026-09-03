@@ -1,4 +1,3 @@
-import { readText } from "@/helpers/files-helper.js";
 import { Frontmatter } from "@/models/frontmatter.js";
 
 /** Delimiter fencing the YAML frontmatter block. */
@@ -34,11 +33,6 @@ export class MarkdownFile {
   private constructor(content: string, name: string) {
     this.content = content;
     this.name = name;
-  }
-
-  /** Reads a document from disk. */
-  static at(path: string, name: string = path): MarkdownFile {
-    return new MarkdownFile(readText(path), name);
   }
 
   /**

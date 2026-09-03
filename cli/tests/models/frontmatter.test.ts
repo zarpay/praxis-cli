@@ -1,5 +1,6 @@
 import type { Frontmatter } from "@/models/frontmatter.js";
 
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -9,7 +10,10 @@ const FIXTURES_DIR = join(import.meta.dirname, "..", "fixtures");
 
 /** The sample document's frontmatter. */
 function sample(): Frontmatter {
-  return MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md")).frontmatter;
+  return MarkdownFile.fromContent(
+    readFileSync(join(FIXTURES_DIR, "sample-expert.md"), "utf8"),
+    "sample-expert.md",
+  ).frontmatter;
 }
 
 /** Frontmatter from YAML lines, named for error messages. */
@@ -26,7 +30,10 @@ describe("Frontmatter", () => {
     });
 
     it("returns an empty object for a document with no frontmatter", () => {
-      const parsed = MarkdownFile.at(join(FIXTURES_DIR, "no-frontmatter.md")).frontmatter.parse();
+      const parsed = MarkdownFile.fromContent(
+        readFileSync(join(FIXTURES_DIR, "no-frontmatter.md"), "utf8"),
+        "no-frontmatter.md",
+      ).frontmatter.parse();
 
       expect(parsed).toEqual({});
     });

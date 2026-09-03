@@ -1,7 +1,7 @@
 import type { RefKey } from "@/types.js";
 import type { AuditExpertsInput, ExpertAudit } from "@/types.js";
 
-import { exists } from "@/helpers/files-helper.js";
+import { exists, readText } from "@/helpers/files-helper.js";
 import { baseName, joinPath } from "@/helpers/paths-helper.js";
 import { ExpertFile } from "@/models/expert-file.js";
 import expandGlobsService from "@/services/expand-globs-service.js";
@@ -39,7 +39,7 @@ export default async function auditExperts({
     let parsed: ExpertFile;
 
     try {
-      parsed = ExpertFile.at(expertFile);
+      parsed = ExpertFile.fromContent(readText(expertFile), expertFile);
     } catch (err) {
       audit.invalidExperts.push({
         expert,

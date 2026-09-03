@@ -1,5 +1,6 @@
 import type { CompileExpertInput, CompileExpertResult } from "@/types.js";
 
+import { readText } from "@/helpers/files-helper.js";
 import { ExpertFile } from "@/models/expert-file.js";
 import buildProfileService from "@/services/build-profile-service.js";
 import inlineReferencesService from "@/services/inline-references-service.js";
@@ -22,7 +23,7 @@ export default async function compileExpert({
   agentProfilesOutputDir,
   plugins,
 }: CompileExpertInput): Promise<CompileExpertResult> {
-  const expert = ExpertFile.at(expertFile);
+  const expert = ExpertFile.fromContent(readText(expertFile), expertFile);
 
   const inline = (patterns: string[], missingLabel: string) =>
     inlineReferencesService({ patterns, root, specFilePattern, missingLabel });

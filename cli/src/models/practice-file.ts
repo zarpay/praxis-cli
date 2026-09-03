@@ -33,13 +33,6 @@ export class PracticeFile {
     }
   }
 
-  /** Reads and validates a practice from disk. */
-  static at(path: string): PracticeFile {
-    const document = MarkdownFile.at(path);
-
-    return new PracticeFile(document.frontmatter, document.body, path);
-  }
-
   /** Reads and validates a practice from already-loaded content. */
   static fromContent(content: string, path: string): PracticeFile {
     const document = MarkdownFile.fromContent(content, path);

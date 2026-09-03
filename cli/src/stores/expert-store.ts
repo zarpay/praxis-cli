@@ -2,7 +2,7 @@ import type { StoreProblem } from "@/types.js";
 
 import fg from "fast-glob";
 
-import { exists, matchesFilename } from "@/helpers/files-helper.js";
+import { exists, matchesFilename, readText } from "@/helpers/files-helper.js";
 import { baseName } from "@/helpers/paths-helper.js";
 import { ExpertFile } from "@/models/expert-file.js";
 
@@ -56,7 +56,7 @@ export class ExpertStore {
 
     for (const path of this.files()) {
       try {
-        experts.push(ExpertFile.at(path));
+        experts.push(ExpertFile.fromContent(readText(path), path));
       } catch (err) {
         problems.push({ path, message: err instanceof Error ? err.message : String(err) });
       }

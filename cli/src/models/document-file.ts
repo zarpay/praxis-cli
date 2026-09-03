@@ -28,11 +28,6 @@ export class DocumentFile {
     this.type = fields.optionalString("type");
   }
 
-  /** Reads a document from disk. */
-  static at(path: string): DocumentFile {
-    return new DocumentFile(MarkdownFile.at(path).frontmatter, path);
-  }
-
   /** Reads a document from already-loaded content. */
   static fromContent(content: string, path: string): DocumentFile {
     return new DocumentFile(MarkdownFile.fromContent(content, path).frontmatter, path);

@@ -1,6 +1,6 @@
 import type { ExpandGlobsInput, InlineReferencesResult } from "@/types.js";
 
-import { exists } from "@/helpers/files-helper.js";
+import { exists, readText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { MarkdownFile } from "@/models/markdown-file.js";
 import expandGlobsService from "@/services/expand-globs-service.js";
@@ -44,7 +44,7 @@ export default async function inlineReferences({
         continue;
       }
 
-      bodies.push(MarkdownFile.at(fullPath).body);
+      bodies.push(MarkdownFile.fromContent(readText(fullPath), fullPath).body);
     }
   }
 

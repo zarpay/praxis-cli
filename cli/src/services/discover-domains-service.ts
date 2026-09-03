@@ -2,7 +2,7 @@ import type { DiscoveryScope, ValidationDomain } from "@/types.js";
 
 import fg from "fast-glob";
 
-import { isContentFile } from "@/helpers/files-helper.js";
+import { isContentFile, readText } from "@/helpers/files-helper.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/helpers/paths-helper.js";
 import { DEFAULT_SPEC_FILE_PATTERN } from "@/models/praxis-config.js";
 import { SpecFile } from "@/models/spec-file.js";
@@ -48,7 +48,7 @@ function domainFor(
   specFilePattern: string,
   absoluteIgnore: string[],
 ): ValidationDomain {
-  const spec = SpecFile.at(specPath, root);
+  const spec = SpecFile.fromContent(readText(specPath), specPath, root);
   const dir = parentDir(specPath);
   const excludes = spec.excludes.map((p) => joinPath(root, p));
   const exemplars = spec.exemplars.map((p) => joinPath(root, p));

@@ -60,7 +60,7 @@ export class AxiomStore {
       const path = joinPath(this.axiomsDir, file);
 
       try {
-        axioms.push(AxiomFile.at(path));
+        axioms.push(AxiomFile.fromContent(readText(path), path));
       } catch (err) {
         problems.push({ path, message: err instanceof Error ? err.message : String(err) });
       }

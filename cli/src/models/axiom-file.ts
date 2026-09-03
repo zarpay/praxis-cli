@@ -68,13 +68,6 @@ export class AxiomFile {
     this.body = body;
   }
 
-  /** Reads and validates an axiom from disk. */
-  static at(path: string): AxiomFile {
-    const document = MarkdownFile.at(path);
-
-    return new AxiomFile(document.frontmatter, document.body, path);
-  }
-
   /** Reads and validates an axiom from already-loaded content. */
   static fromContent(content: string, path: string): AxiomFile {
     const document = MarkdownFile.fromContent(content, path);

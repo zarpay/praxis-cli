@@ -31,7 +31,9 @@ exists to end.
   from external facts (git, LLM calls) — stays in services.
 - **The document format stays a model.** `CacheFile` is the format,
   `VerdictStore` the IO; `AxiomFile` the document, `AxiomStore` the
-  directory. A store parses _into_ models and serializes _from_ them.
+  directory. A store parses _into_ models and serializes _from_ them —
+  `readText(path)` then `Model.fromContent(content, path)`; models have no
+  `at()` because reading disk is this layer's job.
 - **Sweeps report, never raise**: `all()` returns `{items, problems}` —
   one malformed file is a `StoreProblem`, not a dead sweep. Sweep listing
   rules (spec files excluded, `_`-prefixed templates excluded, ignore

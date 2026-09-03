@@ -1,5 +1,6 @@
 import type { CountDocumentsInput, DocumentCounts } from "@/types.js";
 
+import { readText } from "@/helpers/files-helper.js";
 import { resolvePath } from "@/helpers/paths-helper.js";
 import { DocumentFile } from "@/models/document-file.js";
 import listDocumentsService from "@/services/list-documents-service.js";
@@ -33,7 +34,7 @@ export default async function countDocumentsByType({
     });
 
     for (const file of files) {
-      const type = DocumentFile.at(file).type;
+      const type = DocumentFile.fromContent(readText(file), file).type;
 
       if (type === "reference") references++;
       else if (type === "convention" || type === "constitution") context++;

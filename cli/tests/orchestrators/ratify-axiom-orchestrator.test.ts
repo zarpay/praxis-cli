@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -98,7 +98,7 @@ describe("ratifyAxiomOrchestrator", () => {
     });
 
     const activePath = join(root, ".praxis", "axioms", "AX-aaaa11.md");
-    const ratified = AxiomFile.at(activePath);
+    const ratified = AxiomFile.fromContent(readFileSync(activePath, "utf8"), activePath);
 
     expect(outcome).toBe("ok");
     expect(ratified.status).toBe("active");

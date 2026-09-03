@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -5,9 +6,14 @@ import { MarkdownFile } from "@/models/markdown-file.js";
 
 const FIXTURES_DIR = join(import.meta.dirname, "..", "fixtures");
 
-/** The sample document, read from disk. */
+/** Constructs a document from one fixture file's content. */
+function fromFixture(name: string): MarkdownFile {
+  return MarkdownFile.fromContent(readFileSync(join(FIXTURES_DIR, name), "utf8"), name);
+}
+
+/** The sample document. */
 function sample(): MarkdownFile {
-  return MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md"));
+  return fromFixture("sample-expert.md");
 }
 
 describe("MarkdownFile", () => {
@@ -27,7 +33,7 @@ describe("MarkdownFile", () => {
     });
 
     it("returns the whole file when there is no frontmatter", () => {
-      const body = MarkdownFile.at(join(FIXTURES_DIR, "no-frontmatter.md")).body;
+      const body = fromFixture("no-frontmatter.md").body;
 
       expect(body).toContain("# Document Without Frontmatter");
     });
@@ -63,7 +69,7 @@ describe("MarkdownFile", () => {
     });
 
     it("returns an empty string when there is no frontmatter", () => {
-      const yaml = MarkdownFile.at(join(FIXTURES_DIR, "no-frontmatter.md")).rawYaml;
+      const yaml = fromFixture("no-frontmatter.md").rawYaml;
 
       expect(yaml).toBe("");
     });
@@ -90,14 +96,14 @@ describe("MarkdownFile", () => {
   });
 
   describe("name", () => {
-    it("defaults to the path it was read from", () => {
-      const path = join(FIXTURES_DIR, "sample-expert.md");
+    it('defaults to "<content>" when the caller names nothing', () => {
+      const document = MarkdownFile.fromContent("# Body");
 
-      expect(MarkdownFile.at(path).name).toBe(path);
+      expect(document.name).toBe("<content>");
     });
 
-    it("takes a caller-supplied name instead", () => {
-      const document = MarkdownFile.at(join(FIXTURES_DIR, "sample-expert.md"), "experts/sample.md");
+    it("takes a caller-supplied name", () => {
+      const document = MarkdownFile.fromContent("# Body", "experts/sample.md");
 
       expect(document.name).toBe("experts/sample.md");
     });

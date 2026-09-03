@@ -10,7 +10,7 @@ cohort: by_directory
 # Feature Steward (a.k.a **Sundae**)
 
 The subject-matter expert on how Scoop Society features are composed —
-like its namesake, reviewed as an assembly, never scoop by scoop.
+like its namesake, reviewed as one assembly, never scoop by scoop.
 
 ## Identity
 

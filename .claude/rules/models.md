@@ -17,9 +17,13 @@ frontmatter keys are spelled.
   so no consumer re-checks.
 - Absence and invalidity differ: an omitted optional key is `undefined` (or `[]`),
   a key that is present but malformed raises.
-- A model reads its own file and nothing else — no network, no writing, no
-  coordinating other work. Resolving a path against a project root is a caller's
-  job, not a parser's.
+- **A model never touches the filesystem.** `fromContent` is the one way in:
+  pure construction from already-loaded text. Reading a file is IO and belongs
+  to the store (or the service holding the path) — the `Model.at(path)`
+  statics were removed 2026-09-04 for exactly this. No network, no writing, no
+  coordinating other work; resolving a path against a project root is a
+  caller's job. (`ReviewSubject.resolve` remains the one sanctioned reader —
+  it assembles the whole review input; splitting it is an open question.)
 - Callers that sweep a directory catch per file and report, so one malformed
   document never takes down a batch.
 - **Every file here declares a class.** A module of loose functions over a

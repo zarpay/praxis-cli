@@ -46,11 +46,6 @@ export class SpecFile {
     this.context = fields.stringList("context");
   }
 
-  /** Reads and validates a spec from disk. */
-  static at(path: string, root?: string): SpecFile {
-    return new SpecFile(MarkdownFile.at(path, display(path, root)).frontmatter, path);
-  }
-
   /**
    * Reads and validates a spec from already-loaded content.
    *

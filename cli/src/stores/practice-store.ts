@@ -2,7 +2,7 @@ import type { StoreProblem } from "@/types.js";
 
 import fg from "fast-glob";
 
-import { exists, matchesFilename } from "@/helpers/files-helper.js";
+import { exists, matchesFilename, readText } from "@/helpers/files-helper.js";
 import { baseName } from "@/helpers/paths-helper.js";
 import { PracticeFile } from "@/models/practice-file.js";
 
@@ -59,7 +59,7 @@ export class PracticeStore {
 
     for (const path of this.files()) {
       try {
-        practices.push(PracticeFile.at(path));
+        practices.push(PracticeFile.fromContent(readText(path), path));
       } catch (err) {
         problems.push({ path, message: err instanceof Error ? err.message : String(err) });
       }
