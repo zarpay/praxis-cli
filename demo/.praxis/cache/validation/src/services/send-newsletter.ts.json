@@ -8,12 +8,12 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T22:40:22.118Z",
-      "content_hash": "793ce9b2",
+      "cached_at": "2026-09-03T12:47:11.678Z",
+      "content_hash": "bfca8486",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 759 words."
+        "reason": "Review input has 1056 words."
       },
       "exemplar_files": [
         {
@@ -29,39 +29,12 @@
         "hash": "41d823fa"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T22:37:51.146Z",
-      "content_hash": "793ce9b2",
+      "cached_at": "2026-09-03T12:45:53.374Z",
+      "content_hash": "bfca8486",
       "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          {
-            "text": "The service performs I/O outside the Store: console.log sends output directly instead of mediating all side effects through Store methods. The newsletter delivery must go through a Store method (e.g. store.sendNewsletter or similar) rather than console.log.",
-            "axiomId": "AX-6e307b",
-            "axiomVersion": 1
-          },
-          {
-            "text": "Error message 'bad subject' is vague and not actionable for the API consumer; it must name what was wrong and what would be accepted instead (e.g. 'subject must be a non-empty string').",
-            "axiomId": "AX-b951db",
-            "axiomVersion": 1
-          },
-          {
-            "text": "Domain failures must be values, never exceptions. The empty-subject check throws instead of returning { ok: false, error }, so a caller-plausible failure surfaces as an exception; it must return an error result.",
-            "axiomId": null,
-            "axiomVersion": null
-          },
-          {
-            "text": "The module must export a single entry point named `run` taking the Store first and a single input object, returning a Result<T> from the domain types. This file exports `sendNewsletter` returning boolean; it must export `run(store, input)` yielding a Result<T>.",
-            "axiomId": null,
-            "axiomVersion": null
-          },
-          {
-            "text": "Every service must have a doc comment stating its purpose in one sentence and enumerating its domain failure modes so a caller can handle every error without reading the body. There is no doc comment here.",
-            "axiomId": null,
-            "axiomVersion": null
-          }
-        ],
-        "reason": "The file violates multiple required service conventions: it throws for a domain failure, returns boolean instead of Result, does not export run, performs I/O via console.log rather than the Store, uses a vague error message, and lacks the required doc comment."
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies the Service Conventions specification and all ratified axioms. The doc comment states the service's purpose in one sentence and enumerates both domain failure modes (empty subject; no reviews on record), matching the code exactly (AX-2559f7). All plausible caller failures are returned as `{ ok: false, error }` values with no throws (AX-3317a7). The only I/O is through the injected Store via `store.listReviews()` — no console, fetch, or timers (AX-6e307b). No hardcoded configuration or domain constants exist in the module (AX-a108ea). Error messages are specific and actionable, naming what was wrong and what would be accepted (AX-b951db). The module exports a single `run` entry point taking the Store first and a single input object, returning a `Result<T>`; the module name is verb-first kebab-case; validation reads top-to-bottom before the happy path; and the service does one thing."
       },
       "exemplar_files": [
         {
@@ -77,44 +50,12 @@
         "hash": "2b519849"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T22:39:26.811Z",
-      "content_hash": "793ce9b2",
+      "cached_at": "2026-09-03T12:47:11.633Z",
+      "content_hash": "bfca8486",
       "result": {
-        "compliant": false,
-        "severity": "error",
-        "issues": [
-          {
-            "text": "The service performs direct I/O via console.log() instead of using the injected Store. Line 11: `console.log(`sending '${input.subject}' to fans of ${parlors.length} parlors`);` violates the requirement that all I/O must go through Store methods.",
-            "axiomId": "AX-6e307b",
-            "axiomVersion": 1
-          },
-          {
-            "text": "The error message 'bad subject' is vague and not actionable for API consumers. Line 5: `throw new Error('bad subject');` should provide specific guidance about what would be accepted instead, such as 'subject must be a non-empty string'.",
-            "axiomId": "AX-b951db",
-            "axiomVersion": 1
-          },
-          {
-            "text": "The service does not follow the required structure: it exports a function named `sendNewsletter` instead of `run`. The specification requires every service to export exactly one entry point named `run`.",
-            "axiomId": null,
-            "axiomVersion": null
-          },
-          {
-            "text": "The service returns a boolean instead of a `Result<T>` from domain types. The specification requires services to return `Result<T>` for proper error handling.",
-            "axiomId": null,
-            "axiomVersion": null
-          },
-          {
-            "text": "The service lacks a doc comment stating its purpose and enumerating domain failure modes. The specification requires every service to have documentation explaining its purpose and failure modes.",
-            "axiomId": null,
-            "axiomVersion": null
-          },
-          {
-            "text": "The service uses `throw` for a domain failure (empty subject) instead of returning `{ ok: false, error }`. The specification states that domain failures are values, never exceptions, and `throw` is reserved for programmer error only.",
-            "axiomId": null,
-            "axiomVersion": null
-          }
-        ],
-        "reason": "The file violates multiple required criteria from the specification, including critical axioms about I/O and error messages."
+        "compliant": true,
+        "issues": [],
+        "reason": "The file fully satisfies all criteria in the specification. It follows the required structure with a single exported `run` function, has comprehensive documentation with enumerated failure modes, uses domain failures for all caller-caused errors, provides specific actionable error messages, performs validation before any work, and isolates all I/O through the injected Store dependency."
       },
       "exemplar_files": [
         {

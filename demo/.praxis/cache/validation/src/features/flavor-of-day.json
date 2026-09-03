@@ -8,12 +8,12 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T22:40:22.111Z",
-      "content_hash": "f1a31d98",
+      "cached_at": "2026-09-03T12:59:55.561Z",
+      "content_hash": "5f5ece93",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 802 words."
+        "reason": "Review input has 928 words."
       },
       "context_files": [
         {
@@ -33,19 +33,24 @@
         "hash": "41d823fa"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T22:37:39.346Z",
-      "content_hash": "f1a31d98",
+      "cached_at": "2026-09-03T12:57:45.637Z",
+      "content_hash": "5f5ece93",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "The feature directory 'flavor-of-day' has no index.ts entry point, so there is no file re-exporting the feature's entire public API — nothing outside the feature can import it, and the Structure rules (exactly one index.ts, types in a dedicated <feature>-types.ts file, verb-first kebab-case logic files) are unmet. The directory must add an index.ts that re-exports the public API (e.g. export { run } from ... / export * from '<feature>-types'), and the 'old-rotation.ts' file is unreachable without it.",
-            "axiomId": "AX-96ff9c",
+            "text": "src/features/flavor-of-day/old-rotation.ts is a legacy rotation system kept as dead code ('Kept around in case we go back to the old rotation') that serves a different purpose than the flavor-of-day capability — this is exactly the violating example in the axiom. The file must be removed or moved to its own feature so every file in the directory serves the single capability of determining/announcing today's flavor.",
+            "axiomId": "AX-d3e3b0",
+            "axiomVersion": 1
+          },
+          {
+            "text": "src/features/flavor-of-day/flavor.ts does not provide consumer-grade error messages: it returns plain strings and can throw an unhandled TypeError (e.g., when the store has no parlors, `parlors[index].signatureFlavor` throws) rather than returning a Result with a clear, actionable error message about what went wrong and how to fix it.",
+            "axiomId": "AX-fac03c",
             "axiomVersion": 1
           }
         ],
-        "reason": "The flavor-of-day feature directory contains flavor.ts and old-rotation.ts but lacks the required index.ts entry point that re-exports the entire public API. It also lacks the dedicated <feature>-types.ts file and verb-first kebab-case logic file names. The missing entry point directly violates the sole ratified axiom, and the other structural requirements cannot be satisfied as the directory stands."
+        "reason": "The feature directory fails the ratified axioms: it contains a dead-code legacy rotation file serving a different purpose (violating the single-capability axiom), and its logic file lacks consumer-grade error handling, throwing raw exceptions instead of returning actionable error messages."
       },
       "context_files": [
         {
@@ -65,34 +70,24 @@
         "hash": "2b519849"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T22:38:32.066Z",
-      "content_hash": "f1a31d98",
+      "cached_at": "2026-09-03T12:59:26.119Z",
+      "content_hash": "5f5ece93",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "Missing required entry point index.ts file that re-exports the feature's entire public API. The feature directory contains flavor.ts and old-rotation.ts but no index.ts file to serve as the entry point.",
-            "axiomId": "AX-96ff9c",
+            "text": "The feature contains files serving unrelated purposes: 'flavor.ts' implements the current flavor-of-day capability using store data, while 'old-rotation.ts' contains legacy rotation logic with hardcoded flavors. These belong in separate features to maintain clear boundaries and focused purpose.",
+            "axiomId": "AX-d3e3b0",
             "axiomVersion": 1
           },
           {
-            "text": "Missing required <feature>-types.ts file (should be flavor-of-day-types.ts) as specified in the Structure section.",
-            "axiomId": null,
-            "axiomVersion": null
-          },
-          {
-            "text": "The logic files do not follow service conventions: they don't export a single 'run' function, don't use the Result<T> type pattern for error handling, and don't provide consumer-grade error messages as required by the Structure section.",
-            "axiomId": null,
-            "axiomVersion": null
-          },
-          {
-            "text": "The old-rotation.ts file appears to be legacy/dead code ('Kept around in case we go back to the old rotation') which may violate the 'One capability per feature' cohesion principle if it's truly unrelated functionality.",
+            "text": "Logic files do not follow the service conventions: they export multiple functions instead of a single 'run' function, do not return 'Result<T>' type, and do not provide consumer-grade error messages as required by the specification.",
             "axiomId": null,
             "axiomVersion": null
           }
         ],
-        "reason": "The feature module violates multiple required criteria in the specification, most critically missing the required index.ts entry point."
+        "reason": "The flavor-of-day feature violates the specification by containing files that serve unrelated purposes, breaking the single-capability principle."
       },
       "context_files": [
         {

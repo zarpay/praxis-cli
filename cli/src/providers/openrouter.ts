@@ -60,9 +60,14 @@ export class OpenRouterProvider implements ReviewProvider {
     }
 
     const data = (await response.json()) as ChatCompletionResponse;
+    const toolCall = data.choices[0]?.message?.tool_calls?.[0];
+
+    if (!toolCall) {
+      throw errors.noToolCall();
+    }
 
     return {
-      verdict: this.verdictFromToolCall(data.choices[0]?.message?.tool_calls?.[0]),
+      verdict: this.verdictFromToolCall(toolCall, this.parseArguments(toolCall, data)),
       usage: this.normalizeUsage(data.usage),
     };
   }
@@ -128,12 +133,8 @@ export class OpenRouterProvider implements ReviewProvider {
   }
 
   /** Maps the model's validation tool call to a normalized verdict. */
-  private verdictFromToolCall(toolCall: ToolCall | undefined): Verdict {
-    if (!toolCall) {
-      throw errors.noToolCall();
-    }
-
-    const args = JSON.parse(toolCall.function.arguments) as {
+  private verdictFromToolCall(toolCall: ToolCall, parsedArgs: unknown): Verdict {
+    const args = parsedArgs as {
       reason: string;
       issues?: { axiom?: string | null; text?: string }[];
     };

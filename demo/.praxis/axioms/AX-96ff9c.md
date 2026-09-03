@@ -1,7 +1,7 @@
 ---
 id: AX-96ff9c
 version: 1
-status: active
+status: deprecated
 mode: judgment
 scope: file
 severity: error

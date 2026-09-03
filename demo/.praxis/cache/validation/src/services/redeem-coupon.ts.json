@@ -1,0 +1,117 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "0311531a:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-03T12:58:43.036Z",
+      "content_hash": "376e87d6",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "The run function has no doc comment at all — only the input interface is documented. It must state its purpose in one sentence and enumerate all domain failure modes (unknown parlor, invalid coupon) so a caller can handle every error without reading the body.",
+            "axiomId": "AX-2559f7",
+            "axiomVersion": 1
+          },
+          {
+            "text": "`throw new Error('bad parlor')` treats a missing parlor — a failure the caller could plausibly cause — as an exception. It must be returned as a domain failure value, e.g. `return { ok: false, error: ... }`.",
+            "axiomId": "AX-3317a7",
+            "axiomVersion": 1
+          },
+          {
+            "text": "`console.log(...)` performs a side effect outside the injected Store. All I/O and side effects must be mediated by Store methods (e.g. `store.logActivity(...)`) or removed.",
+            "axiomId": "AX-6e307b",
+            "axiomVersion": 1
+          },
+          {
+            "text": "The coupon code `'FREESCOOP'` is hardcoded in the service body. It must be isolated in a single obvious config location or fetched via the Store so code and data don't drift.",
+            "axiomId": "AX-a108ea",
+            "axiomVersion": 1
+          },
+          {
+            "text": "`return { ok: false, error: 'invalid' }` is a bare label, not a message. It must name what was wrong and what would be accepted instead, e.g. `coupon must be a valid active code`.",
+            "axiomId": "AX-b951db",
+            "axiomVersion": 2
+          }
+        ],
+        "reason": "The file violates multiple error-severity axioms: the run function lacks the required doc comment, a caller-plausible failure is thrown instead of returned as a domain failure value, I/O occurs outside the Store, and error messages are vague bare labels. It also hardcodes a domain constant."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-03T12:47:07.738Z",
+      "content_hash": "376e87d6",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "The service lacks a doc comment stating its purpose and enumerating domain failure modes. The file must add a doc comment above the run function that clearly explains what the service does and lists all possible domain failures.",
+            "axiomId": "AX-2559f7",
+            "axiomVersion": 1
+          },
+          {
+            "text": "The service throws an exception for a domain failure (bad parlor) instead of returning it as a value. Line 'throw new Error('bad parlor');' must be changed to return { ok: false, error: ... } since this is a failure a caller could plausibly cause.",
+            "axiomId": "AX-3317a7",
+            "axiomVersion": 1
+          },
+          {
+            "text": "The service performs direct I/O with console.log instead of using the injected Store. Line 'console.log(`redeeming ${input.coupon} at ${parlor.name}`);' must be removed or replaced with a Store method call.",
+            "axiomId": "AX-6e307b",
+            "axiomVersion": 1
+          },
+          {
+            "text": "Error messages are vague and unactionable. 'bad parlor' and 'invalid' do not tell the API consumer what would be accepted instead. Messages must be specific like 'no parlor with id '...' — list parlors for valid ids' and 'coupon '...' is not valid — valid coupons are: FREESCOOP'.",
+            "axiomId": "AX-b951db",
+            "axiomVersion": 2
+          }
+        ],
+        "reason": "The file violates multiple required criteria from the specification, including critical axioms about error handling, I/O, and documentation."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:f524adbc": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "f524adbc"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-03T12:47:11.677Z",
+      "content_hash": "376e87d6",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 968 words."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    }
+  }
+}

@@ -8,12 +8,12 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T22:40:22.117Z",
-      "content_hash": "552e6c2e",
+      "cached_at": "2026-09-03T12:47:11.675Z",
+      "content_hash": "72b5f0a3",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 865 words."
+        "reason": "Review input has 1036 words."
       },
       "exemplar_files": [
         {
@@ -29,12 +29,12 @@
         "hash": "41d823fa"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T22:37:48.011Z",
-      "content_hash": "552e6c2e",
+      "cached_at": "2026-09-03T12:45:15.763Z",
+      "content_hash": "72b5f0a3",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "rank-parlors.ts fully conforms to the Service Conventions specification and all ratified axioms. Structure: it exports exactly one entry point, `run`, taking the Store first and a single input object, returning Result<RankedParlor[]>; the module name is verb-first kebab-case. Behavior: validation (`minReviews` whole number of 0+) occurs before any work and reads top-to-bottom before the happy path; domain failures are returned as values, never thrown; error message is specific and actionable ('minReviews must be a whole number of 0 or more'), satisfying AX-b951db. All I/O is performed exclusively through Store methods (`listParlors`, `listReviews`), with no timers, fetch, console, or other side effects, satisfying AX-6e307b. No configuration data or constants are hardcoded. Documentation: the doc comment states the service's purpose in one sentence and enumerates the domain failure mode, so callers can handle every error without reading the body. No violations found on either channel."
+        "reason": "The file satisfies the specification and all axioms. AX-2559f7: the doc comment states a clear one-sentence purpose ('Ranks every reviewed parlor by average rating, highest first') and enumerates the complete set of failure modes ('minReviews negative or not a whole number'), which exactly matches the single validation branch in the body. AX-3317a7: invalid input is returned as a domain failure value ({ ok: false, error }) with no throws. AX-6e307b: all I/O goes through the injected Store (listParlors, listReviews); no console, timers, or fetch. AX-a108ea: no hardcoded configuration or domain constants — minReviews is input and the ranking logic uses no magic values. AX-b951db: the error message 'minReviews must be a whole number of 0 or more' names the field, what was wrong, and what would be accepted. Structure is also compliant: the module exports a single `run` entry point taking the Store first and a single input object, returning a Result<RankedParlor[]>, with a verb-first kebab-case module name; validation runs top-to-bottom before any work; and the service does one thing."
       },
       "exemplar_files": [
         {
@@ -50,12 +50,12 @@
         "hash": "2b519849"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T22:39:21.179Z",
-      "content_hash": "552e6c2e",
+      "cached_at": "2026-09-03T12:46:59.425Z",
+      "content_hash": "72b5f0a3",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification. It follows the required structure with a single `run` function, validates input before work, returns domain failures as values with specific error messages, performs all I/O through the injected Store, has clear documentation enumerating failure modes, and adheres to all axioms in the checklist."
+        "reason": "The file satisfies all criteria defined in the specification. It follows the required structure with a single exported `run` function, has proper documentation, handles domain failures as values with actionable error messages, performs all I/O through the injected Store, and adheres to all axioms."
       },
       "exemplar_files": [
         {

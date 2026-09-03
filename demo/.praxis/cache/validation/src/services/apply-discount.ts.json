@@ -8,12 +8,12 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T22:40:22.116Z",
-      "content_hash": "d3af14cf",
+      "cached_at": "2026-09-03T12:47:11.673Z",
+      "content_hash": "bb67d06e",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 907 words."
+        "reason": "Review input has 1078 words."
       },
       "exemplar_files": [
         {
@@ -29,19 +29,12 @@
         "hash": "41d823fa"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T22:37:45.972Z",
-      "content_hash": "d3af14cf",
+      "cached_at": "2026-09-03T12:44:46.119Z",
+      "content_hash": "bb67d06e",
       "result": {
-        "compliant": false,
-        "severity": "warning",
-        "issues": [
-          {
-            "text": "...",
-            "axiomId": "AX-a108ea",
-            "axiomVersion": 1
-          }
-        ],
-        "reason": "..."
+        "compliant": true,
+        "issues": [],
+        "reason": "The file conforms to the Service Conventions specification and all ratified axioms.\n\n- AX-2559f7: The doc comment states the purpose in one sentence ('Resolves a discount code to the rate a parlor honors.') and enumerates all three failure modes present in the body (unknown parlor id, empty code, unrecognized code) — a caller can handle every error without reading the body.\n- AX-3317a7: All plausible caller failures (unknown parlor, empty code, inactive code) are returned as `{ ok: false, error }` values; no `throw` is used.\n- AX-6e307b: The only I/O is `store.getParlor(...)` through the injected Store; no console, timers, or fetch.\n- AX-a108ea: Promotion data is isolated in a single obvious, documented module-level constant (`ACTIVE_CODES`) rather than scattered through the service, satisfying the 'single obvious place' option.\n- AX-b951db: Every error message is specific and actionable — it names the offending value and states what is accepted (e.g., 'no parlor with id ... — list parlors for valid ids', 'code must be a non-empty discount code, like \\'SCOOP10\\'', and the inactive-code message enumerates currently accepted codes).\n\nStructure also matches: verb-first kebab-case module name, `run(store, input)` with Store first and a single input object returning `Result<number>`, validation reads top-to-bottom before the happy path, and the service does one thing."
       },
       "exemplar_files": [
         {
@@ -57,19 +50,29 @@
         "hash": "2b519849"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T22:39:11.528Z",
-      "content_hash": "d3af14cf",
+      "cached_at": "2026-09-03T12:46:56.208Z",
+      "content_hash": "bb67d06e",
       "result": {
         "compliant": false,
-        "severity": "warning",
+        "severity": "error",
         "issues": [
           {
-            "text": "Configuration data (ACTIVE_CODES constant) is hardcoded within the service module instead of being isolated in a single obvious place or injected via the Store. The comment acknowledges this is temporary, but according to the specification, configuration data that could vary or be maintained separately must be isolated to prevent silent coupling and drift between code and data.",
+            "text": "The service fails to validate that the discount rate is a valid number (0-1 range) before returning it. A caller could plausibly provide a discount code that resolves to an invalid rate (e.g., a rate outside 0-1), which should be a domain failure value, not an exception or unvalidated return. The service must validate that the resolved rate is within acceptable bounds (typically 0 to 1 inclusive) before returning success.",
+            "axiomId": "AX-3317a7",
+            "axiomVersion": 1
+          },
+          {
+            "text": "The ACTIVE_CODES constant is hardcoded in the service module, violating the requirement to isolate configuration data that could vary or be maintained separately. Discount codes and their rates should be injected via the Store or isolated in a single obvious configuration module, not hardcoded directly in the service.",
             "axiomId": "AX-a108ea",
             "axiomVersion": 1
+          },
+          {
+            "text": "The doc comment states 'Failure modes: unknown parlor id; empty code; code that no active promotion recognizes' but omits the critical failure mode of invalid discount rate (rate outside 0-1 range). This incomplete enumeration violates the documentation requirement that callers should be able to handle every error without reading the body.",
+            "axiomId": null,
+            "axiomVersion": null
           }
         ],
-        "reason": "The file satisfies all core requirements but violates a warning-level axiom about configuration data isolation."
+        "reason": "The file violates multiple required criteria from the specification, including critical axioms about domain failure classification and I/O isolation."
       },
       "exemplar_files": [
         {

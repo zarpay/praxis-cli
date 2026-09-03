@@ -8,12 +8,12 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T22:40:22.115Z",
-      "content_hash": "35d8fb94",
+      "cached_at": "2026-09-03T12:59:55.567Z",
+      "content_hash": "9bb3b7a6",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 971 words."
+        "reason": "Review input has 1097 words."
       },
       "context_files": [
         {
@@ -33,12 +33,12 @@
         "hash": "41d823fa"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T22:37:44.908Z",
-      "content_hash": "35d8fb94",
+      "cached_at": "2026-09-03T12:58:22.019Z",
+      "content_hash": "9bb3b7a6",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The 'src/features/tasting-menu' directory satisfies the Feature Module Conventions specification. It has exactly one entry point (index.ts) that re-exports the feature's entire public API (the run function as buildMenu and all types), types live in the dedicated tasting-menu-types.ts file, and the logic file build-menu.ts is verb-first kebab-case with one exported run, a Result return type, and consumer-grade error messages. No file is orphaned: both build-menu.ts and tasting-menu-types.ts are reachable from index.ts through its import graph. The feature composes domain logic into one user-facing capability (curated tasting tours), its name describes the capability rather than implementation, and the set contains no unrelated purposes. The single capability is the one user-facing behavior of this directory, so AX-96ff9c and all cohesion and structure criteria hold."
+        "reason": "The cohort satisfies the Feature Module Conventions. Structure: `index.ts` is the single entry point re-exporting the entire public API (`buildMenu` plus the types); types live in the dedicated `tasting-menu-types.ts`; the logic file `build-menu.ts` is verb-first kebab-case, exports a single `run`, and returns `Result<TastingMenu>` rather than throwing. Cohesion: all three files serve the single capability of building a tasting menu (AX-d3e3b0), every file is reachable from `index.ts` through its import graph (no orphans), and the feature name `tasting-menu` describes the capability, not its implementation. Error handling: the only failure message, 'stops must be a whole number of 1 or more', is clear about what went wrong and actionable about how to fix it — consumer-grade, not a technical code or terse label (AX-fac03c)."
       },
       "context_files": [
         {
@@ -58,12 +58,12 @@
         "hash": "2b519849"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-02T22:38:56.601Z",
-      "content_hash": "35d8fb94",
+      "cached_at": "2026-09-03T12:59:55.520Z",
+      "content_hash": "9bb3b7a6",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The feature module satisfies all specification requirements. It has a proper entry point that re-exports the entire public API (satisfying AX-96ff9c), follows the required structure with dedicated types file and verb-first kebab-case logic file, maintains cohesion with no orphaned files, and focuses on a single capability (building tasting menus)."
+        "reason": "The tasting-menu feature directory fully complies with the specification. It has a single entry point (index.ts), dedicated types file (tasting-menu-types.ts), and properly structured logic file (build-menu.ts) with consumer-grade error messages. All files serve the single capability of creating tasting menus, and the feature name appropriately describes this capability. The implementation follows service conventions with Results over exceptions and clear, actionable error messages."
       },
       "context_files": [
         {

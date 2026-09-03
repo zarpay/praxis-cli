@@ -8,12 +8,12 @@
         "hash": "f524adbc"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-02T22:04:45.418Z",
-      "content_hash": "3fcfd2ce",
+      "cached_at": "2026-09-03T12:59:55.555Z",
+      "content_hash": "9cae8f35",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 288 words."
+        "reason": "Review input has 409 words."
       }
     },
     "244fa7f3:41d823fa": {
@@ -23,12 +23,12 @@
         "hash": "41d823fa"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-02T22:23:51.029Z",
-      "content_hash": "3fcfd2ce",
+      "cached_at": "2026-09-03T12:55:18.144Z",
+      "content_hash": "9cae8f35",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file conforms to the expert document conventions: it has the required frontmatter (title, type: 'expert', alias, description), opens with a level-1 heading naming the expert and its alias (Service Steward / Scooper), states in prose what the expert is the subject-matter expert on (how Scoop Society services are written and reviewed), and contains no placeholder text. The extra keys (constitution, context, practices, refs, validates, excludes, exemplars) are not prohibited by the specification."
+        "reason": "The file satisfies the specification. All required frontmatter is present and correct: title ('Service Steward'), type ('expert'), alias ('Scooper'), and description. The body opens with a level-1 heading naming the expert and its alias ('# Service Steward (a.k.a **Scooper**)'), and states in prose what the expert is the subject-matter expert on ('The subject-matter expert on how Scoop Society services are written and reviewed.'). No placeholder text (TODO, TBD, lorem ipsum) appears. The description satisfies AX-be1f03: it tells an operator when to invoke the expert (review services for convention adherence, advice when writing a new service, invoke whenever files under src/services/ are added or changed) rather than merely restating what the expert is. Extra frontmatter fields are not prohibited by the spec."
       }
     },
     "244fa7f3:2b519849": {
@@ -38,12 +38,12 @@
         "hash": "2b519849"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-02T22:24:31.927Z",
-      "content_hash": "3fcfd2ce",
+      "cached_at": "2026-09-03T12:58:50.120Z",
+      "content_hash": "9cae8f35",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification. It contains all required frontmatter fields (title, type, alias, description) with correct values, opens with a level-1 heading naming the expert and its alias, clearly states what the expert is the subject-matter expert on in prose, and contains no placeholder text."
+        "reason": "The file fully satisfies all requirements in the specification. It includes all required frontmatter fields with appropriate values, has the correct heading structure, clearly states what the expert is an SME on, and provides a description that properly tells operators when to invoke it. The axiom checklist is also satisfied as the description clearly indicates when to use this expert."
       }
     }
   }
