@@ -1715,6 +1715,19 @@ export interface TriageWireCluster {
   why_unassignable?: string | null;
 }
 
+/**
+ * What git can attest about a run's anchoring (05, 12). `commitSha`
+ * non-null means the reviewed disk state provably equals a named,
+ * reviewable commit — reconstruction-grade evidence. Null inside a repo
+ * means the run was feedback on a transient state: attested by content
+ * hashes, not reproducible from git.
+ */
+export interface GitFacts {
+  inRepo: boolean;
+  commitSha: string | null;
+  branch: string | null;
+}
+
 /** The derived triage queue and its residual counters. */
 export interface TriageState {
   /** Open-channel critiques no assignment or dismissal covers yet. */

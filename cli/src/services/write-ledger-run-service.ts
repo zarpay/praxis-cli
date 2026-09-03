@@ -8,8 +8,7 @@ import type {
   WriteLedgerRunResult,
 } from "@/types.js";
 
-import { spawnSync } from "node:child_process";
-
+import { gitFacts } from "@/helpers/git-helper.js";
 import { relativePath } from "@/helpers/paths-helper.js";
 import { Ledger } from "@/models/ledger.js";
 
@@ -112,40 +111,6 @@ function isBaseline(ledger: Ledger, scope: string, reviewerHash: string): boolea
   if (scope !== "corpus") return false;
 
   return !ledger.runs().some((run) => run.reviewer_hash === reviewerHash && run.scope === "corpus");
-}
-
-/**
- * The commit this run describes, and the branch it ran on.
- *
- * A sha is recorded only when the working tree provably equals HEAD —
- * clean, on a branch, inside a repo (12: a run reviews disk state, and an
- * uncommitted tree has no commit to anchor to). The branch is recorded
- * whenever one exists: it names a location, not content. Anything the
- * repo cannot answer is null, never guessed (05).
- */
-function gitFacts(root: string): { commitSha: string | null; branch: string | null } {
-  const branchName = git(root, "rev-parse", "--abbrev-ref", "HEAD");
-  const branch = branchName === "HEAD" ? null : branchName;
-
-  if (!branch) return { commitSha: null, branch: null };
-
-  // The run's own cache and ledger writes land under .praxis/ before this
-  // check runs; they are machine-owned bookkeeping, not reviewed content,
-  // so they must not cost the run its sha.
-  const dirty = git(root, "status", "--porcelain", "--", ".", ":(exclude).praxis");
-
-  if (dirty === null || dirty !== "") return { commitSha: null, branch };
-
-  return { commitSha: git(root, "rev-parse", "HEAD"), branch };
-}
-
-/** One git query, or null when git itself cannot answer. */
-function git(root: string, ...args: string[]): string | null {
-  const result = spawnSync("git", args, { cwd: root, encoding: "utf8" });
-
-  if (result.status !== 0 || result.error) return null;
-
-  return result.stdout.trim();
 }
 
 /** Per-field usage sums; a field nothing reported stays null. */

@@ -50,6 +50,10 @@ Ledger records ride the branch they describe (they are files; a squash-merge car
 - **A branch evaluated mid-flight measures a moving target.** Accepted: snapshots are idempotent, and the merge-time run is the one reports treat as the branch's word.
 - **Uncommitted work is invisible to metrics.** Accepted deliberately — it is the line that keeps provenance honest.
 
+## Anchoring (decided 2026-09-03)
+
+**Praxis never creates commits; anchoring is the workflow's job.** A run's `commit_sha` is recorded exactly when the reviewed tree provably equals a named commit on a branch — that non-null sha _means_ reconstruction-grade evidence (the whole measurement state, axioms included, lives in that tree). Auto-committing, refusing dirty trees, or synthetic off-branch snapshots were each considered and rejected: they respectively pollute the developer's history (10), kill the fast loop (08), or mint phantom states that neither sync nor deserve measurement. The fast loop's runs are feedback on transient states — attested by content hashes, not reproducible from git — and `praxis eval run` says so at run start (warn, never block) whenever it runs inside a repo whose tree is not clean-on-a-branch, so nobody discovers the evidence grade at forensics time. Teams that want every run archive-grade enforce it where commits live: hooks and CI.
+
 ## Open questions
 
 1. Should `eval ci` _warn_ when a PR has no local diff-run in its ledger (evidence gap), or is cache-verified enforcement enough?

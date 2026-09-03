@@ -150,6 +150,8 @@ The cache answers "is this compliant now" and overwrites; the ledger answers "wh
 
 Two things never write the ledger: `eval ci` (CI verifies without writing — the branch's own runs are the evidence) and cache hits (nothing new was reviewed; they are counted on the run record instead).
 
+**Evidence grades**: a run made from a clean tree on a branch records its `commit_sha`, and that sha reconstructs everything — the target, the spec, and the axiom checklist all live in that commit. A fast-loop run on a dirty tree is _attested_ (content hashes prove what the reviewers saw) but not reconstructable, and praxis says so at run start. Praxis never creates commits — when you want archive-grade evidence on every run, run eval from a hook or CI, where clean trees are free.
+
 A target that cannot be reviewed at all — unreadable, or a cohort too large for the model's context window — is reported **UNVERIFIED**: counted separately, never as a violation, and the run fails so it cannot pass unseen.
 
 ## The two channels

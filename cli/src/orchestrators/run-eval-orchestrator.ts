@@ -1,5 +1,6 @@
 import type { Orchestrator, ReviewNamedInput, RunEvalOptions } from "@/types.js";
 
+import { gitFacts } from "@/helpers/git-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
 import reviewNamedService from "@/services/review-named-service.js";
@@ -8,6 +9,7 @@ import selectReviewersService from "@/services/select-reviewers-service.js";
 import epochBoundaryView from "@/views/epoch-boundary-view.js";
 import evalHeadlineView from "@/views/eval-headline-view.js";
 import reviewedTargetView from "@/views/reviewed-target-view.js";
+import runAnchoringView from "@/views/run-anchoring-view.js";
 import runProgressView from "@/views/run-progress-view.js";
 import runReportView from "@/views/run-report-view.js";
 
@@ -37,6 +39,11 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
   const boundaryView = epochBoundaryView(boundaries);
 
   ctx.render(boundaryView);
+
+  // Name the run's evidence grade before spending anything (12).
+  const anchoringView = runAnchoringView(gitFacts(root));
+
+  ctx.render(anchoringView);
 
   if (targets.length > 0) {
     const headlineView = evalHeadlineView({ targets });
