@@ -1,4 +1,4 @@
-import type { Orchestrator } from "@/types.js";
+import type { Orchestrator, StatusOptions } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import buildStatusReportService from "@/services/build-status-report-service.js";
@@ -13,10 +13,13 @@ import statusView from "@/views/status-view.js";
  * cache. Fails when any structural issue is found, so CI fails on a
  * project whose taxonomy has drifted.
  */
-export const analyzeProjectOrchestrator: Orchestrator = async (ctx) => {
+export const analyzeProjectOrchestrator: Orchestrator<StatusOptions> = async (
+  ctx,
+  { json = false },
+) => {
   const report = await buildStatusReportService({ root: ctx.root, config: ctx.config });
 
-  const view = statusView(report);
+  const view = statusView({ ...report, json });
   ctx.render(view);
 
   return countStatusIssuesService(report) > 0 ? "failed" : "ok";

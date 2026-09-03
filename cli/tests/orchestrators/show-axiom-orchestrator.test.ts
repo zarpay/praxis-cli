@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { showAxiomOrchestrator } from "@/orchestrators/show-axiom-orchestrator.js";
+import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
-import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 vi.spyOn(process, "exit").mockImplementation(() => undefined as never);

@@ -27,6 +27,7 @@ Documents in this directory define agent experts.
 ## Required sections
 
 Every expert document must have a `## Scope` section that contains both:
+
 - `### Responsible For` — bullet list of what the expert owns
 - `### Not Responsible For` — bullet list of explicit exclusions
 ```
@@ -106,7 +107,7 @@ context:
 
 **`exemplars:`** — spec-blessed positive examples. Exemplar files are shielded from adverse review (they receive no verdicts) and are inlined into the reviewer's prompt as labeled references for what compliance looks like.
 
-**`context:`** — assist-only material. Context files are inlined into the prompt so the reviewer sees what the standard is *about* (the domain types a service consumes, the store it calls), but they are never evaluated themselves and never produce verdicts.
+**`context:`** — assist-only material. Context files are inlined into the prompt so the reviewer sees what the standard is _about_ (the domain types a service consumes, the store it calls), but they are never evaluated themselves and never produce verdicts.
 
 All three keys take glob patterns resolved against the project root. Because exemplars and context are part of what the reviewer sees, they join the cached verdict's content hash: editing an exemplar or a context file invalidates the affected verdicts just like editing the target or the spec does.
 

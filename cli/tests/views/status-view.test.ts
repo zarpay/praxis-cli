@@ -11,6 +11,13 @@ function report(fields: Partial<StatusReport> = {}): StatusReport {
     compilerInUse: true,
     counts: { experts: 0, practices: 0, references: 0, context: 0 },
     validation: [],
+    evalState: {
+      pending_triage: 0,
+      proposals_pending: 0,
+      calibration_stale: true,
+      epoch_boundary_detected: false,
+      last_run_at: null,
+    },
     orphanedPractices: [],
     danglingRefs: [],
     expertsMissingDescription: [],
@@ -166,10 +173,13 @@ describe("the whole report", () => {
     expect(lines.at(-1)).toEqual({ channel: "heading", text: "1 issue(s) found" });
   });
 
-  it("omits counts and findings for an eval-only project", () => {
+  it("omits counts and findings for an eval-only project, keeping the poll facts", () => {
     const lines = statusView(report({ compilerInUse: false }));
+    const text = reportText(lines);
 
-    expect(lines).toEqual([{ channel: "heading", text: "Praxis Project Status" }]);
+    expect(text).toContain("Praxis Project Status");
+    expect(text).toContain("Last run: never");
+    expect(text).not.toContain("Experts");
   });
 
   it("still reports review state for an eval-only project", () => {

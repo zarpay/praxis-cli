@@ -7,13 +7,13 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
 import reviewNamedService from "@/services/review-named-service.js";
+import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import {
   OPENROUTER_URL,
   createOpenRouterServer,
   useOpenRouterResponse,
   validationToolCallResponse,
 } from "@tests/helpers/openrouter-msw.js";
-import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 const server = createOpenRouterServer();

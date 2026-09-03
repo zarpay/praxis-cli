@@ -1141,6 +1141,15 @@ export interface StatusReport {
     fail: number;
     notValidated: number;
   }[];
+  /** The situational-poll facts an agent reads from one call (09-ae). */
+  evalState: {
+    pending_triage: number;
+    proposals_pending: number;
+    /** True until calibration exists (M6). */
+    calibration_stale: boolean;
+    epoch_boundary_detected: boolean;
+    last_run_at: string | null;
+  };
   /** Expert files that failed validation, with the reason. */
   invalidExperts: { expert: string; reason: string }[];
   /** Practice files no expert references. */
@@ -1996,6 +2005,11 @@ export interface EvalReportOptions {
 
 /** Options for `praxis debt report`. */
 export interface DebtReportOptions {
+  json?: boolean;
+}
+
+/** Options for `praxis status`. */
+export interface StatusOptions {
   json?: boolean;
 }
 

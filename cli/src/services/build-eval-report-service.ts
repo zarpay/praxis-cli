@@ -113,9 +113,10 @@ function axiomRow({
 }): AxiomReportRow {
   const spec = axiom.groundedIn?.split("#")[0] ?? null;
 
-  // Current stock: the reviewer's latest scoped run, its violating files.
+  // Current stock: the reviewer's latest scoped CORPUS run — a one-file
+  // fast loop is feedback, not a stock measurement.
   const latestRun = [...runs]
-    .filter((run) => run.reviewer_name === reviewerName)
+    .filter((run) => run.reviewer_name === reviewerName && run.scope === "corpus")
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0];
 
   const latestViolatingFiles =

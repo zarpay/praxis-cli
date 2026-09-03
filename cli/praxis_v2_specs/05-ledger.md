@@ -36,7 +36,7 @@ calibration_status_at_run                    # 06 — stamps interpretability
 baseline: boolean                            # epoch-opening validate all (02)
 ```
 
-`reviewer_hash` (added at implementation, 2026-09-02) is what makes the derived-epoch promise true: `reviewer_model` alone cannot see a temperature, prompt-surface, or options change. `unverified` counts units that could not be reviewed at all (03) — never violations.
+`spec_units` (added 2026-09-03, optional): evaluated units per governing spec, stamped at write time — the applicable-opportunity denominator 07's rates divide by. Absent on older records, whose per-run rates suppress honestly. `reviewer_hash` (added at implementation, 2026-09-02) is what makes the derived-epoch promise true: `reviewer_model` alone cannot see a temperature, prompt-surface, or options change. `unverified` counts units that could not be reviewed at all (03) — never violations.
 
 Epochs (02) are **derived, not stored**: an epoch is a maximal run-sequence with stable (spec content hashes, reviewer config), computable from the provenance fields above. Reports segment by epoch; the ledger just records facts.
 

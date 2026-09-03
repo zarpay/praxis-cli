@@ -14,8 +14,16 @@ import { statLines } from "@framework/views/stats.js";
  * line carries the same issue count the command maps to its exit code,
  * so what a reader sees and what CI does can never disagree.
  */
-const statusView: View<StatusReport> = (report) => {
+const statusView: View<StatusReport & { json?: boolean }> = (report) => {
+  if (report.json) {
+    const { json: _json, ...payload } = report;
+
+    return [{ channel: "content", entries: [JSON.stringify(payload, null, 2)] }];
+  }
+
   const lines: ReportLine[] = [{ channel: "heading", text: "Praxis Project Status" }];
+
+  lines.push({ channel: "content", entries: ["", ...evalStateLines(report)] });
 
   if (report.compilerInUse) {
     lines.push({ channel: "content", entries: ["", ...counts(report)] });
@@ -102,4 +110,17 @@ function findings(report: StatusReport): { heading: string; items: string[] }[] 
   ];
 
   return blocks.filter((block) => block.items.length > 0);
+}
+
+/** The situational-poll facts, each naming its command (09). */
+function evalStateLines(report: StatusReport): string[] {
+  const { evalState } = report;
+  const lastRun = evalState.last_run_at === null ? "never" : evalState.last_run_at.slice(0, 10);
+
+  return [
+    `Last run: ${lastRun} · Pending triage: ${evalState.pending_triage} · Proposals awaiting ratification: ${evalState.proposals_pending}`,
+    ...(evalState.epoch_boundary_detected
+      ? ["Epoch boundary detected — the next full run opens a new baseline."]
+      : []),
+  ];
 }

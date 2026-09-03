@@ -24,6 +24,7 @@ export function seedLedgerRun(
     baseline?: boolean;
     specUnits?: Record<string, number>;
     costUsd?: number | null;
+    failCount?: number;
     extraLines?: string[];
   },
 ): void {
@@ -42,6 +43,7 @@ export function seedLedgerRun(
     commit_sha: fields.commitSha ?? null,
     baseline: fields.baseline ?? false,
     cost_usd: fields.costUsd ?? null,
+    fail_count: fields.failCount ?? 0,
     ...(fields.specUnits && { spec_units: fields.specUnits }),
   };
 

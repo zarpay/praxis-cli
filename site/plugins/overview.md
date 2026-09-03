@@ -26,18 +26,20 @@ Or use the object form with per-plugin options:
 
 ```json
 {
-  "plugins": [{
-    "name": "claude-code",
-    "outputDir": "./plugins/my-agents",
-    "claudeCodePluginName": "my-org"
-  }]
+  "plugins": [
+    {
+      "name": "claude-code",
+      "outputDir": "./plugins/my-agents",
+      "claudeCodePluginName": "my-org"
+    }
+  ]
 }
 ```
 
 ## Available plugins
 
-| Plugin | Description |
-| --- | --- |
+| Plugin        | Description                                                                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `claude-code` | Generates Claude Code agent files with YAML frontmatter, manages `plugin.json`, and creates a `/validate` slash command |
 
 ## Plugin output directories

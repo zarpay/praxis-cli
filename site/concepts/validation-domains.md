@@ -35,6 +35,7 @@ Documents in this directory define agent experts.
 ## Required sections
 
 Every expert must have a `## Scope` section that contains both:
+
 - A `### Responsible For` subsection
 - A `### Not Responsible For` subsection
 ```
@@ -67,7 +68,6 @@ paths:
   - docs/**/*.md
   - guides/**/*.md
 ---
-
 # Documentation Standard
 
 All docs and guides must have a title, a summary paragraph, and ...

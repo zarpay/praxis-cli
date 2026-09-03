@@ -6,7 +6,7 @@ Praxis organizes team knowledge into four types of documents. Understanding what
 
 ### Context
 
-Context captures *how you think and who you are* — things that apply broadly across many experts and don't change often.
+Context captures _how you think and who you are_ — things that apply broadly across many experts and don't change often.
 
 Context has three subtypes:
 
@@ -21,6 +21,7 @@ Context is never used directly by an agent. It is pulled into experts via the `c
 An expert is the central compilation unit. It represents a specific agent identity with a defined scope, set of authorities, and personality.
 
 Each expert file contains:
+
 - **Frontmatter** — The manifest. Declares which context, practices, and references to include.
 - **Body** — The expert description: who this agent is, what they're responsible for, what they're not, and what authorities they hold.
 
@@ -57,9 +58,7 @@ type: expert
 alias: reviewer
 description: "Reviews pull requests against team conventions."
 ---
-
 # Code Reviewer
-
 ...
 ```
 

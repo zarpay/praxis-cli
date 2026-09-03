@@ -24,7 +24,11 @@ The file contains a `verdicts` map keyed by `<specHash>:<reviewerHash>`: an 8-ch
   "version": "3.0",
   "verdicts": {
     "a1b2c3d4:f83a92f1": {
-      "reviewer": { "name": "flash", "model": "deepseek/deepseek-v4-flash-0731", "hash": "f83a92f1" },
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "f83a92f1"
+      },
       "spec_path": "experts/README.md",
       "cached_at": "2026-08-31T14:30:45.123Z",
       "content_hash": "abcd1234",
@@ -50,7 +54,7 @@ The cache invalidates automatically when:
 - An exemplar or context file the spec declares changes
 - The reviewer's behavioral settings change (model, temperature, baseUrl) — this invalidates all of that reviewer's entries at once
 
-Renaming a reviewer does *not* invalidate anything: the name is excluded from the reviewer hash, so identity follows behavior, not the label. Rolling a config change back re-hits the old entries at zero cost. There is no manual cache management needed in normal use.
+Renaming a reviewer does _not_ invalidate anything: the name is excluded from the reviewer hash, so identity follows behavior, not the label. Rolling a config change back re-hits the old entries at zero cost. There is no manual cache management needed in normal use.
 
 ## Disabling the cache
 

@@ -1,10 +1,10 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { auditAxiomsOrchestrator } from "@/orchestrators/audit-axioms-orchestrator.js";
+import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
-import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
