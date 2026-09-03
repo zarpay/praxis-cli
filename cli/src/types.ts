@@ -1324,6 +1324,13 @@ export interface LedgerRunRecord {
   fail_count: number;
   unverified_count: number;
   critique_count: number;
+  /**
+   * Evaluated units per governing spec — the applicable-opportunity
+   * denominator (07, added 2026-09-03). Absent on records written
+   * before it existed; their per-run rates suppress as insufficient
+   * data rather than padding.
+   */
+  spec_units?: Record<string, number>;
   calibration_status_at_run: CalibrationStatus;
   baseline: boolean;
 }
@@ -1407,6 +1414,8 @@ export interface WriteLedgerRunInput {
   trigger: LedgerTrigger;
   scope: LedgerScope;
   entries: LedgerEntry[];
+  /** Evaluated units per governing spec, project-relative paths. */
+  specUnits?: Record<string, number>;
 }
 
 /** Where a run landed. */
@@ -1775,4 +1784,209 @@ export interface RatifyAxiomOptions {
 /** Options for `praxis axioms audit`. */
 export interface AuditAxiomsOptions {
   json?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Measurement (M4): epochs, populations, rates, reports
+// ---------------------------------------------------------------------------
+
+/** One epoch: a maximal interval of stable reviewer behavior (02). */
+export interface Epoch {
+  reviewerHash: string;
+  reviewerModel: string;
+  /** Run ids in this epoch, in timestamp order. */
+  runs: LedgerRunRecord[];
+  /** The epoch-opening corpus run, when one exists (02: the baseline). */
+  baseline: LedgerRunRecord | null;
+  /** How this epoch was opened; null for a reviewer's first epoch. */
+  openedBy: EpochBoundaryEvent | null;
+}
+
+/** A named epoch boundary — first-class in every report (07, rule 6). */
+export interface EpochBoundaryEvent {
+  /** "model → x/y" or "config or prompt surface changed". */
+  label: string;
+  /** Timestamp of the first run under the new hash. */
+  at: string;
+}
+
+/** One reviewer's full epoch series, in first-seen order. */
+export interface EpochSeries {
+  reviewerName: string;
+  epochs: Epoch[];
+}
+
+/** One file's population relative to one axiom's clock (01). */
+export interface DerivePopulationInput {
+  root: string;
+  /** Project-relative, as critique records carry it. */
+  filePath: string;
+  /** The axiom's `introduced` date, YYYY-MM-DD. */
+  axiomIntroduced: string;
+  /** Shared memo across one report build. */
+  birthdates: Map<string, string | null>;
+}
+
+/** Whose corpus to count opportunity denominators for. */
+export interface CountSpecUnitsInput {
+  root: string;
+  config: PraxisConfig;
+}
+
+/** One rate, floor-aware: rendered only with its denominator (07). */
+export interface RateCell {
+  numerator: number;
+  denominator: number;
+  /** Null when the cell is below the small-n floor. */
+  rate: number | null;
+  /** "3/41 (7.3%)" or "insufficient data (n<5)". */
+  display: string;
+}
+
+/** What population a count is qualified by (01; unqualified is banned). */
+export type PopulationQualifier = "pre_spec" | "post_spec" | "unknown";
+
+/** How one report invocation is scoped (07's three levels + filters). */
+export interface ReportScope {
+  /** Glob or path over critique file_paths; null = everything. */
+  target: string | null;
+  /** ISO date floor on run timestamps; null = all time. */
+  since: string | null;
+  branch: string | null;
+  /** Exact run commit shas; null = any. */
+  commits: string[] | null;
+  /** Shas that no longer resolve in this clone (12's note renders). */
+  unresolvableShas: string[];
+}
+
+/** Everything `resolve-report-scope` needs to build a scope. */
+export interface ResolveReportScopeInput {
+  root: string;
+  target?: string;
+  since?: string;
+  branch?: string;
+  commit?: string;
+  commits?: string[];
+}
+
+/** Ledger records after scoping: what a report computes over. */
+export interface ScopedLedger {
+  scope: ReportScope;
+  runs: LedgerRunRecord[];
+  critiques: LedgerCritiqueRecord[];
+}
+
+/** One axiom's row in the eval report, one reviewer's series (07 rule 7). */
+export interface AxiomReportRow {
+  axiomId: string;
+  statement: string;
+  severity: Severity;
+  reviewerName: string;
+  /** Violations over applicable opportunities, floor-aware. */
+  rate: RateCell;
+  /** Distinct files violating. */
+  files: number;
+  /** Violation counts by derived population (01). */
+  byPopulation: Record<PopulationQualifier, number>;
+  /** Epoch segments, oldest first — never charted across a boundary. */
+  segments: { epochLabel: string; violations: number; runs: number }[];
+}
+
+/** The eval report payload — the stable `--json` contract (09). */
+export interface EvalReport {
+  scope: ReportScope;
+  /** The core panel (07's three-level decision). */
+  panel: {
+    runs: number;
+    critiques: number;
+    filesTouched: number;
+    reviewers: string[];
+    specs: string[];
+    costUsd: number | null;
+    /** Run-indexed cost trend with calendar annotations (07 open q1). */
+    costTrend: { runId: string; at: string; costUsd: number | null }[];
+  };
+  /** "uncalibrated" until M6; rendered on every report (07 rule 4). */
+  calibration: string;
+  axioms: AxiomReportRow[];
+  /** Open-channel critiques with no assignment yet — the triage queue. */
+  pendingTriage: number;
+  /** Dismissed + rejected over all critiques, floor-aware (04). */
+  residual: RateCell;
+  epochs: EpochSeries[];
+}
+
+/** The single-axiom drill-down payload. */
+export interface AxiomReport {
+  axiomId: string;
+  statement: string;
+  status: AxiomStatus;
+  severity: Severity;
+  groundedIn: string | null;
+  introduced: string;
+  version: number;
+  rows: AxiomReportRow[];
+  /** Representative critiques, newest first, capped. */
+  examples: { id: string; filePath: string; reviewerName: string; text: string }[];
+}
+
+/** One axiom's debt position in one reviewer's latest epoch. */
+export interface DebtRow {
+  axiomId: string;
+  statement: string;
+  reviewerName: string;
+  /** (axiom, file) pairs violating at the epoch-opening baseline. */
+  baselineStock: number;
+  /** Violating at the latest corpus run of the epoch. */
+  currentStock: number;
+  /** In baseline, gone at latest — corpus-level paydown (02). */
+  paydown: number;
+  /** Absent at baseline, present at latest — labeled exactly this. */
+  appearedSinceBaseline: number;
+}
+
+/** Paydown credit: the authors whose commits touched resolved files (02). */
+export interface PaydownCredit {
+  author: string;
+  resolved: number;
+}
+
+/** The debt report payload. */
+export interface DebtReport {
+  calibration: string;
+  rows: DebtRow[];
+  /** Current-stock concentration by directory, worst first. */
+  concentration: { directory: string; violations: number }[];
+  credits: PaydownCredit[];
+  /** Why credit may be missing. */
+  creditNote: string | null;
+  /** Stock movement across the last two baselines, boundary named (02). */
+  rebaseline: { boundaryLabel: string; before: number; after: number } | null;
+}
+
+/** Options for `praxis eval report`. */
+export interface EvalReportOptions {
+  target?: string;
+  since?: string;
+  branch?: string;
+  commit?: string;
+  commits?: string[];
+  axiom?: string;
+  json?: boolean;
+}
+
+/** Options for `praxis debt report`. */
+export interface DebtReportOptions {
+  json?: boolean;
+}
+
+/** What the orientation screen shows — bare `praxis` (09-h). */
+export interface Orientation {
+  lastRun: { at: string; reviewerName: string; anchored: boolean } | null;
+  pendingTriage: number;
+  proposalsPending: number;
+  activeAxioms: number;
+  calibration: string;
+  /** Errors at the latest corpus run, per reviewer. */
+  debtLine: { reviewerName: string; errors: number }[] | null;
 }

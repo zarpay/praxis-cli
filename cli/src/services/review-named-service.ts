@@ -8,6 +8,7 @@ import type {
   Verdict,
 } from "@/types.js";
 
+import { relativePath } from "@/helpers/paths-helper.js";
 import { AxiomStore } from "@/models/axiom-store.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
@@ -47,6 +48,7 @@ export default async function reviewNamed({
   const reviewers = selectReviewersService({ configured: config.reviewers, only });
   const specPath = targets.length === 1 ? spec : undefined;
   const entriesByReviewer = new Map<string, LedgerEntry[]>();
+  const specUnits: Record<string, number> = {};
 
   let errors = 0;
   let warnings = 0;
@@ -60,6 +62,9 @@ export default async function reviewNamed({
       checklistFor: (resolvedSpec) =>
         new AxiomStore({ projectRoot: root }).checklistFor(resolvedSpec),
     });
+
+    const specKey = relativePath(root, subject.specPath);
+    specUnits[specKey] = (specUnits[specKey] ?? 0) + 1;
 
     const verdicts: { reviewerName: string; verdict: Verdict }[] = [];
 
@@ -120,6 +125,7 @@ export default async function reviewNamed({
         trigger: "manual",
         scope: "files",
         entries,
+        specUnits,
       });
     }
   }

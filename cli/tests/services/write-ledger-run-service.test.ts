@@ -93,6 +93,21 @@ describe("writeLedgerRunService", () => {
     expect(run.timestamp).toBeTruthy();
   });
 
+  it("stamps spec_units onto the run record when the caller supplies them", () => {
+    const { path } = writeLedgerRunService({
+      root,
+      reviewer: REVIEWER,
+      trigger: "manual",
+      scope: "corpus",
+      entries: [entry()],
+      specUnits: { "docs/README.md": 13 },
+    });
+    const firstLine = readFileSync(path, "utf8").split("\n", 1)[0];
+    const run = JSON.parse(firstLine) as LedgerRunRecord;
+
+    expect(run.spec_units).toEqual({ "docs/README.md": 13 });
+  });
+
   describe("the baseline flag (02)", () => {
     it("marks the first corpus run under a hash as the epoch-opening baseline", () => {
       const first = writeAndRead([entry()], "corpus");
