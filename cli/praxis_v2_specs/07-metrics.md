@@ -30,7 +30,7 @@
 
 1. **Files or glob** — `eval report <path|glob>`: everything the ledger knows about those targets.
 2. **Commit** — `eval report --commit <sha>`: the runs anchored to that commit. By construction this only finds clean-tree runs (12: working-tree runs carry `commit_sha: null` and are feedback, not measurement).
-3. **PR** — a set of commits (`--commits <sha...>`, or resolved from a branch range): the union of level 2 over the set, deduplicated by run.
+3. **PR** — a set of commits (`--commits <sha...>`, or resolved from a branch range): the union of level 2 over the set, deduplicated by run. A recorded sha that no longer resolves renders the missing-commit note (12, Anchoring) — squash workflows orphan branch shas by policy, and the run's attestation, branch, and date stay fully usable; only byte reconstruction is lost.
 
 **`praxis eval report --axiom AX-0007`** — one axiom across everything: rates per population, trend, residual critiques nearby, calibration scores, removal-candidacy signals (03).
 
