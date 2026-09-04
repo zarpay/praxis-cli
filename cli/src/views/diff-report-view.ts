@@ -58,7 +58,9 @@ function targetEntries(outcome: DiffTargetOutcome): DisplayEntry[] {
   const label = `${outcome.relPath}${outcome.status === "deleted" ? " (deleted)" : ""}`;
 
   if (outcome.unverified) {
-    return [{ badge: "UNVERIFIED", color: "gray", value: `${label} — flow withheld` }];
+    const reason = outcome.unverifiedReason === null ? "" : `: ${outcome.unverifiedReason}`;
+
+    return [{ badge: "UNVERIFIED", color: "gray", value: `${label} — flow withheld${reason}` }];
   }
 
   const clean = outcome.findings.length === 0 && outcome.resolved.length === 0;
@@ -83,6 +85,10 @@ function badgeFor(label: string, outcome: DiffTargetOutcome): DisplayEntry {
 
   if (outcome.findings.some((finding) => finding.flow === "introduced")) {
     return { badge: "WARN", color: "yellow", value: label };
+  }
+
+  if (outcome.findings.length > 0) {
+    return { badge: "PASS", color: "green", value: `${label} (inherited debt only)` };
   }
 
   return { badge: "PASS", color: "green", value: label };

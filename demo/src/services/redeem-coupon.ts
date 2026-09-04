@@ -11,13 +11,13 @@ export function run(store: Store, input: RedeemCouponInput): Result<number> {
   const parlor = store.getParlor(input.parlorId);
 
   if (!parlor) {
-    throw new Error("bad parlor");
+    return { ok: false, error: `parlor "${input.parlorId}" does not exist — use an id from the parlors list` };
   }
 
   console.log(`redeeming ${input.coupon} at ${parlor.name}`);
 
   if (input.coupon !== "FREESCOOP") {
-    return { ok: false, error: "invalid" };
+    return { ok: false, error: `coupon "${input.coupon}" is not recognized — codes are case-sensitive` };
   }
 
   return { ok: true, value: 1 };

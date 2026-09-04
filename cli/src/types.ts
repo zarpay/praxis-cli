@@ -663,6 +663,8 @@ export interface DiffTargetOutcome {
   resolved: Critique[];
   /** Either side could not be reviewed — flow withheld for this target. */
   unverified: boolean;
+  /** Why the target went unverified; null otherwise. */
+  unverifiedReason: string | null;
 }
 
 /** What reviewing one side of a diff yields. */

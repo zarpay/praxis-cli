@@ -8,39 +8,39 @@
         "hash": "41d823fa"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-03T12:58:43.036Z",
-      "content_hash": "376e87d6",
+      "cached_at": "2026-09-04T09:13:22.210Z",
+      "content_hash": "01165f71",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "The run function has no doc comment at all — only the input interface is documented. It must state its purpose in one sentence and enumerate all domain failure modes (unknown parlor, invalid coupon) so a caller can handle every error without reading the body.",
+            "text": "The run function has no doc comment at all. It must state its purpose in one sentence and enumerate all domain failure modes (unknown parlor, unrecognized coupon) so a caller can handle every error without reading the body.",
             "axiomId": "AX-2559f7",
             "axiomVersion": 1
           },
           {
-            "text": "`throw new Error('bad parlor')` treats a missing parlor — a failure the caller could plausibly cause — as an exception. It must be returned as a domain failure value, e.g. `return { ok: false, error: ... }`.",
+            "text": "A missing parlor is a domain failure a caller could plausibly cause, but the service throws `new Error('bad parlor')`. It must return `{ ok: false, error }` instead; throw is reserved for programmer error.",
             "axiomId": "AX-3317a7",
             "axiomVersion": 1
           },
           {
-            "text": "`console.log(...)` performs a side effect outside the injected Store. All I/O and side effects must be mediated by Store methods (e.g. `store.logActivity(...)`) or removed.",
+            "text": "The service performs I/O via `console.log(...)` instead of through the injected Store. All external communication/side effects must be mediated by Store methods.",
             "axiomId": "AX-6e307b",
             "axiomVersion": 1
           },
           {
-            "text": "The coupon code `'FREESCOOP'` is hardcoded in the service body. It must be isolated in a single obvious config location or fetched via the Store so code and data don't drift.",
+            "text": "The coupon code 'FREESCOOP' is hardcoded in the service module. This domain constant that could vary must be isolated in a single obvious place or injected via the Store, not hardcoded.",
             "axiomId": "AX-a108ea",
             "axiomVersion": 1
           },
           {
-            "text": "`return { ok: false, error: 'invalid' }` is a bare label, not a message. It must name what was wrong and what would be accepted instead, e.g. `coupon must be a valid active code`.",
+            "text": "The error message 'bad parlor' is a vague bare label. It must be specific and actionable, e.g. naming the parlor id and what would be accepted instead.",
             "axiomId": "AX-b951db",
             "axiomVersion": 2
           }
         ],
-        "reason": "The file violates multiple error-severity axioms: the run function lacks the required doc comment, a caller-plausible failure is thrown instead of returned as a domain failure value, I/O occurs outside the Store, and error messages are vague bare labels. It also hardcodes a domain constant."
+        "reason": "The service violates multiple ratified axioms: it has no doc comment, throws on a domain failure, performs I/O via console.log, hardcodes a domain constant, and uses a vague error message."
       },
       "exemplar_files": [
         {
