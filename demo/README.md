@@ -119,3 +119,25 @@ FAILs and WARNs to report, and real shields to prove:
 - `src/generated/` — covered by the config's `ignore:` patterns
 
 Do not "fix" these files; the eval layer's output depends on them.
+
+## The testbed discipline
+
+This demo is the CLI's live acceptance environment — treat its state as
+evidence, not fixtures:
+
+- **The committed cache and ledger are real reviewed evidence.** Never
+  regenerate them casually; edits invalidate selectively by design, and
+  new run files are committed like code (spec 10-k).
+- **The canary**: `npx praxis eval run --reviewer counter` (the offline
+  word-count provider) must always be all cache hits. A miss means
+  reviewer identity changed — an epoch event that must be deliberate.
+- **The full acceptance matrix lives in [`EXPECTATIONS.md`](./EXPECTATIONS.md)**,
+  run by the `demo-audit` skill after every feature. Update the matrix
+  in the same commit as any behavior or state it describes.
+- Real reviews need `OPENROUTER_API_KEY`. Reviewers: `flash`
+  (deepseek-v4-flash — cheap; known to intermittently emit invalid
+  tool-call JSON when critique text echoes quoted strings, which
+  correctly yields UNVERIFIED), `v32` (deepseek-v3.2 — sturdier), and
+  `counter` (offline, free, the canary). Curator: claude-sonnet-4.5.
+- Curator-spending or queue-consuming commands (`axioms triage`,
+  `ratify`, `audit`) run against a scratch copy, never the real demo.

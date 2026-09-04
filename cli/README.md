@@ -17,10 +17,18 @@ Requires Node.js 18+.
 ## Quick start
 
 ```bash
-praxis init my-org
-cd my-org
+# In any repo: claim it, point sources at your specs, add a reviewer
+praxis init
+# edit .praxis/config.json — sources + reviewers
+
+# The eval loop: review everything a spec governs, cached by content
+praxis eval run
+praxis eval run src/services/checkout.ts   # the fast loop
+praxis eval run --diff                     # what did this branch introduce?
+
+# The spec layer (optional): author experts, compile SME agents
+praxis init --spec-layer
 praxis add expert code-reviewer
-# edit experts/code-reviewer.md
 praxis compile
 # → agent-profiles/code-reviewer.md
 ```
