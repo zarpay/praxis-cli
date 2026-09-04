@@ -66,7 +66,7 @@ calls · **[scratch]** run in a copy.
 | --- | --- |
 | `praxis compile` | `Compiled 3 agent(s)` — scooper, sundae, taster; profiles in `agent-profiles/`, plugin output in `plugins/praxis/` (agents + `praxis-resolve.md` + skill) |
 | `praxis compile --alias scooper` | One agent, case-insensitive alias match |
-| `praxis compile --alias nope` | Instructive `No expert found with alias` error, exit 1 |
+| `praxis compile --alias nope` | Instructive `No expert found with alias` error naming the known aliases, exit 2 (usage error) |
 | Compiled `scooper.md` | Opens with eval-targeting frontmatter (`paths: src/services/*.ts`, exemplars, excludes) — the profile IS a spec |
 
 ### The eval loop

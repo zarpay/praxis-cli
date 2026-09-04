@@ -54,7 +54,9 @@ export const compileProjectOrchestrator: Orchestrator<CompileProjectOptions> = a
     const expert = store.byAlias(alias);
 
     if (!expert) {
-      throw errors.expertNotFound(alias);
+      const known = store.all().experts.map((candidate) => candidate.alias);
+
+      throw errors.expertNotFound(alias, known);
     }
 
     const result = await compileExpertService(cfg, {

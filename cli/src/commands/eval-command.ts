@@ -28,6 +28,19 @@ const evalCommand: CommandRegistrar = (program) => {
       "--diff [base]",
       "review the branch against its merge-base (default base: the default branch)",
     )
+    .addHelpText(
+      "after",
+      `
+When to use: after changing a file (the fast loop), or on a branch with
+--diff to see what it introduced, resolved, and inherited. Reviewer
+calls happen only on cache misses; unchanged content is free.
+
+Examples:
+  $ praxis eval run src/services/checkout.ts
+      [1/1] checkout.ts  ✓ PASS   (or findings citing [AX-…] with witnesses)
+  $ praxis eval run --diff main
+      findings labeled [introduced]/[inherited], vanished ones [resolved]`,
+    )
     .action(runEvalOrchestrator);
 
   evalCmd
@@ -35,11 +48,31 @@ const evalCommand: CommandRegistrar = (program) => {
     .description("Run a full review in CI mode (verifies without writing)")
     .option("--strict", "fail on warnings too", false)
     .option("--diff [base]", "verify the merge-base diff instead of the corpus (PR gate)")
+    .addHelpText(
+      "after",
+      `
+When to use: in a pipeline. Verifies against committed verdicts and
+writes nothing — no ledger run, no cache mutation. With --diff it is
+the PR gate: only introduced errors or unverified targets fail.
+
+Example:
+  $ praxis eval ci --diff main    # exit 0 = mergeable, 1 = introduced errors`,
+    )
     .action(ciRunOrchestrator);
 
   evalCmd
     .command("prune")
     .description("Drop cached verdicts that no configured reviewer can hit")
+    .addHelpText(
+      "after",
+      `
+When to use: after a reviewer's config or prompt surface changed (a new
+epoch) — the old identity's cache entries can never hit again.
+
+Example:
+  $ praxis eval prune
+      Pruned 18 orphaned verdict(s)   (or "Nothing to prune")`,
+    )
     .action(pruneCacheOrchestrator);
 
   evalCmd
@@ -56,12 +89,32 @@ const evalCommand: CommandRegistrar = (program) => {
     .option("--commits <shas...>", "only runs anchored to any of these commits (a PR's set)")
     .option("--axiom <id>", "one axiom across everything in scope")
     .option("--json", "machine-readable output (stable contract)", false)
+    .addHelpText(
+      "after",
+      `
+When to use: to read the evidence — per-axiom rates with denominators,
+epochs, violation flow, costs. Pure read: never calls a reviewer.
+
+Examples:
+  $ praxis eval report                  # everything in the current epoch
+  $ praxis eval report --axiom AX-b951db # one standard, drilled down
+  $ praxis eval report --branch feature/x --since v1.4.0`,
+    )
     .action(reportEvalOrchestrator);
 
   evalCmd
     .command("verdict <target>")
     .description("Show the cached verdict for a target, without an API call")
     .option("--verbose", "show full AI reasoning", false)
+    .addHelpText(
+      "after",
+      `
+When to use: to re-read what each reviewer last said about a file
+without paying for a fresh review. Marked STALE when the file changed.
+
+Example:
+  $ praxis eval verdict src/services/checkout.ts`,
+    )
     .action(reportVerdictsOrchestrator);
 };
 

@@ -45,7 +45,7 @@ describe("Paths", () => {
     const dir = makeTmpdir();
 
     const paths = new Paths(dir);
-    expect(() => paths.root).toThrow("Could not find Praxis root (no .praxis/ directory found)");
+    expect(() => paths.root).toThrow("no .praxis/ directory found");
   });
 
   it("caches root after first lookup", () => {

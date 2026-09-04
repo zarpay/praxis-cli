@@ -131,4 +131,34 @@ describe("prepareOrchestrator", () => {
     expect(captured.output()).toBe("[ERROR] no reviewer named bogus\n");
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
+
+  it("exits with what exitCodeFor says about a thrown error", async () => {
+    const captured = captureLogger();
+    const usageError = new Error("unknown flag");
+    const exitCodeFor = (err: unknown) => (err === usageError ? 2 : 1);
+    const handler = prepareOrchestrator(
+      () => captured,
+      () => Promise.reject(usageError),
+      {},
+      exitCodeFor,
+    );
+
+    await handler(fakeCommand([], {}));
+
+    expect(captured.output()).toBe("[ERROR] unknown flag\n");
+    expect(exitSpy).toHaveBeenCalledWith(2);
+  });
+
+  it("exitCodeFor never touches a 'failed' outcome — that is exit 1 by contract", async () => {
+    const handler = prepareOrchestrator(
+      captureLogger,
+      () => Promise.resolve("failed" as const),
+      {},
+      () => 2,
+    );
+
+    await handler(fakeCommand([], {}));
+
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
 });

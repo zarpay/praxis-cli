@@ -1,4 +1,4 @@
-import { Command } from "commander";
+import { Command, CommanderError } from "commander";
 
 import registerAddCommand from "@/commands/add-command.js";
 import registerAxiomsCommand from "@/commands/axioms-command.js";
@@ -27,6 +27,29 @@ function createProgram(): Command {
 
   program.name("praxis").description("CLI for the Praxis knowledge framework").version(VERSION);
 
+  // Commander throws instead of exiting, so usage mistakes get exit
+  // code 2 (09-o). Set before the subcommands register — they copy the
+  // override at creation time.
+  program.exitOverride();
+  program.showHelpAfterError("(run the command with --help for usage)");
+
+  // Help is API documentation (09-l/m): the top level names the
+  // workflows and the exit-code contract, not just the commands.
+  program.addHelpText(
+    "after",
+    `
+Typical flows:
+  Evaluate work you just changed:   praxis eval run <target>
+  Review what a branch introduced:  praxis eval run --diff [base]
+  Understand a violated standard:   praxis axioms show <id>
+  Check project health:             praxis status
+
+Exit codes:
+  0  success / no violations
+  1  violations found, or a run failure
+  2  usage or configuration error`,
+  );
+
   // Bare `praxis` is the orientation screen (09-h) — counts and
   // staleness at a glance, each line naming its command.
   program.action(orientProjectOrchestrator);
@@ -43,4 +66,13 @@ function createProgram(): Command {
   return program;
 }
 
-createProgram().parse();
+try {
+  createProgram().parse();
+} catch (err) {
+  // Commander already printed its message (the usage error, or the
+  // help/version text); only the exit code is ours — 0 when commander
+  // exited cleanly (help, version), 2 for a usage mistake (09-o).
+  const clean = err instanceof CommanderError && err.exitCode === 0;
+
+  process.exit(clean ? 0 : 2);
+}

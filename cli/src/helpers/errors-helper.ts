@@ -60,6 +60,35 @@ export class PraxisError extends Error {
 }
 
 /**
+ * The failure modes that are usage or configuration errors (09-o):
+ * the invocation or the config was wrong, not the work. These exit 2;
+ * everything else — runtime failures, project content problems — exits
+ * 1 alongside genuine violations.
+ */
+export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErrorCode>([
+  "API_KEY_NOT_SET",
+  "AXIOM_NOT_FOUND",
+  "CURATOR_MISSING_FIELD",
+  "CURATOR_NOT_CONFIGURED",
+  "DIFF_BASE_INVALID",
+  "DIFF_BASE_UNRESOLVABLE",
+  "DIFF_OUTSIDE_GIT",
+  "DIFF_WITH_TARGETS",
+  "DOCUMENT_NOT_FOUND",
+  "EXPERT_NOT_FOUND",
+  "INVALID_CONFIG_JSON",
+  "INVALID_REVIEWER_CONFIG",
+  "NOT_A_TTY",
+  "PROVIDER_CANNOT_COMPLETE",
+  "REVIEWERS_NOT_CONFIGURED",
+  "ROOT_NOT_FOUND",
+  "UNKNOWN_DOCUMENT_TYPE",
+  "UNKNOWN_PLUGIN",
+  "UNKNOWN_REVIEWER",
+  "UNKNOWN_REVIEW_PROVIDER",
+]);
+
+/**
  * Factory methods for every error Praxis raises.
  *
  * Grouped by area: project structure, config, compiler, then validator.
@@ -71,7 +100,8 @@ export const errors = {
   rootNotFound(): PraxisError {
     return new PraxisError(
       "ROOT_NOT_FOUND",
-      "Could not find Praxis root (no .praxis/ directory found)",
+      "Not inside a Praxis project (no .praxis/ directory found walking up from here) — " +
+        "run `praxis init` at the project root to create one, or cd into an existing project",
     );
   },
 
@@ -98,15 +128,23 @@ export const errors = {
   },
 
   /** `praxis compile --alias` was given an alias no expert file declares. */
-  expertNotFound(alias: string): PraxisError {
-    return new PraxisError("EXPERT_NOT_FOUND", `No expert found with alias: ${alias}`);
+  expertNotFound(alias: string, available: string[]): PraxisError {
+    const known =
+      available.length > 0
+        ? `known aliases: ${available.join(", ")}`
+        : "no expert documents exist yet — create one with `praxis add expert <name>`";
+
+    return new PraxisError("EXPERT_NOT_FOUND", `No expert found with alias "${alias}" — ${known}`);
   },
 
   // --- Validator ---
 
   /** `eval verdict` was given a path that does not exist. */
   documentNotFound(path: string): PraxisError {
-    return new PraxisError("DOCUMENT_NOT_FOUND", `Document not found: ${path}`);
+    return new PraxisError(
+      "DOCUMENT_NOT_FOUND",
+      `Document not found: ${path} — check the path exists (it resolves against the project root)`,
+    );
   },
 
   /** The API key environment variable is unset (command-level, with setup guidance). */
@@ -243,20 +281,20 @@ export const errors = {
 
   /** No spec file matching a literal specFilePattern exists in the document's directory. */
   specNotFound(pattern: string, dir: string, targetPath: string): PraxisError {
-    return new PraxisError("SPEC_NOT_FOUND", `No ${pattern} found in ${dir} for ${targetPath}`);
+    return new PraxisError(
+      "SPEC_NOT_FOUND",
+      `No ${pattern} found in ${dir} for ${targetPath} — ` +
+        `write one there, or point "specFilePattern" in .praxis/config.json at the filename this project uses`,
+    );
   },
 
   /** No spec file matching a glob specFilePattern exists in the document's directory. */
   specPatternNotFound(pattern: string, dir: string, targetPath: string): PraxisError {
     return new PraxisError(
       "SPEC_NOT_FOUND",
-      `No file matching '${pattern}' found in ${dir} for ${targetPath}`,
+      `No file matching '${pattern}' found in ${dir} for ${targetPath} — ` +
+        `write one there, or point "specFilePattern" in .praxis/config.json at the filename this project uses`,
     );
-  },
-
-  /** The configured API key environment variable has no value. */
-  apiKeyNotSet(envVarName: string): PraxisError {
-    return new PraxisError("API_KEY_NOT_SET", `${envVarName} environment variable not set`);
   },
 
   /** The reviewer provider's backend responded with a non-OK HTTP status. */

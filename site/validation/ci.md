@@ -2,6 +2,8 @@
 
 `praxis eval ci` is the merge gate: a full review of everything the specs govern, framed for a pipeline. It exits 0 when the branch is clean and 1 when it isn't — and it **verifies without writing the ledger**. The branch's own committed runs are the evidence; CI just checks them.
 
+Exit codes are a contract across the whole CLI: **0** success or no violations, **1** violations found or a run failure, **2** a usage or configuration mistake (an unknown flag, a missing reviewer entry, no `.praxis/` directory). A pipeline can therefore distinguish "the code failed review" from "the pipeline invoked praxis wrong."
+
 ## Basic setup
 
 ```yaml

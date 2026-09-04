@@ -29,12 +29,16 @@ import type { Logger } from "@framework/views/logger.js";
  * The context is built inside the returned handler — per dispatch, never
  * at import time — and the one error policy lives here. "failed" exits 1,
  * a legitimate non-zero result like issues found. A genuine error is
- * thrown instead; it logs to stderr and also exits 1.
+ * thrown instead; it logs to stderr and exits with what `exitCodeFor`
+ * says about it — the application classifies its own errors (a usage or
+ * config mistake is not the same failure as a broken run); the default
+ * classifies nothing and every thrown error exits 1.
  */
 export function prepareOrchestrator<Ctx extends { logger: Logger }, Options = NoOptions>(
   createContext: () => Ctx,
   orchestrator: Orchestrator<Ctx, Options>,
   extra: Partial<Options> = {},
+  exitCodeFor: (err: unknown) => number = () => 1,
 ): (...args: unknown[]) => Promise<void> {
   return async (...args: unknown[]) => {
     const command = args.at(-1) as Command;
@@ -54,7 +58,7 @@ export function prepareOrchestrator<Ctx extends { logger: Logger }, Options = No
       if ((await orchestrator(ctx, options)) === "failed") process.exit(1);
     } catch (err) {
       ctx.logger.error(err instanceof Error ? err.message : String(err));
-      process.exit(1);
+      process.exit(exitCodeFor(err));
     }
   };
 }

@@ -84,7 +84,7 @@ export class Reviewer {
     const key = process.env[this.apiKeyEnvVar];
 
     if (!key) {
-      throw errors.apiKeyNotSet(this.apiKeyEnvVar);
+      throw errors.missingApiKey(this.apiKeyEnvVar);
     }
 
     return key;

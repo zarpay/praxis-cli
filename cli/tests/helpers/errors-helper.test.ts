@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { PraxisError, errors } from "@/helpers/errors-helper.js";
+import { PraxisError, USAGE_ERROR_CODES, errors } from "@/helpers/errors-helper.js";
 
 describe("errors", () => {
   it("missingFrontmatterField", () => {
@@ -30,7 +30,8 @@ describe("errors", () => {
   it("rootNotFound", () => {
     const err = errors.rootNotFound();
     expect(err.code).toBe("ROOT_NOT_FOUND");
-    expect(err.message).toBe("Could not find Praxis root (no .praxis/ directory found)");
+    expect(err.message).toContain("no .praxis/ directory found");
+    expect(err.message).toContain("praxis init");
   });
 
   it("invalidConfigJson", () => {
@@ -85,22 +86,32 @@ describe("errors", () => {
     expect(err.message).toBe('Unknown document type "bogus" — this project has: experts, tests');
   });
 
+  it("expertNotFound lists the known aliases", () => {
+    const err = errors.expertNotFound("Nope", ["Scooper", "Sundae"]);
+    expect(err.code).toBe("EXPERT_NOT_FOUND");
+    expect(err.message).toContain('No expert found with alias "Nope"');
+    expect(err.message).toContain("known aliases: Scooper, Sundae");
+  });
+
+  it("expertNotFound names the scaffold command when no experts exist", () => {
+    const err = errors.expertNotFound("Nope", []);
+    expect(err.message).toContain("praxis add expert");
+  });
+
   it("specNotFound", () => {
     const err = errors.specNotFound("SPEC.md", "/p/roles", "/p/roles/doc.md");
     expect(err.code).toBe("SPEC_NOT_FOUND");
-    expect(err.message).toBe("No SPEC.md found in /p/roles for /p/roles/doc.md");
+    expect(err.message).toContain("No SPEC.md found in /p/roles for /p/roles/doc.md");
+    expect(err.message).toContain("specFilePattern");
   });
 
   it("specPatternNotFound", () => {
     const err = errors.specPatternNotFound("*.sme.md", "/p/roles", "/p/roles/doc.md");
     expect(err.code).toBe("SPEC_NOT_FOUND");
-    expect(err.message).toBe("No file matching '*.sme.md' found in /p/roles for /p/roles/doc.md");
-  });
-
-  it("apiKeyNotSet", () => {
-    const err = errors.apiKeyNotSet("OPENROUTER_API_KEY");
-    expect(err.code).toBe("API_KEY_NOT_SET");
-    expect(err.message).toBe("OPENROUTER_API_KEY environment variable not set");
+    expect(err.message).toContain(
+      "No file matching '*.sme.md' found in /p/roles for /p/roles/doc.md",
+    );
+    expect(err.message).toContain("specFilePattern");
   });
 
   it("reviewerApiError", () => {
@@ -158,5 +169,18 @@ describe("errors", () => {
     const err = errors.unexpectedToolCall("validation_bogus");
     expect(err.code).toBe("UNEXPECTED_TOOL_CALL");
     expect(err.message).toBe("Unexpected validation tool call: validation_bogus");
+  });
+});
+
+describe("USAGE_ERROR_CODES", () => {
+  it("classifies usage/config mistakes, not runtime failures (09-o)", () => {
+    expect(USAGE_ERROR_CODES.has("ROOT_NOT_FOUND")).toBe(true);
+    expect(USAGE_ERROR_CODES.has("INVALID_CONFIG_JSON")).toBe(true);
+    expect(USAGE_ERROR_CODES.has("DIFF_WITH_TARGETS")).toBe(true);
+    expect(USAGE_ERROR_CODES.has("API_KEY_NOT_SET")).toBe(true);
+
+    expect(USAGE_ERROR_CODES.has("REVIEWER_API_ERROR")).toBe(false);
+    expect(USAGE_ERROR_CODES.has("SPEC_NOT_FOUND")).toBe(false);
+    expect(USAGE_ERROR_CODES.has("NO_TOOL_CALL")).toBe(false);
   });
 });
