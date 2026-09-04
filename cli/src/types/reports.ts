@@ -225,6 +225,15 @@ export interface AxiomReport {
   axiomId: string;
   /** The per-reviewer calibration banner (06-h) — carried on the payload like every other report. */
   calibration: string;
+  /** Named when a calibration run flagged this axiom's scores as drifted (06): rates across that boundary are not comparable. */
+  driftNote: string | null;
+  /**
+   * Inter-reviewer agreement over the scoped evidence (06-p), null with
+   * fewer than two reviewers: `corroborated` files were flagged by two
+   * or more reviewers; `disagreed` files by exactly one — corpus runs
+   * review everything, so a lone witness means the others passed it.
+   */
+  agreement: { corroborated: number; disagreed: number } | null;
   statement: string;
   status: AxiomStatus;
   severity: Severity;

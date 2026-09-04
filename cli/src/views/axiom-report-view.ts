@@ -26,6 +26,7 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
       text: `${report.axiomId} v${report.version} — ${report.status} (${report.severity})`,
     },
     { channel: "warning", text: `Calibration: ${report.calibration}` },
+    ...(report.driftNote ? [{ channel: "warning" as const, text: report.driftNote }] : []),
     {
       channel: "content",
       entries: [
@@ -36,6 +37,11 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
           (row) =>
             `[${row.reviewerName}] current stock: ${row.rate.display}${asOf(row)} · files ever flagged: ${row.files} · pre-spec ${row.byPopulation.pre_spec} / post-spec ${row.byPopulation.post_spec} / unknown ${row.byPopulation.unknown}`,
         ),
+        ...(report.agreement
+          ? [
+              `inter-reviewer agreement: ${report.agreement.corroborated} corroborated file(s) · ${report.agreement.disagreed} single-witness file(s) — a tripwire, not ground truth (06)`,
+            ]
+          : []),
         ...(examples.length > 0 ? ["", "Representative critiques:", ...examples] : []),
         "",
         "Removal candidacy: `praxis axioms audit` re-runs the authoring gate.",
