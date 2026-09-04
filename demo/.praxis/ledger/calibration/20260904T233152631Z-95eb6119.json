@@ -1,0 +1,42 @@
+{
+  "kind": "calibration",
+  "calibration_id": "20260904T233152631Z-95eb6119",
+  "timestamp": "2026-09-04T23:31:52.631Z",
+  "commit_sha": null,
+  "branch": "demo-deep-test",
+  "reviewer_name": "flash",
+  "reviewer_model": "deepseek/deepseek-v4-flash-0731",
+  "reviewer_hash": "41d823fa",
+  "case_count": 6,
+  "case_set_hash": "638d9e70",
+  "checklist_hash": "09039d6e",
+  "repeats": 1,
+  "verdict_matches": 5,
+  "unverified_count": 0,
+  "false_positive_count": 0,
+  "axiom_scores": [
+    {
+      "axiom_id": "AX-2559f7",
+      "cases": 5,
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "variance": null
+    },
+    {
+      "axiom_id": "AX-b951db",
+      "cases": 6,
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "variance": null
+    }
+  ],
+  "drift_flagged": [
+    "AX-2559f7",
+    "AX-b951db"
+  ],
+  "prompt_tokens": 17597,
+  "completion_tokens": 871,
+  "cost_usd": 0.000413824404
+}

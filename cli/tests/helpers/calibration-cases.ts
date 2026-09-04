@@ -58,6 +58,7 @@ export function calibrationRecord(
     reviewer_hash: "abcd1234",
     case_count: 1,
     case_set_hash: "cafe0000",
+    checklist_hash: "feed0000",
     repeats: 1,
     verdict_matches: 1,
     unverified_count: 0,

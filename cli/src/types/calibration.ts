@@ -51,6 +51,14 @@ export interface LedgerCalibrationRecord {
   case_count: number;
   /** Hash over the sorted case identities (id + input hash + spec hash) — the staleness input beyond the reviewer hash. */
   case_set_hash: string;
+  /**
+   * Hash over the active checklists of every case's live spec at run
+   * time (added 2026-09-05, found live): ratifying or versioning an
+   * axiom grounded in a case's spec changes what the reviewer is asked
+   * on that case without touching the case set or the reviewer hash —
+   * the third way the instrument changes under you.
+   */
+  checklist_hash: string;
   repeats: number;
   /** Verdict-level agreement: cases × repeats where the reviewer's verdict matched the adjudicated one. */
   verdict_matches: number;

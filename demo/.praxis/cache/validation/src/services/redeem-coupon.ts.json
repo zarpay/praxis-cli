@@ -56,34 +56,19 @@
         "hash": "2b519849"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-04T09:19:13.674Z",
-      "content_hash": "7f25c597",
+      "cached_at": "2026-09-04T23:23:25.913Z",
+      "content_hash": "fe702908",
       "result": {
         "compliant": false,
-        "severity": "error",
+        "severity": "warning",
         "issues": [
           {
-            "text": "The service lacks a doc comment stating its purpose and enumerating domain failure modes. The file must add a doc comment above the run function that clearly explains what the service does and lists all possible domain failures so callers can handle errors without reading the body.",
-            "axiomId": "AX-2559f7",
+            "text": "The service hardcodes the coupon code 'FREESCOOP' directly in validation logic. Configuration data like coupon codes should be isolated in a single obvious place or injected via the Store to prevent silent coupling and drift between code and data. The file should either fetch valid codes from the Store or import them from a dedicated configuration module.",
+            "axiomId": "AX-a108ea",
             "axiomVersion": 1
-          },
-          {
-            "text": "The service performs direct I/O using console.log() instead of going through the injected Store. The line 'console.log(`redeeming ${input.coupon} at ${parlor.name}`);' must be removed or replaced with Store-mediated I/O.",
-            "axiomId": "AX-6e307b",
-            "axiomVersion": 1
-          },
-          {
-            "text": "The error message for unrecognized coupons is insufficiently actionable. While it mentions case-sensitivity, it doesn't specify what would be accepted instead. The message should indicate what valid coupon codes exist or how to obtain them.",
-            "axiomId": "AX-b951db",
-            "axiomVersion": 2
-          },
-          {
-            "text": "The service hardcodes a specific coupon code 'FREESCOOP' directly in the validation logic, violating the principle that configuration data should be isolated or injected via Store. This creates silent coupling between code and data that could drift.",
-            "axiomId": null,
-            "axiomVersion": null
           }
         ],
-        "reason": "The file violates multiple required criteria from the specification, including critical documentation and I/O requirements."
+        "reason": "The file satisfies most requirements but violates one warning-level axiom regarding configuration isolation."
       },
       "exemplar_files": [
         {
@@ -99,12 +84,12 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-04T09:27:11.415Z",
-      "content_hash": "7f25c597",
+      "cached_at": "2026-09-04T23:31:52.776Z",
+      "content_hash": "fe702908",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 991 words."
+        "reason": "Review input has 1028 words."
       },
       "exemplar_files": [
         {

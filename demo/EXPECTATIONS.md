@@ -73,7 +73,7 @@ calls · **[scratch]** run in a copy.
 
 | Command | Expect |
 | --- | --- |
-| `eval run --reviewer counter` [free] | **The canary**: 18/18 cache hits, 0 misses, `[Errors] 0` |
+| `eval run --reviewer counter` [free] | **The canary**: all cache hits, 0 misses, `[Errors] 0` on an unchanged corpus. On a branch that changed source files, exactly those files miss (content misses, deterministic and free) — an *identity* miss is the epoch event; a *content* miss on a changed file is the cache working (nuance recorded 2026-09-05) |
 | `eval run` (all reviewers) [free when warm] | 54 hits; summary shows per-type and by-reviewer blocks; errors = known real findings; header reads "corpus conformance (includes pre-spec debt)" |
 | `eval run src/services/redeem-coupon.ts --reviewer v32` [paid on miss] | Fast loop: findings cite axiom ids (`[AX-…]`) with witnesses; ledger gains a `scope: "files"` run |
 | `eval run <target> --no-cache --verbose` [paid] | Fresh review, reasoning printed |
@@ -89,7 +89,7 @@ calls · **[scratch]** run in a copy.
 | Rerun of the same `--diff` [cheap] | Fresh `scope: "diff"` run file; labels stable; flow labels recorded even for hit-served sides |
 | `--diff` + named targets | Instructive refusal — two different units |
 | `eval ci` [free when warm] | Verifies, exits on errors+unverified (`--strict` adds warnings); **writes nothing** — no ledger run, no cache mutation |
-| `eval ci --diff <base>` | Same gate as run --diff (strict = any introduced); warns on missing local diff-run; writes nothing |
+| `eval ci --diff <base>` | Same gate as run --diff (strict = any introduced); warns on missing local diff-run; writes nothing. Known live behavior (2026-09-05): uncached sides are re-reviewed at gate time, so nondeterministic reviewers can flip the gate between invocations — keep the branch diff run committed and sides warm for a deterministic gate (12) |
 
 ### Calibration (M6)
 
@@ -139,6 +139,22 @@ calls · **[scratch]** run in a copy.
 | `praxis init` (empty dir) | Writes only `.praxis/config.json` |
 | `praxis init --spec-layer` | Adds the authoring taxonomy; re-run never overwrites |
 | `praxis add expert <n>` / `add practice <n>` | Scaffolds from template into configured dirs; refuses to overwrite |
+
+### Deep-campaign findings (2026-09-05, kept as regression context)
+
+- The "new" apply-discount role-play collided with an existing compliant
+  service — git honestly said Modified and the diff labels were right;
+  the system out-argued its author. Restored, with redeem-coupon's debt
+  paid down on the same branch (resolved credits recorded).
+- `calibrate run --repeat 2` measured real variance (0.25) on both
+  services axioms for v32 — the FP fires on one repeat, not the other.
+- flash's recalibration flipped the drift protocol live (its FP
+  vanished; accuracy delta > 0.1) — the drill-down annotates it.
+- Records written before 2026-09-05 lack `checklist_hash` and read
+  STALE under the third staleness input — recalibrated, by design.
+- Ratifying an axiom grounded in a governed spec flips calibration
+  stale ("a ratification changed what the cases ask") — found live,
+  regression-tested.
 
 ## After the audit
 

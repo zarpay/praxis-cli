@@ -70,6 +70,18 @@ The operational guidance that follows: in squash/rebase workflows, branch-run an
 - **Coverage means "would a corpus run review it"** — by-file unit membership, honoring `paths:`, `excludes:`, and `ignore`. A deleted file falls back to its sibling spec (a `paths:`-targeted deletion stays invisible — accepted coarseness); files governed only by a `by_directory` cohort spec count as uncovered until cohort diff units land with the scope itself.
 - **Resolved events are critique-shaped records** (`flow: "resolved"`) hashed over the *before* content — that is what the critique described — with `resolved_by` = the most recent git author touching the file in base..head. They are paydown facts: `critique_count` and every stock surface exclude them; `diff.resolved_count` counts them.
 
+
+> **Gate variance under nondeterministic reviewers** (observed live
+> 2026-09-05): `eval ci --diff` re-reviews any side the cache cannot
+> serve, so with nondeterministic reviewers the gate can flip between
+> invocations on identical trees — one run's fresh before-review yields
+> an introduced error the next run's does not. This is the instrument's
+> variance (06), not a defect in the gate: the mitigations are the
+> committed diff-run evidence the warning above asks for (warm sides are
+> served deterministically from cache) and calibration's noise floor.
+> A team that wants a deterministic gate keeps the branch's diff run
+> committed and the cache warm.
+
 ## Open questions
 
 1. ~~Should `eval ci` _warn_ when a PR has no local diff-run in its ledger (evidence gap), or is cache-verified enforcement enough?~~ **Resolved 2026-09-04:** `eval ci --diff` warns — the gap is named, never failed on.

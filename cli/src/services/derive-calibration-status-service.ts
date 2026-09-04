@@ -10,6 +10,7 @@ import type {
 import { exists, readText } from "@/helpers/files-helper.js";
 import { hash8 } from "@/helpers/hash-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
+import deriveChecklistHashService from "@/services/derive-checklist-hash-service.js";
 import { CalibrationCaseStore } from "@/stores/calibration-case-store.js";
 import { CalibrationStore } from "@/stores/calibration-store.js";
 
@@ -48,10 +49,12 @@ const deriveCalibrationStatusService: Service<
   const { cases } = caseStore.all();
   const caseSetHash = caseStore.caseSetHash();
 
+  const checklistHash = deriveChecklistHashService(cfg, { cases });
+
   const statuses = reviewers.map((reviewer) => {
     const latest = store.latestByName(reviewer.name);
 
-    return statusOf(cfg.root, reviewer, latest, cases, caseSetHash);
+    return statusOf(cfg.root, reviewer, latest, cases, caseSetHash, checklistHash);
   });
 
   const anyStale =
@@ -98,6 +101,7 @@ function statusOf(
   latest: LedgerCalibrationRecord | null,
   cases: CalibrationCase[],
   caseSetHash: string,
+  checklistHash: string,
 ): ReviewerCalibrationStatus {
   const base = { reviewer: reviewer.name, lastCalibratedAt: latest?.timestamp ?? null };
 
@@ -122,6 +126,14 @@ function statusOf(
       ...base,
       state: "stale",
       detail: `the case set changed since ${dateOf(latest.timestamp)} — recalibrate`,
+    };
+  }
+
+  if (latest.checklist_hash !== checklistHash) {
+    return {
+      ...base,
+      state: "stale",
+      detail: `the active checklist for a governed spec changed since ${dateOf(latest.timestamp)} — a ratification changed what the cases ask; recalibrate`,
     };
   }
 

@@ -56,6 +56,12 @@ Decisions (2026-09-04/05):
 - **Scores are stored as counts** (TP/FP/FN, verdict matches, per-axiom
   opportunities); precision/recall derive read-side through the metrics
   rules (07), so floors and denominators apply at render.
+- **Staleness has a third input** (added 2026-09-05, found live): the
+  record stores a `checklist_hash` over the active checklists of every
+  case's live spec, because ratifying or versioning an axiom grounded in
+  a governed spec changes what the reviewer is asked on those cases
+  without touching the case set or the reviewer hash. Status compares it
+  and names the ratification.
 - **A failed review is an unverified outcome** — counted as
   disagreement, recorded on the record, never dropped.
 - **Drift baseline is the previous record for the same reviewer *name***,
