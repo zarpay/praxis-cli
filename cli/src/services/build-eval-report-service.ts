@@ -11,8 +11,10 @@ import type {
   Service,
 } from "@/types.js";
 
-import { CALIBRATION_STATUS, rateCell } from "@/helpers/metrics-helper.js";
+import { rateCell } from "@/helpers/metrics-helper.js";
+import { Reviewer } from "@/models/reviewer.js";
 import countSpecUnitsService from "@/services/count-spec-units-service.js";
+import deriveCalibrationStatusService from "@/services/derive-calibration-status-service.js";
 import deriveEpochsService from "@/services/derive-epochs-service.js";
 import deriveFlowMetricsService from "@/services/derive-flow-metrics-service.js";
 import derivePopulationService from "@/services/derive-population-service.js";
@@ -39,6 +41,8 @@ interface BuildEvalReportInput {
  * (rule 4).
  */
 const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, { scoped }) => {
+  const reviewerModels = cfg.reviewers.map((config) => Reviewer.fromConfig(config));
+  const calibration = deriveCalibrationStatusService(cfg, { reviewers: reviewerModels });
   const { runs } = scoped;
   // Resolved events are paydown facts a diff run recorded, not findings:
   // the original violation is already a record — counting both would
@@ -91,7 +95,7 @@ const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, 
         .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
         .map((run) => ({ runId: run.run_id, at: run.timestamp, costUsd: run.cost_usd ?? null })),
     },
-    calibration: CALIBRATION_STATUS,
+    calibration: calibration.banner,
     axioms: rows.sort((a, b) => a.axiomId.localeCompare(b.axiomId)),
     pendingTriage: state.pending.length,
     residual: rateCell(state.dismissed + state.rejectedProposals, critiques.length),

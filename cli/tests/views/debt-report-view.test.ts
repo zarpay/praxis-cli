@@ -2,7 +2,6 @@ import type { DebtReport } from "@/types.js";
 
 import { describe, expect, it } from "vitest";
 
-import { CALIBRATION_STATUS } from "@/helpers/metrics-helper.js";
 import debtReportView from "@/views/debt-report-view.js";
 import { reportText } from "@tests/helpers/report-text.js";
 
@@ -10,7 +9,7 @@ import { reportText } from "@tests/helpers/report-text.js";
 function report(overrides: Partial<DebtReport> = {}): DebtReport {
   return {
     evidence: [],
-    calibration: CALIBRATION_STATUS,
+    calibration: "v32: uninterpretable — recalibrate",
     rows: [
       {
         axiomId: "AX-aaaa11",
@@ -35,7 +34,7 @@ describe("debtReportView", () => {
     const text = reportText(debtReportView(report()));
 
     expect(text).toContain("pre-spec debt included");
-    expect(text).toContain("uncalibrated");
+    expect(text).toContain("uninterpretable — recalibrate");
   });
 
   it("renders stock movement, concentration, and credit", () => {

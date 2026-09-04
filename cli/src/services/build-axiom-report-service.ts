@@ -60,6 +60,7 @@ const buildAxiomReportService: Service<BuildAxiomReportInput, AxiomReport> = (
 
   return {
     axiomId: axiom.id,
+    calibration: report.calibration,
     statement: axiom.statement(),
     status: axiom.status,
     severity: axiom.severity,

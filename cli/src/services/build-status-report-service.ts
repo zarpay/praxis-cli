@@ -2,7 +2,9 @@ import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { NoInput, Service, StatusReport } from "@/types.js";
 
 import { exists } from "@/helpers/files-helper.js";
+import { Reviewer } from "@/models/reviewer.js";
 import auditExpertsService from "@/services/audit-experts-service.js";
+import deriveCalibrationStatusService from "@/services/derive-calibration-status-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
 import tallyValidationService from "@/services/tally-validation-service.js";
@@ -111,13 +113,15 @@ function evalStateOf(cfg: PraxisConfig): StatusReport["evalState"] {
   const state = deriveTriageStateService(cfg, {});
   const runs = new RunStore(cfg).runs();
   const boundaries = detectEpochBoundariesService(cfg, { reviewers: cfg.reviewers });
+  const reviewerModels = cfg.reviewers.map((config) => Reviewer.fromConfig(config));
+  const calibration = deriveCalibrationStatusService(cfg, { reviewers: reviewerModels });
 
   const lastRun = runs.map((run) => run.timestamp).sort()[runs.length - 1] ?? null;
 
   return {
     pending_triage: state.pending.length,
     proposals_pending: axioms.filter((axiom) => axiom.status === "proposed").length,
-    calibration_stale: true,
+    calibration_stale: calibration.anyStale,
     epoch_boundary_detected: boundaries.length > 0,
     last_run_at: lastRun,
   };

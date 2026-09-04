@@ -88,6 +88,22 @@ describe("deriveCalibrationStatusService", () => {
     expect(result.statuses[0].detail).toContain("case set changed");
   });
 
+  it("the banner marks non-calibrated reviewers uninterpretable, per reviewer (06-q)", () => {
+    const result = derive();
+
+    expect(result.banner).toBe("test: uninterpretable — recalibrate");
+    expect(result.stamps).toEqual({ test: "uncalibrated" });
+  });
+
+  it("the banner names calibrated reviewers with their date, and stamps follow", () => {
+    seedRecord({ timestamp: "2026-09-05T00:00:00.000Z" });
+
+    const result = derive();
+
+    expect(result.banner).toBe("test: calibrated 2026-09-05");
+    expect(result.stamps).toEqual({ test: "calibrated" });
+  });
+
   it("stale when a case's live spec no longer matches what it froze", () => {
     seedRecord();
     writeFileSync(join(root, "src", "services", "README.md"), "# Services\n\nRewritten.\n");

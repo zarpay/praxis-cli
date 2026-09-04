@@ -20,6 +20,7 @@ import { relativePath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import computeFlowService from "@/services/compute-flow-service.js";
+import deriveCalibrationStatusService from "@/services/derive-calibration-status-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
@@ -89,6 +90,9 @@ const reviewDiffService: Service<ReviewDiffInput, Promise<ReviewDiffResult>> = a
     specUnits[specKey] = (specUnits[specKey] ?? 0) + 1;
   }
 
+  const reviewerModels = reviewers.map((config) => Reviewer.fromConfig(config));
+  const calibration = deriveCalibrationStatusService(cfg, { reviewers: reviewerModels });
+
   const total = diff.targets.length * reviewers.length;
   let index = 0;
 
@@ -155,6 +159,7 @@ const reviewDiffService: Service<ReviewDiffInput, Promise<ReviewDiffResult>> = a
         scope: "diff",
         entries,
         specUnits,
+        calibrationStatus: calibration.stamps[reviewerConfig.name],
         diff: {
           facts: {
             base_ref: diff.baseRef,

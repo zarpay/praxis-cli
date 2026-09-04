@@ -3,8 +3,6 @@ import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
 
-import { CALIBRATION_STATUS } from "@/helpers/metrics-helper.js";
-
 /**
  * One axiom across everything in scope (07): the standard, per-reviewer
  * current-stock rates with population-qualified counts, and the
@@ -27,7 +25,7 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
       channel: "heading",
       text: `${report.axiomId} v${report.version} — ${report.status} (${report.severity})`,
     },
-    { channel: "warning", text: `Calibration: ${CALIBRATION_STATUS}` },
+    { channel: "warning", text: `Calibration: ${report.calibration}` },
     {
       channel: "content",
       entries: [

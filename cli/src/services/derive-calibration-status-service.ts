@@ -1,6 +1,11 @@
 import type { CalibrationCase } from "@/models/calibration-case.js";
 import type { Reviewer } from "@/models/reviewer.js";
-import type { LedgerCalibrationRecord, ReviewerCalibrationStatus, Service } from "@/types.js";
+import type {
+  CalibrationStatus,
+  LedgerCalibrationRecord,
+  ReviewerCalibrationStatus,
+  Service,
+} from "@/types.js";
 
 import { exists, readText } from "@/helpers/files-helper.js";
 import { hash8 } from "@/helpers/hash-helper.js";
@@ -18,6 +23,10 @@ interface DeriveCalibrationStatusResult {
   statuses: ReviewerCalibrationStatus[];
   /** True when any reviewer is stale or absent — `status --json`'s poll bit. */
   anyStale: boolean;
+  /** The one-line report banner (07 rule 4): per-reviewer, marker included. */
+  banner: string;
+  /** The `calibration_status_at_run` stamp per reviewer name (05). */
+  stamps: Record<string, CalibrationStatus>;
 }
 
 /**
@@ -45,12 +54,42 @@ const deriveCalibrationStatusService: Service<
     return statusOf(cfg.root, reviewer, latest, cases, caseSetHash);
   });
 
-  const anyStale = statuses.some((status) => status.state !== "calibrated");
+  const anyStale =
+    statuses.length === 0 || statuses.some((status) => status.state !== "calibrated");
+  const stamps = Object.fromEntries(
+    statuses.map((status) => [status.reviewer, stampOf(status.state)]),
+  );
 
-  return { statuses, anyStale };
+  return { statuses, anyStale, banner: bannerOf(statuses), stamps };
 };
 
 export default deriveCalibrationStatusService;
+
+/** The ledger stamp for one state: absent stays the historical "uncalibrated". */
+function stampOf(state: ReviewerCalibrationStatus["state"]): CalibrationStatus {
+  if (state === "calibrated") return "calibrated";
+
+  return state === "stale" ? "stale" : "uncalibrated";
+}
+
+/**
+ * The per-reviewer banner every report carries (06-h, 07 rule 4):
+ * numbers computed under a stale or absent calibration are marked
+ * "uninterpretable — recalibrate", per reviewer, never pooled (06-q).
+ */
+function bannerOf(statuses: ReviewerCalibrationStatus[]): string {
+  if (statuses.length === 0) {
+    return "uncalibrated — numbers are directional, not interpretable";
+  }
+
+  const parts = statuses.map((status) => {
+    if (status.state === "calibrated") return `${status.reviewer}: ${status.detail}`;
+
+    return `${status.reviewer}: uninterpretable — recalibrate`;
+  });
+
+  return parts.join(" · ");
+}
 
 /** One reviewer's state against the frozen set and the live tree. */
 function statusOf(

@@ -223,6 +223,8 @@ export interface EvalReport {
 /** The single-axiom drill-down payload. */
 export interface AxiomReport {
   axiomId: string;
+  /** The per-reviewer calibration banner (06-h) — carried on the payload like every other report. */
+  calibration: string;
   statement: string;
   status: AxiomStatus;
   severity: Severity;

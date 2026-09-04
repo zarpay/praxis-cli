@@ -23,7 +23,10 @@ const calibrationRunView: View<LedgerCalibrationRecord> = (record) => {
       : null;
   const unverifiedEntry =
     record.unverified_count > 0
-      ? { text: `unverified: ${record.unverified_count} (counted as disagreement)`, color: "red" as const }
+      ? {
+          text: `unverified: ${record.unverified_count} (counted as disagreement)`,
+          color: "red" as const,
+        }
       : null;
 
   const costEntries = [
@@ -52,10 +55,7 @@ export default calibrationRunView;
 
 /** One axiom's precision/recall line from its stored counts. */
 function scoreLine(score: LedgerCalibrationRecord["axiom_scores"][number]): string {
-  const precision = rateCell(
-    score.true_positives,
-    score.true_positives + score.false_positives,
-  );
+  const precision = rateCell(score.true_positives, score.true_positives + score.false_positives);
   const recall = rateCell(score.true_positives, score.true_positives + score.false_negatives);
   const varianceLabel = score.variance !== null ? ` · variance ${score.variance.toFixed(2)}` : "";
 

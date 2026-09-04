@@ -16,6 +16,7 @@ import { readText } from "@/helpers/files-helper.js";
 import { baseName, relativePath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
+import deriveCalibrationStatusService from "@/services/derive-calibration-status-service.js";
 import discoverDomainsService from "@/services/discover-domains-service.js";
 import resolveUnitsService from "@/services/resolve-units-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
@@ -113,6 +114,9 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
     specUnits[spec] = (specUnits[spec] ?? 0) + 1;
   }
 
+  const reviewerModels = reviewers.map((config) => Reviewer.fromConfig(config));
+  const calibration = deriveCalibrationStatusService(cfg, { reviewers: reviewerModels });
+
   const verdicts: TargetVerdict[] = [];
   const cacheStats = { hits: 0, misses: 0 };
   const total = queue.length * reviewers.length;
@@ -165,6 +169,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
         scope: "corpus",
         entries,
         specUnits,
+        calibrationStatus: calibration.stamps[reviewerConfig.name],
       });
     }
   }

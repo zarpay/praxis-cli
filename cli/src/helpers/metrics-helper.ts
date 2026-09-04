@@ -10,9 +10,6 @@ import type { RateCell } from "@/types.js";
 /** Cells with fewer applicable opportunities than this suppress (07 rule 3). */
 export const SMALL_N_FLOOR = 5;
 
-/** The calibration banner every report carries until M6 lands (07 rule 4). */
-export const CALIBRATION_STATUS = "uncalibrated — numbers are directional, not interpretable";
-
 /**
  * One floor-aware rate: numerator over denominator, displayed with the
  * denominator shown, or suppressed below the small-n floor.

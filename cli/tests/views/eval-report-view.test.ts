@@ -2,7 +2,7 @@ import type { EvalReport } from "@/types.js";
 
 import { describe, expect, it } from "vitest";
 
-import { CALIBRATION_STATUS, rateCell } from "@/helpers/metrics-helper.js";
+import { rateCell } from "@/helpers/metrics-helper.js";
 import evalReportView from "@/views/eval-report-view.js";
 import { reportText } from "@tests/helpers/report-text.js";
 
@@ -19,7 +19,7 @@ function report(overrides: Partial<EvalReport> = {}): EvalReport {
       costUsd: 0.01,
       costTrend: [],
     },
-    calibration: CALIBRATION_STATUS,
+    calibration: "v32: uninterpretable — recalibrate",
     axioms: [],
     pendingTriage: 0,
     flow: null,
@@ -33,7 +33,7 @@ describe("evalReportView", () => {
   it("carries the calibration banner on every render (rule 4)", () => {
     const text = reportText(evalReportView(report()));
 
-    expect(text).toContain("uncalibrated");
+    expect(text).toContain("uninterpretable — recalibrate");
   });
 
   it("renders suppressed cells as insufficient data, never a number (rule 3)", () => {
@@ -72,6 +72,6 @@ describe("evalReportView", () => {
     const parsed = JSON.parse(reportText(lines)) as EvalReport;
 
     expect(parsed.panel.runs).toBe(2);
-    expect(parsed.calibration).toContain("uncalibrated");
+    expect(parsed.calibration).toContain("uninterpretable — recalibrate");
   });
 });

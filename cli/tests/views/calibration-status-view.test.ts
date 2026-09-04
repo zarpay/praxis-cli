@@ -21,7 +21,9 @@ const STALE: ReviewerCalibrationStatus = {
 
 describe("calibrationStatusView", () => {
   it("renders one badge line per reviewer", () => {
-    const text = reportText(calibrationStatusView({ statuses: [CALIBRATED, STALE], anyStale: true }));
+    const text = reportText(
+      calibrationStatusView({ statuses: [CALIBRATED, STALE], anyStale: true }),
+    );
 
     expect(text).toContain("Calibration status");
     expect(text).toContain("v32 — calibrated 2026-09-05");
