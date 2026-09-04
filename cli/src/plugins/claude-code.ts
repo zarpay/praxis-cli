@@ -1,4 +1,4 @@
-import type { AgentMetadata, CompilerPlugin, PluginOptions } from "@/types.js";
+import type { AgentMetadata, CompilerPlugin, CompilerPluginOptions } from "@/types.js";
 
 import { exists, readJson, writeJson, writeText } from "@/helpers/files-helper.js";
 import { joinPath, resolvePath } from "@/helpers/paths-helper.js";
@@ -25,7 +25,7 @@ export class ClaudeCodePlugin implements CompilerPlugin {
   /** Guards the once-per-run write of plugin.json and command/skill files. */
   private manifestWritten = false;
 
-  constructor({ root, pluginConfig }: PluginOptions) {
+  constructor({ root, pluginConfig }: CompilerPluginOptions) {
     this.claudeCodePluginName = pluginConfig?.claudeCodePluginName ?? "praxis";
     this.outputDir = pluginConfig?.outputDir
       ? resolvePath(root, pluginConfig.outputDir)

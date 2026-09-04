@@ -14,7 +14,9 @@ export type View<Data> = (data: Data) => ReportLine[];
 ```
 
 - **Named `{name}-view.ts`, default-exporting the filename in camelCase**, its
-  const typed `View<Data>` with the data shape in `src/types.ts`. Because every
+  const typed `View<Data>` — the data shape declared in the view itself
+  (unexported) when only this view renders it, in the barrel when the
+  builder or another surface shares it (`.claude/rules/types.md`). Because every
   view returns the same thing, every caller renders the same way:
   `ctx.render(statusView(report))`. There is no other verb — no `out.line`, no
   `out.print`, no `renderReport` at a call site.

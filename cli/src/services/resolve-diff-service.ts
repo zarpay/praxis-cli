@@ -1,5 +1,5 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type { DiffTarget, ResolveDiffInput, ResolveDiffResult, Service } from "@/types.js";
+import type { DiffTarget, ResolveDiffResult, Service } from "@/types.js";
 
 import picomatch from "picomatch";
 
@@ -15,6 +15,12 @@ import { joinPath } from "@/helpers/paths-helper.js";
 import discoverDomainsService from "@/services/discover-domains-service.js";
 import resolveUnitsService from "@/services/resolve-units-service.js";
 import { SpecStore } from "@/stores/spec-store.js";
+
+/** What `eval run --diff` was asked to measure. */
+interface ResolveDiffInput {
+  /** Base ref override; omitted detects the default branch. */
+  base?: string;
+}
 
 /**
  * Resolves what a `--diff` run measures (12): the merge-base against

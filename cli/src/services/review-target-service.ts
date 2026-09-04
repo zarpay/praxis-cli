@@ -1,14 +1,15 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { ReviewSubject } from "@/models/review-subject.js";
 import type { Reviewer } from "@/models/reviewer.js";
+import type { VerdictStore } from "@/stores/verdict-store.js";
 import type {
   ChecklistAxiom,
   Critique,
   ProviderRequest,
   ProviderResult,
-  ReviewTargetInput,
-  ReviewTargetResult,
+  ProviderUsage,
   Service,
+  Verdict,
 } from "@/types.js";
 
 import { PraxisError, errors } from "@/helpers/errors-helper.js";
@@ -16,6 +17,25 @@ import reviewTools from "@/prompts/review-tools.js";
 import systemPrompt from "@/prompts/system-prompt.js";
 import validationQuestion from "@/prompts/validation-question.js";
 import resolveProviderService from "@/services/resolve-provider-service.js";
+
+/** One target to review, with the reviewer and cache to do it. */
+interface ReviewTargetInput {
+  /** What is being reviewed, already resolved. */
+  target: ReviewSubject;
+  /** The instrument doing the reviewing. */
+  reviewer: Reviewer;
+  /** Reviewer-namespaced cache, or null to always call the provider. */
+  cache: VerdictStore | null;
+}
+
+/** A verdict, and how it was obtained. */
+interface ReviewTargetResult {
+  verdict: Verdict;
+  /** Whether it came from cache rather than a provider call. */
+  cacheHit: boolean;
+  /** Usage from the provider call, or null on a cache hit. */
+  usage: ProviderUsage | null;
+}
 
 /**
  * A verdict for one target from one reviewer, from cache when the

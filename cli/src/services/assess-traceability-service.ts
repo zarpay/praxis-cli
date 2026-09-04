@@ -1,9 +1,17 @@
-import type { AssessTraceabilityInput, Service, TraceabilityAssessment } from "@/types.js";
+import type { Service, TraceabilityAssessment } from "@/types.js";
 
 import curatorSystemPrompt from "@/prompts/curator-system-prompt.js";
 import traceabilityQuestion from "@/prompts/traceability-question.js";
 import traceabilityTools from "@/prompts/traceability-tools.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
+
+/** One proposal to trace against its spec at ratification. */
+interface AssessTraceabilityInput {
+  /** Project-relative spec path the proposal claims to belong to. */
+  specPath: string;
+  specContent: string;
+  statement: string;
+}
 
 /**
  * The ratifier's traceability aid (04): which spec criterion grounds

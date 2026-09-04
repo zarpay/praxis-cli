@@ -1,7 +1,17 @@
-import type { RatifyReview } from "@/types.js";
+import type { AxiomFile } from "@/models/axiom-file.js";
+import type { GateAssessment, TraceabilityAssessment } from "@/types.js";
 import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
+
+/** Everything the ratifier weighs before the human call (04). */
+interface RatifyReview {
+  axiom: AxiomFile;
+  /** How many assigned critiques back the proposal. */
+  supportingCritiques: number;
+  gate: GateAssessment;
+  traceability: TraceabilityAssessment;
+}
 
 /**
  * Everything the ratifier weighs (04): the proposal, its supporting

@@ -1,7 +1,12 @@
-import type { ShowConfigResult } from "@/types.js";
 import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
+
+/** What `praxis config show` renders: the file's location and its raw contents. */
+interface ShowConfigResult {
+  configPath: string;
+  config: unknown;
+}
 
 /** Horizontal rule under the config header. */
 const DIVIDER = "─".repeat(40);

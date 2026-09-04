@@ -1,7 +1,16 @@
-import type { TriageCluster, TriageClusterCard } from "@/types.js";
+import type { PendingCritique, TriageCluster } from "@/types.js";
 import type { ReportLine, View } from "@framework/types.js";
 
 import chalk from "chalk";
+
+/** One cluster of a triage session, framed for its decision. */
+interface TriageClusterCard {
+  /** 1-based position in the session. */
+  index: number;
+  total: number;
+  cluster: TriageCluster;
+  critiques: PendingCritique[];
+}
 
 /**
  * One cluster of the triage session (04): the curator's grouping and

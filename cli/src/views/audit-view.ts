@@ -1,7 +1,18 @@
-import type { AxiomAudit } from "@/types.js";
 import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
+
+/** One row of the gate re-assessment over active axioms (03). */
+interface AxiomAuditRow {
+  id: string;
+  assessment: string;
+  reasoning: string;
+}
+
+/** The audit's advisory rows, for a human to act on. */
+interface AxiomAudit {
+  rows: AxiomAuditRow[];
+}
 
 /**
  * The gate re-assessment over active axioms (03): advisory rows a human

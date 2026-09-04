@@ -1,7 +1,14 @@
-import type { EvalSummary, FinishedRun } from "@/types.js";
+import type { EvalSummary, ReviewAllResult } from "@/types.js";
 import type { DisplayEntry, View } from "@framework/types.js";
 
 import chalk from "chalk";
+
+/** A completed full run, ready to report. */
+interface FinishedRun {
+  run: ReviewAllResult;
+  /** Whether the cache was consulted — a disabled cache is not a cold one. */
+  cached: boolean;
+}
 
 /**
  * What a finished run reports: the fail-fast notice if it stopped early,

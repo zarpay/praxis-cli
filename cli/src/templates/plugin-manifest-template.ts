@@ -1,4 +1,8 @@
-import type { PluginManifestVars } from "@/types.js";
+/** What the Claude Code plugin supplies to the manifest template. */
+interface PluginManifestVars {
+  /** The plugin's name in the manifest (`claudeCodePluginName`). */
+  name: string;
+}
 
 /**
  * The `.claude-plugin/plugin.json` manifest the Claude Code plugin

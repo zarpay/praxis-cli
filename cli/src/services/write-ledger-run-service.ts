@@ -1,17 +1,36 @@
 import type {
+  CacheReviewerIdentity,
   LedgerCritiqueRecord,
+  LedgerDiffFacts,
   LedgerEntry,
   LedgerRecord,
   LedgerRunRecord,
+  LedgerScope,
+  LedgerTrigger,
   ProviderUsage,
+  ResolvedEvent,
   Service,
-  WriteLedgerRunInput,
   WriteLedgerRunResult,
 } from "@/types.js";
 
 import { gitFacts } from "@/helpers/git-helper.js";
 import { relativePath } from "@/helpers/paths-helper.js";
 import { RunStore } from "@/stores/run-store.js";
+
+/** One reviewer's completed run, ready to persist. */
+interface WriteLedgerRunInput {
+  reviewer: CacheReviewerIdentity;
+  trigger: LedgerTrigger;
+  scope: LedgerScope;
+  entries: LedgerEntry[];
+  /** Evaluated units per governing spec, project-relative paths. */
+  specUnits?: Record<string, number>;
+  /** Present on scope "diff" runs: the run facts and the resolved events. */
+  diff?: {
+    facts: Omit<LedgerDiffFacts, "resolved_count">;
+    resolved: ResolvedEvent[];
+  };
+}
 
 /**
  * Persists one reviewer's completed run to the ledger (05).

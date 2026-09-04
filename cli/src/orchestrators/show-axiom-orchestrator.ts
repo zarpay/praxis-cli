@@ -1,9 +1,15 @@
-import type { Orchestrator, ShowAxiomOptions } from "@/types.js";
+import type { Orchestrator } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import axiomShowView from "@/views/axiom-show-view.js";
+
+/** Options for `praxis axioms show <id>`. */
+interface ShowAxiomOptions {
+  id: string;
+  json?: boolean;
+}
 
 /**
  * What `praxis axioms show <id>` does: one axiom in full — the

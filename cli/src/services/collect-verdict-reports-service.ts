@@ -1,4 +1,4 @@
-import type { CollectVerdictReportsInput, CollectVerdictReportsResult, Service } from "@/types.js";
+import type { Service, VerdictReport } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { exists } from "@/helpers/files-helper.js";
@@ -6,6 +6,22 @@ import { resolvePath } from "@/helpers/paths-helper.js";
 import { Reviewer } from "@/models/reviewer.js";
 import buildVerdictReportService from "@/services/build-verdict-report-service.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
+
+/** One target to report cached verdicts for. */
+interface CollectVerdictReportsInput {
+  /** The target to report on. */
+  targetPath: string;
+}
+
+/** Every reviewer's last recorded opinion of one target. */
+interface CollectVerdictReportsResult {
+  /** The resolved absolute target path. */
+  targetPath: string;
+  /** Whether reviewers should be named in the output. */
+  named: boolean;
+  /** One report per configured reviewer, in config order. */
+  reports: { reviewer: string; report: VerdictReport }[];
+}
 
 /**
  * What every reviewer last recorded about one target.

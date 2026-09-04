@@ -1,9 +1,16 @@
-import type { AssessAxiomGateInput, GateAssessment, Service } from "@/types.js";
+import type { GateAssessment, Service } from "@/types.js";
 
 import curatorSystemPrompt from "@/prompts/curator-system-prompt.js";
 import gateQuestion from "@/prompts/gate-question.js";
 import gateTools from "@/prompts/gate-tools.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
+
+/** One candidate axiom for the authoring gate (03). */
+interface AssessAxiomGateInput {
+  statement: string;
+  violatingExample: string;
+  compliantExample: string;
+}
 
 /**
  * The authoring gate (03): one candidate axiom, one assessment —

@@ -5,7 +5,6 @@ import type {
   ListAxiomsResult,
   Severity,
   StoreProblem,
-  WriteAxiomProposalResult,
 } from "@/types.js";
 
 import { randomBytes } from "node:crypto";
@@ -20,6 +19,12 @@ import {
 import { joinPath, relativePath } from "@/helpers/paths-helper.js";
 import { AxiomFile } from "@/models/axiom-file.js";
 import axiomFileTemplate from "@/templates/axiom-file-template.js";
+
+/** Where the proposal landed. */
+interface WriteAxiomProposalResult {
+  id: string;
+  path: string;
+}
 
 /**
  * The project's axiom store: `.praxis/axioms/` and its `proposed/`

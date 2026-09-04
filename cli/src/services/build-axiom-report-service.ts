@@ -1,9 +1,15 @@
-import type { AxiomReport, AxiomReportRow, BuildAxiomReportInput, Service } from "@/types.js";
+import type { AxiomReport, AxiomReportRow, ScopedLedger, Service } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { rateCell } from "@/helpers/metrics-helper.js";
 import buildEvalReportService from "@/services/build-eval-report-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
+
+/** The single-axiom drill-down's inputs. */
+interface BuildAxiomReportInput {
+  scoped: ScopedLedger;
+  axiomId: string;
+}
 
 /**
  * The single-axiom drill-down (07): the standard itself, its per-

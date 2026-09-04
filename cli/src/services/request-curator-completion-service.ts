@@ -1,13 +1,15 @@
-import type {
-  ProviderCompletion,
-  ProviderRequest,
-  RequestCuratorCompletionInput,
-  Service,
-} from "@/types.js";
+import type { ProviderCompletion, ProviderRequest, Service } from "@/types.js";
 
 import { PraxisError, errors } from "@/helpers/errors-helper.js";
 import { Reviewer } from "@/models/reviewer.js";
 import resolveProviderService from "@/services/resolve-provider-service.js";
+
+/** One curator call: rendered prompts and tools in, one tool call out. */
+interface RequestCuratorCompletionInput {
+  systemPrompt: string;
+  userPrompt: string;
+  tools: readonly unknown[];
+}
 
 /**
  * One structured-output call as the curator (04).

@@ -1,4 +1,4 @@
-import type { EvalSummary, FinishedRun } from "@/types.js";
+import type { EvalSummary } from "@/types.js";
 
 import { describe, expect, it } from "vitest";
 
@@ -6,7 +6,7 @@ import runReportView from "@/views/run-report-view.js";
 import { reportText } from "@tests/helpers/report-text.js";
 
 /** A finished run over the given summary, everything else quiet. */
-function finished(summary: Partial<EvalSummary>): FinishedRun {
+function finished(summary: Partial<EvalSummary>) {
   return {
     cached: false,
     run: {

@@ -2,12 +2,12 @@ import type { AxiomFile } from "@/models/axiom-file.js";
 import type { PraxisConfig } from "@/models/praxis-config.js";
 import type {
   AxiomReportRow,
-  BuildEvalReportInput,
   EpochSeries,
   EvalReport,
   LedgerCritiqueRecord,
   LedgerRunRecord,
   PopulationQualifier,
+  ScopedLedger,
   Service,
 } from "@/types.js";
 
@@ -18,6 +18,11 @@ import deriveFlowMetricsService from "@/services/derive-flow-metrics-service.js"
 import derivePopulationService from "@/services/derive-population-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
+
+/** What the eval-report builder computes over. */
+interface BuildEvalReportInput {
+  scoped: ScopedLedger;
+}
 
 /**
  * The eval report (07): one structured payload the view renders and

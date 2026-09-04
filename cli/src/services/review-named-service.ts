@@ -3,8 +3,7 @@ import type {
   Critique,
   Finding,
   LedgerEntry,
-  ReviewNamedInput,
-  ReviewNamedResult,
+  ReviewedTarget,
   Service,
   Verdict,
 } from "@/types.js";
@@ -18,6 +17,30 @@ import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { SpecStore } from "@/stores/spec-store.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
+
+/** The targets to review, and the project they live in. */
+interface ReviewNamedInput {
+  /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
+  ledger?: boolean;
+  /** Absolute or cwd-relative target paths. */
+  targets: string[];
+  /** Spec override; honored only when exactly one target was named. */
+  spec?: string;
+  /** Narrow to one configured reviewer by name. */
+  reviewer?: string;
+  /** Whether to consult the verdict cache. */
+  useCache?: boolean;
+  /** Called once per target with its deduplicated findings (08). */
+  onTarget?: (event: ReviewedTarget) => void;
+}
+
+/** What reviewing the named targets produced. */
+interface ReviewNamedResult {
+  /** Targets whose worst verdict was an error. */
+  errors: number;
+  /** Targets whose worst verdict was a warning. */
+  warnings: number;
+}
 
 /**
  * Reviews the named targets, each against its own spec.

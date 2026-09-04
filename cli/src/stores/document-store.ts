@@ -1,11 +1,16 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type { DocumentCounts } from "@/types.js";
 
 import fg from "fast-glob";
 
 import { isContentFile, readText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { DocumentFile } from "@/models/document-file.js";
+
+/** How many documents of each non-authored kind a project holds. */
+interface DocumentCounts {
+  references: number;
+  context: number;
+}
 
 /**
  * The source trees' documents, swept untyped: every authored markdown

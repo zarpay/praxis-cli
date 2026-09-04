@@ -492,23 +492,32 @@ export default tseslint.config(
     },
   },
   {
-    // Every type and interface lives in a types.ts: the framework
-    // package's for its machinery, src/types.ts for everything Praxis.
-    // Modules declare behavior only.
+    // The shared type vocabulary lives in src/types/ (barreled through
+    // src/types.ts) and the framework package's types.ts. A type only
+    // one module speaks is declared IN that module, unexported — so an
+    // exported declaration anywhere else is a type that belongs in the
+    // barrel. See .claude/rules/types.md.
     files: ["src/**/*.ts", "packages/**/*.ts"],
-    ignores: ["src/types.ts", "packages/framework/src/types.ts"],
+    ignores: [
+      "src/types.ts",
+      "src/types/**",
+      "packages/framework/src/types.ts",
+      // Named exceptions: contracts that live beside their owner.
+      "src/helpers/errors-helper.ts",
+      "src/helpers/files-helper.ts",
+    ],
     rules: {
       "no-restricted-syntax": [
         "error",
         {
-          selector: "TSInterfaceDeclaration",
+          selector: "ExportNamedDeclaration > TSInterfaceDeclaration",
           message:
-            "Declare interfaces in src/types.ts (or packages/framework/src/types.ts for framework machinery).",
+            "A shared interface lives in src/types/ (the barrel). A module-local interface stays unexported.",
         },
         {
-          selector: "TSTypeAliasDeclaration",
+          selector: "ExportNamedDeclaration > TSTypeAliasDeclaration",
           message:
-            "Declare type aliases in src/types.ts (or packages/framework/src/types.ts for framework machinery).",
+            "A shared type alias lives in src/types/ (the barrel). A module-local alias stays unexported.",
         },
       ],
     },

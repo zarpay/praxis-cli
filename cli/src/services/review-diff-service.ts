@@ -3,13 +3,13 @@ import type {
   Critique,
   DiffTarget,
   DiffTargetOutcome,
+  EvalProgress,
   FlowSide,
   LedgerEntry,
+  ProviderUsage,
   ResolveDiffResult,
   ResolvedEvent,
-  ReviewDiffInput,
   ReviewDiffResult,
-  ReviewedSide,
   ReviewerConfig,
   Service,
   Verdict,
@@ -24,6 +24,30 @@ import reviewTargetService from "@/services/review-target-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
+
+/** A merge-base diff review: every reviewer over every covered changed file. */
+interface ReviewDiffInput {
+  /** Whether this run writes the ledger. Default true; CI passes false. */
+  ledger?: boolean;
+  /** The reviewers to run; every reviewer reviews both sides of every target. */
+  reviewers: ReviewerConfig[];
+  /** The resolved diff, from `resolve-diff-service`. */
+  diff: ResolveDiffResult;
+  /** Whether to consult the verdict cache. */
+  useCache?: boolean;
+  /** Whether cache misses may write back; CI passes true. */
+  readOnlyCache?: boolean;
+  /** Called as the review progresses, for streamed output. */
+  onProgress?: (event: EvalProgress) => void;
+}
+
+/** What reviewing one side of a diff yields. */
+interface ReviewedSide {
+  subject: ReviewSubject;
+  verdict: Verdict;
+  cacheHit: boolean;
+  usage: ProviderUsage | null;
+}
 
 /**
  * One `praxis eval run --diff`: both sides of every covered changed

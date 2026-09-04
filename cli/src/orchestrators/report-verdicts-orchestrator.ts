@@ -1,9 +1,16 @@
-import type { ReportVerdictsOptions } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import collectVerdictReportsService from "@/services/collect-verdict-reports-service.js";
 import verdictReportsView from "@/views/verdict-reports-view.js";
+
+/** What `praxis eval verdict` was asked for. */
+interface ReportVerdictsOptions {
+  /** The target whose cached verdicts to show. */
+  target: string;
+  /** Show each verdict's full reasoning. */
+  verbose?: boolean;
+}
 
 /**
  * What `praxis eval verdict` does: show what every reviewer last recorded

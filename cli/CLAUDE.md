@@ -32,8 +32,9 @@ packages/framework/  the machinery a CLI is built from, developed as if
                      Orchestrator, prepare-orchestrator
 src/
   index.ts        CLI entry
-  types.ts        every Praxis type and interface; the framework package's
-                  own shapes live in packages/framework/src/types.ts
+  types.ts        the barrel over src/types/ — the shared type vocabulary,
+                  one domain file per topic; the framework package's own
+                  shapes live in packages/framework/src/types.ts
   helpers/        plain reusable modules any layer may lean on: files, paths,
                   text, errors, prepare-orchestrator binding ({name}-helper.ts)
   models/         data structures and the helpers on that data, valid by
@@ -215,7 +216,7 @@ Plugins implement the `CompilerPlugin` interface (`types.ts`): `name` property a
 ## Code Conventions
 
 - **A file's name states its layer, and its export states its name:** files under `commands/`, `orchestrators/` and `services/` end `-command.ts`, `-orchestrator.ts`, `-service.ts`, and any named (non-default) export is that filename in camelCase — `run-eval-orchestrator.ts` exports `runEvalOrchestrator`. An import statement then says what kind of thing it is pulling in. The extension-point classes are not services and do not live under `services/`: they have their own `providers/` and `plugins/` directories, named for what they integrate with (`openrouter.ts`, `claude-code.ts`) because that name is what a user writes in the config.
-- **Types live in a `types.ts`:** `src/types.ts` for everything Praxis, `packages/framework/src/types.ts` for the framework's machinery. ESLint bans interface/type-alias declarations anywhere else. Modules declare behavior — classes, functions, constants — never shapes. Sole exception: `helpers/files-helper.ts` re-exports node's `FSWatcher`, because `node:fs` is walled into that module.
+- **Types: shared vocabulary in the barrel, local shapes in place.** `src/types.ts` re-exports the domain files under `src/types/` (shared vocabulary and documented contracts — see `.claude/rules/types.md`); a type only one module speaks is declared in that module, unexported (ESLint bans *exported* type declarations outside the barrel). Names read as families (`CompilerPlugin` → `CompilerPluginOptions`); spec vocabulary is never renamed for symmetry. The framework's machinery keeps `packages/framework/src/types.ts`.
 - **Path aliases:** `@/*` → `./src/*`, `@tests/*` → `./tests/*` (tsconfig.json and vitest.config.ts). Imports always use aliases, never relative paths (ESLint-enforced; sole exception: `../package.json`).
 - **Import order:** third-party types, internal types, third-party values, internal values — blank line between groups, alphabetical within (perfectionist, autofixable)
 - **Import extensions:** `.js` required for local imports (ESM)

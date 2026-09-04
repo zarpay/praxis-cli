@@ -1,9 +1,21 @@
 import type { FSWatcher } from "@/helpers/files-helper.js";
-import type { Service, WatchAndCompileInput } from "@/types.js";
+import type { CompileExpertsInput, Service } from "@/types.js";
 
 import { watchDir } from "@/helpers/files-helper.js";
 import { resolvePath } from "@/helpers/paths-helper.js";
 import compileExpertsService from "@/services/compile-experts-service.js";
+
+/** A watch session over a project's source directories. */
+interface WatchAndCompileInput extends CompileExpertsInput {
+  /** How long to wait for a burst of changes to settle. */
+  debounceMs?: number;
+  /** Called once per directory as watching begins. */
+  onWatch?: (sourceDir: string) => void;
+  /** Called when a change triggers a recompile. */
+  onRecompile?: (filename: string | null) => void;
+  /** Called when a recompile fails; the watch continues regardless. */
+  onError?: (message: string) => void;
+}
 
 /**
  * Recompiles every expert whenever a source directory changes.

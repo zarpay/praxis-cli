@@ -1,11 +1,11 @@
 import type {
+  EvalProgress,
   EvalSummary,
   EvalUnit,
   LedgerEntry,
   LedgerEvidence,
-  ReviewAllInput,
   ReviewAllResult,
-  ReviewUnitInput,
+  ReviewerConfig,
   Service,
   TargetVerdict,
   ValidationDomain,
@@ -23,6 +23,39 @@ import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { DocumentStore } from "@/stores/document-store.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
+
+/** One unit of a full run: the target, its spec, and who reviews it. */
+interface ReviewUnitInput {
+  /** The unit to review — one file, or a cohort of them. */
+  unit: EvalUnit;
+  /** The spec governing this unit. */
+  specPath: string;
+  /** The domain type the unit belongs to, for the summary. */
+  type: string;
+  /** The reviewer doing the work. */
+  reviewerConfig: ReviewerConfig;
+  /** This reviewer's cache, or null when the cache is disabled. */
+  cache: VerdictStore | null;
+  /** Called as the review progresses, for streamed output. */
+  onProgress?: (event: EvalProgress) => void;
+}
+
+interface ReviewAllInput {
+  /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
+  ledger?: boolean;
+  /** The reviewers to run; every reviewer reviews every unit. */
+  reviewers: ReviewerConfig[];
+  /** Whether to consult the verdict cache. */
+  useCache?: boolean;
+  /** Whether cache misses may write back; CI passes true. */
+  readOnlyCache?: boolean;
+  /** Whether to stop at the first error verdict. */
+  failFast?: boolean;
+  /** Review only the domains of this type; omitted reviews everything. */
+  type?: string;
+  /** Called as the run progresses, for streamed output. */
+  onProgress?: (event: EvalProgress) => void;
+}
 
 /**
  * One `praxis eval run`: review every target every reviewer covers.

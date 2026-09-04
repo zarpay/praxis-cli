@@ -1,12 +1,12 @@
-import type {
-  DetectEpochBoundariesInput,
-  EpochBoundary,
-  LedgerRunRecord,
-  Service,
-} from "@/types.js";
+import type { EpochBoundary, LedgerRunRecord, ReviewerConfig, Service } from "@/types.js";
 
 import { Reviewer } from "@/models/reviewer.js";
 import { RunStore } from "@/stores/run-store.js";
+
+/** The reviewers a boundary check covers — a run passes its selected subset. */
+interface DetectEpochBoundariesInput {
+  reviewers: ReviewerConfig[];
+}
 
 /**
  * The reviewers whose behavioral hash the ledger has never seen (02).

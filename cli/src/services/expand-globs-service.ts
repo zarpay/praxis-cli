@@ -1,9 +1,25 @@
-import type { ExpandGlobsInput, GlobExpansion, Service } from "@/types.js";
+import type { Service } from "@/types.js";
 
 import fg from "fast-glob";
 
 import { hasGlobChars, matchesFilename } from "@/helpers/files-helper.js";
 import { baseName } from "@/helpers/paths-helper.js";
+
+/** The glob patterns to resolve. */
+interface ExpandGlobsInput {
+  /** Patterns to expand, in the order the author declared them. */
+  patterns: string[];
+}
+
+/** What one declared pattern turned out to match. */
+interface GlobExpansion {
+  /** The pattern as the author wrote it. */
+  pattern: string;
+  /** Whether it is a glob; a plain path matches only itself. */
+  isGlob: boolean;
+  /** Project-relative paths matched, sorted. */
+  matches: string[];
+}
 
 /**
  * Resolves an expert's declared patterns to the files they match.

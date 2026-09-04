@@ -1,5 +1,10 @@
-import type { ShownAxiom } from "@/types.js";
+import type { AxiomFile } from "@/models/axiom-file.js";
 import type { View } from "@framework/types.js";
+
+/** One axiom, shown in full. */
+interface ShownAxiom {
+  axiom: AxiomFile;
+}
 
 /**
  * One axiom in full: the facts a reader needs to trust it (identity,

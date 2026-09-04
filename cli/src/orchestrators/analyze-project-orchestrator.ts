@@ -1,8 +1,13 @@
-import type { Orchestrator, StatusOptions } from "@/types.js";
+import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import buildStatusReportService from "@/services/build-status-report-service.js";
 import statusView from "@/views/status-view.js";
+
+/** Options for `praxis status`. */
+interface StatusOptions {
+  json?: boolean;
+}
 
 /**
  * What `praxis status` does: report the project's health.

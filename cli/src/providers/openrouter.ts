@@ -1,15 +1,29 @@
 import type {
-  ChatCompletionResponse,
-  ReviewProvider,
+  ChatCompletionUsage,
   ProviderCompletion,
   ProviderRequest,
   ProviderResult,
   ProviderUsage,
-  ToolCall,
+  ReviewProvider,
   Verdict,
 } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
+
+/** A tool call as OpenAI-compatible chat completions return it. */
+interface ToolCall {
+  id: string;
+  type: "function";
+  function: { name: string; arguments: string };
+}
+
+/** The chat-completion response fields the OpenRouter provider reads. */
+interface ChatCompletionResponse {
+  choices: {
+    message: { role: string; content: string | null; tool_calls?: ToolCall[] };
+  }[];
+  usage?: ChatCompletionUsage;
+}
 
 /**
  * The default reviewer provider: OpenAI-compatible chat completions with

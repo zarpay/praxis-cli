@@ -1,5 +1,14 @@
-import type { EvalHeadline } from "@/types.js";
 import type { View } from "@framework/types.js";
+
+/** What an eval run announces before it starts. */
+interface EvalHeadline {
+  /** Named targets; empty or omitted means a full run. */
+  targets?: string[];
+  /** CI framing. */
+  ci?: boolean;
+  /** A full run narrowed to one document type. */
+  type?: string;
+}
 
 /**
  * What an eval run announces before it starts.

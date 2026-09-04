@@ -1,4 +1,10 @@
-import type { ExpertTemplateVars } from "@/types.js";
+/** What `praxis add expert` supplies to the expert document template. */
+interface ExpertTemplateVars {
+  /** Display title, e.g. "Code Reviewer". */
+  title: string;
+  /** The alias the compiler keys the expert on — the name as typed. */
+  alias: string;
+}
 
 /**
  * The document `praxis add expert <name>` writes.

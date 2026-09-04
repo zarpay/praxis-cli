@@ -1,4 +1,4 @@
-import type { Orchestrator, RatifyAxiomOptions } from "@/types.js";
+import type { Orchestrator } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { exists, readText, removeFile } from "@/helpers/files-helper.js";
@@ -12,6 +12,15 @@ import { RunStore } from "@/stores/run-store.js";
 import { TriageStore } from "@/stores/triage-store.js";
 import ratifyView from "@/views/ratify-view.js";
 import { Prompter } from "@framework/views/prompter.js";
+
+/** Options for `praxis axioms ratify <id>`. */
+interface RatifyAxiomOptions {
+  id: string;
+  yes?: boolean;
+  reject?: string;
+  /** Spec to trace against; needed only when no assigned critique names one. */
+  spec?: string;
+}
 
 /**
  * What `praxis axioms ratify <id>` does: the human gate a proposal

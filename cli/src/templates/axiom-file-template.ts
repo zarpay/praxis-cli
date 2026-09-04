@@ -1,4 +1,20 @@
-import type { AxiomTemplateVars } from "@/types.js";
+import type { AxiomMode, AxiomScope, AxiomStatus, Severity } from "@/types.js";
+
+/** The fields the proposal template renders into an axiom file. */
+interface AxiomTemplateVars {
+  id: string;
+  status: AxiomStatus;
+  mode: AxiomMode;
+  scope: AxiomScope;
+  severity: Severity;
+  /** YYYY-MM-DD; per-axiom population clocks start here (04). */
+  introduced: string;
+  /** Spec traceability; null until ratification establishes it. */
+  groundedIn: string | null;
+  statement: string;
+  violatingExample: string;
+  compliantExample: string;
+}
 
 /**
  * The document a triage-accepted draft becomes: one axiom file, ready

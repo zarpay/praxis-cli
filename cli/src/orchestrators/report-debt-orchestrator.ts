@@ -1,8 +1,13 @@
-import type { DebtReportOptions, Orchestrator } from "@/types.js";
+import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import buildDebtReportService from "@/services/build-debt-report-service.js";
 import debtReportView from "@/views/debt-report-view.js";
+
+/** Options for `praxis debt report`. */
+interface DebtReportOptions {
+  json?: boolean;
+}
 
 /**
  * What `praxis debt report` does: render the P1 surface — baseline

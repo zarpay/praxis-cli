@@ -1,7 +1,17 @@
-import type { NoInput, Service, TriageState } from "@/types.js";
+import type { NoInput, PendingCritique, Service, TriageAssignmentRecord } from "@/types.js";
 
 import { RunStore } from "@/stores/run-store.js";
 import { TriageStore } from "@/stores/triage-store.js";
+
+/** The derived triage queue and its residual counters. */
+interface TriageState {
+  /** Open-channel critiques no assignment or dismissal covers yet. */
+  pending: PendingCritique[];
+  /** Every assignment on record — ratification reads a proposal's support here. */
+  assignments: TriageAssignmentRecord[];
+  dismissed: number;
+  rejectedProposals: number;
+}
 
 /**
  * The triage queue, derived — never stored (04).

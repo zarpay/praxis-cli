@@ -1,4 +1,4 @@
-import type { EvalProgress, Orchestrator, ReviewedTarget, RunEvalOptions } from "@/types.js";
+import type { EvalProgress, Orchestrator, ReviewedTarget } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { gitFacts } from "@/helpers/git-helper.js";
@@ -17,6 +17,26 @@ import reviewedTargetView from "@/views/reviewed-target-view.js";
 import runAnchoringView from "@/views/run-anchoring-view.js";
 import runProgressView from "@/views/run-progress-view.js";
 import runReportView from "@/views/run-report-view.js";
+
+/** How `praxis eval run` and `praxis eval ci` were invoked. */
+interface RunEvalOptions {
+  /** Targets named on the command line; empty means a full run. */
+  targets?: string[];
+  /** Restrict a full run to one domain type. */
+  type?: string;
+  /** Run only this configured reviewer. */
+  reviewer?: string;
+  /** Spec path for a single named target. */
+  spec?: string;
+  /** Show each verdict's full reasoning. */
+  verbose?: boolean;
+  /** Stop a full run at the first error verdict. */
+  failFast?: boolean;
+  /** Whether to consult the verdict cache. */
+  cache?: boolean;
+  /** Review the branch against its merge-base; a string names the base ref. */
+  diff?: boolean | string;
+}
 
 /**
  * What `praxis eval run` and `praxis eval ci` do: review targets against

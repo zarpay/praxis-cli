@@ -1,4 +1,3 @@
-import type { CommandContextOptions } from "@/types.js";
 import type { ReportLine } from "@framework/types.js";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
@@ -6,6 +5,16 @@ import { Paths } from "@/models/project-paths.js";
 import { Display } from "@framework/views/display.js";
 import { Logger } from "@framework/views/logger.js";
 import { renderReport } from "@framework/views/report.js";
+
+/**
+ * Overrides for a CommandContext. Both default to a fresh instance, so a
+ * test can point a context at a tmpdir or collect its diagnostics.
+ */
+interface CommandContextOptions {
+  paths?: Paths;
+  logger?: Logger;
+  out?: Display;
+}
 
 /**
  * What every orchestrator is handed: the project it acts on, and the

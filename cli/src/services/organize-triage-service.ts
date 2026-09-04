@@ -2,18 +2,40 @@ import type {
   AxiomDraft,
   AxiomScope,
   OrganizeTriageInput,
+  ProviderUsage,
+  Service,
   Severity,
   TriageCluster,
-  TriageOrganization,
-  Service,
   TriageSuggestion,
-  TriageWireCluster,
 } from "@/types.js";
 
 import curatorSystemPrompt from "@/prompts/curator-system-prompt.js";
 import triageQuestion from "@/prompts/triage-question.js";
 import triageTools from "@/prompts/triage-tools.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
+
+/** The curator's organization of one spec's pending critiques. */
+interface TriageOrganization {
+  clusters: TriageCluster[];
+  usage: ProviderUsage | null;
+}
+
+/** The triage tool's wire shape for one cluster, before validation. */
+interface TriageWireCluster {
+  critique_ids?: string[];
+  rationale?: string;
+  suggestion?: string;
+  axiom_id?: string | null;
+  draft?: {
+    statement?: string;
+    severity?: string;
+    scope?: string;
+    violating_example?: string;
+    compliant_example?: string;
+    grounding_hint?: string;
+  } | null;
+  why_unassignable?: string | null;
+}
 
 /**
  * The curator's organization of one spec's pending critiques (04).

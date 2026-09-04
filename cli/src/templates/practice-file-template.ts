@@ -1,4 +1,8 @@
-import type { PracticeTemplateVars } from "@/types.js";
+/** What `praxis add practice` supplies to the practice document template. */
+interface PracticeTemplateVars {
+  /** Display title, e.g. "Review Pull Requests". */
+  title: string;
+}
 
 /**
  * The document `praxis add practice <name>` writes.

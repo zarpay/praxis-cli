@@ -1,4 +1,4 @@
-import type { EvalReportOptions, Orchestrator } from "@/types.js";
+import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import buildAxiomReportService from "@/services/build-axiom-report-service.js";
@@ -6,6 +6,17 @@ import buildEvalReportService from "@/services/build-eval-report-service.js";
 import resolveReportScopeService from "@/services/resolve-report-scope-service.js";
 import axiomReportView from "@/views/axiom-report-view.js";
 import evalReportView from "@/views/eval-report-view.js";
+
+/** Options for `praxis eval report`. */
+interface EvalReportOptions {
+  target?: string;
+  since?: string;
+  branch?: string;
+  commit?: string;
+  commits?: string[];
+  axiom?: string;
+  json?: boolean;
+}
 
 /**
  * What `praxis eval report` does: read the ledger, compute under 07's

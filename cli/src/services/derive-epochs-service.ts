@@ -1,4 +1,9 @@
-import type { DeriveEpochsInput, Epoch, EpochSeries, LedgerRunRecord, Service } from "@/types.js";
+import type { Epoch, EpochSeries, LedgerRunRecord, Service } from "@/types.js";
+
+/** The run records to segment into epochs. */
+interface DeriveEpochsInput {
+  runs: LedgerRunRecord[];
+}
 
 /**
  * Epochs, derived — never stored (02): per reviewer name, the maximal

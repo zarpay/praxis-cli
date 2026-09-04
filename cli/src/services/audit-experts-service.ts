@@ -1,10 +1,37 @@
-import type { RefKey } from "@/types.js";
-import type { AuditExpertsInput, ExpertAudit, Service } from "@/types.js";
+import type { RefKey, StatusReport } from "@/types.js";
+import type { Service } from "@/types.js";
 
 import { exists, readText } from "@/helpers/files-helper.js";
 import { baseName, joinPath } from "@/helpers/paths-helper.js";
 import { ExpertFile } from "@/models/expert-file.js";
 import expandGlobsService from "@/services/expand-globs-service.js";
+
+/**
+ * What one pass over the expert files found.
+ *
+ * Every field answers a different structural question, but they share
+ * a parse, which is why the audit produces them together.
+ */
+interface ExpertAudit {
+  /** Lowercased alias to the expert file that declares it. */
+  aliases: Map<string, string>;
+  /** Project-relative practice paths some expert points at. */
+  referencedPractices: Set<string>;
+  /** Experts that could not be read, with the reason. */
+  invalidExperts: StatusReport["invalidExperts"];
+  /** References to files that do not exist. */
+  danglingRefs: StatusReport["danglingRefs"];
+  /** Glob patterns matching nothing. */
+  zeroMatchGlobs: StatusReport["zeroMatchGlobs"];
+  /** Experts with no description, by filename. */
+  missingDescriptions: string[];
+}
+
+/** The experts to audit. */
+interface AuditExpertsInput {
+  /** Absolute paths to the expert files. */
+  expertFiles: string[];
+}
 
 /** The reference keys an expert can point at other documents with. */
 const REF_KEYS: readonly RefKey[] = ["practices", "context", "refs"];

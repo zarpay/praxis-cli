@@ -1,10 +1,5 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type {
-  CompileExpertInput,
-  CompileExpertResult,
-  InlinedReferences,
-  Service,
-} from "@/types.js";
+import type { CompilerPlugin, Service } from "@/types.js";
 
 import { exists, readText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
@@ -13,6 +8,30 @@ import { MarkdownFile } from "@/models/markdown-file.js";
 import buildProfileService from "@/services/build-profile-service.js";
 import expandGlobsService from "@/services/expand-globs-service.js";
 import writeProfileOutputsService from "@/services/write-profile-outputs-service.js";
+
+/** Inlined content plus anything the author should know went wrong. */
+interface InlinedReferences {
+  /** Body text of every resolved file, in declaration order. */
+  bodies: string[];
+  /** Author-facing problems: a glob that matched nothing, a missing file. */
+  warnings: string[];
+}
+
+/** What compiling needs to know about the project it is compiling in. */
+interface CompileExpertInput {
+  /** Absolute path to the expert markdown file. */
+  expertFile: string;
+  /** The enabled output plugins, already constructed. */
+  plugins: CompilerPlugin[];
+}
+
+/** What compiling one expert produced. */
+interface CompileExpertResult {
+  /** The expert's alias, and the compiled file's basename. */
+  alias: string;
+  /** Author-facing problems encountered while inlining content. */
+  warnings: string[];
+}
 
 /**
  * Compiles one expert into its profile and every configured output:

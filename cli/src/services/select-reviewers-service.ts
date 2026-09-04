@@ -1,6 +1,12 @@
-import type { ReviewerConfig, SelectReviewersInput, Service } from "@/types.js";
+import type { ReviewerConfig, Service } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
+
+/** How a run narrows the configured reviewers. */
+interface SelectReviewersInput {
+  /** A reviewer name to narrow to; omitted uses all of them. */
+  only?: string;
+}
 
 /**
  * The reviewers a run should use, checked before any work begins.

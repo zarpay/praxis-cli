@@ -1,8 +1,13 @@
-import type { ListAxiomsOptions, Orchestrator } from "@/types.js";
+import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import axiomListView from "@/views/axiom-list-view.js";
+
+/** Options for `praxis axioms list`. */
+interface ListAxiomsOptions {
+  json?: boolean;
+}
 
 /**
  * What `praxis axioms list` does: render the axiom store.

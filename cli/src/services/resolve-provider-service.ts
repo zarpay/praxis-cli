@@ -1,13 +1,14 @@
-import type {
-  ResolveProviderInput,
-  ReviewProvider,
-  ReviewProviderFactory,
-  Service,
-} from "@/types.js";
+import type { ReviewProvider, ReviewProviderFactory, Service } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { fileUrl, resolvePath } from "@/helpers/paths-helper.js";
 import { OpenRouterProvider } from "@/providers/openrouter.js";
+
+/** The provider a reviewer declares. */
+interface ResolveProviderInput {
+  /** A built-in registry name, or a ./relative local ESM module path. */
+  spec: string;
+}
 
 /** Built-in providers, keyed by the name used in a reviewer's `provider`. */
 const BUILTIN_PROVIDERS: Record<string, ReviewProviderFactory> = {

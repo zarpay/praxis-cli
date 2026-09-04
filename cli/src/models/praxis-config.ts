@@ -1,8 +1,6 @@
 import type {
   CuratorConfig,
-  DiscoveryScope,
   ReviewerConfig,
-  NormalizedConfig,
   PluginConfigEntry,
   RawConfig,
   RawPluginEntry,
@@ -12,6 +10,32 @@ import { errors } from "@/helpers/errors-helper.js";
 import { exists, readJson } from "@/helpers/files-helper.js";
 import { resolvePath } from "@/helpers/paths-helper.js";
 import { configFile } from "@/models/project-paths.js";
+
+/** Config shape after defaults are applied. */
+interface NormalizedConfig {
+  agentProfilesOutputDir: string | false;
+  plugins: PluginConfigEntry[];
+  sources: string[];
+  ignore: string[];
+  expertsDir: string;
+  practicesDir: string;
+  reviewers: ReviewerConfig[];
+  /** Null until configured; triage/gate/audit refuse without it. */
+  curator: CuratorConfig | null;
+  specFilePattern: string;
+}
+
+/** Where targets are looked for, and what never counts as one. */
+interface DiscoveryScope {
+  /** Project root all patterns resolve against. */
+  root: string;
+  /** Source directories scanned for spec files, relative to the root. */
+  sources: string[];
+  /** Filename or glob identifying spec files, which are never targets. */
+  specFilePattern?: string;
+  /** Ignore patterns, already resolved to absolute paths. */
+  absoluteIgnore?: string[];
+}
 
 /** Default spec file pattern when none is configured. */
 export const DEFAULT_SPEC_FILE_PATTERN = "README.md";

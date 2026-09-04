@@ -1,8 +1,16 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type { BuildVerdictReportInput, Service, VerdictReport } from "@/types.js";
+import type { CacheFileData, Service, VerdictReport } from "@/types.js";
 
 import { ReviewSubject } from "@/models/review-subject.js";
 import { SpecStore } from "@/stores/spec-store.js";
+
+/** A cached verdict to classify. */
+interface BuildVerdictReportInput {
+  /** The target the verdict is about. */
+  targetPath: string;
+  /** What the cache holds, or null when it holds nothing. */
+  cacheData: CacheFileData | null;
+}
 
 /**
  * Classifies a target's cached verdict, including whether it is stale.

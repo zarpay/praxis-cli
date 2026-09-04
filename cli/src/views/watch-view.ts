@@ -1,5 +1,8 @@
-import type { WatchEvent } from "@/types.js";
 import type { View } from "@framework/types.js";
+
+/** One event from a compile watch session. */
+type WatchEvent =
+  { kind: "watching"; dir: string } | { kind: "recompiling"; filename: string | null };
 
 /** What a watch session says as it starts and as it reacts to a change. */
 const watchView: View<WatchEvent> = (event) => {

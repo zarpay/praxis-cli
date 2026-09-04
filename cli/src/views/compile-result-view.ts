@@ -1,5 +1,7 @@
-import type { CompileOutcome } from "@/types.js";
 import type { View } from "@framework/types.js";
+
+/** What a finished compile reports: a full count, or one alias's outcome. */
+type CompileOutcome = { compiled: number } | { alias: string; warnings: string[] };
 
 /**
  * What a finished compile reports: the up-to-date count for a full

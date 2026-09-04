@@ -1,10 +1,21 @@
-import type {
-  ComputeFlowInput,
-  ComputeFlowResult,
-  Critique,
-  LedgerFlow,
-  Service,
-} from "@/types.js";
+import type { Critique, FlowSide, LedgerFlow, Service } from "@/types.js";
+
+/** A before/after verdict pair for one file, ready to set-difference. */
+interface ComputeFlowInput {
+  /** Null when the file did not exist on that side (added / deleted). */
+  before: FlowSide | null;
+  after: FlowSide | null;
+}
+
+/** The flow labels a comparison produced — or its refusal. */
+interface ComputeFlowResult {
+  /** Label per after-side issue, parallel to `after.issues`; null = open channel. */
+  afterFlow: (LedgerFlow | null)[];
+  /** Matched before-side critiques absent after — the resolved events. */
+  resolved: Critique[];
+  /** True when the sides' provenance differed and the comparison was refused (01). */
+  refused: boolean;
+}
 
 /**
  * Verdict diffing for one file (01, 12): mechanical set-difference on

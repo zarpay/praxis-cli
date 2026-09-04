@@ -1,9 +1,27 @@
-import type { ValidationQuestionInput } from "@/types.js";
+import type { AssistFile, ChecklistAxiom } from "@/types.js";
 
 import { baseName, parentDir } from "@/helpers/paths-helper.js";
 import axiomChecklistSection from "@/prompts/axiom-checklist-section.js";
 import contextSection from "@/prompts/context-section.js";
 import exemplarSection from "@/prompts/exemplar-section.js";
+
+/** Everything the reviewer's user prompt is built from. */
+interface ValidationQuestionInput {
+  /** The spec content the target is reviewed against. */
+  specContent: string;
+  /** The review input: one file's content, or an assembled cohort. */
+  targetContent: string;
+  /** Path of the file, or of the cohort's directory. */
+  targetPath: string;
+  /** Whether the target is one file or a pre-assembled cohort of files. */
+  kind: "file" | "cohort";
+  /** The active axioms grounded in this spec — the checklist channel (04). */
+  checklist: readonly ChecklistAxiom[];
+  /** Spec-blessed positive examples, inlined and never reviewed. */
+  exemplars: readonly AssistFile[];
+  /** Assist-only reference files, inlined and never reviewed. */
+  context: readonly AssistFile[];
+}
 
 /**
  * The user prompt sent to the LLM for one review: specification, the

@@ -7,7 +7,40 @@
  * place and every raised error carries a machine-readable `code`.
  */
 
-import type { PraxisErrorCode } from "@/types.js";
+/** Machine-readable code, one per factory method on `errors`. */
+export type PraxisErrorCode =
+  | "ROOT_NOT_FOUND"
+  | "INVALID_CONFIG_JSON"
+  | "UNKNOWN_PLUGIN"
+  | "UNKNOWN_DOCUMENT_TYPE"
+  | "EDITOR_FAILED"
+  | "FILE_ALREADY_EXISTS"
+  | "SPEC_NOT_FOUND"
+  | "MISSING_PROJECT_ROOT"
+  | "MISSING_FRONTMATTER_FIELD"
+  | "INVALID_FRONTMATTER_FIELD"
+  | "EXPERT_NOT_FOUND"
+  | "DOCUMENT_NOT_FOUND"
+  | "INVALID_REVIEWER_CONFIG"
+  | "UNKNOWN_REVIEWER"
+  | "REVIEWERS_NOT_CONFIGURED"
+  | "API_KEY_NOT_SET"
+  | "REVIEWER_API_ERROR"
+  | "UNKNOWN_REVIEW_PROVIDER"
+  | "REVIEW_PROVIDER_LOAD_FAILED"
+  | "INVALID_REVIEW_PROVIDER"
+  | "REVIEW_PROVIDER_FAILED"
+  | "NO_TOOL_CALL"
+  | "UNEXPECTED_TOOL_CALL"
+  | "AXIOM_NOT_FOUND"
+  | "CURATOR_NOT_CONFIGURED"
+  | "CURATOR_MISSING_FIELD"
+  | "PROVIDER_CANNOT_COMPLETE"
+  | "DIFF_BASE_UNRESOLVABLE"
+  | "DIFF_BASE_INVALID"
+  | "DIFF_OUTSIDE_GIT"
+  | "DIFF_WITH_TARGETS"
+  | "NOT_A_TTY";
 
 /**
  * Error type for all failures Praxis itself detects.

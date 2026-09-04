@@ -1,6 +1,6 @@
 import type { CommandContext } from "@/models/command-context.js";
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type { CiRunOptions, EvalProgress } from "@/types.js";
+import type { EvalProgress } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
 import { gitFacts } from "@/helpers/git-helper.js";
@@ -17,6 +17,14 @@ import epochBoundaryView from "@/views/epoch-boundary-view.js";
 import evalHeadlineView from "@/views/eval-headline-view.js";
 import runProgressView from "@/views/run-progress-view.js";
 import runReportView from "@/views/run-report-view.js";
+
+/** How `praxis eval ci` was invoked. */
+interface CiRunOptions {
+  /** Count warnings as failures alongside errors. */
+  strict?: boolean;
+  /** Verify the merge-base diff instead of the corpus; a string names the base. */
+  diff?: boolean | string;
+}
 
 /**
  * What `praxis eval ci` does: verify, and leave no trace (12).

@@ -1,8 +1,26 @@
-import type { Service, WriteProfileOutputsInput } from "@/types.js";
+import type { AgentMetadata, CompilerPlugin, Service } from "@/types.js";
 
 import { writeText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import evalTargetingTemplate from "@/templates/eval-targeting-template.js";
+
+/**
+ * One compiled profile and where it should go.
+ *
+ * `agentProfilesOutputDir` is already resolved: null means no profile
+ * output. The raw config spells that `false`; `PraxisConfig` resolves
+ * it, and nothing past that boundary should see the other spelling.
+ */
+interface WriteProfileOutputsInput {
+  /** The assembled profile markdown. */
+  profile: string;
+  /** Agent metadata, or null when the expert declares no description. */
+  metadata: AgentMetadata | null;
+  /** The expert's alias, which names the output file. */
+  alias: string;
+  /** The enabled output plugins, already constructed. */
+  plugins: CompilerPlugin[];
+}
 
 /**
  * Writes a compiled profile everywhere it is configured to go.

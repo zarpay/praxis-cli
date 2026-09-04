@@ -1,4 +1,4 @@
-import type { InitProjectOptions, Orchestrator } from "@/types.js";
+import type { Orchestrator } from "@/types.js";
 
 import { ensureDir } from "@/helpers/files-helper.js";
 import { joinPath, resolvePath } from "@/helpers/paths-helper.js";
@@ -7,6 +7,18 @@ import { PraxisConfig } from "@/models/praxis-config.js";
 import { SCAFFOLD_DIR } from "@/models/project-paths.js";
 import copyScaffoldService from "@/services/copy-scaffold-service.js";
 import initView from "@/views/init-view.js";
+
+/** What scaffolding a new project needs to know. */
+interface InitProjectOptions {
+  /** Directory to scaffold into, as typed; resolved against cwd. */
+  directory: string;
+  /** Scaffold source tree; defaults to the packaged one. */
+  scaffoldDir?: string;
+  /** Whether to add the spec-layer authoring taxonomy (11: opt-in). */
+  specLayer?: boolean;
+  /** Called with each created file's path, relative to the target. */
+  onFileCreated?: (path: string) => void;
+}
 
 /**
  * Scaffolds a new Praxis project.

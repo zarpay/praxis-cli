@@ -1,11 +1,12 @@
+import type { CommandContext } from "@/models/command-context.js";
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type {
   AxiomDraft,
   Orchestrator,
   PendingCritique,
   ProviderUsage,
-  TriageAxiomsOptions,
   TriageCluster,
-  TriageSession,
+  TriageRecord,
 } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
@@ -20,6 +21,30 @@ import { TriageStore } from "@/stores/triage-store.js";
 import triageClusterView from "@/views/triage-cluster-view.js";
 import triageSummaryView from "@/views/triage-summary-view.js";
 import { Prompter } from "@framework/views/prompter.js";
+
+/** What one interactive triage session accumulates as it walks clusters. */
+interface TriageSession {
+  ctx: CommandContext;
+  cfg: PraxisConfig;
+  yes: boolean;
+  prompter: Prompter;
+  /** The curator model, recorded as the suggester in every assignment. */
+  suggestedBy: string;
+  records: TriageRecord[];
+  assigned: number;
+  proposed: number;
+  dismissed: number;
+  skipped: number;
+  costUsd: number | null;
+}
+
+/** Options for `praxis axioms triage`. */
+interface TriageAxiomsOptions {
+  /** Accept every curator suggestion without prompting. */
+  yes?: boolean;
+  /** Dismiss everything pending, with this reason. */
+  reject?: string;
+}
 
 /**
  * What `praxis axioms triage` does: the human review session (04).

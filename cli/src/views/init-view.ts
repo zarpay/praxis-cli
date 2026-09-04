@@ -1,5 +1,14 @@
-import type { InitProjectResult } from "@/types.js";
 import type { View } from "@framework/types.js";
+
+/** What scaffolding produced. */
+interface InitProjectResult {
+  /** Paths written, relative to the new project. */
+  created: string[];
+  /** Files left alone because they already existed. */
+  skipped: number;
+  /** Guidance to show the author, matched to what was scaffolded. */
+  nextSteps: string[];
+}
 
 /**
  * What `praxis init` reports: each file it created as it stands, the

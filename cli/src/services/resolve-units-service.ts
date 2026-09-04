@@ -1,8 +1,13 @@
-import type { EvalUnit, ResolveUnitsInput, Service } from "@/types.js";
+import type { EvalUnit, Service, ValidationDomain } from "@/types.js";
 
 import fg from "fast-glob";
 
 import { isContentFile } from "@/helpers/files-helper.js";
+
+/** The domain whose units to resolve. */
+interface ResolveUnitsInput {
+  domain: ValidationDomain;
+}
 
 /**
  * The review units a domain should review.

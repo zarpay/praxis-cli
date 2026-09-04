@@ -1,8 +1,16 @@
-import type { CompileExpertsInput, CompileExpertsResult, Service } from "@/types.js";
+import type { CompileExpertsInput, Service } from "@/types.js";
 
 import { baseName } from "@/helpers/paths-helper.js";
 import compileExpertService from "@/services/compile-expert-service.js";
 import { ExpertStore } from "@/stores/expert-store.js";
+
+/** What a full compile produced. */
+interface CompileExpertsResult {
+  /** How many experts compiled successfully. */
+  compiled: number;
+  /** Experts that could not be compiled, with the reason. */
+  skipped: { file: string; reason: string }[];
+}
 
 /**
  * Compiles every expert in a directory.

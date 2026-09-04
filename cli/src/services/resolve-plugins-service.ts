@@ -1,8 +1,17 @@
-import type { CompilerPlugin, PluginConstructor } from "@/types.js";
-import type { ResolvePluginsInput, Service } from "@/types.js";
+import type { CompilerPlugin, CompilerPluginOptions } from "@/types.js";
+import type { Service } from "@/types.js";
+import type { Logger } from "@framework/views/logger.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { ClaudeCodePlugin } from "@/plugins/claude-code.js";
+
+/** Constructor signature every compiler plugin class must satisfy. */
+type PluginConstructor = new (options: CompilerPluginOptions) => CompilerPlugin;
+
+/** The diagnostic channel plugin constructors receive. */
+interface ResolvePluginsInput {
+  logger: Logger;
+}
 
 /** Registry of available plugins, keyed by the name used in config.json. */
 const PLUGINS: Record<string, PluginConstructor> = {

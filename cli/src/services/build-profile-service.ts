@@ -1,4 +1,18 @@
-import type { BuildProfileInput, Service } from "@/types.js";
+import type { Service } from "@/types.js";
+
+/** The content blocks a compiled profile is assembled from. */
+interface BuildProfileInput {
+  /** The expert's own prose. */
+  role: string;
+  /** Practice bodies, inlined. */
+  responsibilities: string[];
+  /** Constitution bodies, inlined. */
+  constitution: string[];
+  /** Context bodies, inlined. */
+  context: string[];
+  /** Reference bodies, inlined. */
+  reference: string[];
+}
 
 /** Separator between items in Responsibilities, Context, and Reference sections. */
 const RULE = "\n---\n";

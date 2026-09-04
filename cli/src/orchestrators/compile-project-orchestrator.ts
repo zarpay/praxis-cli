@@ -1,4 +1,4 @@
-import type { CompileProgress, CompileProjectOptions } from "@/types.js";
+import type { CompileProgress } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
@@ -11,6 +11,14 @@ import { ExpertStore } from "@/stores/expert-store.js";
 import compileProgressView from "@/views/compile-progress-view.js";
 import compileResultView from "@/views/compile-result-view.js";
 import watchView from "@/views/watch-view.js";
+
+/** How `praxis compile` was invoked. */
+interface CompileProjectOptions {
+  /** Compile only the expert with this alias. */
+  alias?: string;
+  /** Keep running, recompiling on every source change. */
+  watch?: boolean;
+}
 
 /**
  * What `praxis compile` does: turn expert definitions into agent profiles

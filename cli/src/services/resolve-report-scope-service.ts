@@ -1,9 +1,18 @@
-import type { ResolveReportScopeInput, ScopedLedger, Service } from "@/types.js";
+import type { ScopedLedger, Service } from "@/types.js";
 
 import picomatch from "picomatch";
 
 import { commitDateOf, commitExists } from "@/helpers/git-helper.js";
 import { RunStore } from "@/stores/run-store.js";
+
+/** Everything `resolve-report-scope` needs to build a scope. */
+interface ResolveReportScopeInput {
+  target?: string;
+  since?: string;
+  branch?: string;
+  commit?: string;
+  commits?: string[];
+}
 
 /**
  * Scopes the ledger for one report invocation (07's three levels).

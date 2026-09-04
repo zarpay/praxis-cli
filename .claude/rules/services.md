@@ -31,9 +31,10 @@ paths:
   still called with `{}` (the `NoInput` alias), and one that reads no
   project facts names its first parameter `_cfg` — never the whole
   `CommandContext`, whose output channels stay orchestrator-only.
-- The input and result are named types declared in `src/types.ts` — never an
-  inline object literal in the signature, which is what lets a payload drift
-  from the type it was supposed to match.
+- The input and result are named types — never an inline object literal in
+  the signature. A type only this service speaks is declared in the service
+  file itself, unexported; it moves to the barrel (`src/types/`) only when a
+  second module genuinely needs it (`.claude/rules/types.md`).
 - It returns its work, **including problems**: warnings come back in the result.
   A service never logs, never prints, and takes no logger.
 - No workflow. A service that calls two other services in sequence to produce an

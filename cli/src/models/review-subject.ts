@@ -1,4 +1,4 @@
-import type { AssistFileRecord, AssistInputs, AssistFile, ChecklistAxiom } from "@/types.js";
+import type { AssistFileRecord, AssistFile, ChecklistAxiom } from "@/types.js";
 
 import fg from "fast-glob";
 import { createHash } from "node:crypto";
@@ -7,6 +7,14 @@ import { errors } from "@/helpers/errors-helper.js";
 import { readText } from "@/helpers/files-helper.js";
 import { relativePath } from "@/helpers/paths-helper.js";
 import { SpecFile } from "@/models/spec-file.js";
+
+/** A spec's resolved assist inputs, one list per frontmatter key. */
+interface AssistInputs {
+  /** Spec-blessed positive examples — shielded from adverse review. */
+  exemplars: AssistFile[];
+  /** Assist-only context — informs the review, never receives a verdict. */
+  context: AssistFile[];
+}
 
 /**
  * Everything a reviewer is shown about one target: the target itself, the

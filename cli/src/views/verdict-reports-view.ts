@@ -1,7 +1,16 @@
-import type { CacheFileData, ReportStatus, ReviewerReports, VerdictReport } from "@/types.js";
+import type { CacheFileData, VerdictReportStatus, VerdictReport } from "@/types.js";
 import type { DisplayEntry, View } from "@framework/types.js";
 
 import chalk from "chalk";
+
+/** Every reviewer's cached report on one target. */
+interface ReviewerReports {
+  reports: { reviewer: string; report: VerdictReport }[];
+  /** Name each reviewer — only when several could disagree. */
+  named: boolean;
+  /** Show the full reasoning. */
+  verbose: boolean;
+}
 
 /** Width of the divider rules framing a report. */
 const DIVIDER_WIDTH = 50;
@@ -68,7 +77,7 @@ function reportEntries(report: VerdictReport, verbose: boolean): DisplayEntry[] 
 }
 
 /** The status line's colored badge, with its one-line meaning. */
-function statusBadge(status: ReportStatus): string {
+function statusBadge(status: VerdictReportStatus): string {
   switch (status) {
     case "pass":
       return chalk.green("[PASS]") + " Document is compliant";

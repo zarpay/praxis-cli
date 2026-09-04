@@ -1,6 +1,16 @@
-import type { DerivePopulationInput, PopulationQualifier, Service } from "@/types.js";
+import type { PopulationQualifier, Service } from "@/types.js";
 
 import { fileFirstCommitDate } from "@/helpers/git-helper.js";
+
+/** One file's population relative to one axiom's clock (01). */
+interface DerivePopulationInput {
+  /** Project-relative, as critique records carry it. */
+  filePath: string;
+  /** The axiom's `introduced` date, YYYY-MM-DD. */
+  axiomIntroduced: string;
+  /** Shared memo across one report build. */
+  birthdates: Map<string, string | null>;
+}
 
 /**
  * A file's population relative to one axiom (01, 04): pre-spec when the
