@@ -1,6 +1,6 @@
 import type { CacheReviewerIdentity, VerdictEntry } from "@/types.js";
 
-import { createHash } from "node:crypto";
+import { hash8 } from "@/helpers/hash-helper.js";
 
 /**
  * Current cache format version.
@@ -70,7 +70,7 @@ export class CacheFile {
    * Relative, so a cache file committed on one machine hits on another.
    */
   private static specHash(specPath: string): string {
-    return createHash("sha256").update(specPath).digest("hex").slice(0, 8);
+    return hash8(specPath);
   }
 
   /** The entry at a key, or undefined. */

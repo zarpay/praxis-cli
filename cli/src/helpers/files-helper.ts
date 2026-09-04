@@ -83,6 +83,16 @@ export function fileSize(path: string): number {
 }
 
 /**
+ * Names of a directory's immediate subdirectories, sorted for
+ * deterministic output.
+ */
+export function listDirs(dir: string): string[] {
+  return readdirSync(dir)
+    .filter((entry) => statSync(join(dir, entry)).isDirectory())
+    .sort();
+}
+
+/**
  * Recursively lists all files under a directory.
  *
  * @returns Paths relative to `dir`, sorted alphabetically for

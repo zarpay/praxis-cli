@@ -40,6 +40,7 @@ export type PraxisErrorCode =
   | "DIFF_BASE_INVALID"
   | "DIFF_OUTSIDE_GIT"
   | "DIFF_WITH_TARGETS"
+  | "INVALID_CALIBRATION_CASE"
   | "NOT_A_TTY";
 
 /**
@@ -388,6 +389,17 @@ export const errors = {
     return new PraxisError(
       "NOT_A_TTY",
       `${command} is interactive and stdin is not a terminal. Script it with ${flags}.`,
+    );
+  },
+
+  // --- Calibration ---
+
+  /** A case directory under .praxis/calibration/cases/ is malformed. */
+  invalidCalibrationCase(caseId: string, problem: string): PraxisError {
+    return new PraxisError(
+      "INVALID_CALIBRATION_CASE",
+      `Calibration case "${caseId}" is malformed: ${problem} — ` +
+        "a case directory holds one input file, the frozen spec as spec.md, and expected.json (06)",
     );
   },
 
