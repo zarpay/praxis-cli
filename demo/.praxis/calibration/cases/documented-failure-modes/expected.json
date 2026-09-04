@@ -1,0 +1,12 @@
+{
+  "verdict": "pass",
+  "expected_violations": [],
+  "forbidden_violations": [
+    { "axiom_id": "AX-2559f7", "must_not_flag": true },
+    { "axiom_id": "AX-b951db", "must_not_flag": true }
+  ],
+  "spec_path": "src/services/README.md",
+  "adjudicated_by": "sebastian",
+  "adjudicated_on": "2026-09-05",
+  "rationale": "the twin of missing-failure-modes with the doc comment completed — a true negative for the documentation axiom"
+}

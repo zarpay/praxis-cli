@@ -74,6 +74,7 @@ export default defineConfig({
             link: "/validation/cross-directory",
           },
           { text: "Caching", link: "/validation/caching" },
+          { text: "Calibration", link: "/validation/calibration" },
           { text: "CI Integration", link: "/validation/ci" },
         ],
       },

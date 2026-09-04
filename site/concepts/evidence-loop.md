@@ -80,7 +80,7 @@ A raw critique can't be charted: its wording varies by run and by reviewer. An a
 - **Populations** — every count is qualified pre-spec / post-spec against the axiom's `introduced` date, so old debt is never dressed up as new failure. `praxis debt report` charts that pre-spec backlog honestly: baseline stock, paydown, who paid it down, where it concentrates.
 - **Violation flow** — `praxis eval run --diff` reviews both sides of what a branch changed and labels every matched finding by mechanical set-difference: **introduced**, **resolved** (credited to the git author who fixed it), or **inherited** (pre-existing debt, never blamed on the PR). The post-spec introduction rate this produces is the sharpest available signal of how well your agents and harness are doing — and it needs no authorship data at all.
 - **Epochs** — a reviewer's behavioral identity (config + prompt surface) is hashed onto every run. Change the model and you've changed the instrument: praxis announces the boundary, the next full run opens a new baseline, and no trend line crosses it.
-- **The calibration banner** — until reviewer calibration lands, every report says its numbers are directional, not interpretable. Honesty is a feature.
+- **The calibration banner** — every report carries each reviewer's calibration state. Until a reviewer is measured against frozen, human-adjudicated cases ([calibration](/validation/calibration)), its numbers are marked `uninterpretable — recalibrate`. Honesty is a feature, and the banner coming down is earned.
 
 ## The division of labor
 

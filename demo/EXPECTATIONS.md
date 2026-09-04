@@ -91,6 +91,17 @@ calls · **[scratch]** run in a copy.
 | `eval ci` [free when warm] | Verifies, exits on errors+unverified (`--strict` adds warnings); **writes nothing** — no ledger run, no cache mutation |
 | `eval ci --diff <base>` | Same gate as run --diff (strict = any introduced); warns on missing local diff-run; writes nothing |
 
+### Calibration (M6)
+
+| Command | Expect |
+| --- | --- |
+| `calibrate status` [free] | Per-reviewer badges: flash and v32 CALIBRATED with dates; counter ABSENT (the canary is not a judgment instrument — its uninterpretable banner is correct, forever) |
+| `calibrate run --reviewer v32` [paid, bypasses cache] | 6 cases reviewed fresh; verdict agreement with denominator; per-axiom precision/recall floored at n<5; record written to `.praxis/ledger/calibration/` |
+| Known live finding | Both flash and v32 fire one FP on AX-2559f7 (doc-comment axiom flagged where the adjudication forbids it) — corroborated over-triggering; the axiom's wording is a spec-clarification candidate (06-p) |
+| Spec edit under frozen cases | `calibrate status` flips both reviewers STALE naming the spec; reverting restores CALIBRATED |
+| Case set | 6 cases under `.praxis/calibration/cases/`: 3 fail (vague-error, missing-failure-modes, violator-redeem-coupon frozen) + 3 pass true negatives (specific-error, documented-failure-modes, exemplar-create-review frozen) |
+| Report banners | Every report and the orientation carry the per-reviewer banner; `status --json` `calibration_stale: true` while counter is absent |
+
 ### Reports (pure reads — never a reviewer call) [free]
 
 | Command | Expect |

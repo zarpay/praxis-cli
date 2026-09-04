@@ -1,0 +1,38 @@
+{
+  "kind": "calibration",
+  "calibration_id": "20260904T225651508Z-dc0b35bb",
+  "timestamp": "2026-09-04T22:56:51.508Z",
+  "commit_sha": "32b49b5c14bb07196a7fa59c5f4e51babf7b2289",
+  "branch": "m6-calibration",
+  "reviewer_name": "v32",
+  "reviewer_model": "deepseek/deepseek-v3.2",
+  "reviewer_hash": "2b519849",
+  "case_count": 6,
+  "case_set_hash": "638d9e70",
+  "repeats": 1,
+  "verdict_matches": 6,
+  "unverified_count": 0,
+  "false_positive_count": 1,
+  "axiom_scores": [
+    {
+      "axiom_id": "AX-2559f7",
+      "cases": 5,
+      "true_positives": 1,
+      "false_positives": 1,
+      "false_negatives": 0,
+      "variance": null
+    },
+    {
+      "axiom_id": "AX-b951db",
+      "cases": 6,
+      "true_positives": 2,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "variance": null
+    }
+  ],
+  "drift_flagged": [],
+  "prompt_tokens": 17213,
+  "completion_tokens": 2637,
+  "cost_usd": 0.005314083
+}

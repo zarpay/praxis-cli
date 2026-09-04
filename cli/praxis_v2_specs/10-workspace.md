@@ -21,7 +21,8 @@ The repo belongs to the developer. Specs are their existing context files (READM
 │   └── validation/…     #   one file per target; verdicts keyed by (spec, reviewer)
 └── ledger/              # machine-owned  · committed (append-only evidence)
     ├── runs/<run_id>.jsonl
-    └── triage/<session_id>.jsonl   # triage decisions (04) — human decisions, machine-recorded
+    ├── triage/<session_id>.jsonl   # triage decisions (04) — human decisions, machine-recorded
+    └── calibration/<id>.json       # calibration records (06) — partition added 2026-09-05 (owner, 2026-09-04)
 ```
 
 **Adding a top-level entry to `.praxis/` is a design event**, not an implementation convenience. Five entries; each subsystem gets exactly one home; anything that doesn't clearly belong to one of them doesn't get written.
