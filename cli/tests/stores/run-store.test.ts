@@ -99,4 +99,15 @@ describe("RunStore", () => {
       expect(store.runs()).toHaveLength(1);
     });
   });
+
+  describe("hasCorpusRun", () => {
+    it("answers by set membership: any corpus run under the hash, ever", () => {
+      seedLedgerRun(root, { name: "flash", runId: "r1", hash: "aaaa1111", scope: "corpus" });
+      seedLedgerRun(root, { name: "flash", runId: "r2", hash: "bbbb2222", scope: "files" });
+
+      expect(store.hasCorpusRun("aaaa1111")).toBe(true);
+      expect(store.hasCorpusRun("bbbb2222")).toBe(false);
+      expect(store.hasCorpusRun("cccc3333")).toBe(false);
+    });
+  });
 });

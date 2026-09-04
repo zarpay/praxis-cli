@@ -17,8 +17,8 @@ paths:
   Promise<ReviewAllResult>> = async (cfg, input) => …`. A second export
   means a second service and a second file.
 - **Importers bind the default to the filename in camelCase, suffix included** —
-  `import reviewProjectService from "@/services/review-project-service.js"`,
-  never `reviewProject`. The suffix is what lets a reader of an orchestrator or
+  `import reviewTargetService from "@/services/review-target-service.js"`,
+  never `reviewTarget`. The suffix is what lets a reader of an orchestrator or
   another service tell a service call from an in-file helper at the call site,
   the same way `…Orchestrator` and `…View` bindings already do.
 - **The config comes first — spelled `cfg`, the way the context is `ctx` —
@@ -72,6 +72,20 @@ paths:
   `worstVerdict` are module-private functions in the service that uses them, not
   files of their own. If you cannot name it `{verb}-{noun}-service.ts` without
   inventing a verb, that is the signal it is a helper rather than a service.
+- **Every service earns its place — audit the caller graph, not the file.**
+  A service whose sole caller is an orchestrator is the build/display split
+  working. A service whose sole caller is *another service* is a private
+  helper in disguise unless it holds an independent contract: its own test
+  and a named domain concept (`build-profile`, `count-spec-units`,
+  `derive-population`), or a boundary its caller shouldn't absorb. Four
+  failed that bar on 2026-09-04 and folded: `list-target-paths` (untested
+  6-line composition), `inline-references` and `request-verdict` (steps only
+  one pipeline ever ran, tested only through their callers), and
+  `review-project` (a wrapper around two calls its orchestrators now make
+  themselves). Module-private privates get the mirror audit: one that reads
+  only a model's fields is a model method, one verb on a store's contents is
+  a store method (`isBaseline`'s membership query became
+  `RunStore.hasCorpusRun`).
 
 Everything under `services/` is a service and takes the suffix — there are no
 exemptions, because the things that were not services have moved out.

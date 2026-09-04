@@ -3,8 +3,8 @@ import type { EvalProgress, Orchestrator, ReviewedTarget, RunEvalOptions } from 
 import { gitFacts } from "@/helpers/git-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
+import reviewAllService from "@/services/review-all-service.js";
 import reviewNamedService from "@/services/review-named-service.js";
-import reviewProjectService from "@/services/review-project-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
 import epochBoundaryView from "@/views/epoch-boundary-view.js";
 import evalHeadlineView from "@/views/eval-headline-view.js";
@@ -75,8 +75,8 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
     ctx.render(progressView);
   };
 
-  const run = await reviewProjectService(cfg, {
-    reviewer: options.reviewer,
+  const run = await reviewAllService(cfg, {
+    reviewers,
     type: options.type,
     failFast: options.failFast ?? false,
     useCache: cache,

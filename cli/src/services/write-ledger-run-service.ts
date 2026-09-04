@@ -104,17 +104,14 @@ export default writeLedgerRunService;
 
 /**
  * Whether this run opens its reviewer's epoch (02): the first full run
- * under a behavioral hash no prior corpus run carries. Set membership,
- * not sequence position, so interleaved contributor runs and branch
- * merges cannot flip it. A files-scope fast loop never claims baseline —
- * an epoch without an opening full run has no denominator.
+ * under a behavioral hash no prior corpus run carries. A files-scope
+ * fast loop never claims baseline — an epoch without an opening full
+ * run has no denominator.
  */
 function isBaseline(runStore: RunStore, scope: string, reviewerHash: string): boolean {
   if (scope !== "corpus") return false;
 
-  return !runStore
-    .runs()
-    .some((run) => run.reviewer_hash === reviewerHash && run.scope === "corpus");
+  return !runStore.hasCorpusRun(reviewerHash);
 }
 
 /** Per-field usage sums; a field nothing reported stays null. */

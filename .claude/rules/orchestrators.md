@@ -48,11 +48,14 @@ belongs here.
   another orchestrator: two commands that share a workflow share the _services_
   under it, not the controller over it. If one wants to wrap another, what they
   have in common is a service that has not been extracted yet.
-- **Nor does it duplicate one.** Two orchestrators assembling the same call is
-  the same missing service seen from the other side — `run-eval` and `ci-run`
-  both project config into a scope and a reviewer selection, so
-  `review-project-service.ts` does it once. What stays in each is only what
-  differs: its headline, its options, and how it decides failure.
+- **Nor does it duplicate one.** Two orchestrators assembling the same
+  multi-step call is a missing service seen from the other side. But two
+  orchestrators each making the same *two service calls* is not a workflow
+  worth a wrapper: `run-eval` and `ci-run` both call `selectReviewers` then
+  `reviewAll`, and the `review-project` service that once wrapped that pair
+  was folded when the pair was all that remained of it. What stays in each
+  is only what differs: its headline, its options, and how it decides
+  failure.
 - It does no scanning, parsing or globbing of its own — if it is doing the work
   itself, that work is a missing service.
 - **Renders its own views**, through `ctx.out` and `ctx.logger`. It is the only

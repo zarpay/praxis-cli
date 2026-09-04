@@ -3,7 +3,8 @@ import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
-import reviewProjectService from "@/services/review-project-service.js";
+import reviewAllService from "@/services/review-all-service.js";
+import selectReviewersService from "@/services/select-reviewers-service.js";
 import epochBoundaryView from "@/views/epoch-boundary-view.js";
 import evalHeadlineView from "@/views/eval-headline-view.js";
 import runProgressView from "@/views/run-progress-view.js";
@@ -23,7 +24,8 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
   ctx.render(evalView);
 
   // Announce any epoch boundary before reviewing (02): warn, never block.
-  const boundaries = detectEpochBoundariesService(cfg, { reviewers: cfg.reviewers });
+  const reviewers = selectReviewersService(cfg, {});
+  const boundaries = detectEpochBoundariesService(cfg, { reviewers });
   const boundaryView = epochBoundaryView(boundaries);
 
   ctx.render(boundaryView);
@@ -36,7 +38,8 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
     ctx.render(progressView);
   };
 
-  const run = await reviewProjectService(cfg, {
+  const run = await reviewAllService(cfg, {
+    reviewers,
     // CI verifies without writing (12): the branch's own runs are the evidence.
     ledger: false,
     onProgress,

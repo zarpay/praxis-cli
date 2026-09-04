@@ -1,17 +1,37 @@
-import type { ReviewTargetInput, ReviewTargetResult, Service } from "@/types.js";
+import type { PraxisConfig } from "@/models/praxis-config.js";
+import type { ReviewSubject } from "@/models/review-subject.js";
+import type { Reviewer } from "@/models/reviewer.js";
+import type {
+  ChecklistAxiom,
+  Critique,
+  ProviderRequest,
+  ProviderResult,
+  ReviewTargetInput,
+  ReviewTargetResult,
+  Service,
+} from "@/types.js";
 
-import requestVerdictService from "@/services/request-verdict-service.js";
+import { PraxisError, errors } from "@/helpers/errors-helper.js";
+import reviewTools from "@/prompts/review-tools.js";
+import systemPrompt from "@/prompts/system-prompt.js";
+import validationQuestion from "@/prompts/validation-question.js";
+import resolveProviderService from "@/services/resolve-provider-service.js";
 
 /**
- * A verdict for one target, from cache when the inputs are unchanged.
+ * A verdict for one target from one reviewer, from cache when the
+ * inputs are unchanged.
  *
- * The cache-aware entry point both the full run and single-target
- * reviewing use, so the read/call/write sequence exists once. `cacheHit`
- * comes back with the verdict rather than being asked for afterwards,
- * and `usage` is null on a hit because nothing was spent.
+ * The one entry point both the full run and single-target reviewing
+ * use, so the read → call → write sequence exists once. Praxis owns
+ * the provider boundary here: it resolves the API key, renders the
+ * prompts, and materializes the reviewer's settings; the provider only
+ * executes the request. `cacheHit` comes back with the verdict rather
+ * than being asked for afterwards, and `usage` is null on a hit
+ * because nothing was spent.
  *
  * @param cache - Reviewer-namespaced cache, or null to always call
- * @throws PraxisError from `requestVerdictService` on a cache miss
+ * @throws PraxisError when the key is missing, the provider cannot be
+ *   resolved, or (wrapped) when the provider itself fails
  */
 const reviewTargetService: Service<ReviewTargetInput, Promise<ReviewTargetResult>> = async (
   cfg,
@@ -31,7 +51,7 @@ const reviewTargetService: Service<ReviewTargetInput, Promise<ReviewTargetResult
     }
   }
 
-  const { verdict, usage } = await requestVerdictService(cfg, { target, reviewer });
+  const { verdict, usage } = await requestVerdict(cfg, target, reviewer);
 
   if (cache) {
     cache.writeVerdict({
@@ -47,3 +67,75 @@ const reviewTargetService: Service<ReviewTargetInput, Promise<ReviewTargetResult
 };
 
 export default reviewTargetService;
+
+/**
+ * One provider call: the reviewer's settings materialized into a
+ * request, the prompts rendered, the response normalized. No caching
+ * and no state — every call reaches the backend.
+ */
+async function requestVerdict(
+  cfg: PraxisConfig,
+  target: ReviewSubject,
+  reviewer: Reviewer,
+): Promise<ProviderResult> {
+  const provider = await resolveProviderService(cfg, { spec: reviewer.provider });
+
+  const request: ProviderRequest = {
+    systemPrompt: systemPrompt(),
+    userPrompt: validationQuestion({
+      specContent: target.specContent,
+      targetContent: target.targetContent,
+      targetPath: target.targetPath,
+      kind: target.kind,
+      checklist: target.checklist,
+      exemplars: target.assist.exemplars,
+      context: target.assist.context,
+    }),
+    tools: reviewTools(),
+    model: reviewer.model,
+    temperature: reviewer.temperature,
+    baseUrl: reviewer.baseUrl,
+    apiKey: reviewer.apiKey(),
+    options: reviewer.options,
+  };
+
+  try {
+    const { verdict, usage } = await provider.review(request);
+
+    return {
+      verdict: { ...verdict, issues: normalizeCritiques(verdict.issues, target.checklist) },
+      usage,
+    };
+  } catch (err) {
+    if (err instanceof PraxisError) throw err;
+
+    throw errors.reviewProviderFailed(provider.name, (err as Error).message);
+  }
+}
+
+/**
+ * Settles each critique's channel against the actual checklist.
+ *
+ * A cited id that matches a checklist axiom gets that axiom's version —
+ * the assignment provenance the ledger records (04-t). A cited id the
+ * checklist does not carry is a hallucination and demotes to the open
+ * channel: an unratified id must never enter the ledger as an
+ * assignment. A bare string (a custom provider still returning v1
+ * issues) is an open-channel critique as-is.
+ */
+function normalizeCritiques(
+  issues: readonly (Critique | string)[],
+  checklist: readonly ChecklistAxiom[],
+): Critique[] {
+  const versions = new Map(checklist.map((axiom) => [axiom.id, axiom.version]));
+
+  return issues.map((issue) => {
+    if (typeof issue === "string") return { text: issue, axiomId: null, axiomVersion: null };
+
+    const version = issue.axiomId === null ? undefined : versions.get(issue.axiomId);
+
+    if (version === undefined) return { ...issue, axiomId: null, axiomVersion: null };
+
+    return { ...issue, axiomVersion: version };
+  });
+}

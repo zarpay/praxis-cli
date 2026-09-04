@@ -81,7 +81,7 @@ the two ends of it.
 | Layer            | What belongs here                                                                                                                                                                                                                                                  |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `models/`        | Data structures and the helpers on that data. **Validate on construction** — a model that exists is a valid document. No I/O beyond reading its own file. `SpecFile`, `ExpertFile`, `Reviewer`, `ReviewSubject`.                                                   |
-| `services/`      | **One file, one default-exported function**, one input → one output. Operates on primitives and models and returns its work; no workflow. `expandGlobs`, `auditExperts`, `discoverDomains`, `requestVerdict`.                                                      |
+| `services/`      | **One file, one default-exported function**, one input → one output. Operates on primitives and models and returns its work; no workflow. `expandGlobs`, `auditExperts`, `discoverDomains`, `reviewTarget`.                                                      |
 | `orchestrators/` | **One file, one default-exported `Orchestrator`.** Coordinates services into a workflow, renders the result, and returns a `CommandOutcome`. The whole of what a command does. `run-eval-orchestrator.ts`, `compile-project-orchestrator.ts`.                      |
 | `views/`         | **One render moment each**: `{name}-view.ts` default-exports a `View<Data>` — a pure function from its data to `ReportLine[]`. Sections stay module-private; components (badges, stats, tables) live in the framework kit. `status-view.ts`, `run-report-view.ts`. |
 
@@ -187,7 +187,7 @@ The measurement layer (07) is pure read-side: `eval report` (three scope levels 
 
 Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
 
-Key files: `services/request-verdict-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile, AxiomFile, PracticeFile, CacheFile), `stores/` (VerdictStore, RunStore, TriageStore, AxiomStore, ExpertStore, PracticeStore, SpecStore, DocumentStore), `services/` (discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
+Key files: `services/review-target-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile, AxiomFile, PracticeFile, CacheFile), `stores/` (VerdictStore, RunStore, TriageStore, AxiomStore, ExpertStore, PracticeStore, SpecStore, DocumentStore), `services/` (discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
 
 ### Project Root Detection
 

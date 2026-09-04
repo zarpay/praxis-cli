@@ -569,14 +569,6 @@ export interface ReviewTargetInput {
   cache: VerdictStore | null;
 }
 
-/** One review call: the resolved subject and the instrument. */
-export interface RequestVerdictInput {
-  /** What is being reviewed, already resolved. */
-  target: ReviewSubject;
-  /** The instrument doing the reviewing. */
-  reviewer: Reviewer;
-}
-
 /** A verdict, and how it was obtained. */
 export interface ReviewTargetResult {
   verdict: Verdict;
@@ -591,22 +583,6 @@ export interface ReviewTargetResult {
 // ---------------------------------------------------------------------------
 
 /** What a run needs to know to review a project. */
-/** What reviewing a whole project needs: its root, its config, and the run's options. */
-export interface ReviewProjectInput {
-  /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
-  ledger?: boolean;
-  /** Run only this configured reviewer; omitted runs all of them. */
-  reviewer?: string;
-  /** Review only the domains of this type; omitted reviews everything. */
-  type?: string;
-  /** Whether to stop at the first error verdict. */
-  failFast?: boolean;
-  /** Whether to consult the verdict cache. */
-  useCache?: boolean;
-  /** Called as the run progresses, for streamed output. */
-  onProgress?: (event: EvalProgress) => void;
-}
-
 export interface ReviewAllInput {
   /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
   ledger?: boolean;
@@ -832,12 +808,6 @@ export interface ExpandGlobsInput {
   patterns: string[];
 }
 
-/** The declared references to resolve and read. */
-export interface InlineReferencesInput extends ExpandGlobsInput {
-  /** Prefix for the not-found warning, naming what kind of reference it was. */
-  missingLabel: string;
-}
-
 /** What one declared pattern turned out to match. */
 export interface GlobExpansion {
   /** The pattern as the author wrote it. */
@@ -863,7 +833,7 @@ export interface BuildProfileInput {
 }
 
 /** Inlined content plus anything the author should know went wrong. */
-export interface InlineReferencesResult {
+export interface InlinedReferences {
   /** Body text of every resolved file, in declaration order. */
   bodies: string[];
   /** Author-facing problems: a glob that matched nothing, a missing file. */

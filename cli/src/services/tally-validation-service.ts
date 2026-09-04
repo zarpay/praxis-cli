@@ -1,7 +1,9 @@
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { NoInput, Service, StatusReport } from "@/types.js";
 
 import { Reviewer } from "@/models/reviewer.js";
-import listTargetPathsService from "@/services/list-target-paths-service.js";
+import discoverDomainsService from "@/services/discover-domains-service.js";
+import resolveUnitsService from "@/services/resolve-units-service.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
 
 /**
@@ -17,7 +19,7 @@ import { VerdictStore } from "@/stores/verdict-store.js";
  * averaging them would hide exactly the disagreement worth seeing.
  */
 const tallyValidationService: Service<NoInput, StatusReport["validation"]> = (cfg) => {
-  const targets = listTargetPathsService(cfg, {});
+  const targets = targetPaths(cfg);
 
   // One cache namespace per reviewer; the un-namespaced cache when no
   // reviewers are configured at all.
@@ -59,3 +61,14 @@ const tallyValidationService: Service<NoInput, StatusReport["validation"]> = (cf
 };
 
 export default tallyValidationService;
+
+/**
+ * The path of every unit a run would review — asked of the eval
+ * layer's own discovery, so coverage counts what a run actually
+ * covers rather than a second guess at it.
+ */
+function targetPaths(cfg: PraxisConfig): string[] {
+  const domains = discoverDomainsService(cfg, {});
+
+  return domains.flatMap((domain) => resolveUnitsService(cfg, { domain }).map((unit) => unit.path));
+}

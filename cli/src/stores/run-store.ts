@@ -54,6 +54,16 @@ export class RunStore {
   }
 
   /**
+   * Whether any corpus run exists under a behavioral hash — the
+   * membership question baseline stamping asks (02): set membership,
+   * not sequence position, so interleaved contributor runs and branch
+   * merges cannot flip the answer.
+   */
+  hasCorpusRun(reviewerHash: string): boolean {
+    return this.runs().some((run) => run.reviewer_hash === reviewerHash && run.scope === "corpus");
+  }
+
+  /**
    * Lands one run's records as its file: written whole, never touched
    * again — append-only means record immutability, and one file per run
    * keeps concurrent runs and git merges conflict-free.
