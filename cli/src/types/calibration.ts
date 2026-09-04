@@ -66,6 +66,16 @@ export interface LedgerCalibrationRecord {
   cost_usd: number | null;
 }
 
+/** One case × repeat outcome — the service streams it, the progress view renders it. */
+export interface CalibrationCaseOutcome {
+  caseId: string;
+  repeat: number;
+  expected: CalibrationVerdict;
+  /** Null when the review itself failed (unverified). */
+  actual: CalibrationVerdict | null;
+  matched: boolean;
+}
+
 /** One reviewer's interpretability state (06 gating). */
 export type ReviewerCalibrationState = "calibrated" | "stale" | "absent";
 

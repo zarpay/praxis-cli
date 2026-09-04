@@ -3,6 +3,7 @@ import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { Reviewer } from "@/models/reviewer.js";
 import type {
   CalibrationAxiomScore,
+  CalibrationCaseOutcome,
   CalibrationVerdict,
   LedgerCalibrationRecord,
   ProviderUsage,
@@ -25,16 +26,6 @@ interface RunCalibrationInput {
   /** Full-set passes; > 1 measures variance (06's nondeterminism probe). */
   repeats: number;
   onProgress?: (event: CalibrationProgress) => void;
-}
-
-/** One case × repeat outcome, streamed and returned for the view. */
-interface CalibrationCaseOutcome {
-  caseId: string;
-  repeat: number;
-  expected: CalibrationVerdict;
-  /** Null when the review itself failed (unverified). */
-  actual: CalibrationVerdict | null;
-  matched: boolean;
 }
 
 /** Progress event for the orchestrator's streaming render. */
