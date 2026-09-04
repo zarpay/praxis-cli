@@ -12,6 +12,7 @@ import {
   defaultBranchRef,
   fileFirstCommitDate,
   gitFacts,
+  interventionsFor,
   lastAuthorOfRange,
   mergeBase,
   resolveSha,
@@ -181,6 +182,32 @@ describe("gitFacts", () => {
 
       expect(lastAuthorOfRange(root, baseSha, headSha, "keep.md")).toBe("Feature Author");
       expect(lastAuthorOfRange(root, baseSha, headSha, "untouched.md")).toBeNull();
+    });
+  });
+
+  describe("interventionsFor", () => {
+    it("finds commits whose trailer names the axiom, exactly (08-n)", () => {
+      initRepo();
+      git(
+        root,
+        "commit",
+        "-qm",
+        "harness: carry the error-message standard\n\nPraxis-Intervention: AX-b951db, AX-a108ea",
+        "--allow-empty",
+      );
+      git(root, "commit", "-qm", "unrelated", "--allow-empty");
+
+      const hits = interventionsFor(root, "AX-b951db");
+      const near = interventionsFor(root, "AX-b951");
+
+      expect(hits).toHaveLength(1);
+      expect(hits[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(interventionsFor(root, "AX-a108ea")).toHaveLength(1);
+      expect(near).toHaveLength(0);
+    });
+
+    it("is empty outside a repository", () => {
+      expect(interventionsFor(root, "AX-b951db")).toEqual([]);
     });
   });
 });

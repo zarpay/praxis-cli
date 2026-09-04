@@ -4,6 +4,7 @@ import { exists, readJson, writeJson, writeText } from "@/helpers/files-helper.j
 import { joinPath, resolvePath } from "@/helpers/paths-helper.js";
 import evalTargetingTemplate from "@/templates/eval-targeting-template.js";
 import pluginManifestTemplate from "@/templates/plugin-manifest-template.js";
+import praxisHarnessCommandTemplate from "@/templates/praxis-harness-command-template.js";
 import praxisResolveCommandTemplate from "@/templates/praxis-resolve-command-template.js";
 import praxisSkillTemplate from "@/templates/praxis-skill-template.js";
 
@@ -79,6 +80,10 @@ export class ClaudeCodePlugin implements CompilerPlugin {
     writeText(
       joinPath(this.outputDir, "commands", "praxis-resolve.md"),
       praxisResolveCommandTemplate(),
+    );
+    writeText(
+      joinPath(this.outputDir, "commands", "praxis-harness.md"),
+      praxisHarnessCommandTemplate(),
     );
     writeText(joinPath(this.outputDir, "skills", "praxis", "SKILL.md"), praxisSkillTemplate());
   }

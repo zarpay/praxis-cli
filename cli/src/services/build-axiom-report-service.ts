@@ -2,6 +2,7 @@ import type { AxiomReport, AxiomReportRow, ScopedLedger, Service } from "@/types
 import type { LedgerCritiqueRecord } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
+import { interventionsFor } from "@/helpers/git-helper.js";
 import { rateCell } from "@/helpers/metrics-helper.js";
 import buildEvalReportService from "@/services/build-eval-report-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
@@ -69,6 +70,7 @@ const buildAxiomReportService: Service<BuildAxiomReportInput, AxiomReport> = (
       axiomId,
     ),
     agreement: agreementOf(scoped.critiques, axiomId, cfg.reviewers.length),
+    interventions: interventionsFor(cfg.root, axiomId),
     statement: axiom.statement(),
     status: axiom.status,
     severity: axiom.severity,
