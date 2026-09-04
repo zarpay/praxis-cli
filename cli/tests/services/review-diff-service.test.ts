@@ -238,6 +238,13 @@ describe("reviewDiffService", () => {
     const diffRuns = ledgerRuns(root).filter(({ run }) => run.scope === "diff");
 
     expect(diffRuns).toHaveLength(2);
+
+    // The replay records its flow labels even for hit-served sides —
+    // the comparison is new evidence (05's diff-run exception).
+    const replay = diffRuns[1];
+    const flows = replay.critiques.map((critique) => critique.flow).sort();
+
+    expect(flows).toEqual(["inherited", "introduced", "resolved"]);
   });
 
   it("writes nothing when ledger is false, and a read-only cache stays untouched", async () => {

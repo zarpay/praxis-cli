@@ -56,34 +56,34 @@
         "hash": "2b519849"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-03T12:47:07.738Z",
-      "content_hash": "376e87d6",
+      "cached_at": "2026-09-04T09:19:13.674Z",
+      "content_hash": "7f25c597",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "The service lacks a doc comment stating its purpose and enumerating domain failure modes. The file must add a doc comment above the run function that clearly explains what the service does and lists all possible domain failures.",
+            "text": "The service lacks a doc comment stating its purpose and enumerating domain failure modes. The file must add a doc comment above the run function that clearly explains what the service does and lists all possible domain failures so callers can handle errors without reading the body.",
             "axiomId": "AX-2559f7",
             "axiomVersion": 1
           },
           {
-            "text": "The service throws an exception for a domain failure (bad parlor) instead of returning it as a value. Line 'throw new Error('bad parlor');' must be changed to return { ok: false, error: ... } since this is a failure a caller could plausibly cause.",
-            "axiomId": "AX-3317a7",
-            "axiomVersion": 1
-          },
-          {
-            "text": "The service performs direct I/O with console.log instead of using the injected Store. Line 'console.log(`redeeming ${input.coupon} at ${parlor.name}`);' must be removed or replaced with a Store method call.",
+            "text": "The service performs direct I/O using console.log() instead of going through the injected Store. The line 'console.log(`redeeming ${input.coupon} at ${parlor.name}`);' must be removed or replaced with Store-mediated I/O.",
             "axiomId": "AX-6e307b",
             "axiomVersion": 1
           },
           {
-            "text": "Error messages are vague and unactionable. 'bad parlor' and 'invalid' do not tell the API consumer what would be accepted instead. Messages must be specific like 'no parlor with id '...' — list parlors for valid ids' and 'coupon '...' is not valid — valid coupons are: FREESCOOP'.",
+            "text": "The error message for unrecognized coupons is insufficiently actionable. While it mentions case-sensitivity, it doesn't specify what would be accepted instead. The message should indicate what valid coupon codes exist or how to obtain them.",
             "axiomId": "AX-b951db",
             "axiomVersion": 2
+          },
+          {
+            "text": "The service hardcodes a specific coupon code 'FREESCOOP' directly in the validation logic, violating the principle that configuration data should be isolated or injected via Store. This creates silent coupling between code and data that could drift.",
+            "axiomId": null,
+            "axiomVersion": null
           }
         ],
-        "reason": "The file violates multiple required criteria from the specification, including critical axioms about error handling, I/O, and documentation."
+        "reason": "The file violates multiple required criteria from the specification, including critical documentation and I/O requirements."
       },
       "exemplar_files": [
         {
@@ -99,12 +99,12 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-03T12:47:11.677Z",
-      "content_hash": "376e87d6",
+      "cached_at": "2026-09-04T09:27:11.415Z",
+      "content_hash": "7f25c597",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 968 words."
+        "reason": "Review input has 991 words."
       },
       "exemplar_files": [
         {

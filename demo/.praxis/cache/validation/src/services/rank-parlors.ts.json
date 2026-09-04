@@ -8,12 +8,12 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-03T12:47:11.675Z",
-      "content_hash": "72b5f0a3",
+      "cached_at": "2026-09-04T09:27:11.407Z",
+      "content_hash": "d2146cbe",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 1036 words."
+        "reason": "Review input has 1028 words."
       },
       "exemplar_files": [
         {
@@ -57,12 +57,29 @@
         "hash": "2b519849"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-03T12:46:59.425Z",
-      "content_hash": "72b5f0a3",
+      "cached_at": "2026-09-04T09:19:06.493Z",
+      "content_hash": "d2146cbe",
       "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies all criteria defined in the specification. It follows the required structure with a single exported `run` function, has proper documentation, handles domain failures as values with actionable error messages, performs all I/O through the injected Store, and adheres to all axioms."
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "The doc comment does not enumerate all domain failure modes completely. It only mentions 'minReviews negative or not a whole number' but fails to mention that minReviews could be missing/undefined, or that the service could fail if there are no parlors in the store (though this might be handled by returning empty array). The doc comment should be more comprehensive about all possible failure scenarios a caller needs to handle.",
+            "axiomId": "AX-2559f7",
+            "axiomVersion": 1
+          },
+          {
+            "text": "The error message 'invalid input' is vague and not actionable. It does not specify what was wrong or what would be accepted instead. According to the specification, error messages must be specific and actionable for the API consumer. The file should provide a message like 'minReviews must be a non-negative whole number' or similar.",
+            "axiomId": "AX-b951db",
+            "axiomVersion": 2
+          },
+          {
+            "text": "The service does not validate input before any work happens as required by the specification's 'Behavior' section. While it does check minReviews, it doesn't validate that input itself is not null/undefined before accessing its properties. The validation should read top-to-bottom before any processing begins.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The file violates several required criteria from the specification, including critical documentation and error message requirements."
       },
       "exemplar_files": [
         {

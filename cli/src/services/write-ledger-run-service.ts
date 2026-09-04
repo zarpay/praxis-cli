@@ -37,8 +37,13 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
 
   const critiques: LedgerCritiqueRecord[] = [];
 
+  // Cache hits write no critiques — nothing new was reviewed (05) —
+  // EXCEPT on diff runs: the comparison is new evidence even when both
+  // verdicts came from cache, and the flow labels are the run's whole
+  // point. A replay that recorded nothing would erase the flow the
+  // latest-per-branch reports read (12).
   for (const { verdict, cacheHit, evidence, flow, beforeRunId } of entries) {
-    if (!evidence || cacheHit) continue;
+    if (!evidence || (cacheHit && scope !== "diff")) continue;
 
     for (const [at, issue] of verdict.issues.entries()) {
       critiques.push({
