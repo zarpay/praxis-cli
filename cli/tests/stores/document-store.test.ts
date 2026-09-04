@@ -31,7 +31,7 @@ describe("DocumentStore", () => {
     writeFileSync(path, content);
   }
 
-  describe("paths", () => {
+  describe("files", () => {
     it("sweeps documents across sources, never specs or underscore templates", () => {
       seed("docs/guide.md", "# Guide");
       seed("docs/nested/deep.md", "# Deep");
@@ -39,7 +39,7 @@ describe("DocumentStore", () => {
       seed("docs/_template.md", "# Template");
       seed("reference/api.md", "# API");
 
-      const paths = new DocumentStore(testConfig(root, { sources: ["docs", "reference"] })).paths();
+      const paths = new DocumentStore(testConfig(root, { sources: ["docs", "reference"] })).files();
 
       expect(paths).toHaveLength(3);
       expect(paths.every((path) => !path.endsWith("README.md"))).toBe(true);
@@ -48,7 +48,7 @@ describe("DocumentStore", () => {
     it("includes documents in directories with no spec at all", () => {
       seed("docs/uncovered/floating.md", "# No spec governs me");
 
-      const paths = new DocumentStore(testConfig(root, { sources: ["docs"] })).paths();
+      const paths = new DocumentStore(testConfig(root, { sources: ["docs"] })).files();
 
       expect(paths).toHaveLength(1);
     });
@@ -61,11 +61,11 @@ describe("DocumentStore", () => {
         testConfig(root, { sources: ["docs"], ignore: ["docs/generated/**"] }),
       );
 
-      expect(store.paths()).toHaveLength(1);
+      expect(store.files()).toHaveLength(1);
     });
 
     it("sweeps nothing from a missing source — unused taxonomy is normal", () => {
-      expect(new DocumentStore(testConfig(root, { sources: ["nope"] })).paths()).toEqual([]);
+      expect(new DocumentStore(testConfig(root, { sources: ["nope"] })).files()).toEqual([]);
     });
   });
 

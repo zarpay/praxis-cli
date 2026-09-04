@@ -20,7 +20,7 @@ import { SpecStore } from "@/stores/spec-store.js";
 const discoverDomainsService: Service<NoInput, ValidationDomain[]> = (cfg) => {
   const store = new SpecStore(cfg);
 
-  return store.filesIn(cfg.sources).map((specPath) => domainFor(store, specPath, cfg));
+  return store.files().map((specPath) => domainFor(store, specPath, cfg));
 };
 
 export default discoverDomainsService;

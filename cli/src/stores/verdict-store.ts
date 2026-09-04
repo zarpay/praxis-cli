@@ -158,7 +158,7 @@ export class VerdictStore {
     file.put(this.keyFor(specPath), entry);
 
     try {
-      writeText(path, file.toJson());
+      writeText(path, file.serialize());
     } catch {
       removeQuietly(path);
     }
@@ -232,7 +232,7 @@ export class VerdictStore {
         removeFile(path);
         filesRemoved++;
       } else {
-        writeText(path, file.toJson());
+        writeText(path, file.serialize());
       }
     }
 
@@ -251,7 +251,7 @@ export class VerdictStore {
     if (!exists(path)) return null;
 
     try {
-      return CacheFile.parse(readText(path));
+      return CacheFile.fromJson(readText(path));
     } catch {
       if (discardCorrupt) removeQuietly(path);
 

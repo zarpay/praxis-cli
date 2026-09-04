@@ -68,13 +68,13 @@ describe("CacheFile", () => {
       const file = CacheFile.empty();
       file.put(CacheFile.keyOf(entry(FLASH)), entry(FLASH));
 
-      const reparsed = CacheFile.parse(file.toJson());
+      const reparsed = CacheFile.fromJson(file.serialize());
 
       expect(reparsed?.entriesFor(FLASH)).toHaveLength(1);
     });
 
     it("stamps the current version", () => {
-      expect(JSON.parse(CacheFile.empty().toJson())).toMatchObject({
+      expect(JSON.parse(CacheFile.empty().serialize())).toMatchObject({
         version: CACHE_VERSION,
       });
     });
@@ -82,11 +82,11 @@ describe("CacheFile", () => {
     it("reads an older format as nothing rather than raising", () => {
       const old = JSON.stringify({ version: "3.0", verdicts: { k: entry(FLASH) } });
 
-      expect(CacheFile.parse(old)).toBeNull();
+      expect(CacheFile.fromJson(old)).toBeNull();
     });
 
     it("raises on text that is not JSON, so the caller can discard the file", () => {
-      expect(() => CacheFile.parse("{ not json")).toThrow();
+      expect(() => CacheFile.fromJson("{ not json")).toThrow();
     });
   });
 

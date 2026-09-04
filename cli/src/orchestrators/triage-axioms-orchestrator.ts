@@ -80,7 +80,7 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
   prompter.close();
 
   if (session.records.length > 0) {
-    new TriageStore(cfg).appendSession(session.records);
+    new TriageStore(cfg).writeSession(session.records);
   }
 
   const pendingLeft = state.pending.length - session.assigned - session.dismissed;

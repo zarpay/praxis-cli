@@ -49,5 +49,24 @@ described none of them — it is `RunFile`/`TriageSessionFile` (models),
   one malformed file is a `StoreProblem`, not a dead sweep. Sweep listing
   rules (spec files excluded, `_`-prefixed templates excluded, ignore
   patterns honored) live once, in the store.
+- **The shared verb vocabulary.** Operations that mean the same thing are
+  named the same across every store; a new store conforms by default, and
+  only genuinely distinctive operations (`governingPath`, `propose`,
+  `ratify`, `orphans`, `countsByType`) earn custom names:
+
+  | Shape                | Meaning                                                       |
+  | -------------------- | ------------------------------------------------------------- |
+  | `files()`            | absolute paths of everything in scope — cheap, no parsing     |
+  | bare plural noun     | every parsed record of one kind, read-soft (`runs()`, `records()`) |
+  | `all()`              | every document parsed, sweep-tolerant: `{nouns, problems}`    |
+  | `read(path)`         | one document, parse-hard                                      |
+  | `write<Noun>(…)`     | land records as a new file, hard-fail (`writeRun`, `writeSession`, `writeVerdict`) |
+  | `read<Noun>({keys})` | one keyed entry, null when absent                             |
+  | `by<Field>(value)`   | find one by a field, null when absent                         |
+  | `<noun>For(subject)` | derive the noun for a subject (`pathFor`, `checklistFor`)     |
+  | `mint<Noun>()`       | new collision-safe identity                                   |
+  | `has<Fact>(…)`       | boolean membership question                                   |
+  | `prune(…)`           | drop dead entries, report the count                           |
+
 - Tests mirror to `tests/stores/`, exercising public methods on real
   tmpdirs — the store _is_ the IO boundary, so nothing about it is mocked.

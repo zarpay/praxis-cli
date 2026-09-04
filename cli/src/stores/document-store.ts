@@ -35,7 +35,7 @@ export class DocumentStore {
   }
 
   /** Absolute paths of every document across the source directories. */
-  paths(): string[] {
+  files(): string[] {
     return this.sources.flatMap((source) =>
       fg
         .sync("**/*.md", {
@@ -60,7 +60,7 @@ export class DocumentStore {
     let references = 0;
     let context = 0;
 
-    for (const file of this.paths()) {
+    for (const file of this.files()) {
       const type = DocumentFile.fromContent(readText(file), file).type;
 
       if (type === "reference") references++;

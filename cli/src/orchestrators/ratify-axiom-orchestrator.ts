@@ -44,7 +44,7 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
 
   if (reject !== undefined) {
     removeFile(proposal.path);
-    new TriageStore(cfg).appendSession([
+    new TriageStore(cfg).writeSession([
       { kind: "rejection", axiom_id: id, reason: reject, timestamp: new Date().toISOString() },
     ]);
     ctx.render([

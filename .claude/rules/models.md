@@ -52,6 +52,18 @@ frontmatter keys are spelled.
   (`write-ledger-run` builds and decides; `RunStore.writeRun` lands bytes).
   `.claude/rules/stores.md` carries the store contract.
 
+## The shared verb vocabulary
+
+Construction and serialization are named the same on every model:
+`from<Source>(…)` is pure construction from already-loaded input
+(`fromContent`, `fromConfig`, `fromYaml`, `fromJson` — nullable where a
+non-file is a normal state), and `serialize(…)` is the model as its
+stored bytes. `ReviewSubject.resolve` stays the deliberate exception —
+the one sanctioned reader is not a `from<Source>` because it performs
+IO. Domain derivations keep custom names (`statement()`,
+`contentHash()`, `discoveryScope()`): a shared verb is for shared
+meaning, never a costume.
+
 ## `reviewer` is a noun
 
 The configured instrument, never the action. It is fixed by the public surface —

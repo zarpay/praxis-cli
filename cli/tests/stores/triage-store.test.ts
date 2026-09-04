@@ -21,12 +21,12 @@ describe("TriageStore", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  describe("appendSession", () => {
+  describe("writeSession", () => {
     it("lands each session as its own file under ledger/triage", () => {
-      const first = store.appendSession([
+      const first = store.writeSession([
         { kind: "dismissal", critique_id: "r1:1", reason: "x", timestamp: "t" },
       ]);
-      const second = store.appendSession([
+      const second = store.writeSession([
         { kind: "dismissal", critique_id: "r1:2", reason: "y", timestamp: "t" },
       ]);
 

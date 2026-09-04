@@ -80,7 +80,7 @@ describe("deriveTriageStateService", () => {
         timestamp: "2026-09-03T10:00:00.000Z",
       },
     ];
-    new TriageStore(testConfig(root)).appendSession(records);
+    new TriageStore(testConfig(root)).writeSession(records);
 
     const state = deriveTriageStateService(testConfig(root), {});
     const ids = state.pending.map((critique) => critique.id);
@@ -91,7 +91,7 @@ describe("deriveTriageStateService", () => {
   });
 
   it("counts rejections for the residual signal", () => {
-    new TriageStore(testConfig(root)).appendSession([
+    new TriageStore(testConfig(root)).writeSession([
       {
         kind: "rejection",
         axiom_id: "AX-bbbb22",

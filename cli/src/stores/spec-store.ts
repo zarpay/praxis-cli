@@ -21,10 +21,12 @@ import { SpecFile } from "@/models/spec-file.js";
  */
 export class SpecStore {
   private readonly root: string;
+  private readonly sources: string[];
   private readonly specFilePattern: string;
 
   constructor(cfg: PraxisConfig) {
     this.root = cfg.root;
+    this.sources = cfg.sources;
     this.specFilePattern = cfg.specFilePattern;
   }
 
@@ -65,9 +67,9 @@ export class SpecStore {
     return SpecFile.fromContent(readText(specPath), specPath, this.root);
   }
 
-  /** Every spec file under the given source directories, absolute paths. */
-  filesIn(sources: string[]): string[] {
-    return sources.flatMap((source) =>
+  /** Every spec file under the source directories, absolute paths. */
+  files(): string[] {
+    return this.sources.flatMap((source) =>
       fg.sync(`**/${this.specFilePattern}`, {
         cwd: joinPath(this.root, source),
         onlyFiles: true,

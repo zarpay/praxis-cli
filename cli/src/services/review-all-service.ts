@@ -126,7 +126,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
   }
 
   const documentStore = new DocumentStore(cfg);
-  const sourceDocs = new Set(documentStore.paths());
+  const sourceDocs = new Set(documentStore.files());
 
   return {
     verdicts,

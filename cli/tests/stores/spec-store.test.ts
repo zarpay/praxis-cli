@@ -67,7 +67,7 @@ describe("SpecStore", () => {
     });
   });
 
-  describe("filesIn", () => {
+  describe("files", () => {
     it("sweeps the source directories for spec files", () => {
       mkdirSync(join(root, "docs", "nested"), { recursive: true });
       mkdirSync(join(root, "src"), { recursive: true });
@@ -76,14 +76,14 @@ describe("SpecStore", () => {
       writeFileSync(join(root, "src", "README.md"), "# C");
       writeFileSync(join(root, "src", "code.ts"), "export {};");
 
-      const files = new SpecStore(testConfig(root)).filesIn(["docs", "src"]);
+      const files = new SpecStore(testConfig(root, { sources: ["docs", "src"] })).files();
 
       expect(files).toHaveLength(3);
       expect(files.every((file) => file.endsWith("README.md"))).toBe(true);
     });
 
     it("sweeps nothing from a missing source", () => {
-      expect(new SpecStore(testConfig(root)).filesIn(["nope"])).toEqual([]);
+      expect(new SpecStore(testConfig(root, { sources: ["nope"] })).files()).toEqual([]);
     });
   });
 });

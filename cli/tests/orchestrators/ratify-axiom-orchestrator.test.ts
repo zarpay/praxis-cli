@@ -61,7 +61,7 @@ function ratifyProject(plan: Parameters<typeof curatorProviderModule>[0]): strin
       }),
     ],
   });
-  new TriageStore(testConfig(root)).appendSession([
+  new TriageStore(testConfig(root)).writeSession([
     {
       kind: "assignment",
       critique_id: "r1:1",

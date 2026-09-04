@@ -42,12 +42,13 @@ export class CacheFile {
   }
 
   /**
-   * Parses stored JSON, or null when it is not a current-version file.
+   * Builds a file from stored JSON, or null when it is not a
+   * current-version file.
    *
    * @throws SyntaxError when the text is not JSON at all — the caller
    *   decides whether that warrants discarding the file
    */
-  static parse(json: string): CacheFile | null {
+  static fromJson(json: string): CacheFile | null {
     const data = JSON.parse(json) as { version: string; verdicts: Record<string, VerdictEntry> };
 
     return data.version === CACHE_VERSION ? new CacheFile(data.verdicts) : null;
@@ -118,7 +119,7 @@ export class CacheFile {
    * @throws when the entries cannot round-trip as JSON — the caller
    *   verifies before overwriting a good file with a broken one
    */
-  toJson(): string {
+  serialize(): string {
     const json = JSON.stringify({ version: CACHE_VERSION, verdicts: this.verdicts }, null, 2);
 
     JSON.parse(json); // integrity check before it reaches disk

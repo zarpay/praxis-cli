@@ -38,7 +38,7 @@ export class TriageStore {
    *
    * @throws on write failure
    */
-  appendSession(records: TriageRecord[]): WriteLedgerRunResult {
+  writeSession(records: TriageRecord[]): WriteLedgerRunResult {
     const sessionId = sortableId();
     const path = joinPath(this.triageDir, `${sessionId}.jsonl`);
 
