@@ -8,8 +8,10 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { Reviewer } from "@/models/reviewer.js";
 import deriveCalibrationStatusService from "@/services/derive-calibration-status-service.js";
+import deriveChecklistHashService from "@/services/derive-checklist-hash-service.js";
 import { CalibrationCaseStore } from "@/stores/calibration-case-store.js";
 import { CalibrationStore } from "@/stores/calibration-store.js";
+import { seedAxiom } from "@tests/helpers/axiom-fixtures.js";
 import { calibrationRecord, expectationJson, seedCase } from "@tests/helpers/calibration-cases.js";
 import { TEST_REVIEWER } from "@tests/helpers/openrouter-msw.js";
 import { testConfig } from "@tests/helpers/test-config.js";
@@ -37,10 +39,12 @@ describe("deriveCalibrationStatusService", () => {
   /** Writes a record aligned with the live project, then applies overrides. */
   function seedRecord(overrides: Partial<LedgerCalibrationRecord> = {}): void {
     const cfg = testConfig(root);
+    const { cases } = new CalibrationCaseStore(cfg).all();
     const aligned = calibrationRecord({
       reviewer_name: reviewer.name,
       reviewer_hash: reviewer.hash(),
       case_set_hash: new CalibrationCaseStore(cfg).caseSetHash(),
+      checklist_hash: deriveChecklistHashService(cfg, { cases }),
       ...overrides,
     });
 
@@ -102,6 +106,16 @@ describe("deriveCalibrationStatusService", () => {
 
     expect(result.banner).toBe("test: calibrated 2026-09-05");
     expect(result.stamps).toEqual({ test: "calibrated" });
+  });
+
+  it("stale when a ratification changed a governed spec's checklist (found live 2026-09-05)", () => {
+    seedRecord();
+    seedAxiom(root, "AX-cafe01", { grounded_in: "src/services/README.md#behavior" });
+
+    const result = derive();
+
+    expect(result.statuses[0].state).toBe("stale");
+    expect(result.statuses[0].detail).toContain("a ratification changed what the cases ask");
   });
 
   it("stale when a case's live spec no longer matches what it froze", () => {

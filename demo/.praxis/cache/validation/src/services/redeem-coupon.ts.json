@@ -56,34 +56,19 @@
         "hash": "2b519849"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-04T23:19:31.127Z",
-      "content_hash": "ecf01e04",
+      "cached_at": "2026-09-04T23:23:25.913Z",
+      "content_hash": "fe702908",
       "result": {
         "compliant": false,
-        "severity": "error",
+        "severity": "warning",
         "issues": [
           {
-            "text": "Service performs I/O outside the injected Store: console.log statement on line 22 violates the requirement that all I/O must go through Store methods. The service must remove direct console.log calls and use Store methods for any logging needs.",
-            "axiomId": "AX-6e307b",
+            "text": "The service hardcodes the coupon code 'FREESCOOP' directly in validation logic. Configuration data like coupon codes should be isolated in a single obvious place or injected via the Store to prevent silent coupling and drift between code and data. The file should either fetch valid codes from the Store or import them from a dedicated configuration module.",
+            "axiomId": "AX-a108ea",
             "axiomVersion": 1
-          },
-          {
-            "text": "Doc comment fails to enumerate all domain failure modes completely: while it mentions unknown parlor id and unrecognized coupon code, it does not mention that coupon codes are case-sensitive (though this is mentioned in the error message). However, the more critical issue is that the doc comment states it returns 'discount fraction' but the service returns 1 (100% discount) for FREESCOOP, which is a hardcoded business rule that should be documented as a failure mode or configuration detail.",
-            "axiomId": "AX-2559f7",
-            "axiomVersion": 1
-          },
-          {
-            "text": "Service contains hardcoded business logic: the coupon code 'FREESCOOP' is hardcoded directly in the service, violating the principle that configuration data should be isolated or injected via Store. This creates silent coupling between code and data that could drift.",
-            "axiomId": null,
-            "axiomVersion": null
-          },
-          {
-            "text": "Service behavior is incomplete: it returns a discount fraction of 1 for FREESCOOP but doesn't actually redeem or track the coupon usage in the Store. A coupon redemption service should typically mark the coupon as used or track redemption history to prevent reuse.",
-            "axiomId": null,
-            "axiomVersion": null
           }
         ],
-        "reason": "The file violates multiple required criteria in the Service Conventions specification. It contains direct I/O outside the Store, has incomplete documentation of failure modes, hardcodes business logic, and implements incomplete redemption behavior."
+        "reason": "The file satisfies most requirements but violates one warning-level axiom regarding configuration isolation."
       },
       "exemplar_files": [
         {
@@ -99,12 +84,12 @@
         "hash": "f524adbc"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-04T09:27:11.415Z",
-      "content_hash": "7f25c597",
+      "cached_at": "2026-09-04T23:31:52.776Z",
+      "content_hash": "fe702908",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 991 words."
+        "reason": "Review input has 1028 words."
       },
       "exemplar_files": [
         {

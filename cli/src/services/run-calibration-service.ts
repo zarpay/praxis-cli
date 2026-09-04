@@ -14,6 +14,7 @@ import type {
 import { gitFacts } from "@/helpers/git-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
+import deriveChecklistHashService from "@/services/derive-checklist-hash-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { CalibrationCaseStore } from "@/stores/calibration-case-store.js";
@@ -175,6 +176,7 @@ function assembleRecord(cfg: PraxisConfig, input: AssembleRecordInput): LedgerCa
     reviewer_hash: reviewer.hash(),
     case_count: cases.length,
     case_set_hash: new CalibrationCaseStore(cfg).caseSetHash(),
+    checklist_hash: deriveChecklistHashService(cfg, { cases }),
     repeats,
     verdict_matches: outcomes.filter((outcome) => outcome.matched).length,
     unverified_count: outcomes.filter((outcome) => outcome.actual === null).length,
