@@ -141,7 +141,7 @@ describe("reviewTargetService", () => {
         cfg: { name: "unset", model: "m", apiKeyEnvVar: "UNSET_KEY_VAR" },
       });
 
-      await expect(review).rejects.toThrow("UNSET_KEY_VAR environment variable not set");
+      await expect(review).rejects.toThrow("Missing UNSET_KEY_VAR environment variable");
     });
 
     it("uses custom apiKeyEnvVar", async () => {

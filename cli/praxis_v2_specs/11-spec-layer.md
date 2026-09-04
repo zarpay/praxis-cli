@@ -6,13 +6,18 @@ Praxis v2 is two layers. This document names them, states the contract between t
 
 ## The two layers
 
-> **Where they live in the code.** `src/domains/eval` and `src/domains/spec`, one
-> directory each, and ESLint refuses an import in either direction. Each holds its
-> own models, services, orchestrators, views and prompts, so a layer can be read on
-> its own. `src/domains/workspace` sits above both — project health reads both
-> layers — and `src/core` plus `src/views` sit below, depending on neither. The
-> bridge described at the end of this section is `domains/spec/views/targeting.ts`
-> writing `paths:` and `domains/eval/services/discover-targets.ts` reading it.
+> **Where they live in the code** (updated 2026-09-05; the
+> `src/domains/{eval,spec}` layout below was collapsed to layers on
+> 2026-09-02). `src/` is organised by *layer* — models, stores,
+> services, orchestrators, views, prompts — not by domain, and the
+> spec↔eval isolation is a **documented contract rather than a path
+> rule**: after the collapse no path means "the eval side", so ESLint
+> cannot express the ban. The contract stands unchanged: the compiler
+> writes files (profiles carrying `paths:`/`cohort:`/`excludes:`), and
+> the eval side consumes them as plain files, never calling back. The
+> bridge is `templates/eval-targeting-template.ts` writing `paths:` and
+> `services/discover-domains-service.ts` reading it — `ExpertFile` and
+> `SpecFile` are the two ends.
 
 **The eval layer** — spec, scope, reviewer, cache, ledger, triage, axioms, calibration, metrics, briefs. This is what v2 _is_. Its input contract with the world is exactly three things:
 

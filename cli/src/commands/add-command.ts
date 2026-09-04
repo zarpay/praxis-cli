@@ -15,11 +15,30 @@ const addCommand: CommandRegistrar = (program) => {
   add
     .command("expert <name>")
     .description("Create a new expert from the template the compiler expects")
+    .addHelpText(
+      "after",
+      `
+When to use: starting a new code-owner document. Scaffolds into the
+configured expertsDir with the frontmatter the compiler and the eval
+layer honor (validates:, excludes:, exemplars:, practices:).
+
+Example:
+  $ praxis add expert service-steward`,
+    )
     .action(addExpertOrchestrator);
 
   add
     .command("practice <name>")
     .description("Create a new practice from the template the compiler expects")
+    .addHelpText(
+      "after",
+      `
+When to use: capturing a reusable review or authoring procedure that
+experts reference from their practices: list.
+
+Example:
+  $ praxis add practice review-service-quality`,
+    )
     .action(addPracticeOrchestrator);
 };
 

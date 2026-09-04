@@ -14,11 +14,28 @@ const configCommand: CommandRegistrar = (program) => {
   config
     .command("show")
     .description("Print the project configuration as written, with its file path")
+    .addHelpText(
+      "after",
+      `
+When to use: to see the effective config and where it lives.
+
+Example:
+  $ praxis config show`,
+    )
     .action(showConfigOrchestrator);
 
   config
     .command("edit")
-    .description("Open the project configuration in $VISUAL, $EDITOR, or vi")
+    .description("Open the project configuration in $VISUAL, $EDITOR, or vi (human-only)")
+    .addHelpText(
+      "after",
+      `
+When to use: humans at a terminal only — it opens an interactive
+editor. Agents and scripts edit .praxis/config.json directly.
+
+Example:
+  $ praxis config edit`,
+    )
     .action(editConfigOrchestrator);
 };
 

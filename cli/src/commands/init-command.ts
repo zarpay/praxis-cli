@@ -18,6 +18,16 @@ const initCommand: CommandRegistrar = (program) => {
       "also scaffold the spec-layer authoring tree (experts, practices, context)",
       false,
     )
+    .addHelpText(
+      "after",
+      `
+When to use: once, at a project's root. Writes only
+.praxis/config.json by default; everything else is created lazily by
+the first run. Re-running never overwrites what exists.
+
+Example:
+  $ praxis init --spec-layer`,
+    )
     .action(initProjectOrchestrator);
 };
 

@@ -48,7 +48,7 @@ Does not require an API key. Exits with code 1 if no `.praxis/` directory is fou
 
 ### `praxis config edit`
 
-Opens `.praxis/config.json` in your preferred editor. Resolves the editor in this order:
+Opens `.praxis/config.json` in your preferred editor. It is human-only — it starts an interactive session, so agents and scripts should edit the file directly instead. Resolves the editor in this order:
 
 1. `$VISUAL`
 2. `$EDITOR`
