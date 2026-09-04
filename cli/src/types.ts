@@ -10,5 +10,6 @@ export * from "@/types/review.js";
 export * from "@/types/extension-points.js";
 export * from "@/types/spec-layer.js";
 export * from "@/types/ledger.js";
+export * from "@/types/calibration.js";
 export * from "@/types/axioms.js";
 export * from "@/types/reports.js";

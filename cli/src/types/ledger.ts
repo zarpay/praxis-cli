@@ -12,8 +12,12 @@ export type LedgerTrigger = "manual" | "ci" | "watch";
 /** What a run covered (05). M2 writes "corpus" (full run) or "files" (named). */
 export type LedgerScope = "corpus" | "diff" | "files";
 
-/** Reviewer calibration state stamped on a run (06 grows this union). */
-export type CalibrationStatus = "uncalibrated";
+/**
+ * Reviewer calibration state stamped on a run (06). "uncalibrated" is
+ * the absent case — no record exists for the reviewer's current hash —
+ * and stays the historical member every pre-M6 record carries.
+ */
+export type CalibrationStatus = "uncalibrated" | "calibrated" | "stale";
 
 /** Verdict-diff classification of a critique (01). Null: no diff comparison existed. */
 export type LedgerFlow = "introduced" | "inherited" | "resolved";

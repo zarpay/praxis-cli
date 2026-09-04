@@ -1,6 +1,6 @@
 # 06 — Calibration
 
-**Status:** Early draft — capturing conversation output
+**Status:** Implemented (M6, 2026-09-05) — decisions dated inline
 **Depends on:** [vocabulary.md](./vocabulary.md), [03-judgment-boundary.md](./03-judgment-boundary.md), [04-axioms.md](./04-axioms.md)
 
 ## What calibration is for
@@ -19,8 +19,16 @@ expected.json:
   verdict: pass | warn | fail
   expected_violations: [ { axiom_id, must_flag: true } ]
   forbidden_violations: [ { axiom_id, must_not_flag: true } ]
+  spec_path            # flagged addition (2026-09-05): staleness compares the live counterpart
   adjudicated_by, adjudicated_on, rationale
 ```
+
+> **Layout as implemented (2026-09-05):** a case directory holds exactly
+> one input file, the frozen spec as `spec.md` (the spec reference *is*
+> its content hash, and running the case needs the text anyway), and
+> `expected.json`. The reviewer's checklist for a case comes from the
+> axioms grounded in the case's `spec_path` — the live grounding, so a
+> ratified axiom is exactly what the case adjudicates.
 
 **Composition rule: cases must include true positives and true negatives.** A set built only from observed reviewer false positives trains the loop toward a reviewer that passes everything; leniency must cost agreement score exactly as over-triggering does. Sources for cases:
 
@@ -34,6 +42,30 @@ Cases are frozen against a spec _content hash_. When the spec changes materially
 
 - `praxis calibrate run` — evaluates every case with the current reviewer config; reports **agreement** (verdict level), **per-axiom precision/recall**, and **false-positive rate**; writes a calibration record (with full provenance) to the ledger.
 - `praxis calibrate status` — last run, scores, and whether the reviewer model or any covered spec content hash has changed since. Stale = the reviewer changed under you.
+
+Decisions (2026-09-04/05):
+
+- **Records live in a new ledger partition** `.praxis/ledger/calibration/<id>.json`
+  (owner, 2026-09-04) — one write-once file per run × reviewer,
+  `CalibrationStore`; a 10-d design event, recorded there.
+- **Calibration never touches the verdict cache** (2026-09-05): a cached
+  verdict would measure the cache, and `--repeat` exists to measure the
+  instrument's variance, which a hit hides by construction. Every case
+  is a fresh, full-price call — that is the cost answer to open question 3:
+  full set on demand, sampling unneeded at current set sizes.
+- **Scores are stored as counts** (TP/FP/FN, verdict matches, per-axiom
+  opportunities); precision/recall derive read-side through the metrics
+  rules (07), so floors and denominators apply at render.
+- **A failed review is an unverified outcome** — counted as
+  disagreement, recorded on the record, never dropped.
+- **Drift baseline is the previous record for the same reviewer *name***,
+  across identity hashes — drift is exactly what a behavioral change is
+  measured for. Default threshold: 0.1 absolute per-axiom accuracy delta
+  (2026-09-05, documented default).
+- **Variance** comes from `calibrate run --repeat <n>`: per-axiom
+  flag-count variance across repeats, stored on the record. Flow metrics
+  suppress an introduction at or below the reviewer's measured variance
+  for the axiom as "below reviewer noise floor" (01's consumer).
 
 **Interpretability gating:** every eval report (07) displays calibration status. Conformance computed under a reviewer whose calibration is stale or absent is rendered with an explicit "uninterpretable — recalibrate" marker, not quietly printed. This is the enforcement point for the provenance principle.
 
@@ -76,6 +108,15 @@ Reviewer nondeterminism itself is measurable here: run the same calibration N ti
 
 ## Open questions
 
-1. Minimum viable case count before gating turns on? Too-small sets give noisy scores that gate on nothing. Tentative: gate per-axiom only where an axiom has ≥N adjudicated cases; verdict-level agreement gates globally.
-2. Who adjudicates in practice, and how is disagreement between human adjudicators handled? (Grounded-theory answer: inter-rater reliability. Pragmatic answer: one owner per spec, revisit if it bites.)
-3. Cost: calibration runs are full-price reviewer calls. Sampling strategies vs full-set runs on every model change.
+1. ~~Minimum viable case count before gating turns on?~~ Resolved
+   (2026-09-05): the tentative answer adopted — per-axiom scores render
+   through the small-n floor (n<5 suppresses as insufficient data);
+   verdict-level agreement renders for any set size with its
+   denominator. Interpretability gating (calibrated/stale/absent) is
+   independent of set size: a thin set gives thin scores, visibly.
+2. ~~Who adjudicates in practice?~~ Resolved (2026-09-05): the pragmatic
+   answer — one owner per spec (`adjudicated_by` records who); revisit
+   with inter-rater machinery only if it bites.
+3. ~~Cost: sampling vs full-set runs.~~ Resolved (2026-09-05): full set
+   every run, `--repeat` optional — at judgment-model prices a full
+   pass costs cents; sampling machinery is not earned yet.

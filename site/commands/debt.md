@@ -18,7 +18,7 @@ Every report carries its calibration status; `--json` emits the built payload ve
 
 ```
 [INFO] Debt report — corpus, pre-spec debt included
-[WARN] Calibration: uncalibrated — numbers are directional, not interpretable
+[WARN] Calibration: flash: uninterpretable — recalibrate · v32: calibrated 2026-09-05
 AX-2559f7 [flash] baseline 3 → current 1 · paid down 2 · appeared since baseline 0
 AX-b951db [flash] baseline 5 → current 5 · paid down 0 · appeared since baseline 0
 

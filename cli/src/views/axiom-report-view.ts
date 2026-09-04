@@ -3,8 +3,6 @@ import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
 
-import { CALIBRATION_STATUS } from "@/helpers/metrics-helper.js";
-
 /**
  * One axiom across everything in scope (07): the standard, per-reviewer
  * current-stock rates with population-qualified counts, and the
@@ -27,7 +25,8 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
       channel: "heading",
       text: `${report.axiomId} v${report.version} — ${report.status} (${report.severity})`,
     },
-    { channel: "warning", text: `Calibration: ${CALIBRATION_STATUS}` },
+    { channel: "warning", text: `Calibration: ${report.calibration}` },
+    ...(report.driftNote ? [{ channel: "warning" as const, text: report.driftNote }] : []),
     {
       channel: "content",
       entries: [
@@ -38,6 +37,11 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
           (row) =>
             `[${row.reviewerName}] current stock: ${row.rate.display}${asOf(row)} · files ever flagged: ${row.files} · pre-spec ${row.byPopulation.pre_spec} / post-spec ${row.byPopulation.post_spec} / unknown ${row.byPopulation.unknown}`,
         ),
+        ...(report.agreement
+          ? [
+              `inter-reviewer agreement: ${report.agreement.corroborated} corroborated file(s) · ${report.agreement.disagreed} single-witness file(s) — a tripwire, not ground truth (06)`,
+            ]
+          : []),
         ...(examples.length > 0 ? ["", "Representative critiques:", ...examples] : []),
         "",
         "Removal candidacy: `praxis axioms audit` re-runs the authoring gate.",

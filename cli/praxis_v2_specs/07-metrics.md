@@ -19,7 +19,7 @@
 
 - Coverage of post-spec diffs (how much new work was visible to any spec — and how much was invisible)
 - **Introduction rate per axiom** — the struggle signal (02): flat-while-others-decline is the harness finding
-- Violation flow: introduced vs resolved per applicable opportunity (01), against the reviewer-variance noise floor
+- Violation flow: introduced vs resolved per applicable opportunity (01), against the reviewer-variance noise floor — implemented 2026-09-05: an introduction at or below the reviewer's measured per-axiom flag-count variance (from `calibrate run --repeat`) renders "below reviewer noise floor", never as a finding
 - Residual rate (04) and calibration status (06)
 - Cost: tokens/dollars per run, per diff, trend
 - The human/agent contrast, only where attribution conventions are configured (02), unknown-rate first

@@ -1,10 +1,10 @@
 import type { AssistFileRecord, AssistFile, ChecklistAxiom } from "@/types.js";
 
 import fg from "fast-glob";
-import { createHash } from "node:crypto";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { readText } from "@/helpers/files-helper.js";
+import { hash8 } from "@/helpers/hash-helper.js";
 import { relativePath } from "@/helpers/paths-helper.js";
 import { SpecFile } from "@/models/spec-file.js";
 
@@ -214,9 +214,4 @@ function records(files: AssistFile[]): AssistFileRecord[] {
     path: file.path,
     hash: hash8(file.content),
   }));
-}
-
-/** The codebase's standard 8-char sha256 prefix. */
-function hash8(text: string): string {
-  return createHash("sha256").update(text).digest("hex").slice(0, 8);
 }

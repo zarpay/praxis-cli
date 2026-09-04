@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -6,9 +7,16 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import deriveFlowMetricsService from "@/services/derive-flow-metrics-service.js";
 import resolveReportScopeService from "@/services/resolve-report-scope-service.js";
+import { CalibrationStore } from "@/stores/calibration-store.js";
 import { seedAxiom } from "@tests/helpers/axiom-fixtures.js";
+import { calibrationRecord } from "@tests/helpers/calibration-cases.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
 import { testConfig } from "@tests/helpers/test-config.js";
+
+/** Runs git quietly in the test repo. */
+function git(root: string, ...args: string[]): string {
+  return execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
+}
 
 describe("deriveFlowMetricsService", () => {
   let root: string;
@@ -29,6 +37,7 @@ describe("deriveFlowMetricsService", () => {
     branch: string;
     timestamp: string;
     hash?: string;
+    headSha?: string;
     specUnits?: Record<string, number>;
     lines?: string[];
   }): void {
@@ -40,7 +49,7 @@ describe("deriveFlowMetricsService", () => {
       scope: "diff",
       timestamp: fields.timestamp,
       specUnits: fields.specUnits ?? { "docs/README.md": 6 },
-      diff: { head_sha: "0000000000000000000000000000000000000000" },
+      diff: { head_sha: fields.headSha ?? "0000000000000000000000000000000000000000" },
       extraLines: fields.lines ?? [],
     });
   }
@@ -102,6 +111,43 @@ describe("deriveFlowMetricsService", () => {
       unknown: 1,
     });
     expect(flow?.rows[0].introductionRate.display).toContain("0/6");
+  });
+
+  it("suppresses an introduction at or below the reviewer's measured noise floor (01, 06-s)", () => {
+    git(root, "init", "-q", "-b", "main");
+    git(root, "config", "user.email", "t@example.com");
+    git(root, "config", "user.name", "T");
+    git(root, "commit", "-qm", "base", "--allow-empty");
+    const headSha = git(root, "rev-parse", "HEAD");
+
+    seedDiffRun({
+      runId: "d1",
+      branch: "feature",
+      timestamp: "2026-09-05T10:00:00.000Z",
+      headSha,
+      lines: [flowLine("d1", 1, "introduced")],
+    });
+
+    const record = calibrationRecord({
+      reviewer_name: "flash",
+      axiom_scores: [
+        {
+          axiom_id: "AX-aaaa11",
+          cases: 6,
+          true_positives: 5,
+          false_positives: 1,
+          false_negatives: 1,
+          variance: 2,
+        },
+      ],
+    });
+    new CalibrationStore(testConfig(root)).writeRecord(record);
+
+    const flow = report();
+
+    expect(flow?.rows[0].introducedByPopulation.post_spec).toBe(1);
+    expect(flow?.rows[0].introductionRate.display).toContain("below reviewer noise floor");
+    expect(flow?.rows[0].introductionRate.rate).toBeNull();
   });
 
   it("reruns replace the picture: only the newest diff run per branch counts (12)", () => {

@@ -1,9 +1,8 @@
 import type { CacheReviewerIdentity } from "@/types.js";
 import type { ReviewerConfig } from "@/types.js";
 
-import { createHash } from "node:crypto";
-
 import { errors } from "@/helpers/errors-helper.js";
+import { hash8 } from "@/helpers/hash-helper.js";
 import {
   DEFAULT_REVIEWER_BASE_URL,
   DEFAULT_REVIEWER_PROVIDER,
@@ -138,7 +137,7 @@ function behavioralHash(reviewer: ReviewerConfig): string {
   behavioral["provider"] ??= DEFAULT_REVIEWER_PROVIDER;
   behavioral["temperature"] ??= DEFAULT_REVIEWER_TEMPERATURE;
 
-  return createHash("sha256").update(canonicalize(behavioral)).digest("hex").slice(0, 8);
+  return hash8(canonicalize(behavioral));
 }
 
 /**

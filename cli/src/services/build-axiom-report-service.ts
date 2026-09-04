@@ -1,9 +1,11 @@
 import type { AxiomReport, AxiomReportRow, ScopedLedger, Service } from "@/types.js";
+import type { LedgerCritiqueRecord } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { rateCell } from "@/helpers/metrics-helper.js";
 import buildEvalReportService from "@/services/build-eval-report-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
+import { CalibrationStore } from "@/stores/calibration-store.js";
 
 /** The single-axiom drill-down's inputs. */
 interface BuildAxiomReportInput {
@@ -60,6 +62,13 @@ const buildAxiomReportService: Service<BuildAxiomReportInput, AxiomReport> = (
 
   return {
     axiomId: axiom.id,
+    calibration: report.calibration,
+    driftNote: driftNoteOf(
+      new CalibrationStore(cfg),
+      cfg.reviewers.map((r) => r.name),
+      axiomId,
+    ),
+    agreement: agreementOf(scoped.critiques, axiomId, cfg.reviewers.length),
     statement: axiom.statement(),
     status: axiom.status,
     severity: axiom.severity,
@@ -72,3 +81,60 @@ const buildAxiomReportService: Service<BuildAxiomReportInput, AxiomReport> = (
 };
 
 export default buildAxiomReportService;
+
+/**
+ * A drift annotation when any reviewer's latest calibration flagged
+ * this axiom (06): the trend line has a discontinuity to name.
+ */
+function driftNoteOf(
+  store: CalibrationStore,
+  reviewerNames: string[],
+  axiomId: string,
+): string | null {
+  const flaggedBy: string[] = [];
+
+  for (const name of reviewerNames) {
+    const latest = store.latestByName(name);
+
+    if (latest?.drift_flagged.includes(axiomId)) {
+      flaggedBy.push(`${name} at ${latest.timestamp.slice(0, 10)}`);
+    }
+  }
+
+  if (flaggedBy.length === 0) return null;
+
+  return `calibration drift flagged by ${flaggedBy.join(", ")} — rates across this boundary are not comparable (06)`;
+}
+
+/**
+ * Corroboration and disagreement over the scoped evidence (06-p): per
+ * flagged file, how many distinct reviewers stand behind the finding.
+ * Meaningless with one reviewer, so null then.
+ */
+function agreementOf(
+  critiques: LedgerCritiqueRecord[],
+  axiomId: string,
+  reviewerCount: number,
+): { corroborated: number; disagreed: number } | null {
+  if (reviewerCount < 2) return null;
+
+  const witnesses = new Map<string, Set<string>>();
+
+  for (const critique of critiques) {
+    if (critique.axiom_id !== axiomId || critique.flow === "resolved") continue;
+
+    const held = witnesses.get(critique.file_path) ?? new Set<string>();
+    held.add(critique.reviewer_name);
+    witnesses.set(critique.file_path, held);
+  }
+
+  let corroborated = 0;
+  let disagreed = 0;
+
+  for (const reviewers of witnesses.values()) {
+    if (reviewers.size >= 2) corroborated++;
+    else disagreed++;
+  }
+
+  return { corroborated, disagreed };
+}

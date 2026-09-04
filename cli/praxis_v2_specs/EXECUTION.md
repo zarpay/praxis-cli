@@ -99,11 +99,11 @@ the gap named, `deferred` schema-only by design. The completion audit ran
 
 | Req                                                                                                          | Sources          | Status |
 | ------------------------------------------------------------------------------------------------------------ | ---------------- | ------ |
-| Calibration store `.praxis/calibration/cases/<id>/` + `expected.json` schema                                 | 06-a, 06-b, 10-e | —      |
-| `calibrate run` (agreement, per-axiom precision/recall, FP rate → ledger) and `calibrate status` (staleness) | 06-f, 06-g, 09-d | —      |
-| Interpretability gating on every report; per reviewer                                                        | 06-h, 06-q, 07-d | —      |
-| Drift protocol; variance as the noise floor; inter-reviewer agreement two faces                              | 06-r, 06-s, 06-p | —      |
-| True negatives required in case sets                                                                         | 06-c             | —      |
+| Calibration store `.praxis/calibration/cases/<id>/` + `expected.json` schema                                 | 06-a, 06-b, 10-e | ✅ (2026-09-05): CalibrationCase model + CalibrationCaseStore (found/read, never written); spec frozen as spec.md; `spec_path` flagged addition |
+| `calibrate run` (agreement, per-axiom precision/recall, FP rate → ledger) and `calibrate status` (staleness) | 06-f, 06-g, 09-d | ✅ (2026-09-05): run-calibration-service (cache bypassed, --repeat, counts stored, drift vs previous by name); records in `.praxis/ledger/calibration/`; status derives calibrated/stale/absent from identity + case-set + live-spec hashes |
+| Interpretability gating on every report; per reviewer                                                        | 06-h, 06-q, 07-d | ✅ (2026-09-05): per-reviewer banner from derive-calibration-status on eval/debt/axiom/orientation payloads; stale/absent marked "uninterpretable — recalibrate"; run records stamp real status; status --json calibration_stale derived |
+| Drift protocol; variance as the noise floor; inter-reviewer agreement two faces                              | 06-r, 06-s, 06-p | ✅ (2026-09-05): drift flagged on the record (0.1 accuracy default) + axiom drill-down boundary note; flow suppresses introductions ≤ measured variance; corroborated/single-witness files in the drill-down |
+| True negatives required in case sets                                                                         | 06-c             | ✅ composition expressible (forbidden_violations, expected pass verdicts) and exercised in tests; authoring stays manual per 06 |
 
 ## M7 — Feedback surfaces
 
