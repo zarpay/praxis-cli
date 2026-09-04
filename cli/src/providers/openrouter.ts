@@ -160,12 +160,13 @@ export class OpenRouterProvider implements ReviewProvider {
     } catch {
       const finishReason =
         (data.choices[0] as { finish_reason?: string }).finish_reason ?? "unknown";
-      const tail = raw.length > 80 ? `…${raw.slice(-80)}` : raw;
+      const head = raw.length > 80 ? `${raw.slice(0, 80)}…` : raw;
+      const tail = raw.length > 80 ? `…${raw.slice(-80)}` : "";
 
       throw errors.reviewerApiError(
         this.name,
         200,
-        `tool call arguments are not valid JSON (finish_reason: ${finishReason}, ${raw.length} chars, tail: "${tail}") — if truncated, raise max_tokens in the model's options`,
+        `tool call arguments are not valid JSON (finish_reason: ${finishReason}, ${raw.length} chars, head: "${head}", tail: "${tail}") — if truncated, raise max_tokens in the model's options`,
       );
     }
   }

@@ -109,6 +109,10 @@ const reviewDiffService: Service<ReviewDiffInput, Promise<ReviewDiffResult>> = a
       perTarget.push(outcome.result);
       tally(summary, outcome.result);
 
+      if (outcome.result.unverifiedReason !== null) {
+        onProgress?.({ kind: "unit-error", message: outcome.result.unverifiedReason });
+      }
+
       if (outcome.afterEntry) {
         entries.push(outcome.afterEntry);
       }
@@ -244,12 +248,13 @@ async function reviewBothSides(
         findings,
         resolved: flow.resolved,
         unverified: false,
+        unverifiedReason: null,
       },
       afterEntry,
       afterVerdict: after?.verdict ?? null,
       resolved,
     };
-  } catch {
+  } catch (err) {
     return {
       result: {
         relPath: target.relPath,
@@ -258,6 +263,7 @@ async function reviewBothSides(
         findings: [],
         resolved: [],
         unverified: true,
+        unverifiedReason: err instanceof Error ? err.message : String(err),
       },
       afterEntry: null,
       afterVerdict: null,
