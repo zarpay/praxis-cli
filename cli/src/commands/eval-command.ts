@@ -24,12 +24,17 @@ const evalCommand: CommandRegistrar = (program) => {
     .option("--verbose", "show full AI reasoning", false)
     .option("--fail-fast", "stop on first error (full run only)", false)
     .option("--no-cache", "disable the verdict cache")
+    .option(
+      "--diff [base]",
+      "review the branch against its merge-base (default base: the default branch)",
+    )
     .action(runEvalOrchestrator);
 
   evalCmd
     .command("ci")
-    .description("Run a full review in CI mode")
+    .description("Run a full review in CI mode (verifies without writing)")
     .option("--strict", "fail on warnings too", false)
+    .option("--diff [base]", "verify the merge-base diff instead of the corpus (PR gate)")
     .action(ciRunOrchestrator);
 
   evalCmd

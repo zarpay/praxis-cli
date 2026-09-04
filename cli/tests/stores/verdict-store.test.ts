@@ -486,4 +486,41 @@ describe("VerdictStore", () => {
       expect(existsSync(outdated)).toBe(false);
     });
   });
+
+  describe("readOnly", () => {
+    const RESULT = { compliant: true, issues: [], reason: "ok" };
+
+    it("answers reads but swallows writes — CI leaves no trace", () => {
+      const targetPath = join(projectRoot, "docs", "guide.md");
+      const writable = new VerdictStore(testConfig(projectRoot));
+      writable.writeVerdict({ targetPath, contentHash: "aaaa1111", result: RESULT, specPath: "s" });
+
+      const readOnly = new VerdictStore(testConfig(projectRoot), { readOnly: true });
+
+      expect(readOnly.readVerdict({ targetPath, contentHash: "aaaa1111", specPath: "s" })).toEqual(
+        RESULT,
+      );
+
+      readOnly.writeVerdict({ targetPath, contentHash: "bbbb2222", result: RESULT, specPath: "s" });
+
+      expect(writable.readVerdict({ targetPath, contentHash: "aaaa1111", specPath: "s" })).toEqual(
+        RESULT,
+      );
+    });
+
+    it("never discards a corrupt file on the reviewing read", () => {
+      const corrupt = join(cacheRoot, "docs", "corrupt.json");
+      mkdirSync(join(cacheRoot, "docs"), { recursive: true });
+      writeFileSync(corrupt, "not json{{{");
+
+      const readOnly = new VerdictStore(testConfig(projectRoot), { readOnly: true });
+      readOnly.readVerdict({
+        targetPath: join(projectRoot, "docs", "corrupt.md"),
+        contentHash: "aaaa1111",
+        specPath: "s",
+      });
+
+      expect(existsSync(corrupt)).toBe(true);
+    });
+  });
 });

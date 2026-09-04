@@ -78,4 +78,15 @@ describe("runEvalOrchestrator", () => {
 
     expect(outcome).toBe("failed");
   });
+
+  it("refuses --diff combined with named targets — two different units", async () => {
+    const root = project();
+
+    const run = runEvalOrchestrator(testContext(root), {
+      targets: ["docs/guide.md"],
+      diff: true,
+    });
+
+    await expect(run).rejects.toThrow(/--diff reviews what the branch changed/);
+  });
 });

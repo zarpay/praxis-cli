@@ -168,6 +168,38 @@ export const errors = {
     );
   },
 
+  /** `--diff` with no base argument, and no default branch to detect. */
+  diffBaseUnresolvable(): PraxisError {
+    return new PraxisError(
+      "DIFF_BASE_UNRESOLVABLE",
+      "No default branch detected (no origin/HEAD, main, or master) — name the base explicitly: praxis eval run --diff <base>",
+    );
+  },
+
+  /** The named base ref has no merge-base with HEAD. */
+  diffBaseInvalid(baseRef: string): PraxisError {
+    return new PraxisError(
+      "DIFF_BASE_INVALID",
+      `No merge-base between "${baseRef}" and HEAD — check the ref exists and shares history (a shallow clone may need \`git fetch --unshallow\`)`,
+    );
+  },
+
+  /** `--diff` invoked outside a git repository. */
+  diffOutsideGit(): PraxisError {
+    return new PraxisError(
+      "DIFF_OUTSIDE_GIT",
+      "praxis eval run --diff measures a branch against its merge-base, which needs a git repository — run it inside one, or review targets directly: praxis eval run <targets...>",
+    );
+  },
+
+  /** `--diff` combined with named targets — two different units. */
+  diffWithTargets(): PraxisError {
+    return new PraxisError(
+      "DIFF_WITH_TARGETS",
+      "--diff reviews what the branch changed; named targets review files. Pick one: praxis eval run --diff [base], or praxis eval run <targets...>",
+    );
+  },
+
   /** The configured editor could not be started. */
   editorFailed(editor: string, cause: string): PraxisError {
     return new PraxisError(

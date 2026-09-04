@@ -86,6 +86,110 @@ export function commitDateOf(root: string, ref: string): string | null {
   return git(root, "log", "-1", "--format=%cI", ref);
 }
 
+/**
+ * The merge-base ref a diff run defaults to (12): the remote's HEAD
+ * branch when the clone knows it, else a local `main`, else `master`.
+ * Null when none resolves — the caller asks for an explicit base.
+ */
+export function defaultBranchRef(root: string): string | null {
+  const remoteHead = git(root, "symbolic-ref", "refs/remotes/origin/HEAD");
+
+  if (remoteHead !== null) {
+    return remoteHead.replace("refs/remotes/", "");
+  }
+
+  for (const branch of ["main", "master"]) {
+    if (git(root, "rev-parse", "--verify", "--quiet", `refs/heads/${branch}`) !== null) {
+      return branch;
+    }
+  }
+
+  return null;
+}
+
+/** The merge-base sha of a ref and HEAD; null when git cannot answer. */
+export function mergeBase(root: string, baseRef: string): string | null {
+  return git(root, "merge-base", baseRef, "HEAD");
+}
+
+/** A ref resolved to its commit sha; null when it names no commit. */
+export function resolveSha(root: string, ref: string): string | null {
+  return git(root, "rev-parse", "--verify", `${ref}^{commit}`);
+}
+
+/**
+ * The files a range changed, project-relative, with what happened to
+ * each. Renames arrive as a deleted plus an added entry — the same
+ * accepted coarseness as (axiom, file) finding identity (12).
+ */
+export function changedFilesOfRange(
+  root: string,
+  baseSha: string,
+): { path: string; status: "added" | "deleted" | "modified" }[] {
+  // --relative: paths come back relative to the praxis root even when
+  // it is a subdirectory of the repo, and changes outside it drop out.
+  const output = git(root, "diff", "--name-status", "--relative", baseSha, "HEAD");
+
+  if (output === null || output === "") return [];
+
+  return output.split("\n").flatMap(changedFileEntries);
+}
+
+/**
+ * The file content at a ref, exactly as committed — never trimmed,
+ * because the trailing newline joins the content hash and a trimmed
+ * before side would miss every cache hit. Null when the file does not
+ * exist at that ref.
+ */
+export function showFileAt(root: string, ref: string, relPath: string): string | null {
+  // `./` scopes the path to the working directory, so a praxis root
+  // nested inside the repo addresses its own files.
+  const result = spawnSync("git", ["show", `${ref}:./${relPath}`], {
+    cwd: root,
+    encoding: "utf8",
+  });
+
+  if (result.status !== 0 || result.error) return null;
+
+  return result.stdout;
+}
+
+/**
+ * The author of the most recent commit touching a file within a range —
+ * who `resolved_by` credits (02: cleanup is deliberate, directed work).
+ * Null when git cannot answer or nothing touched the file.
+ */
+export function lastAuthorOfRange(
+  root: string,
+  fromSha: string,
+  toSha: string,
+  path: string,
+): string | null {
+  const author = git(root, "log", "-1", "--format=%an", `${fromSha}..${toSha}`, "--", path);
+
+  return author === "" ? null : author;
+}
+
+/** One `--name-status` line as changed-file entries; renames become two. */
+function changedFileEntries(
+  line: string,
+): { path: string; status: "added" | "deleted" | "modified" }[] {
+  const [code, ...paths] = line.split("\t");
+
+  if (code.startsWith("R")) {
+    return [
+      { path: paths[0], status: "deleted" },
+      { path: paths[1], status: "added" },
+    ];
+  }
+
+  if (code === "A") return [{ path: paths[0], status: "added" }];
+
+  if (code === "D") return [{ path: paths[0], status: "deleted" }];
+
+  return [{ path: paths[0], status: "modified" }];
+}
+
 /** One git query, or null when git itself cannot answer. */
 function git(root: string, ...args: string[]): string | null {
   const result = spawnSync("git", args, { cwd: root, encoding: "utf8" });

@@ -13,6 +13,19 @@
 
 Exit 0: no errors. Exit 1: at least one error verdict — or any target that could not be reviewed at all (**UNVERIFIED**): a gate that could not look is not a gate, so an unreadable file or an oversized cohort fails CI rather than passing unseen.
 
+## The PR gate: `--diff`
+
+```yaml
+      - name: Review what the PR changed
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: praxis eval ci --diff
+```
+
+`eval ci --diff` verifies the merge-base diff — the same evaluation `praxis eval run --diff` measures locally — and judges the branch on its own contribution: introduced error-severity findings fail; inherited debt never does. Fetch enough history for the merge-base (`fetch-depth: 0`, or a deepened fetch) and the default branch ref.
+
+CI writes nothing either way: no ledger records, and the cache runs read-only so a miss never writes back. The branch's own `eval run --diff`, run locally, is what produces the durable flow evidence — CI warns when that's missing, and gates regardless.
+
 ## Strict mode
 
 ```bash

@@ -13,7 +13,7 @@ export interface RankParlorsInput {
  */
 export function run(store: Store, input: RankParlorsInput): Result<RankedParlor[]> {
   if (!Number.isInteger(input.minReviews) || input.minReviews < 0) {
-    return { ok: false, error: "minReviews must be a whole number of 0 or more" };
+    return { ok: false, error: "invalid input" };
   }
 
   const ranked = store

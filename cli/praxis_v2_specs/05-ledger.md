@@ -36,7 +36,7 @@ calibration_status_at_run                    # 06 — stamps interpretability
 baseline: boolean                            # epoch-opening validate all (02)
 ```
 
-`spec_units` (added 2026-09-03, optional): evaluated units per governing spec, stamped at write time — the applicable-opportunity denominator 07's rates divide by. Absent on older records, whose per-run rates suppress honestly. `reviewer_hash` (added at implementation, 2026-09-02) is what makes the derived-epoch promise true: `reviewer_model` alone cannot see a temperature, prompt-surface, or options change. `unverified` counts units that could not be reviewed at all (03) — never violations.
+`diff` (added 2026-09-04, optional, scope `"diff"` runs only): the measured range and its coverage — `base_ref`, `base_sha`, `head_sha`, `changed_files`, `covered`, `uncovered_count`, `uncovered_paths`, `resolved_count`. The head sha is the run's anchor even on a dirty tree, because both sides are read via `git show`, never disk (12). `spec_units` (added 2026-09-03, optional): evaluated units per governing spec, stamped at write time — the applicable-opportunity denominator 07's rates divide by. Absent on older records, whose per-run rates suppress honestly. `reviewer_hash` (added at implementation, 2026-09-02) is what makes the derived-epoch promise true: `reviewer_model` alone cannot see a temperature, prompt-surface, or options change. `unverified` counts units that could not be reviewed at all (03) — never violations.
 
 Epochs (02) are **derived, not stored**: an epoch is a maximal run-sequence with stable (spec content hashes, reviewer config), computable from the provenance fields above. Reports segment by epoch; the ledger just records facts.
 
@@ -60,6 +60,8 @@ resolved_by?                                 # resolved events only: git author 
                                              #   commit — paydown credit is attributable (02)
 ```
 
+**Flow fields, as written since M5 (2026-09-04):** `flow` is set on diff-run critiques only (working-tree and corpus runs keep null — feedback and stock, never flow). `before_run_id` is the writing run's own id when the before side was freshly reviewed and null on a cache hit — a cache entry carries no run identity; extending the cache format with a `run_id` per entry is flagged as a possible future addition. Resolved events land as critique-shaped records with `flow: "resolved"`, hashed over the before-side content, excluded from `critique_count` and every stock surface, counted by the run's `diff.resolved_count`.
+
 Provenance fields are mandatory. Derived fields (population, authorship) record their evidence so they can be _recomputed_ when conventions or spec birthdates are revised — stored classifications are conveniences, not truth.
 
 ## Write paths
@@ -67,7 +69,7 @@ Provenance fields are mandatory. Derived fields (population, authorship) record 
 - `BatchValidator.validateDocument` emits critique records alongside its existing cache write; run record on completion. Existing `cacheStats` feeds hits/misses directly.
 - `DocumentValidator.callOpenRouter` captures `data.usage` (currently discarded where `choices[0]` is destructured) and returns it upward.
 - The ledger is judgment-only (03): static tooling's findings never enter it.
-- Cache hits write **no** critique records (nothing new was reviewed) but are counted on the run record. (An earlier open question — backfilling the first ledger-enabled run from cache hits — was dropped 2026-09-02: no install has pre-ledger history worth reconstructing, and the first real run populates the ledger anyway.)
+- Cache hits write **no** critique records (nothing new was reviewed) but are counted on the run record. **Exception (2026-09-04, M5): diff runs record critiques for hit-served sides too** — the before/after comparison is new evidence even when both verdicts came from cache, and the flow labels are what the run exists to record; without them a replay would erase the flow that latest-per-branch reporting reads (12). (An earlier open question — backfilling the first ledger-enabled run from cache hits — was dropped 2026-09-02: no install has pre-ledger history worth reconstructing, and the first real run populates the ledger anyway.)
 
 **Triage partition (added at implementation, 2026-09-03):** the ledger gains a second partition, `.praxis/ledger/triage/<session_id>.jsonl` — append-only records of triage decisions (`assignment`, `dismissal`, `rejection`), one file per session, same merge-safety as runs. Assignments are the superseding-record mechanism this document's integrity rule promises: a critique record's null `axiom_id` is never mutated; the assignment that resolves it is a new record referencing it. Checklist-born critiques (04's matched channel) carry `axiom_id`/`axiom_version`/`assigned_by: "checklist"` inline at write time.
 

@@ -60,7 +60,17 @@ Ledger records ride the branch they describe (they are files; a squash-merge car
 
 The operational guidance that follows: in squash/rebase workflows, branch-run anchors are **branch-lived** — durable exactly as long as the branch. The permanent anchor is the post-merge run on the target branch (a hook or scheduled `eval run` after merge; `eval ci` verifies but writes nothing), whose sha is the one history keeps. Reports may annotate a run whose sha went unreachable as _anchor expired_ — distinct from _never anchored_ (`commit_sha: null`), because the attestation and the branch/date facts remain fully usable for time-series and per-axiom rates; only byte reconstruction is lost.
 
+## Implementation decisions (2026-09-04, M5)
+
+- **Both sides come from `git show`, never disk.** The after side is read at the head sha, so a dirty tree cannot leak into a measured run and reruns are idempotent snapshots by construction. `commit_sha` keeps its clean-tree anchoring semantics; the run's own anchor is the recorded `diff.head_sha`, honest even on a dirty tree.
+- **The before side reads the cache but never writes it.** The persistent cache holds one entry per (target, spec, reviewer) — the *current* state — so the two sides of a diff would thrash it. The before side runs against a read-only handle and the after side writes last, leaving the cache exactly where the next corpus run on this tree expects it. Cost structure: the first diff run after a base-branch review pays ~one call per changed file (the before side hits); a replay re-pays at most the before side.
+- **`before_run_id`** is this run's id when the before side was freshly reviewed, null on a cache hit — a cache entry carries no run identity, and unknown is never guessed. (Flagged in 05: adding `run_id` to cache entries would make the cached case attributable later.)
+- **Open-channel critiques get no flow.** `(axiom_id, file)` identity does not exist for a null axiom id, and set-differencing prose would label rephrasings as churn. After-side open critiques keep `flow: null` and go to triage; vanished open before-critiques emit nothing.
+- **The gate is the diff's own contribution**: `eval run --diff` fails on introduced error-severity findings or any unverified target (a one-sided comparison is not a comparison); inherited debt and resolutions never fail a PR.
+- **Coverage means "would a corpus run review it"** — by-file unit membership, honoring `paths:`, `excludes:`, and `ignore`. A deleted file falls back to its sibling spec (a `paths:`-targeted deletion stays invisible — accepted coarseness); files governed only by a `by_directory` cohort spec count as uncovered until cohort diff units land with the scope itself.
+- **Resolved events are critique-shaped records** (`flow: "resolved"`) hashed over the *before* content — that is what the critique described — with `resolved_by` = the most recent git author touching the file in base..head. They are paydown facts: `critique_count` and every stock surface exclude them; `diff.resolved_count` counts them.
+
 ## Open questions
 
-1. Should `eval ci` _warn_ when a PR has no local diff-run in its ledger (evidence gap), or is cache-verified enforcement enough?
+1. ~~Should `eval ci` _warn_ when a PR has no local diff-run in its ledger (evidence gap), or is cache-verified enforcement enough?~~ **Resolved 2026-09-04:** `eval ci --diff` warns — the gap is named, never failed on.
 2. Merge queues / stacked branches: merge-base against what? Probably "the configured default branch" stays the answer; revisit when someone actually hits it.
