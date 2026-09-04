@@ -17,7 +17,7 @@ export function seedLedgerRun(
     hash: string;
     model?: string;
     timestamp?: string;
-    scope?: "corpus" | "files";
+    scope?: "corpus" | "diff" | "files";
     runId?: string;
     branch?: string | null;
     commitSha?: string | null;
@@ -28,6 +28,8 @@ export function seedLedgerRun(
     /** Fresh reviews this run made; 0 marks an all-hit run. Default 1. */
     cacheMisses?: number;
     cacheHits?: number;
+    /** Diff facts, marking the run scope "diff" territory (12). */
+    diff?: Record<string, unknown>;
     extraLines?: string[];
   },
 ): void {
@@ -49,6 +51,7 @@ export function seedLedgerRun(
     fail_count: fields.failCount ?? 0,
     cache_misses: fields.cacheMisses ?? 1,
     cache_hits: fields.cacheHits ?? 0,
+    ...(fields.diff && { diff: fields.diff }),
     ...(fields.specUnits && { spec_units: fields.specUnits }),
   };
 
@@ -73,6 +76,8 @@ export function critiqueLine(fields: {
   axiomId?: string | null;
   axiomVersion?: number | null;
   timestamp?: string;
+  /** Set-difference label on diff-run critiques (12). */
+  flow?: "introduced" | "inherited" | "resolved" | null;
 }): string {
   const id = `${fields.runId}:${fields.seq ?? 1}`;
 
@@ -88,5 +93,6 @@ export function critiqueLine(fields: {
     reviewer_name: fields.reviewer ?? "flash",
     axiom_id: fields.axiomId ?? null,
     axiom_version: fields.axiomVersion ?? null,
+    flow: fields.flow ?? null,
   });
 }

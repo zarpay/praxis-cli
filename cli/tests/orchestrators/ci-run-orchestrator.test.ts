@@ -90,4 +90,13 @@ describe("ciRunOrchestrator", () => {
     expect(await ciRunOrchestrator(testContext(project()), {})).toBe("ok");
     expect(await ciRunOrchestrator(testContext(project()), { strict: true })).toBe("failed");
   });
+
+  it("leaves the cache untouched — a miss verifies but never writes back (12)", async () => {
+    useOpenRouterResponse(server, validationToolCallResponse("validation_pass", { reason: "ok" }));
+    const root = project();
+
+    await ciRunOrchestrator(testContext(root), {});
+
+    expect(existsSync(join(root, ".praxis", "cache"))).toBe(false);
+  });
 });

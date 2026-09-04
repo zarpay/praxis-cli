@@ -90,6 +90,31 @@ A `[AX-…]` citation marks a **matched** finding — a ratified axiom, drill-do
 
 ---
 
+### `praxis eval run --diff [base]`
+
+Reviews the branch against its merge-base (12) — the PR-shaped unit the eval measures. The base defaults to the detected default branch; name one explicitly when the detection can't (`--diff develop`).
+
+```bash
+praxis eval run --diff
+praxis eval run --diff origin/main
+```
+
+Mechanics: changed files are filtered to spec-covered targets (the uncovered remainder is named — work the specs can't see is never invisibly invisible); both sides of each covered file are reviewed as ordinary targets — the **after** side at HEAD, the **before** side at the merge-base, both read from git so a dirty tree can't leak into a measured run. The before side is usually a cache hit from the base branch's own runs, so a diff costs about **one reviewer call per changed file**.
+
+Flow is then computed, never reviewed: set-difference on axiom identity labels each matched finding **introduced** (after-only), **resolved** (before-only, credited to the git author who touched the file), or **inherited** (both sides — pre-existing debt, not this PR's doing). Open-channel critiques carry no label and go to triage as ever.
+
+```
+[FAIL] src/services/redeem-coupon.ts
+  - [introduced] [AX-b951db] Error messages name what was wrong and what
+    would be accepted instead.
+  - [inherited] [AX-6e307b] Services must perform all I/O through their
+    injected Store dependency.
+```
+
+**Exit code:** the diff is judged on its own contribution — introduced error-severity findings or any unverified target fail; inherited debt and resolutions never do. Re-running is idempotent: each run is a fresh snapshot against the same base, and reports read the latest diff run per branch.
+
+---
+
 ### `praxis eval ci`
 
 A full run with a structured summary, for pull request pipelines.
@@ -97,13 +122,17 @@ A full run with a structured summary, for pull request pipelines.
 ```bash
 praxis eval ci
 praxis eval ci --strict
+praxis eval ci --diff          # the PR gate: verify the merge-base diff
 ```
 
 **Options:**
 
-| Flag       | Description                        |
-| ---------- | ---------------------------------- |
-| `--strict` | Fail on warnings as well as errors |
+| Flag            | Description                                                        |
+| --------------- | ------------------------------------------------------------------ |
+| `--strict`      | Fail on warnings as well as errors (with `--diff`: on any introduced finding) |
+| `--diff [base]` | Verify the merge-base diff instead of the corpus                   |
+
+CI verifies and leaves no trace: no ledger records, and the cache runs read-only so a miss never writes back. With `--diff`, CI also warns (never fails) when the branch's ledger carries no local diff-run — the durable flow evidence comes from `eval run --diff` on the branch.
 
 **Exit code:** 0 if all pass (or no errors with `--strict` off), 1 otherwise.
 
@@ -169,6 +198,7 @@ The read side of the ledger — never a reviewer call. Scopes compose: `eval rep
 - epoch boundaries as named furniture; nothing trends across one
 - the calibration banner on every report (uncalibrated until calibration lands)
 - costs, residual rate, and the pending-triage queue
+- **violation flow** (once diff runs exist): introduced / resolved / inherited per axiom per reviewer over each branch's latest diff run, and the **post-spec introduction rate** — the eval's number — as violations per applicable opportunity
 - a requested sha that no longer resolves renders the missing-commit note (squash workflows orphan branch shas by policy) — the run's attestation stays usable
 
 `--json` emits the built payload verbatim — the stable machine contract.

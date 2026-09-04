@@ -45,7 +45,15 @@ import { VerdictStore } from "@/stores/verdict-store.js";
  */
 const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = async (
   cfg,
-  { reviewers, useCache = true, failFast = false, ledger = true, type, onProgress },
+  {
+    reviewers,
+    useCache = true,
+    readOnlyCache = false,
+    failFast = false,
+    ledger = true,
+    type,
+    onProgress,
+  },
 ) => {
   const root = cfg.root;
   const domains = selectDomains(discoverDomainsService(cfg, {}), type);
@@ -54,7 +62,10 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
   // one file per target, keyed by (spec, reviewer) so they never collide.
   const caches = reviewers.map((reviewer) =>
     useCache
-      ? new VerdictStore(cfg, { reviewer: Reviewer.fromConfig(reviewer).cacheIdentity() })
+      ? new VerdictStore(cfg, {
+          reviewer: Reviewer.fromConfig(reviewer).cacheIdentity(),
+          readOnly: readOnlyCache,
+        })
       : null,
   );
 

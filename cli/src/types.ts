@@ -137,7 +137,6 @@ export type PraxisErrorCode =
   | "INVALID_CONFIG_JSON"
   | "UNKNOWN_PLUGIN"
   | "UNKNOWN_DOCUMENT_TYPE"
-  | "INVALID_DOCUMENT_TYPE"
   | "EDITOR_FAILED"
   | "FILE_ALREADY_EXISTS"
   | "SPEC_NOT_FOUND"
@@ -161,6 +160,10 @@ export type PraxisErrorCode =
   | "CURATOR_NOT_CONFIGURED"
   | "CURATOR_MISSING_FIELD"
   | "PROVIDER_CANNOT_COMPLETE"
+  | "DIFF_BASE_UNRESOLVABLE"
+  | "DIFF_BASE_INVALID"
+  | "DIFF_OUTSIDE_GIT"
+  | "DIFF_WITH_TARGETS"
   | "NOT_A_TTY";
 
 // ---------------------------------------------------------------------------
@@ -583,6 +586,107 @@ export interface ReviewTargetResult {
 // ---------------------------------------------------------------------------
 
 /** What a run needs to know to review a project. */
+/** What `eval run --diff` was asked to measure. */
+export interface ResolveDiffInput {
+  /** Base ref override; omitted detects the default branch. */
+  base?: string;
+}
+
+/** One changed, spec-covered file of a diff run. */
+export interface DiffTarget {
+  /** Absolute path in the working tree (the cache and spec key). */
+  path: string;
+  /** Project-relative, as git names it. */
+  relPath: string;
+  /** Absolute path of the governing spec. */
+  specPath: string;
+  status: "added" | "deleted" | "modified";
+}
+
+/** The resolved diff: what to review, and what the specs cannot see. */
+export interface ResolveDiffResult {
+  baseRef: string;
+  baseSha: string;
+  headSha: string;
+  targets: DiffTarget[];
+  /** Changed files no spec governs, project-relative — the invisible work (01). */
+  uncovered: string[];
+}
+
+/** One side of a verdict comparison, with the provenance that gates it. */
+export interface FlowSide {
+  issues: Critique[];
+  specContentHash: string;
+  reviewerHash: string;
+}
+
+/** A before/after verdict pair for one file, ready to set-difference. */
+export interface ComputeFlowInput {
+  /** Null when the file did not exist on that side (added / deleted). */
+  before: FlowSide | null;
+  after: FlowSide | null;
+}
+
+/** The flow labels a comparison produced — or its refusal. */
+export interface ComputeFlowResult {
+  /** Label per after-side issue, parallel to `after.issues`; null = open channel. */
+  afterFlow: (LedgerFlow | null)[];
+  /** Matched before-side critiques absent after — the resolved events. */
+  resolved: Critique[];
+  /** True when the sides' provenance differed and the comparison was refused (01). */
+  refused: boolean;
+}
+
+/** A merge-base diff review: every reviewer over every covered changed file. */
+export interface ReviewDiffInput {
+  /** Whether this run writes the ledger. Default true; CI passes false. */
+  ledger?: boolean;
+  /** The reviewers to run; every reviewer reviews both sides of every target. */
+  reviewers: ReviewerConfig[];
+  /** The resolved diff, from `resolve-diff-service`. */
+  diff: ResolveDiffResult;
+  /** Whether to consult the verdict cache. */
+  useCache?: boolean;
+  /** Whether cache misses may write back; CI passes true. */
+  readOnlyCache?: boolean;
+  /** Called as the review progresses, for streamed output. */
+  onProgress?: (event: EvalProgress) => void;
+}
+
+/** One covered file's outcome under one reviewer. */
+export interface DiffTargetOutcome {
+  relPath: string;
+  reviewerName: string;
+  status: DiffTarget["status"];
+  /** After-side critiques with their flow labels; empty for deleted files. */
+  findings: { critique: Critique; flow: LedgerFlow | null; severity: Severity }[];
+  resolved: Critique[];
+  /** Either side could not be reviewed — flow withheld for this target. */
+  unverified: boolean;
+}
+
+/** What reviewing one side of a diff yields. */
+export interface ReviewedSide {
+  subject: ReviewSubject;
+  verdict: Verdict;
+  cacheHit: boolean;
+  usage: ProviderUsage | null;
+}
+
+/** What a diff review produced across all reviewers. */
+export interface ReviewDiffResult {
+  perTarget: DiffTargetOutcome[];
+  summary: {
+    introduced: number;
+    resolved: number;
+    inherited: number;
+    /** Introduced findings of error severity — what fails the gate. */
+    errorsIntroduced: number;
+    unverified: number;
+  };
+  cacheStats: { hits: number; misses: number };
+}
+
 export interface ReviewAllInput {
   /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
   ledger?: boolean;
@@ -590,6 +694,8 @@ export interface ReviewAllInput {
   reviewers: ReviewerConfig[];
   /** Whether to consult the verdict cache. */
   useCache?: boolean;
+  /** Whether cache misses may write back; CI passes true. */
+  readOnlyCache?: boolean;
   /** Whether to stop at the first error verdict. */
   failFast?: boolean;
   /** Review only the domains of this type; omitted reviews everything. */
@@ -710,12 +816,16 @@ export interface RunEvalOptions {
   failFast?: boolean;
   /** Whether to consult the verdict cache. */
   cache?: boolean;
+  /** Review the branch against its merge-base; a string names the base ref. */
+  diff?: boolean | string;
 }
 
 /** How `praxis eval ci` was invoked. */
 export interface CiRunOptions {
   /** Count warnings as failures alongside errors. */
   strict?: boolean;
+  /** Verify the merge-base diff instead of the corpus; a string names the base. */
+  diff?: boolean | string;
 }
 
 /** What `praxis eval verdict` was asked for. */
@@ -1177,6 +1287,29 @@ export type CalibrationStatus = "uncalibrated";
 export type LedgerFlow = "introduced" | "inherited" | "resolved";
 
 /**
+ * A diff run's facts (12, flagged 05 addition, forward-only): what the
+ * branch was measured against, and how much changed work the specs
+ * could even see (01: the report must say how much work was invisible).
+ */
+export interface LedgerDiffFacts {
+  /** The ref the base was resolved from (e.g. "origin/main"). */
+  base_ref: string;
+  /** The merge-base sha the before side was read at. */
+  base_sha: string;
+  /** The sha whose tree the after side was read at (git show, not disk). */
+  head_sha: string;
+  /** Files the range changed, before coverage filtering. */
+  changed_files: number;
+  /** Changed files a spec governs — the reviewed subset. */
+  covered: number;
+  uncovered_count: number;
+  /** Project-relative paths no spec governs — the invisible work. */
+  uncovered_paths: string[];
+  /** Resolved events this run recorded (flow: "resolved" records). */
+  resolved_count: number;
+}
+
+/**
  * One run record — one per (invocation, reviewer) — as stored.
  *
  * `reviewer_hash` goes beyond 05's field list deliberately: epochs are
@@ -1213,6 +1346,8 @@ export interface LedgerRunRecord {
    * data rather than padding.
    */
   spec_units?: Record<string, number>;
+  /** Present on scope "diff" runs only (12, forward-only). */
+  diff?: LedgerDiffFacts;
   calibration_status_at_run: CalibrationStatus;
   baseline: boolean;
 }
@@ -1255,10 +1390,12 @@ export interface LedgerCritiqueRecord {
   authorship_evidence: null;
   agent_involved: null;
   pre_review: null;
-  /** Null in M2: working-tree runs are excluded from flow by rule (12). */
+  /** Set-difference label on diff runs (12); null elsewhere — working-tree runs are feedback, never measurement. */
   flow: LedgerFlow | null;
-  before_run_id: null;
-  resolved_by: null;
+  /** The run supplying the before-side verdict: this run's id when freshly reviewed, null on a cache hit (a cache entry carries no run identity — never guessed). */
+  before_run_id: string | null;
+  /** Resolved events only: the most recent git author touching the file in base..head. */
+  resolved_by: string | null;
 }
 
 /** Any line of a run file. */
@@ -1287,6 +1424,34 @@ export interface LedgerEntry {
   cacheHit: boolean;
   /** Null ⇒ the unit went unverified ⇒ it fans out no critiques. */
   evidence: LedgerEvidence | null;
+  /** Flow label per issue, parallel to `verdict.issues` (diff runs only). */
+  flow?: (LedgerFlow | null)[];
+  /**
+   * Who supplied the before-side verdict: "self" when this run freshly
+   * reviewed it (the write service substitutes the minted run id),
+   * null on a cache hit. Absent outside diff runs.
+   */
+  beforeRunId?: "self" | null;
+}
+
+/**
+ * One before-only violation a diff run erased (12): the evidence for a
+ * `flow: "resolved"` record, carried as plain data — the write service
+ * is the only assembler of ledger records.
+ */
+export interface ResolvedEvent {
+  /** Project-relative path of the file the violation lived in. */
+  filePath: string;
+  /** Absolute path of the governing spec. */
+  specPath: string;
+  /** Hash of the before-side content the critique described. */
+  targetContentHash: string;
+  specContentHash: string;
+  /** The vanished critique, axiom identity included. */
+  critique: Critique;
+  severity: Severity;
+  /** The most recent git author touching the file in base..head; null when unanswerable. */
+  resolvedBy: string | null;
 }
 
 /** One reviewer's completed run, ready to persist. */
@@ -1297,6 +1462,11 @@ export interface WriteLedgerRunInput {
   entries: LedgerEntry[];
   /** Evaluated units per governing spec, project-relative paths. */
   specUnits?: Record<string, number>;
+  /** Present on scope "diff" runs: the run facts and the resolved events. */
+  diff?: {
+    facts: Omit<LedgerDiffFacts, "resolved_count">;
+    resolved: ResolvedEvent[];
+  };
 }
 
 /** Where a run landed. */
@@ -1803,6 +1973,42 @@ export interface AxiomReportRow {
   segments: { epochLabel: string; violations: number; runs: number }[];
 }
 
+/** One axiom × reviewer row of the flow section (01, 12). */
+export interface FlowRow {
+  axiomId: string;
+  statement: string;
+  reviewerName: string;
+  introduced: number;
+  resolved: number;
+  inherited: number;
+  /**
+   * Introduced counts qualified by population — the head commit's date
+   * against the axiom's clock; unknown when the sha expired (12).
+   */
+  introducedByPopulation: Record<PopulationQualifier, number>;
+  /**
+   * The eval's number (01): post-spec introduced violations over the
+   * spec's applicable opportunities across the selected runs.
+   */
+  introductionRate: RateCell;
+}
+
+/**
+ * The flow section (01's violation flow): computed over each branch's
+ * latest diff run per reviewer, within each reviewer's current epoch,
+ * so reruns replace the picture and nothing sums across a boundary.
+ */
+export interface FlowReport {
+  /** Diff runs the section computed over, after latest-per-branch selection. */
+  runsConsidered: number;
+  rows: FlowRow[];
+}
+
+/** What the flow derivation computes over. */
+export interface DeriveFlowMetricsInput {
+  scoped: ScopedLedger;
+}
+
 /** The eval report payload — the stable `--json` contract (09). */
 export interface EvalReport {
   scope: ReportScope;
@@ -1825,6 +2031,8 @@ export interface EvalReport {
   /** Dismissed + rejected over all critiques, floor-aware (04). */
   residual: RateCell;
   epochs: EpochSeries[];
+  /** Violation flow over diff runs; null when the scope holds none (M5). */
+  flow: FlowReport | null;
 }
 
 /** The single-axiom drill-down payload. */

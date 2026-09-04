@@ -43,19 +43,28 @@ export class VerdictStore {
   readonly reviewer: CacheReviewerIdentity;
 
   private readonly projectRoot: string;
+  private readonly readOnly: boolean;
 
   constructor(
     cfg: PraxisConfig,
     {
       reviewer,
+      readOnly = false,
     }: {
       /** The reviewer whose verdicts are addressed; readers of unbound state may omit it. */
       reviewer?: CacheReviewerIdentity;
+      /**
+       * A cache that answers but never changes: writes are no-ops and
+       * reads never discard corrupt files. CI's mode (12) — it verifies
+       * against the branch's committed cache and must leave no trace.
+       */
+      readOnly?: boolean;
     } = {},
   ) {
     this.projectRoot = cfg.root;
     this.root = joinPath(cfg.root, ".praxis/cache/validation");
     this.reviewer = reviewer ?? UNBOUND;
+    this.readOnly = readOnly;
   }
 
   /**
@@ -106,7 +115,7 @@ export class VerdictStore {
     specPath: string;
     contentHash: string;
   }): Verdict | null {
-    const file = this.readFile(this.pathFor(targetPath), { discardCorrupt: true });
+    const file = this.readFile(this.pathFor(targetPath), { discardCorrupt: !this.readOnly });
 
     if (!file) return null;
 
@@ -138,6 +147,8 @@ export class VerdictStore {
     exemplarFiles?: AssistFileRecord[];
     contextFiles?: AssistFileRecord[];
   }): void {
+    if (this.readOnly) return;
+
     const path = this.pathFor(targetPath);
     const file = this.readFile(path, { discardCorrupt: false }) ?? CacheFile.empty();
 

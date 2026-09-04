@@ -36,7 +36,7 @@ calibration_status_at_run                    # 06 — stamps interpretability
 baseline: boolean                            # epoch-opening validate all (02)
 ```
 
-`spec_units` (added 2026-09-03, optional): evaluated units per governing spec, stamped at write time — the applicable-opportunity denominator 07's rates divide by. Absent on older records, whose per-run rates suppress honestly. `reviewer_hash` (added at implementation, 2026-09-02) is what makes the derived-epoch promise true: `reviewer_model` alone cannot see a temperature, prompt-surface, or options change. `unverified` counts units that could not be reviewed at all (03) — never violations.
+`diff` (added 2026-09-04, optional, scope `"diff"` runs only): the measured range and its coverage — `base_ref`, `base_sha`, `head_sha`, `changed_files`, `covered`, `uncovered_count`, `uncovered_paths`, `resolved_count`. The head sha is the run's anchor even on a dirty tree, because both sides are read via `git show`, never disk (12). `spec_units` (added 2026-09-03, optional): evaluated units per governing spec, stamped at write time — the applicable-opportunity denominator 07's rates divide by. Absent on older records, whose per-run rates suppress honestly. `reviewer_hash` (added at implementation, 2026-09-02) is what makes the derived-epoch promise true: `reviewer_model` alone cannot see a temperature, prompt-surface, or options change. `unverified` counts units that could not be reviewed at all (03) — never violations.
 
 Epochs (02) are **derived, not stored**: an epoch is a maximal run-sequence with stable (spec content hashes, reviewer config), computable from the provenance fields above. Reports segment by epoch; the ledger just records facts.
 
@@ -59,6 +59,8 @@ before_run_id?                               # the run supplying the before-side
 resolved_by?                                 # resolved events only: git author of the resolving
                                              #   commit — paydown credit is attributable (02)
 ```
+
+**Flow fields, as written since M5 (2026-09-04):** `flow` is set on diff-run critiques only (working-tree and corpus runs keep null — feedback and stock, never flow). `before_run_id` is the writing run's own id when the before side was freshly reviewed and null on a cache hit — a cache entry carries no run identity; extending the cache format with a `run_id` per entry is flagged as a possible future addition. Resolved events land as critique-shaped records with `flow: "resolved"`, hashed over the before-side content, excluded from `critique_count` and every stock surface, counted by the run's `diff.resolved_count`.
 
 Provenance fields are mandatory. Derived fields (population, authorship) record their evidence so they can be _recomputed_ when conventions or spec birthdates are revised — stored classifications are conveniences, not truth.
 

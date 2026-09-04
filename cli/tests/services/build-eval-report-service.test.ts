@@ -176,4 +176,35 @@ describe("buildEvalReportService", () => {
 
     expect(report().panel.costUsd).toBeCloseTo(0.005);
   });
+
+  it("excludes resolved records from stock — paydown facts, not findings", () => {
+    seedAxiom(root, "AX-aaaa11", { grounded_in: "docs/README.md#x" });
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      runId: "d1",
+      scope: "diff",
+      branch: "feature",
+      specUnits: { "docs/README.md": 6 },
+      diff: { head_sha: "0000000000000000000000000000000000000000" },
+      extraLines: [
+        matchedCritique("d1", 1, "docs/a.md", "flash"),
+        critiqueLine({
+          runId: "d1",
+          seq: 2,
+          filePath: "docs/b.md",
+          specPath: "docs/README.md",
+          axiomId: "AX-aaaa11",
+          axiomVersion: 1,
+          flow: "resolved",
+        }),
+      ],
+    });
+
+    const built = report();
+
+    // One finding; the resolved event reads as flow, never as stock.
+    expect(built.panel.critiques).toBe(1);
+    expect(built.flow?.rows[0]).toMatchObject({ axiomId: "AX-aaaa11", resolved: 1 });
+  });
 });

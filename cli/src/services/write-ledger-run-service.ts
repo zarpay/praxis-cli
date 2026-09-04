@@ -27,7 +27,7 @@ import { RunStore } from "@/stores/run-store.js";
  */
 const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> = (
   cfg,
-  { reviewer, trigger, scope, entries, specUnits },
+  { reviewer, trigger, scope, entries, specUnits, diff },
 ) => {
   const root = cfg.root;
   const runStore = new RunStore(cfg);
@@ -37,10 +37,10 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
 
   const critiques: LedgerCritiqueRecord[] = [];
 
-  for (const { verdict, cacheHit, evidence } of entries) {
+  for (const { verdict, cacheHit, evidence, flow, beforeRunId } of entries) {
     if (!evidence || cacheHit) continue;
 
-    for (const issue of verdict.issues) {
+    for (const [at, issue] of verdict.issues.entries()) {
       critiques.push({
         kind: "critique",
         id: `${runId}:${critiques.length + 1}`,
@@ -66,11 +66,45 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
         authorship_evidence: null,
         agent_involved: null,
         pre_review: null,
-        flow: null,
-        before_run_id: null,
+        // Set-difference labels on diff runs (12); null everywhere else.
+        flow: flow?.[at] ?? null,
+        before_run_id: beforeRunId === "self" ? runId : null,
         resolved_by: null,
       });
     }
+  }
+
+  // Resolved events (12): the before-only violations this diff erased,
+  // recorded critique-shaped so the axiom identity travels, but hashed
+  // over the *before* content — that is what the critique described.
+  for (const event of diff?.resolved ?? []) {
+    critiques.push({
+      kind: "critique",
+      id: `${runId}:${critiques.length + 1}`,
+      run_id: runId,
+      timestamp,
+      file_path: event.filePath,
+      spec_path: relativePath(root, event.specPath),
+      target_content_hash: event.targetContentHash,
+      spec_content_hash: event.specContentHash,
+      reviewer_name: reviewer.name,
+      reviewer_model: reviewer.model,
+      reviewer_hash: reviewer.hash,
+      severity: event.severity,
+      text: stripControlChars(event.critique.text),
+      mode: "judgment",
+      axiom_id: event.critique.axiomId,
+      axiom_version: event.critique.axiomVersion,
+      assigned_by: event.critique.axiomId === null ? null : "checklist",
+      population: "unknown",
+      authorship: "unknown",
+      authorship_evidence: null,
+      agent_involved: null,
+      pre_review: null,
+      flow: "resolved",
+      before_run_id: null,
+      resolved_by: event.resolvedBy,
+    });
   }
 
   const run: LedgerRunRecord = {
@@ -89,8 +123,11 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
     cache_hits: entries.filter((entry) => entry.cacheHit).length,
     cache_misses: entries.filter((entry) => !entry.cacheHit && entry.evidence).length,
     ...verdictCounts(entries),
-    critique_count: critiques.length,
+    // After-side critiques only: resolved events are paydown facts,
+    // counted by diff.resolved_count, never inflating stock.
+    critique_count: critiques.length - (diff?.resolved.length ?? 0),
     ...(specUnits && { spec_units: specUnits }),
+    ...(diff && { diff: { ...diff.facts, resolved_count: diff.resolved.length } }),
     calibration_status_at_run: "uncalibrated",
     baseline: isBaseline(runStore, scope, reviewer.hash),
   };

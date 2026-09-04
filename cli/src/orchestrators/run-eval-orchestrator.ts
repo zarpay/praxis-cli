@@ -1,11 +1,16 @@
 import type { EvalProgress, Orchestrator, ReviewedTarget, RunEvalOptions } from "@/types.js";
 
+import { errors } from "@/helpers/errors-helper.js";
 import { gitFacts } from "@/helpers/git-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
+import resolveDiffService from "@/services/resolve-diff-service.js";
 import reviewAllService from "@/services/review-all-service.js";
+import reviewDiffService from "@/services/review-diff-service.js";
 import reviewNamedService from "@/services/review-named-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
+import diffHeadlineView from "@/views/diff-headline-view.js";
+import diffReportView from "@/views/diff-report-view.js";
 import epochBoundaryView from "@/views/epoch-boundary-view.js";
 import evalHeadlineView from "@/views/eval-headline-view.js";
 import reviewedTargetView from "@/views/reviewed-target-view.js";
@@ -42,6 +47,37 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
   const anchoringView = runAnchoringView(gitFacts(root));
 
   ctx.render(anchoringView);
+
+  if (options.diff) {
+    if (targets.length > 0) throw errors.diffWithTargets();
+
+    const diff = resolveDiffService(cfg, {
+      base: typeof options.diff === "string" ? options.diff : undefined,
+    });
+
+    const headlineView = diffHeadlineView(diff);
+    ctx.render(headlineView);
+
+    if (diff.targets.length === 0) {
+      ctx.render([{ channel: "content", entries: ["No spec-covered files changed."] }]);
+
+      return "ok";
+    }
+
+    const onProgress = (event: EvalProgress) => {
+      const progressView = runProgressView(event);
+      ctx.render(progressView);
+    };
+
+    const run = await reviewDiffService(cfg, { reviewers, diff, useCache: cache, onProgress });
+
+    const reportView = diffReportView(run);
+    ctx.render(reportView);
+
+    // The diff is judged on its own contribution (12): introduced
+    // errors or an incomparable target fail; inherited debt never does.
+    return run.summary.errorsIntroduced + run.summary.unverified === 0 ? "ok" : "failed";
+  }
 
   if (targets.length > 0) {
     const headlineView = evalHeadlineView({ targets });

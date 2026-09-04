@@ -1,4 +1,4 @@
-import type { AxiomReportRow, EvalReport } from "@/types.js";
+import type { AxiomReportRow, EvalReport, FlowRow } from "@/types.js";
 import type { ReportLine, View } from "@framework/types.js";
 
 import chalk from "chalk";
@@ -39,6 +39,7 @@ const evalReportView: View<EvalReport & { json?: boolean }> = (report) => {
 
   lines.push(...epochLines(report));
   lines.push(...axiomLines(report.axioms));
+  lines.push(...flowLines(report.flow));
 
   lines.push({
     channel: "content",
@@ -102,6 +103,32 @@ function axiomLines(rows: AxiomReportRow[]): ReportLine[] {
   });
 
   return [{ channel: "content", entries }];
+}
+
+/**
+ * The flow section (01): each branch's latest diff run per reviewer,
+ * within the current epoch. The introduction rate is the eval's number
+ * — post-spec introduced violations per applicable opportunity — and
+ * renders floor-aware like every other rate.
+ */
+function flowLines(flow: EvalReport["flow"]): ReportLine[] {
+  if (flow === null) return [];
+
+  return [
+    { channel: "blank" },
+    {
+      channel: "heading",
+      text: `Violation flow — latest diff run per branch (${flow.runsConsidered} run(s))`,
+    },
+    { channel: "content", entries: flow.rows.map(flowLine) },
+  ];
+}
+
+/** One axiom × reviewer flow row. */
+function flowLine(row: FlowRow): string {
+  const populations = `pre-spec ${row.introducedByPopulation.pre_spec} / post-spec ${row.introducedByPopulation.post_spec} / unknown ${row.introducedByPopulation.unknown}`;
+
+  return `${row.axiomId} ${chalk.gray(`[${row.reviewerName}]`)} introduced ${row.introduced} · resolved ${row.resolved} · inherited ${row.inherited} · introduction rate ${row.introductionRate.display} (${populations})`;
 }
 
 /** The stock's evidence date, empty when no evidenced corpus run exists. */
