@@ -7,6 +7,12 @@ export interface RedeemCouponInput {
   coupon: string;
 }
 
+/**
+ * Redeems one coupon code at a parlor, returning the discount fraction.
+ *
+ * Failure modes: unknown parlor id; unrecognized coupon code (codes are
+ * case-sensitive).
+ */
 export function run(store: Store, input: RedeemCouponInput): Result<number> {
   const parlor = store.getParlor(input.parlorId);
 
