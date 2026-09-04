@@ -47,7 +47,7 @@ export function prepareOrchestrator<Ctx extends { logger: Logger }, Options = No
       args[index],
     ]);
     const options = {
-      ...command.opts(),
+      ...command.optsWithGlobals(),
       ...Object.fromEntries(named),
       ...extra,
     } as Options;

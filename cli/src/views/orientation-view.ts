@@ -7,7 +7,13 @@ import chalk from "chalk";
  * Bare `praxis` (09-h): the project at a glance, every line naming the
  * command that acts on it — drill-down, not dumps.
  */
-const orientationView: View<Orientation> = (orientation) => {
+const orientationView: View<Orientation & { json?: boolean }> = (orientation) => {
+  if (orientation.json) {
+    const { json: _json, ...payload } = orientation;
+
+    return [{ channel: "content", entries: [JSON.stringify(payload, null, 2)] }];
+  }
+
   const lastRunLine =
     orientation.lastRun === null
       ? "Last run: never — `praxis eval run` reviews everything and opens the ledger"

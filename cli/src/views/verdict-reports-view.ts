@@ -10,6 +10,8 @@ interface ReviewerReports {
   named: boolean;
   /** Show the full reasoning. */
   verbose: boolean;
+  /** Emit the stable machine contract instead. */
+  json?: boolean;
 }
 
 /** Width of the divider rules framing a report. */
@@ -23,8 +25,19 @@ const DIVIDER_WIDTH = 50;
  * shows the last result — the reader needs to know the verdict describes
  * inputs that have since changed before they read it.
  */
-const verdictReportsView: View<ReviewerReports> = ({ reports, named, verbose }) =>
-  reports.flatMap(({ reviewer, report }) => [
+const verdictReportsView: View<ReviewerReports> = ({ reports, named, verbose, json }) => {
+  if (json) {
+    const payload = reports.map(({ reviewer, report }) => ({
+      reviewer,
+      target: report.targetPath,
+      status: report.status,
+      stale: report.isStale,
+    }));
+
+    return [{ channel: "content", entries: [JSON.stringify(payload, null, 2)] }];
+  }
+
+  return reports.flatMap(({ reviewer, report }) => [
     ...(named
       ? [
           {
@@ -35,6 +48,7 @@ const verdictReportsView: View<ReviewerReports> = ({ reports, named, verbose }) 
       : []),
     { channel: "content" as const, entries: reportEntries(report, verbose) },
   ]);
+};
 
 export default verdictReportsView;
 

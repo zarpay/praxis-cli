@@ -13,6 +13,7 @@ import diffHeadlineView from "@/views/diff-headline-view.js";
 import diffReportView from "@/views/diff-report-view.js";
 import epochBoundaryView from "@/views/epoch-boundary-view.js";
 import evalHeadlineView from "@/views/eval-headline-view.js";
+import evalJsonView from "@/views/eval-json-view.js";
 import reviewedTargetView from "@/views/reviewed-target-view.js";
 import runAnchoringView from "@/views/run-anchoring-view.js";
 import runProgressView from "@/views/run-progress-view.js";
@@ -36,6 +37,8 @@ interface RunEvalOptions {
   cache?: boolean;
   /** Review the branch against its merge-base; a string names the base ref. */
   diff?: boolean | string;
+  /** Emit the outcome as stable JSON on stdout (08-g, 09-af). */
+  json?: boolean;
 }
 
 /**
@@ -75,11 +78,16 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
       base: typeof options.diff === "string" ? options.diff : undefined,
     });
 
-    const headlineView = diffHeadlineView(diff);
-    ctx.render(headlineView);
+    if (!options.json) {
+      const headlineView = diffHeadlineView(diff);
+      ctx.render(headlineView);
+    }
 
     if (diff.targets.length === 0) {
-      ctx.render([{ channel: "content", entries: ["No spec-covered files changed."] }]);
+      const emptyView = options.json
+        ? evalJsonView({ kind: "diff", result: emptyDiffResult() })
+        : [{ channel: "content" as const, entries: ["No spec-covered files changed."] }];
+      ctx.render(emptyView);
 
       return "ok";
     }
@@ -89,9 +97,22 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
       ctx.render(progressView);
     };
 
-    const run = await reviewDiffService(cfg, { reviewers, diff, useCache: cache, onProgress });
+    const run = await reviewDiffService(cfg, {
+      reviewers,
+      diff,
+      useCache: cache,
+      onProgress: options.json ? undefined : onProgress,
+    });
 
-    const reportView = diffReportView(run);
+    const reportView = options.json
+      ? evalJsonView({
+          kind: "diff",
+          result: run,
+          base: diff.baseSha,
+          head: diff.headSha,
+          uncovered: diff.uncovered,
+        })
+      : diffReportView(run);
     ctx.render(reportView);
 
     // The diff is judged on its own contribution (12): introduced
@@ -100,11 +121,20 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
   }
 
   if (targets.length > 0) {
-    const headlineView = evalHeadlineView({ targets });
+    if (!options.json) {
+      const headlineView = evalHeadlineView({ targets });
+      ctx.render(headlineView);
+    }
 
-    ctx.render(headlineView);
+    const reviewed: ReviewedTarget[] = [];
 
     const onTarget = (event: ReviewedTarget) => {
+      if (options.json) {
+        reviewed.push(event);
+
+        return;
+      }
+
       const targetView = reviewedTargetView({ ...event, verbose: options.verbose ?? false });
 
       ctx.render(targetView);
@@ -118,12 +148,18 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
       onTarget,
     });
 
+    if (options.json) {
+      const jsonView = evalJsonView({ kind: "targets", targets: reviewed });
+      ctx.render(jsonView);
+    }
+
     return errors === 0 ? "ok" : "failed";
   }
 
-  const headlineView = evalHeadlineView({ type: options.type });
-
-  ctx.render(headlineView);
+  if (!options.json) {
+    const headlineView = evalHeadlineView({ type: options.type });
+    ctx.render(headlineView);
+  }
 
   const onProgress = (event: EvalProgress) => {
     const progressView = runProgressView(event);
@@ -136,10 +172,12 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
     type: options.type,
     failFast: options.failFast ?? false,
     useCache: cache,
-    onProgress,
+    onProgress: options.json ? undefined : onProgress,
   });
 
-  const reportView = runReportView({ run, cached: cache });
+  const reportView = options.json
+    ? evalJsonView({ kind: "corpus", summary: run.summary, cacheStats: run.cacheStats })
+    : runReportView({ run, cached: cache });
 
   ctx.render(reportView);
 
@@ -148,3 +186,12 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 };
 
 export default prepareOrchestrator(runEvalOrchestrator);
+
+/** The empty diff outcome, so `--json` emits the contract even with nothing covered. */
+function emptyDiffResult() {
+  return {
+    perTarget: [],
+    summary: { introduced: 0, resolved: 0, inherited: 0, errorsIntroduced: 0, unverified: 0 },
+    cacheStats: { hits: 0, misses: 0 },
+  };
+}

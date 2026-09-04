@@ -27,6 +27,7 @@ function fakeCommand(argNames: string[], opts: Record<string, unknown>): Command
   return {
     registeredArguments: argNames.map((name) => ({ name: () => name })),
     opts: () => opts,
+    optsWithGlobals: () => opts,
   } as unknown as Command;
 }
 

@@ -22,7 +22,7 @@ const axiomsCommand: CommandRegistrar = (program) => {
   axiomsCmd
     .command("list")
     .description("List every axiom in .praxis/axioms/ — active, proposed, and deprecated")
-    .option("--json", "machine-readable output (stable contract)", false)
+    .option("--json", "machine-readable output (stable contract)")
     .addHelpText(
       "after",
       `
@@ -37,7 +37,7 @@ Example:
   axiomsCmd
     .command("show <id>")
     .description("Show one axiom in full: statement, examples, grounding, lifecycle")
-    .option("--json", "machine-readable output (stable contract)", false)
+    .option("--json", "machine-readable output (stable contract)")
     .addHelpText(
       "after",
       `
@@ -89,7 +89,7 @@ Example:
   axiomsCmd
     .command("audit")
     .description("Re-run the authoring gate over active axioms; flags removal candidates")
-    .option("--json", "machine-readable output (stable contract)", false)
+    .option("--json", "machine-readable output (stable contract)")
     .addHelpText(
       "after",
       `

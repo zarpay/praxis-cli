@@ -1,4 +1,11 @@
-import { basename, dirname, join, relative, resolve } from "node:path";
+import {
+  basename,
+  dirname,
+  isAbsolute as nodeIsAbsolute,
+  join,
+  relative,
+  resolve,
+} from "node:path";
 import { pathToFileURL } from "node:url";
 
 /**
@@ -11,7 +18,12 @@ import { pathToFileURL } from "node:url";
  * (ESLint's no-restricted-imports).
  */
 
-/** Joins path segments (see node:path join). */
+/** Whether a path is absolute (see node:path isAbsolute). */
+export function isAbsolute(path: string): boolean {
+  return nodeIsAbsolute(path);
+}
+
+/** Joins path segments. */
 export function joinPath(...segments: string[]): string {
   return join(...segments);
 }

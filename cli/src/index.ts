@@ -52,7 +52,12 @@ Exit codes:
   );
 
   // Bare `praxis` is the orientation screen (09-h) — counts and
-  // staleness at a glance, each line naming its command.
+  // staleness at a glance, each line naming its command; --json is an
+  // agent's cheapest situational poll (09). The root may consume a
+  // --json meant for a subcommand (commander parses known options
+  // non-positionally); the composition root reads optsWithGlobals(), so
+  // it reaches the right orchestrator either way.
+  program.option("--json", "machine-readable orientation (stable contract)", false);
   program.action(orientProjectOrchestrator);
 
   registerInitCommand(program);

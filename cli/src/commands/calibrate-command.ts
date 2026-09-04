@@ -37,7 +37,7 @@ Example:
   calibrate
     .command("status")
     .description("Each reviewer's interpretability state: calibrated, stale, or absent")
-    .option("--json", "machine-readable output (stable contract)", false)
+    .option("--json", "machine-readable output (stable contract)")
     .addHelpText(
       "after",
       `
