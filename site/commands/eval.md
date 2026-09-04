@@ -138,7 +138,11 @@ CI verifies and leaves no trace: no ledger records, and the cache runs read-only
 
 ---
 
-### `praxis eval verdict <path>`
+### `--json`: the fast loop's delivery
+
+`praxis eval run <target> --json` emits the outcome as stable JSON on stdout — the feedback a coding agent or a harness hook consumes directly ([harness feedback](/validation/harness-feedback)). Matched findings carry their axiom id and statement (depth stays behind `axioms show <id>`); open-channel critiques carry their raw text; corpus and diff modes emit their summaries with flow labels and coverage. `eval verdict` and bare `praxis` take `--json` too.
+
+## `praxis eval verdict <path>`
 
 Displays a target's cached verdict. Does not call any API.
 

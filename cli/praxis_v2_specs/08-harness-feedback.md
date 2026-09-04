@@ -1,6 +1,6 @@
 # 08 — Harness Feedback
 
-**Status:** Early draft — capturing conversation output
+**Status:** Implemented (M7, 2026-09-05) — decisions dated inline
 **Depends on:** [02](./02-baselines-and-debt-paydown.md), [04](./04-axioms.md), [07](./07-metrics.md)
 
 ## The loop, and where Praxis stops
@@ -60,7 +60,7 @@ The diagnosis is _suggested_, not verdicted — without a reliable control arm (
 
 A ratified harness PR is an _intervention_, and interventions are what the drift machinery already measures:
 
-- The brief-driven PR records which axioms it targets (trailer or PR metadata).
+- The brief-driven PR records which axioms it targets — **as a commit trailer, `Praxis-Intervention: AX-…, AX-…`** (decided 2026-09-05: trailers survive squash merges and travel with the repo; PR metadata does not). `interventionsFor` scans them read-only and the axiom drill-down annotates the boundaries.
 - Subsequent eval reports annotate those axioms' trend lines at the intervention boundary (07, rule 6 — same mechanism as reviewer changes).
 - "Axiom AX-0011 agent rate before/after the skill change" is the honest claim this system can make: drift detection around a known intervention — not global attribution.
 
@@ -70,8 +70,10 @@ A ratified harness PR is an _intervention_, and interventions are what the drift
 - A brief that recommends softening a spec must carry the coverage/conformance pairing (07, rule 1) — softening to improve a number is the Goodhart move the pairing exists to expose.
 - Frequency: on demand and per-period, not per-run. Reacting to single-run noise is how thrash starts; the small-n floors (02) apply to briefs doubly.
 
+Implementation notes (2026-09-05): the brief is `praxis harness suggest [--since] [--branch] [--json]` — a pure read over the ledger and the metrics services, one entry per (axiom, reviewer) from the flow rows ranked by what fires in generation, capped at five (depth belongs to the drill-downs). Each diagnosis carries a `diagnosis_reason` showing the triangulation it applied; `contrast` is omitted while attribution stays deferred. `implicated_harness_elements` is not yet emitted — the manual registry (open question 1) has no home until a real project demands one; the generated /praxis-harness command does the mapping by reading the harness instead.
+
 ## Open questions
 
-1. Mapping axioms → harness elements: manual registry (`this skill owns events conventions`), or inferred from harness file content? Manual first; inference is a nice-to-have.
-2. Should interventions be formally A/B-able (harness variant per branch/worktree, 02 open question 3)? Powerful, heavy; defer until single-arm before/after proves insufficient.
-3. Does the brief include human-population findings for human consumption (the symmetric loop from 02)? The data supports it; the product question is whether anyone wants a linter for their colleagues.
+1. Mapping axioms → harness elements: manual registry (`this skill owns events conventions`), or inferred from harness file content? Manual first; inference is a nice-to-have. *(2026-09-05: still open — the brief omits the field, and /praxis-harness maps by reading the harness.)*
+2. Should interventions be formally A/B-able (harness variant per branch/worktree, 02 open question 3)? Powerful, heavy; defer until single-arm before/after proves insufficient. *(2026-09-05: stays deferred.)*
+3. Does the brief include human-population findings for human consumption (the symmetric loop from 02)? The data supports it; the product question is whether anyone wants a linter for their colleagues. *(2026-09-05: stays open — populations render as totals, never as a per-human surface.)*
