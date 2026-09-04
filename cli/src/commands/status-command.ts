@@ -13,7 +13,7 @@ const statusCommand: CommandRegistrar = (program) => {
   program
     .command("status")
     .description("Show project health and review coverage")
-    .option("--json", "machine-readable output (stable contract)", false)
+    .option("--json", "machine-readable output (stable contract)")
     .addHelpText(
       "after",
       `

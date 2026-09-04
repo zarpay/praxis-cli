@@ -102,6 +102,18 @@ calls · **[scratch]** run in a copy.
 | Case set | 6 cases under `.praxis/calibration/cases/`: 3 fail (vague-error, missing-failure-modes, violator-redeem-coupon frozen) + 3 pass true negatives (specific-error, documented-failure-modes, exemplar-create-review frozen) |
 | Report banners | Every report and the orientation carry the per-reviewer banner; `status --json` `calibration_stale: true` while counter is absent |
 
+### Feedback surfaces (M7)
+
+| Command | Expect |
+| --- | --- |
+| `eval run <target> --json` [paid on miss] | Pure JSON on stdout (headlines suppressed): per-target status pass/warn/fail/unverified, findings with `channel` matched/open, matched carrying axiom id + statement, `witnesses` per reviewer |
+| `eval run --json` / `--diff --json` [free when warm] | Corpus mode: summary + cache; diff mode: base/head shas, uncovered paths, per-target flow labels, resolved credits |
+| `praxis --json` / `eval verdict <t> --json` [free] | Orientation payload; per-reviewer verdict status with staleness |
+| `harness suggest` [free] | Brief over the real ledger: per-reviewer calibration line, populations, top axioms with evidence + suggested diagnosis showing its reasoning, representative critiques by ledger id, removal candidates, guardrail note; floors suppress thin rates as insufficient_data |
+| `harness suggest --json` | Stable contract: period, populations, calibration, top_axioms, residual_summary, removal_candidates, note |
+| `praxis compile` | `plugins/praxis/commands/` gains `praxis-harness.md` beside `praxis-resolve.md` |
+| Known state note | `eval verdict` staleness was silently broken for checklisted specs since M3 (recompute omitted the checklist) — fixed 2026-09-05; create-review now reads PASS fresh, flash's redeem-coupon entry is genuinely stale (its last real review predates current inputs) |
+
 ### Reports (pure reads — never a reviewer call) [free]
 
 | Command | Expect |

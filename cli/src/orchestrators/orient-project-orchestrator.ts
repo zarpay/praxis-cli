@@ -12,7 +12,12 @@ import orientationView from "@/views/orientation-view.js";
  * Outside a praxis project there is nothing to orient in, so the screen
  * degrades to the pointer that matters: `praxis init`.
  */
-export const orientProjectOrchestrator: Orchestrator = async (ctx) => {
+/** What bare `praxis` parses. */
+interface OrientOptions {
+  json?: boolean;
+}
+
+export const orientProjectOrchestrator: Orchestrator<OrientOptions> = async (ctx, options) => {
   try {
     void ctx.root;
   } catch (err) {
@@ -31,7 +36,7 @@ export const orientProjectOrchestrator: Orchestrator = async (ctx) => {
   }
 
   const orientation = buildOrientationService(ctx.config, {});
-  const view = orientationView(orientation);
+  const view = orientationView({ ...orientation, json: options.json });
 
   ctx.render(view);
 

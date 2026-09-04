@@ -191,6 +191,37 @@ function changedFileEntries(
 }
 
 /** One git query, or null when git itself cannot answer. */
+/**
+ * Commits whose `Praxis-Intervention:` trailer names the axiom (08-n):
+ * ratified harness PRs record their targets, and reports annotate those
+ * boundaries. Read-only, newest first; empty outside a repo.
+ */
+export function interventionsFor(root: string, axiomId: string): { sha: string; date: string }[] {
+  const raw = git(
+    root,
+    "log",
+    "--grep",
+    "Praxis-Intervention:",
+    "--format=%H|%cs|%(trailers:key=Praxis-Intervention,valueonly,separator=;)",
+  );
+
+  if (raw === null || raw === "") return [];
+
+  return raw
+    .split("\n")
+    .map((line) => line.split("|"))
+    .filter((parts) => parts.length === 3 && trailerNames(parts[2], axiomId))
+    .map(([sha, date]) => ({ sha, date }));
+}
+
+/** Whether a trailer value list names the axiom id exactly. */
+function trailerNames(values: string, axiomId: string): boolean {
+  return values
+    .split(/[;,]/)
+    .map((value) => value.trim())
+    .includes(axiomId);
+}
+
 function git(root: string, ...args: string[]): string | null {
   const result = spawnSync("git", args, { cwd: root, encoding: "utf8" });
 

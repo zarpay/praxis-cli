@@ -10,6 +10,8 @@ interface ReportVerdictsOptions {
   target: string;
   /** Show each verdict's full reasoning. */
   verbose?: boolean;
+  /** Emit the reports as stable JSON instead. */
+  json?: boolean;
 }
 
 /**
@@ -21,11 +23,11 @@ interface ReportVerdictsOptions {
  */
 export const reportVerdictsOrchestrator: Orchestrator<ReportVerdictsOptions> = async (
   ctx,
-  { target, verbose = false },
+  { target, verbose = false, json = false },
 ) => {
   const { reports, named } = collectVerdictReportsService(ctx.config, { targetPath: target });
 
-  const view = verdictReportsView({ reports, named, verbose });
+  const view = verdictReportsView({ reports, named, verbose, json });
 
   ctx.render(view);
 

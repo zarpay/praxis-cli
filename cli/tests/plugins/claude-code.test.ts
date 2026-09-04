@@ -286,6 +286,21 @@ describe("ClaudeCodePlugin", () => {
     expect(content).toContain("praxis eval run");
   });
 
+  it("writes the praxis-harness command beside praxis-resolve (08-b)", () => {
+    const root = makeTmpdir();
+    const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
+
+    plugin.compile("Content", metadata({ name: "tester", description: "Test" }), "Tester");
+
+    const commandPath = join(root, "plugins", "praxis", "commands", "praxis-harness.md");
+    expect(existsSync(commandPath)).toBe(true);
+
+    const content = readFileSync(commandPath, "utf-8");
+    expect(content).toContain("praxis harness suggest --json");
+    expect(content).toContain("Praxis-Intervention:");
+    expect(content).toContain("human ratifies");
+  });
+
   it("writes praxis-resolve command to custom outputDir", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({

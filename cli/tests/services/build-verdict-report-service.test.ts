@@ -8,6 +8,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { ReviewSubject } from "@/models/review-subject.js";
 import buildVerdictReportService from "@/services/build-verdict-report-service.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
+import { seedAxiom } from "@tests/helpers/axiom-fixtures.js";
 import { testConfig } from "@tests/helpers/test-config.js";
 
 const DOC_CONTENT = "# Guide\nA target under report.";
@@ -59,6 +61,29 @@ describe("buildVerdictReportService", () => {
 
     it("returns pass when the target and spec are unchanged since validation", () => {
       const report = build(freshCacheData());
+
+      expect(report).toMatchObject({ status: "pass", isStale: false });
+    });
+
+    it("an unchanged target under a checklisted spec is fresh, not stale (found live 2026-09-05)", () => {
+      seedAxiom(dir, "AX-aaaa11", { grounded_in: "README.md#x" });
+      const checklistedHash = ReviewSubject.resolve({
+        targetPath,
+        specPath: join(dir, "README.md"),
+        root: dir,
+        checklistFor: (spec) => new AxiomStore(testConfig(dir)).checklistFor(spec),
+      }).contentHash();
+      const cached = freshCacheData();
+      const report = build({ ...cached, content_hash: checklistedHash });
+
+      expect(checklistedHash).not.toBe(baselineHash);
+      expect(report).toMatchObject({ status: "pass", isStale: false });
+    });
+
+    it("the recorded relative spec path resolves against the root, not the cwd", () => {
+      const cached = freshCacheData();
+      const relative = { ...cached, document: { path: targetPath, spec_path: "README.md" } };
+      const report = build(relative);
 
       expect(report).toMatchObject({ status: "pass", isStale: false });
     });

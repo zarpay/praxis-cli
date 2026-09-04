@@ -37,6 +37,10 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
           (row) =>
             `[${row.reviewerName}] current stock: ${row.rate.display}${asOf(row)} · files ever flagged: ${row.files} · pre-spec ${row.byPopulation.pre_spec} / post-spec ${row.byPopulation.post_spec} / unknown ${row.byPopulation.unknown}`,
         ),
+        ...report.interventions.map(
+          (intervention) =>
+            `intervention boundary: ${intervention.date} (${intervention.sha.slice(0, 7)}) targeted this axiom — compare rates before/after, never across (08)`,
+        ),
         ...(report.agreement
           ? [
               `inter-reviewer agreement: ${report.agreement.corroborated} corroborated file(s) · ${report.agreement.disagreed} single-witness file(s) — a tripwire, not ground truth (06)`,

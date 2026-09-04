@@ -1,0 +1,68 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "0311531a:41d823fa": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "41d823fa"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-04T23:01:03.065Z",
+      "content_hash": "8d7f8d59",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file is identical to the spec-blessed exemplar create-review.ts. It is a single entry point `run` taking Store first and a single input object, returning Result<Review>. Failures are returned as values with specific, actionable messages; no throws, no I/O outside the injected Store. The doc comment states its purpose and enumerates all domain failure modes, satisfying AX-2559f7. All semantics (AX-3317a7), I/O via Store (AX-6e307b), actionable messages (AX-b951db) are met; no hardcoded configuration relevant (AX-a108ea). No axioms are violated."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:2b519849": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "2b519849"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-04T23:01:20.526Z",
+      "content_hash": "8d7f8d59",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file satisfies all criteria defined in the specification. It follows the required structure with a single 'run' function, has comprehensive documentation that enumerates all domain failure modes, validates input before any work, returns domain failures as values with specific actionable error messages, performs all I/O through the injected Store, and maintains a single responsibility."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:f524adbc": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "f524adbc"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-04T23:01:20.527Z",
+      "content_hash": "8d7f8d59",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 1081 words."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    }
+  }
+}

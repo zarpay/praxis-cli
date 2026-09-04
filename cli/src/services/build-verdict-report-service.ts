@@ -1,7 +1,9 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { CacheFileData, Service, VerdictReport } from "@/types.js";
 
+import { isAbsolute, joinPath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
 import { SpecStore } from "@/stores/spec-store.js";
 
 /** A cached verdict to classify. */
@@ -70,12 +72,17 @@ function recomputeHash(
 ): string | null {
   try {
     const store = new SpecStore(cfg);
-    const governing = specPath ?? store.governingPath(targetPath);
+    const recorded = specPath && !isAbsolute(specPath) ? joinPath(cfg.root, specPath) : specPath;
+    const governing = recorded ?? store.governingPath(targetPath);
 
+    // The checklist joins the hash exactly as a run's does (M3): a
+    // recompute without it reported every checklisted target stale
+    // forever (found live 2026-09-05).
     return ReviewSubject.resolve({
       targetPath,
       specPath: governing,
       root: cfg.root,
+      checklistFor: (spec) => new AxiomStore(cfg).checklistFor(spec),
     }).contentHash();
   } catch {
     return null;

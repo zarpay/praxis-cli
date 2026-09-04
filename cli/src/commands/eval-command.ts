@@ -28,6 +28,10 @@ const evalCommand: CommandRegistrar = (program) => {
       "--diff [base]",
       "review the branch against its merge-base (default base: the default branch)",
     )
+    .option(
+      "--json",
+      "machine-readable outcome on stdout (stable contract; the fast loop's feedback)",
+    )
     .addHelpText(
       "after",
       `
@@ -88,7 +92,7 @@ Example:
     .option("--commit <sha>", "only runs anchored to this commit")
     .option("--commits <shas...>", "only runs anchored to any of these commits (a PR's set)")
     .option("--axiom <id>", "one axiom across everything in scope")
-    .option("--json", "machine-readable output (stable contract)", false)
+    .option("--json", "machine-readable output (stable contract)")
     .addHelpText(
       "after",
       `
@@ -106,6 +110,7 @@ Examples:
     .command("verdict <target>")
     .description("Show the cached verdict for a target, without an API call")
     .option("--verbose", "show full AI reasoning", false)
+    .option("--json", "machine-readable output (stable contract)")
     .addHelpText(
       "after",
       `

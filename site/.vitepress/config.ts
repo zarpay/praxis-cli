@@ -75,6 +75,7 @@ export default defineConfig({
           },
           { text: "Caching", link: "/validation/caching" },
           { text: "Calibration", link: "/validation/calibration" },
+          { text: "Harness Feedback", link: "/validation/harness-feedback" },
           { text: "CI Integration", link: "/validation/ci" },
         ],
       },

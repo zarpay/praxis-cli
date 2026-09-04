@@ -16,7 +16,7 @@ const debtCommand: CommandRegistrar = (program) => {
   debtCmd
     .command("report")
     .description("Debt stock and corpus paydown per axiom, concentration, re-baseline deltas")
-    .option("--json", "machine-readable output (stable contract)", false)
+    .option("--json", "machine-readable output (stable contract)")
     .addHelpText(
       "after",
       `
