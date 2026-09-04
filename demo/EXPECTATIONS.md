@@ -23,11 +23,14 @@ a bug.
   `axioms ratify`, `axioms audit` (curator spend per active axiom).
 - `eval run` writes ledger evidence by design — commit the new run files
   with the audit (10-k). `eval ci` must write **nothing**.
-- Known live quirk: `flash` (deepseek-v4-flash) intermittently returns
-  invalid tool-call JSON when critique text echoes quoted strings. That
-  correctly yields UNVERIFIED with an instructive provider error — it is
-  the system working, not a bug. Prefer `v32` when an assertion needs a
-  completed live verdict.
+- **Real reviewers are the default for everything judgment-shaped.**
+  We are not price-sensitive; the audit's value is live model output,
+  so [paid] rows always run with `flash`/`v32` — `counter` covers only
+  the canary and the custom-provider contract. Known live quirk:
+  `flash` intermittently returns invalid tool-call JSON when critique
+  text echoes quoted strings. That correctly yields UNVERIFIED with an
+  instructive provider error — the system working, not a bug. Prefer
+  `v32` when an assertion needs a completed live verdict.
 
 ## Current demo state (update when it moves)
 

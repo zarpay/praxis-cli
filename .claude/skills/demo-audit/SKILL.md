@@ -32,13 +32,25 @@ product.
 3. **Work through `demo/EXPECTATIONS.md` top to bottom**, matching each
    command's real output against its row. Honor the legend:
    - **[free]** rows always run.
-   - **[paid]** rows need the OpenRouter key in the environment (it is
-     not in the repo; the owner's setup provides it — check project
-     memory or ask). Costs are pennies; prefer `v32` where a completed
-     live verdict matters (flash's known JSON quirk is in the matrix).
+   - **[paid]** rows run with REAL reviewers — this is the point. The
+     judgment output is the product, and only live models can audit it;
+     every valuable live finding to date (flash's JSON quirk, v32's
+     channel nondeterminism, resolved-credit) came from real calls. We
+     are not price-sensitive: costs are pennies, so never substitute
+     `counter` where a judgment matters. The key comes from the owner's
+     environment (not in the repo — check project memory or ask);
+     prefer `v32` where an assertion needs a *completed* verdict, and
+     treat flash's intermittent invalid-JSON as expected UNVERIFIED
+     behavior, not a failure.
    - **[scratch]** rows run in a copy
      (`cp -r demo <scratchpad>/audit-demo`), never against the real
      demo — they consume triage state or spend curator money.
+
+   `counter` is not the audit — it is the **canary** (identity
+   tripwire: deterministic and free on the miss path, so an accidental
+   epoch roll never writes nondeterministic verdicts into the committed
+   cache) and the **custom-provider contract row** (the one live
+   exercise of `./`-path providers). Those two jobs, nothing more.
 4. **For a new feature**: exercise it beyond the matrix — realistic
    inputs, a failure path, a rerun. The role-plays that found M4's
    all-hit blindness and M5's flow erasure went off-script deliberately.
