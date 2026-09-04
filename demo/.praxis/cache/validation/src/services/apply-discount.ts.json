@@ -50,29 +50,34 @@
         "hash": "2b519849"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-03T12:46:56.208Z",
-      "content_hash": "bb67d06e",
+      "cached_at": "2026-09-04T23:19:12.834Z",
+      "content_hash": "3c807fdd",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "The service fails to validate that the discount rate is a valid number (0-1 range) before returning it. A caller could plausibly provide a discount code that resolves to an invalid rate (e.g., a rate outside 0-1), which should be a domain failure value, not an exception or unvalidated return. The service must validate that the resolved rate is within acceptable bounds (typically 0 to 1 inclusive) before returning success.",
-            "axiomId": "AX-3317a7",
+            "text": "Missing doc comment stating purpose and enumerating domain failure modes. The service must have a doc comment above the run function that explains what it does and lists all possible domain failures so callers can handle errors without reading the body.",
+            "axiomId": "AX-2559f7",
             "axiomVersion": 1
           },
           {
-            "text": "The ACTIVE_CODES constant is hardcoded in the service module, violating the requirement to isolate configuration data that could vary or be maintained separately. Discount codes and their rates should be injected via the Store or isolated in a single obvious configuration module, not hardcoded directly in the service.",
+            "text": "Error messages 'invalid' and 'error' are vague and unhelpful. Messages must be specific and actionable for API consumers, clearly stating what was wrong and what would be accepted instead (e.g., 'no parlor with id '...'' or 'memberId must be a non-empty string').",
+            "axiomId": "AX-b951db",
+            "axiomVersion": 2
+          },
+          {
+            "text": "Hardcoded discount value 0.1 appears to be a domain constant that could vary. Configuration data like discount rates should be isolated in a single obvious place or injected via the Store, not hardcoded throughout the service.",
             "axiomId": "AX-a108ea",
             "axiomVersion": 1
           },
           {
-            "text": "The doc comment states 'Failure modes: unknown parlor id; empty code; code that no active promotion recognizes' but omits the critical failure mode of invalid discount rate (rate outside 0-1 range). This incomplete enumeration violates the documentation requirement that callers should be able to handle every error without reading the body.",
+            "text": "The service returns a hardcoded discount value without checking if the member exists or is eligible for a discount. This suggests incomplete business logic validation that should be part of the service's responsibility.",
             "axiomId": null,
             "axiomVersion": null
           }
         ],
-        "reason": "The file violates multiple required criteria from the specification, including critical axioms about domain failure classification and I/O isolation."
+        "reason": "The file violates multiple required criteria in the specification, including missing documentation, poor error messages, and hardcoded domain constants."
       },
       "exemplar_files": [
         {

@@ -56,34 +56,34 @@
         "hash": "2b519849"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-04T09:19:13.674Z",
-      "content_hash": "7f25c597",
+      "cached_at": "2026-09-04T23:19:31.127Z",
+      "content_hash": "ecf01e04",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "The service lacks a doc comment stating its purpose and enumerating domain failure modes. The file must add a doc comment above the run function that clearly explains what the service does and lists all possible domain failures so callers can handle errors without reading the body.",
-            "axiomId": "AX-2559f7",
-            "axiomVersion": 1
-          },
-          {
-            "text": "The service performs direct I/O using console.log() instead of going through the injected Store. The line 'console.log(`redeeming ${input.coupon} at ${parlor.name}`);' must be removed or replaced with Store-mediated I/O.",
+            "text": "Service performs I/O outside the injected Store: console.log statement on line 22 violates the requirement that all I/O must go through Store methods. The service must remove direct console.log calls and use Store methods for any logging needs.",
             "axiomId": "AX-6e307b",
             "axiomVersion": 1
           },
           {
-            "text": "The error message for unrecognized coupons is insufficiently actionable. While it mentions case-sensitivity, it doesn't specify what would be accepted instead. The message should indicate what valid coupon codes exist or how to obtain them.",
-            "axiomId": "AX-b951db",
-            "axiomVersion": 2
+            "text": "Doc comment fails to enumerate all domain failure modes completely: while it mentions unknown parlor id and unrecognized coupon code, it does not mention that coupon codes are case-sensitive (though this is mentioned in the error message). However, the more critical issue is that the doc comment states it returns 'discount fraction' but the service returns 1 (100% discount) for FREESCOOP, which is a hardcoded business rule that should be documented as a failure mode or configuration detail.",
+            "axiomId": "AX-2559f7",
+            "axiomVersion": 1
           },
           {
-            "text": "The service hardcodes a specific coupon code 'FREESCOOP' directly in the validation logic, violating the principle that configuration data should be isolated or injected via Store. This creates silent coupling between code and data that could drift.",
+            "text": "Service contains hardcoded business logic: the coupon code 'FREESCOOP' is hardcoded directly in the service, violating the principle that configuration data should be isolated or injected via Store. This creates silent coupling between code and data that could drift.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "Service behavior is incomplete: it returns a discount fraction of 1 for FREESCOOP but doesn't actually redeem or track the coupon usage in the Store. A coupon redemption service should typically mark the coupon as used or track redemption history to prevent reuse.",
             "axiomId": null,
             "axiomVersion": null
           }
         ],
-        "reason": "The file violates multiple required criteria from the specification, including critical documentation and I/O requirements."
+        "reason": "The file violates multiple required criteria in the Service Conventions specification. It contains direct I/O outside the Store, has incomplete documentation of failure modes, hardcodes business logic, and implements incomplete redemption behavior."
       },
       "exemplar_files": [
         {
