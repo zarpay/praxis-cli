@@ -36,7 +36,7 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
         "",
         ...report.rows.map(
           (row) =>
-            `[${row.reviewerName}] current stock: ${row.rate.display} · files ever flagged: ${row.files} · pre-spec ${row.byPopulation.pre_spec} / post-spec ${row.byPopulation.post_spec} / unknown ${row.byPopulation.unknown}`,
+            `[${row.reviewerName}] current stock: ${row.rate.display}${asOf(row)} · files ever flagged: ${row.files} · pre-spec ${row.byPopulation.pre_spec} / post-spec ${row.byPopulation.post_spec} / unknown ${row.byPopulation.unknown}`,
         ),
         ...(examples.length > 0 ? ["", "Representative critiques:", ...examples] : []),
         "",
@@ -47,3 +47,8 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
 };
 
 export default axiomReportView;
+
+/** The stock's evidence date, empty when no evidenced corpus run exists. */
+function asOf(row: { asOf: string | null }): string {
+  return row.asOf === null ? "" : ` (as of ${row.asOf.slice(0, 10)})`;
+}

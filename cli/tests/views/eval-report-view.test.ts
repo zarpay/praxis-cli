@@ -41,6 +41,7 @@ describe("evalReportView", () => {
       statement: "S.",
       severity: "error" as const,
       reviewerName: "flash",
+      asOf: "2026-09-03T10:00:00.000Z",
       rate: rateCell(1, 2),
       files: 1,
       byPopulation: { pre_spec: 0, post_spec: 0, unknown: 1 },

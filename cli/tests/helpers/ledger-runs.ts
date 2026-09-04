@@ -25,6 +25,9 @@ export function seedLedgerRun(
     specUnits?: Record<string, number>;
     costUsd?: number | null;
     failCount?: number;
+    /** Fresh reviews this run made; 0 marks an all-hit run. Default 1. */
+    cacheMisses?: number;
+    cacheHits?: number;
     extraLines?: string[];
   },
 ): void {
@@ -44,6 +47,8 @@ export function seedLedgerRun(
     baseline: fields.baseline ?? false,
     cost_usd: fields.costUsd ?? null,
     fail_count: fields.failCount ?? 0,
+    cache_misses: fields.cacheMisses ?? 1,
+    cache_hits: fields.cacheHits ?? 0,
     ...(fields.specUnits && { spec_units: fields.specUnits }),
   };
 

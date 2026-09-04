@@ -6,7 +6,7 @@ Debt is nonconformance in code that predates its spec (or an axiom's `introduced
 
 Per reviewer, over the latest epoch:
 
-- **Baseline → current stock per axiom** — violations (one per axiom+file pair) at the epoch-opening full run versus the latest full run.
+- **Baseline → current stock per axiom** — violations (one per axiom+file pair) at the epoch-opening full run versus the latest *evidenced* full run. An all-cache-hit run restates no critiques, so it never moves the evidence anchor; the report prints when each reviewer's stock was last evidenced instead of reading a quiet run as zero debt.
 - **Paid down** — in the baseline, gone at latest. **Appeared since baseline** — the reverse, labeled exactly that (per-diff introduction attribution arrives with git diff units).
 - **Paydown credit** — when both runs are anchored to commits, the git authors whose commits touched each resolved file between the two shas. Credit is attributable where blame is not: cleanup is deliberate, directed work. Unanchored runs say so instead of guessing.
 - **Concentration** — current stock by directory, worst first.

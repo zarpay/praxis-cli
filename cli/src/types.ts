@@ -1789,6 +1789,12 @@ export interface AxiomReportRow {
   reviewerName: string;
   /** Violations over applicable opportunities, floor-aware. */
   rate: RateCell;
+  /**
+   * When the current stock was last evidenced: the anchor run's
+   * timestamp, or null when no evidenced corpus run exists. An all-hit
+   * run restates no critiques (05), so it never moves this.
+   */
+  asOf: string | null;
   /** Distinct files violating. */
   files: number;
   /** Violation counts by derived population (01). */
@@ -1859,6 +1865,8 @@ export interface PaydownCredit {
 /** The debt report payload. */
 export interface DebtReport {
   calibration: string;
+  /** When each reviewer's stock was last evidenced — the staleness facts. */
+  evidence: { reviewerName: string; baselineAt: string; currentAt: string }[];
   rows: DebtRow[];
   /** Current-stock concentration by directory, worst first. */
   concentration: { directory: string; violations: number }[];

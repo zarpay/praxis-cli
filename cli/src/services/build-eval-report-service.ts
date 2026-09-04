@@ -113,10 +113,14 @@ function axiomRow({
 }): AxiomReportRow {
   const spec = axiom.groundedIn?.split("#")[0] ?? null;
 
-  // Current stock: the reviewer's latest scoped CORPUS run — a one-file
-  // fast loop is feedback, not a stock measurement.
+  // Current stock: the reviewer's latest *evidenced* corpus run — a
+  // one-file fast loop is feedback, not a stock measurement, and an
+  // all-hit run restates no critiques (05), so neither moves the anchor.
   const latestRun = [...runs]
-    .filter((run) => run.reviewer_name === reviewerName && run.scope === "corpus")
+    .filter(
+      (run) =>
+        run.reviewer_name === reviewerName && run.scope === "corpus" && run.cache_misses !== 0,
+    )
     .sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0];
 
   const latestViolatingFiles =
@@ -163,6 +167,7 @@ function axiomRow({
     severity: axiom.severity,
     reviewerName,
     rate: rateCell(latestViolatingFiles.length, opportunities),
+    asOf: latestRun?.timestamp ?? null,
     files: distinct(critiques.map((critique) => critique.file_path)).length,
     byPopulation,
     segments: segments.filter((segment) => segment.violations > 0 || segment.runs > 0),

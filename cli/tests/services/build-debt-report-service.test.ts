@@ -73,6 +73,44 @@ describe("buildDebtReportService", () => {
     });
   });
 
+  it("an all-hit run never moves the evidence anchor — hits restate no critiques (05)", () => {
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      runId: "r1",
+      baseline: true,
+      timestamp: "2026-09-01T10:00:00.000Z",
+      extraLines: [violation("r1", 1, "docs/a.md"), violation("r1", 2, "docs/b.md")],
+    });
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      runId: "r2",
+      timestamp: "2026-09-02T10:00:00.000Z",
+      extraLines: [violation("r2", 1, "docs/b.md")],
+    });
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      runId: "r3",
+      timestamp: "2026-09-03T10:00:00.000Z",
+      cacheMisses: 0,
+      cacheHits: 2,
+    });
+
+    const report = buildDebtReportService(testConfig(root), {});
+
+    // Current stock stays anchored to r2, the last run with fresh evidence.
+    expect(report.rows[0]).toMatchObject({ baselineStock: 2, currentStock: 1, paydown: 1 });
+    expect(report.evidence).toEqual([
+      {
+        reviewerName: "flash",
+        baselineAt: "2026-09-01T10:00:00.000Z",
+        currentAt: "2026-09-02T10:00:00.000Z",
+      },
+    ]);
+  });
+
   it("notes missing credit when runs are unanchored — never guesses authors", () => {
     seedLedgerRun(root, {
       name: "flash",

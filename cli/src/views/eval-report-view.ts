@@ -93,7 +93,7 @@ function axiomLines(rows: AxiomReportRow[]): ReportLine[] {
 
     return [
       `${row.axiomId} ${chalk.gray(`[${row.reviewerName}]`)} ${row.statement}`,
-      `  current stock: ${row.rate.display} · critiques by population: ${populations}`,
+      `  current stock: ${row.rate.display}${asOf(row)} · critiques by population: ${populations}`,
       ...row.segments.map(
         (segment) =>
           `  ${chalk.gray(`${segment.epochLabel}: ${segment.violations} critiques over ${segment.runs} runs`)}`,
@@ -102,4 +102,9 @@ function axiomLines(rows: AxiomReportRow[]): ReportLine[] {
   });
 
   return [{ channel: "content", entries }];
+}
+
+/** The stock's evidence date, empty when no evidenced corpus run exists. */
+function asOf(row: { asOf: string | null }): string {
+  return row.asOf === null ? "" : ` (as of ${row.asOf.slice(0, 10)})`;
 }

@@ -29,7 +29,10 @@ const debtReportView: View<DebtReport & { json?: boolean }> = (report) => {
   const lines: ReportLine[] = [
     { channel: "heading", text: "Debt report — corpus, pre-spec debt included" },
     { channel: "warning", text: `Calibration: ${report.calibration}` },
-    { channel: "content", entries: report.rows.map(rowLine) },
+    {
+      channel: "content",
+      entries: [...report.evidence.map(evidenceLine), ...report.rows.map(rowLine)],
+    },
   ];
 
   lines.push(...concentrationLines(report));
@@ -96,4 +99,14 @@ function creditLines(report: DebtReport): ReportLine[] {
       ],
     },
   ];
+}
+
+/** When a reviewer's stock was last evidenced — the staleness fact. */
+function evidenceLine(entry: DebtReport["evidence"][number]): string {
+  const baseline = entry.baselineAt.slice(0, 10);
+  const current = entry.currentAt.slice(0, 10);
+
+  return chalk.gray(
+    `${entry.reviewerName}: baseline ${baseline} · current stock as evidenced ${current}`,
+  );
 }

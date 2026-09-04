@@ -33,6 +33,7 @@ const buildAxiomReportService: Service<BuildAxiomReportInput, AxiomReport> = (
     severity: axiom.severity,
     reviewerName: "—",
     rate: rateCell(0, 0),
+    asOf: null,
     files: 0,
     byPopulation: { pre_spec: 0, post_spec: 0, unknown: 0 },
     segments: [],

@@ -9,6 +9,7 @@ import { reportText } from "@tests/helpers/report-text.js";
 /** A one-row report; tests override per case. */
 function report(overrides: Partial<DebtReport> = {}): DebtReport {
   return {
+    evidence: [],
     calibration: CALIBRATION_STATUS,
     rows: [
       {

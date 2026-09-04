@@ -76,6 +76,30 @@ describe("buildEvalReportService", () => {
     expect(reviewers).toEqual(["flash", "v32"]);
   });
 
+  it("anchors current stock to the latest evidenced corpus run — all-hit runs never move it", () => {
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      runId: "r1",
+      timestamp: "2026-09-01T10:00:00.000Z",
+      specUnits: { "docs/README.md": 10 },
+      extraLines: [matchedCritique("r1", 1, "docs/a.md", "flash")],
+    });
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      runId: "r2",
+      timestamp: "2026-09-02T10:00:00.000Z",
+      cacheMisses: 0,
+      cacheHits: 10,
+    });
+
+    const row = report().axioms[0];
+
+    expect(row.rate.numerator).toBe(1);
+    expect(row.asOf).toBe("2026-09-01T10:00:00.000Z");
+  });
+
   it("rates current stock against the run's own spec_units denominator (rule 3)", () => {
     seedLedgerRun(root, {
       name: "flash",
