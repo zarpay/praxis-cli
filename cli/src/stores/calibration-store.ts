@@ -42,6 +42,18 @@ export class CalibrationStore {
   }
 
   /**
+   * The newest record for a reviewer *name*, across identities — the
+   * drift protocol's baseline (06): drift compares the same instrument
+   * before and after a behavioral change, which is exactly when the
+   * hash differs.
+   */
+  latestByName(reviewerName: string): LedgerCalibrationRecord | null {
+    const matching = this.records().filter((record) => record.reviewer_name === reviewerName);
+
+    return matching.at(-1) ?? null;
+  }
+
+  /**
    * Lands one record as its file: written whole, never touched again.
    *
    * @throws on write failure — a silently missing record is a gap in evidence

@@ -54,6 +54,8 @@ export interface LedgerCalibrationRecord {
   repeats: number;
   /** Verdict-level agreement: cases × repeats where the reviewer's verdict matched the adjudicated one. */
   verdict_matches: number;
+  /** Case × repeat runs no verdict could be produced for — mismatches, never silently dropped. */
+  unverified_count: number;
   /** Total forbidden flags fired across cases × repeats. */
   false_positive_count: number;
   axiom_scores: CalibrationAxiomScore[];

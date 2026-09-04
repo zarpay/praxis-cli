@@ -60,6 +60,7 @@ export function calibrationRecord(
     case_set_hash: "cafe0000",
     repeats: 1,
     verdict_matches: 1,
+    unverified_count: 0,
     false_positive_count: 0,
     axiom_scores: [],
     drift_flagged: [],
