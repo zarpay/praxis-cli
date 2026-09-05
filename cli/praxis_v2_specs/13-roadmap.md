@@ -33,9 +33,9 @@ Calibration cases, `calibrate run|status`, interpretability gating on reports, d
 **M7 — Feedback surfaces**
 Briefs with triangulated diagnosis, `harness suggest` + the generated drafting command, intervention tracking (08).
 
-## Deferred — in the schema, not the build
+## Removed from scope (owner, 2026-09-05 — formerly "Deferred")
 
-`mode: agentic` (03), `cohort` and `changeset` scopes (start with `file` and `file+context`), the `watch` trigger (12), attribution conventions / the human-agent contrast (02's optional sharpening), A/B interventions (08), multi-repo anything (README non-goal). Each is already shaped in its document; deferral means no code, not no design.
+`mode: agentic` (03), `cohort` and `changeset` scopes beyond the shipped enum, the `watch` trigger (12), attribution conventions / the human-agent contrast (02's optional sharpening), A/B interventions (08), and multi-repo anything (README non-goal) are **not wanted and no longer tracked**. Where a record schema already carries a slot (an enum member, an `authorship: "unknown"` field), the slot keeps its shape — the ledger is append-only and committed evidence is never reshaped — but no build follows.
 
 ## Migration (v1 → v2)
 
