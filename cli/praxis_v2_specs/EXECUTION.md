@@ -29,7 +29,7 @@ the gap named, `deferred` schema-only by design. The completion audit ran
 | `init` scaffolds `.praxis/` minimal; spec layer opt-in; `status` splits eval state from framework health                             | 11-j, 11-i             | ✅                                                                                                                       |
 | `TargetType`/`DocumentType` retired from eval data                                                                                   | 11-h                   | ✅                                                                                                                       |
 | Profiles-as-specs discovery                                                                                                          | roadmap M1             | ✅ resolved as stale (2026-09-05): supported by composition — spec discovery sweeps `sources` for `specFilePattern`, and a compiled profile opens with `paths:` frontmatter, so a project points discovery at the profiles (output dir in `sources`, pattern matching the profile filenames) and they govern like any spec. No `agentProfileSuffix` mechanism needed. |
-| **Open naming: expert-level compile-through for judgment `context:`** (collides with the expert's existing `context:` key)           | roadmap M1             | —                                                                                                                        |
+| Expert-level compile-through for judgment `context:`                                                                                 | roadmap M1             | ✅ dissolved (owner, 2026-09-05): no second key needed — the expert's `context:` files are inlined into the profile body at compile time, and the profile IS the spec, so the reviewer already reads them (and the content hash covers them via the spec content). Spec-level `context:` exists for hand-authored READMEs that point at live files; the expert path freezes at compile time by design — the exact-direction thesis (11). |
 
 ## M2 — Critique flow (this branch's milestone)
 
@@ -127,10 +127,13 @@ the gap named, `deferred` schema-only by design. The completion audit ran
 | Denominators on every number; fixed color semantics; `NO_COLOR`; epoch furniture; drill-down grammar; no TUI | 09-u…09-y, 09-ac  | ✅ (audited 2026-09-05): rateCell denominators/floors everywhere (M4); green/yellow/red/gray fixed in the views; NO_COLOR + non-TTY via the framework Logger/Display (chalk); epoch furniture on every report (M4); drill-down grammar = compact-by-reference --json + `axioms show` (M7); no TUI exists                                                                                                                                                                                                                                                                                                                                     |
 | Help text as API docs: when-to-use + examples; top-level typical flows                                       | 09-l, 09-m        | ✅ (2026-09-05): every subcommand carries when-to-use + an example via `addHelpText`; top-level help carries "Typical flows:" and the exit-code legend                                                                                                                                                                                                                                                     |
 
-## Deferred by design (schema slots only, no code)
+## Removed from scope (owner, 2026-09-05)
 
-`mode: agentic` (03-q, 01-v) · `hunk`/`changeset` scopes beyond the enum (01-p) ·
-`watch` trigger (12-o) · attribution conventions as default-on (01-b, 02-p) ·
-A/B interventions (08-p) · multi-repo (RM-i) · ledger partitioning (10-m) ·
-retention/compaction/indexing (05-x) · PII redaction (05-y) · CSV export (07-n) ·
-linter-annex ingestion (03-z) · sampled re-baselines (02-y)
+The former "deferred by design" list — agentic mode, extra scopes, the
+watch trigger, default-on attribution, A/B interventions, multi-repo,
+ledger partitioning/retention, PII redaction, CSV export, linter-annex
+ingestion, sampled re-baselines — is not wanted and is no longer
+tracked. Schema slots already present in committed ledger records
+(e.g. `authorship: "unknown"`, the `watch` trigger enum member) stay as
+written: the ledger is append-only and existing evidence keeps its
+shape.
