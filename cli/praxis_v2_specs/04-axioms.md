@@ -72,6 +72,16 @@ Bootstrap is the degenerate case: no axioms yet, everything arrives through the 
 
 **Residual** = critiques triage cannot ground in the spec: not assignable to an established axiom, and not clusterable into a spec-traceable proposal. Pending-triage critiques are a queue, not residual. The **residual rate** is a health metric with two readings, and the dismissal reasons say which: the reviewer is drifting off-spec (noise — route to calibration), or the reviewer is consistently perceiving a real standard no spec has written down (discovery — the "overcomplicating this" critiques that precede a "keep it simple" convention). The second reading is the taxonomy's intake channel for unstated values: fix the specs, and the same critiques become groundable. Rejected-at-ratification proposals feed the same signal.
 
+
+> **Axioms are atomic** (owner, 2026-09-06, from the servus adoption): a
+> statement never references another axiom by id or name. Coupling rules
+> means renaming or deprecating one silently corrupts its neighbor, and a
+> reviewer applying one rule must never need to resolve another. A scope
+> boundary is stated in the rule's own terms ("this rule judges presence
+> only; the quality of an example that exists is outside its scope") or
+> defers to the spec — never to a sibling axiom. Applies to the curator's
+> drafts and the authoring gate alike.
+
 ## Open questions
 
 1. Assignment provenance: critiques store `axiom_id` + `axiom_version` + the assigner (model, date). Re-assignment after taxonomy changes — full re-run or incremental?
