@@ -19,7 +19,6 @@ const axiomShowView: View<ShownAxiom & { json?: boolean }> = ({ axiom, json }) =
       version: axiom.version,
       status: axiom.status,
       mode: axiom.mode,
-      scope: axiom.scope,
       severity: axiom.severity,
       grounded_in: axiom.groundedIn,
       introduced: axiom.introduced,
@@ -36,7 +35,7 @@ const axiomShowView: View<ShownAxiom & { json?: boolean }> = ({ axiom, json }) =
     {
       channel: "content",
       entries: [
-        `severity: ${axiom.severity} · mode: ${axiom.mode} · scope: ${axiom.scope}`,
+        `severity: ${axiom.severity} · mode: ${axiom.mode}`,
         `introduced: ${axiom.introduced}`,
         `grounded in: ${axiom.groundedIn ?? "— (not ratified yet)"}`,
         ...(axiom.supersedes ? [`supersedes: ${axiom.supersedes}`] : []),

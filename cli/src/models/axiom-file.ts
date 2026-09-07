@@ -1,5 +1,5 @@
 import type { Frontmatter } from "@/models/frontmatter.js";
-import type { AxiomMode, AxiomScope, AxiomStatus, Severity } from "@/types.js";
+import type { AxiomMode, AxiomStatus, Severity } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { MarkdownFile } from "@/models/markdown-file.js";
@@ -9,9 +9,6 @@ const STATUSES: readonly AxiomStatus[] = ["proposed", "active", "deprecated"];
 
 /** The accepted evaluation modes (03); `agentic` is schema-only. */
 const MODES: readonly AxiomMode[] = ["judgment", "agentic"];
-
-/** The accepted judgment scopes (03); the runtime honors file and file+context. */
-const SCOPES: readonly AxiomScope[] = ["hunk", "file", "file+context", "cohort", "changeset"];
 
 /** The accepted severities. */
 const SEVERITIES: readonly Severity[] = ["error", "warning"];
@@ -39,9 +36,6 @@ export class AxiomFile {
   /** How the axiom is evaluated; `judgment` unless explicitly opted out. */
   readonly mode: AxiomMode;
   /** What the reviewer reads to decide it. */
-  readonly scope: AxiomScope;
-  /** Extra files inlined for `file+context` scope, as written. */
-  readonly context: string[];
   /** What a violation of this axiom costs a verdict. */
   readonly severity: Severity;
   /** The spec criterion that grounds it; null until ratification. */
@@ -59,8 +53,6 @@ export class AxiomFile {
     this.version = fields.requiredInt("version");
     this.status = fields.enumValue("status", STATUSES) ?? raiseMissing("status", path);
     this.mode = fields.enumValue("mode", MODES) ?? "judgment";
-    this.scope = fields.enumValue("scope", SCOPES) ?? "file";
-    this.context = fields.stringList("context");
     this.severity = fields.enumValue("severity", SEVERITIES) ?? raiseMissing("severity", path);
     this.groundedIn = fields.optionalString("grounded_in") ?? null;
     this.introduced = fields.requiredDate("introduced");

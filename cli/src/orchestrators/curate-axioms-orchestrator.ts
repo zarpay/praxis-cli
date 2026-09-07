@@ -347,7 +347,6 @@ async function propose(
   const { id } = store.propose({
     statement,
     severity: draft.severity,
-    scope: draft.scope,
     violatingExample: draft.violatingExample,
     compliantExample: draft.compliantExample,
   });

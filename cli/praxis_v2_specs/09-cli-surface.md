@@ -41,7 +41,7 @@ Typical flows:
 
 ## The fast loop runs through the CLI
 
-The fast loop (08) needs no delivery mechanism beyond this: the coding agent (or a harness hook) runs `praxis eval run <target> --json` after editing; the output _is_ the feedback — matched violations carry their axiom (ID, statement, examples, grounding), unmatched ones carry the raw critique. Whether the harness triggers that run via a hook, a rule, or the agent's own habit is the harness's business, which is exactly the point.
+The fast loop (08) needs no delivery mechanism beyond this: the coding agent (or a harness hook) runs `praxis eval run <target> --json` after editing; the output _is_ the feedback — raw critiques; labels arrive at triage, never at review (04, 2026-09-07).
 
 ## Display and interaction
 
@@ -67,7 +67,7 @@ One CLI, two reading styles. The split is by **command default plus `--json`**, 
 
 - **Terse by default, deterministic always.** Stable sort orders on every list; no decorative framing that parsers must skip; the same state prints the same bytes.
 - **One situational poll**: `praxis status --json` carries the pending-work facts (`pending_triage`, `calibration_stale`, `epoch_boundary_detected`, counts) so an agent learns what needs doing from a single cheap call instead of a discovery crawl.
-- **Feedback is compact by reference.** Fast-loop output (08) carries axiom IDs with statements; the agent that wants depth runs `axioms show <id>`. Don't inline every example into every violation — the drill-down grammar is token economy.
+- **Feedback is compact by reference.** Fast-loop output is raw critiques; per-axiom depth lives behind `axioms show <id>` and the reports, after triage labels.
 
 ## Surface inventory (v2 additions, gathered from the other docs)
 

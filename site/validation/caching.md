@@ -6,7 +6,7 @@ Every verdict is cached. Unchanged targets are never re-reviewed — only files 
 
 When `praxis eval run` reviews a target, each configured reviewer:
 
-1. Computes a content hash over the **full review input** — the target, the spec, the spec's resolved `exemplars:` and `context:` files, and the active axiom checklist
+1. Computes a content hash over the **full review input** — the target, the spec, and the spec's resolved `exemplars:` and `context:` files
 2. Looks up `.praxis/cache/validation/{target-relative-path}.json`
 3. If the file holds an entry for this (spec, reviewer) pair and the hash matches — returns the cached verdict without any API call
 4. If there is no entry, or the hash doesn't match — calls the provider and writes the verdict
@@ -57,7 +57,7 @@ The cache invalidates automatically when:
 - The target content changes (any member, for cohort units)
 - The spec file content changes
 - An exemplar or context file the spec declares changes
-- An axiom grounded in the spec is ratified, versioned, or deprecated — the checklist is part of what the reviewer is asked
+
 - The reviewer's behavioral settings change (model, temperature, baseUrl, provider, options) — this rolls the reviewer's [epoch](/concepts/evidence-loop) and invalidates all of its entries at once
 
 Renaming a reviewer does *not* invalidate anything: the name is excluded from the hash, so identity follows behavior, not the label. Rolling a config change back re-hits the old entries at zero cost. There is no manual cache management in normal use — `praxis eval prune` exists only to drop entries no configured reviewer can ever hit again.

@@ -12,13 +12,6 @@ export type AxiomStatus = "proposed" | "active" | "deprecated";
 /** How the axiom is evaluated (03); `agentic` is schema-only until built. */
 export type AxiomMode = "judgment" | "agentic";
 
-/**
- * What the reviewer reads to decide this axiom (03). The runtime honors
- * `file` and `file+context`; the rest are in the schema so nothing gets
- * silently stretched into them.
- */
-export type AxiomScope = "hunk" | "file" | "file+context" | "cohort" | "changeset";
-
 /** The store's contents, plus what could not be read. */
 export interface ListAxiomsResult {
   /** Sorted by introduced date, id as tiebreak — random ids carry no order. */
@@ -31,7 +24,6 @@ export interface ListAxiomsResult {
 export interface AxiomDraft {
   statement: string;
   severity: Severity;
-  scope: AxiomScope;
   violatingExample: string;
   compliantExample: string;
   /** The spec passage the curator grounds the draft in — ratification's aid. */

@@ -1,6 +1,5 @@
 import type {
   AxiomDraft,
-  AxiomScope,
   OrganizeTriageInput,
   ProviderUsage,
   Service,
@@ -29,7 +28,6 @@ interface TriageWireCluster {
   draft?: {
     statement?: string;
     severity?: string;
-    scope?: string;
     violating_example?: string;
     compliant_example?: string;
     grounding_hint?: string;
@@ -100,12 +98,10 @@ function normalizeSuggestion(wire: TriageWireCluster, knownAxioms: Set<string>):
 /** A wire draft with safe defaults for anything the model left thin. */
 function normalizeDraft(draft: NonNullable<TriageWireCluster["draft"]>): AxiomDraft {
   const severity: Severity = draft.severity === "warning" ? "warning" : "error";
-  const scope: AxiomScope = draft.scope === "file+context" ? "file+context" : "file";
 
   return {
     statement: draft.statement ?? "",
     severity,
-    scope,
     violatingExample: draft.violating_example ?? "(no example drafted)",
     compliantExample: draft.compliant_example ?? "(no example drafted)",
     groundingHint: draft.grounding_hint ?? "",

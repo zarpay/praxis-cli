@@ -29,7 +29,7 @@ A linter can verify none of that. It can check that a function named `run` exist
 
 **It keeps the evidence.** Every run appends to a committed ledger — what ran, against which commit, what it cost, and one critique record per finding with full provenance. The cache answers "is this compliant now"; the ledger answers "what has ever happened".
 
-**It grows a taxonomy.** Recurring critiques triage into **axioms** — named, ratified standards with stable ids. Once ratified, an axiom joins the reviewers' checklist: the same violation returns with the same id and the same words every run, `praxis axioms show AX-b951db` explains it with examples, and `praxis eval report` can finally chart it — as a rate with a denominator, per reviewer, never pooled.
+**It grows a taxonomy.** Recurring critiques triage into **axioms** — named, ratified standards with stable ids. Once ratified, an axiom names the standard: triage labels every recurring critique under it, so the same violation carries the same id and the same words everywhere, `praxis axioms show AX-b951db` explains it with examples, and `praxis eval report` can finally chart it — as a rate with a denominator, per reviewer, never pooled.
 
 **And, for teams authoring agent knowledge, it compiles.** Expert documents assemble into self-contained SME agent profiles, and a compiled profile can itself be the spec its subject matter is reviewed against. The spec layer is optional; the eval loop stands on its own.
 

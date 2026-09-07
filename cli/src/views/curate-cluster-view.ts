@@ -47,7 +47,7 @@ function suggestionLines(cluster: TriageCluster): string[] {
     const { draft } = suggestion;
 
     return [
-      `${chalk.cyan("Suggests:")} propose a new axiom (severity: ${draft.severity}, scope: ${draft.scope})`,
+      `${chalk.cyan("Suggests:")} propose a new axiom (severity: ${draft.severity})`,
       `  ${chalk.bold(draft.statement)}`,
       `  Violating: ${draft.violatingExample}`,
       `  Compliant: ${draft.compliantExample}`,

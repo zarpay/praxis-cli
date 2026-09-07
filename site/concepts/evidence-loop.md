@@ -14,12 +14,12 @@ Two things happen. The verdict lands in the **cache** (`.praxis/cache/validation
 
 The cache answers *"is this compliant now"* and overwrites. The ledger answers *"what has ever happened"* and never does — run files are written once and never touched again, and both are committed to git.
 
-## 2. Critiques recur, and triage names the pattern
+## 2. Critiques recur, and curate names the pattern
 
-A week of runs produces the same complaint about five different services. Those critiques sit on the **open channel** — raw reviewer prose, unassigned to any standard — until you run:
+A week of runs produces the same complaint about five different services. Those critiques sit **pending** — raw reviewer prose, unassigned to any standard — until you run:
 
 ```bash
-praxis axioms triage
+praxis axioms curate
 ```
 
 The **curator** (a dedicated model configured beside your reviewers — worth a frontier model, since it does the taxonomy's thinking) clusters the pending critiques per spec and suggests, cluster by cluster: fold these into an existing axiom, propose a new one, or admit they're unassignable. You decide — `[a]ccept / [d]ismiss / [s]kip`. Nothing the curator suggests takes effect without a human accepting it.
@@ -57,9 +57,9 @@ Error messages name what was wrong and what would be accepted instead.
 `err("rating must be a whole number from 1 to 5")`
 ```
 
-## 4. The checklist closes the loop
+## 4. The label pass closes the loop
 
-Active axioms grounded in a spec become that spec's **checklist**, rendered into every reviewer's prompt. From now on the same violation returns **matched** — cited by id, in the axiom's ratified words, deduplicated across reviewers into one finding with its witnesses counted:
+The reviewer never sees the axioms — it reads only the spec, and every critique arrives raw. `praxis axioms triage` then batch-labels the backlog: the curator classifies each pending critique against the spec's active axioms, and squarely-an-instance matches become assignment records (machine-labeled, human-overridable at `axioms curate`). From then on reports speak in the axiom's ratified words:
 
 ```
 [FAIL] src/services/redeem-coupon.ts
@@ -67,9 +67,9 @@ Active axioms grounded in a spec become that spec's **checklist**, rendered into
     accepted instead. (2/2 reviewers)
 ```
 
-Everything the checklist doesn't cover still arrives on the open channel — today's raw critique is tomorrow's axiom. The checklist also joins the verdict cache key, so ratifying an axiom automatically re-reviews everything its spec governs.
+Whatever triage can't confidently label stays pending for the human curate session — today's raw critique is tomorrow's axiom. And because axioms never enter the review, ratifying one costs nothing: no cache invalidation, no re-review — the reviewer's question changes only when the spec does.
 
-For a developer or an agent, a matched finding is a link, not a lecture: `praxis axioms show AX-b951db` is the drill-down with both examples, and the finding reads identically every run, on every machine.
+For a developer or an agent, a labeled finding is a link, not a lecture: `praxis axioms show AX-b951db` is the drill-down with both examples, and the finding reads identically every run, on every machine.
 
 ## 5. Now — and only now — you can count
 
@@ -85,8 +85,8 @@ A raw critique can't be charted: its wording varies by run and by reviewer. An a
 
 | Actor        | Does                                                              | Never does                          |
 | ------------ | ----------------------------------------------------------------- | ----------------------------------- |
-| **Reviewer** | Reads targets against specs; critiques on two channels            | Checks anything a linter could      |
-| **Curator**  | Clusters critiques, drafts proposals, assesses traceability       | Decides — every suggestion is human-ratified |
+| **Reviewer** | Reads targets against specs; every critique arrives raw           | Sees an axiom, or checks anything a linter could |
+| **Curator**  | Labels critiques at triage; clusters, drafts, assesses traceability at curate | Decides — every label is overridable, every proposal human-ratified |
 | **You**      | Accept, dismiss, ratify, deprecate; own the specs                 | Manage cache or ledger files by hand |
 | **The ledger** | Remembers everything, append-only, in git                       | Gets edited                         |
 

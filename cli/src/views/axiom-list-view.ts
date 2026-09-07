@@ -76,7 +76,6 @@ function axiomJson(axiom: AxiomFile): Record<string, unknown> {
     version: axiom.version,
     status: axiom.status,
     mode: axiom.mode,
-    scope: axiom.scope,
     severity: axiom.severity,
     grounded_in: axiom.groundedIn,
     introduced: axiom.introduced,

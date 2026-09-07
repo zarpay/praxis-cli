@@ -1,5 +1,5 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type { AxiomScope, ActiveAxiom, ListAxiomsResult, Severity, StoreProblem } from "@/types.js";
+import type { ActiveAxiom, ListAxiomsResult, Severity, StoreProblem } from "@/types.js";
 
 import { randomBytes } from "node:crypto";
 
@@ -106,7 +106,6 @@ export class AxiomStore {
   propose(draft: {
     statement: string;
     severity: Severity;
-    scope: AxiomScope;
     violatingExample: string;
     compliantExample: string;
   }): WriteAxiomProposalResult {
@@ -116,7 +115,6 @@ export class AxiomStore {
       id,
       status: "proposed",
       mode: "judgment",
-      scope: draft.scope,
       severity: draft.severity,
       introduced: new Date().toISOString().slice(0, 10),
       groundedIn: null,
