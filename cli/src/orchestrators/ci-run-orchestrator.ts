@@ -22,11 +22,9 @@ interface CiRunOptions {
  * CI re-derives verdicts — identical content hashes mean cache hits —
  * sets the exit code, and commits nothing: no ledger records, and the
  * cache in read-only mode so a miss never writes back. The branch's own
- * locally produced runs are the durable evidence; CI is the gate.
- *
- * Two gates share the machinery: the default full corpus verify, and
- * `--diff [base]` — the same merge-base evaluation `eval run --diff`
- * measures, judged on what the branch introduced.
+ * locally produced runs are the durable evidence; CI is the gate: it
+ * fails on errors and unverified units, and on warnings too under
+ * `--strict`.
  */
 export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { strict = false }) => {
   const cfg = ctx.config;

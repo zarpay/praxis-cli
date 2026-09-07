@@ -47,7 +47,7 @@ them:
 
 ```bash
 npx praxis compile
-# → agent-profiles/scooper.md, taster.md   (pure SME profiles, paths: frontmatter)
+# → agent-profiles/scooper.expert.md, sundae.expert.md, taster.expert.md (eval-targeting frontmatter)
 # → plugins/praxis/agents/                  (Claude Code agents)
 ```
 
@@ -81,7 +81,7 @@ First reviewed run 2026-08-31 (`deepseek/deepseek-v4-flash-0731`); the
 committed cache under `.praxis/cache/` is that run's shared evidence:
 
 - **The full loop, live**: real findings → fixes → automatic cache
-  invalidation → re-reviewed to green (8/8 compliant at steady state).
+  invalidation → re-reviewed to green (a warm corpus at steady state (18 units per reviewer; deliberate standing failures in flavor-of-day and rank-parlors)).
 - **Cohort review**: the tasting-menu directory's first verdict
   caught a genuine relational violation (types-file naming) across a
   three-file set — a finding no per-file review could produce.

@@ -1,0 +1,26 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "0311531a:87a547f7": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "87a547f7"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-07T22:02:10.684Z",
+      "content_hash": "66ce0214",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 569 words."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    }
+  }
+}

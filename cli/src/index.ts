@@ -40,7 +40,6 @@ function createProgram(): Command {
     `
 Typical flows:
   Evaluate work you just changed:   praxis eval run <target>
-  Review what a branch introduced:  praxis eval run --diff [base]
   Understand a violated standard:   praxis axioms show <id>
   Check project health:             praxis status
 

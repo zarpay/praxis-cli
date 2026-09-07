@@ -98,7 +98,7 @@ function creditLines(report: DebtReport): ReportLine[] {
       channel: "content",
       entries: [
         "",
-        "Paydown credit (authors of resolving commits, 02):",
+        "Paydown credit (authors of resolving commits):",
         ...report.credits.map((credit) => `  ${credit.author}: ${credit.resolved} resolved`),
       ],
     },

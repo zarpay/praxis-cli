@@ -1,51 +1,6 @@
 {
   "version": "5.0",
   "verdicts": {
-    "dacac2eb:f524adbc": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "f524adbc"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-03T12:38:39.569Z",
-      "content_hash": "c40d9b6a",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 903 words."
-      }
-    },
-    "dacac2eb:41d823fa": {
-      "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "41d823fa"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-03T12:38:36.649Z",
-      "content_hash": "c40d9b6a",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies the specification and all ratified axioms. The top-level describe names the unit by module name ('send-newsletter'), and nested describes frame distinct situations as 'when' clauses (AX-371742). Each test builds its own fresh memory store and data inside the test, with no dependence on other tests' state (AX-635eb9). Every it description reads as a complete sentence when combined with its describe context and states an observable outcome in plain language (AX-9a7dd5). Each it block contains exactly one expect, with compound shapes asserted once via toEqual/toMatchObject, separating distinct outcomes into separate blocks (AX-dca8ca). Tests exercise only the public run API and the honest in-memory store, with no spies, mocks, or module-scope reach-ins, and data is built fresh per test."
-      }
-    },
-    "dacac2eb:2b519849": {
-      "reviewer": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "2b519849"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-03T12:38:39.567Z",
-      "content_hash": "c40d9b6a",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully satisfies all criteria defined in the specification and complies with all axioms in the checklist."
-      }
-    },
     "dacac2eb:87a547f7": {
       "reviewer": {
         "name": "counter",

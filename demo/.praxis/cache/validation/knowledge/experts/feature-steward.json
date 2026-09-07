@@ -1,51 +1,6 @@
 {
   "version": "5.0",
   "verdicts": {
-    "244fa7f3:f524adbc": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "f524adbc"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-03T12:59:55.554Z",
-      "content_hash": "e81f97c9",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 415 words."
-      }
-    },
-    "244fa7f3:41d823fa": {
-      "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "41d823fa"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-03T12:55:08.089Z",
-      "content_hash": "e81f97c9",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file satisfies the specification. Required frontmatter is present and valid: title ('Feature Steward'), type ('expert'), alias ('Sundae'), and a description that tells an operator when to invoke the expert (review feature modules for cohesion, advice on composing a new feature, invoke when src/features/ directories change) — compliant with AX-be1f03. The body opens with a level-1 heading naming the expert and its alias ('# Feature Steward (a.k.a **Sundae**)') and states in prose what the expert is the subject-matter expert on (how Scoop Society features are composed, reviewed as one assembly). No placeholder text (TODO, TBD, lorem ipsum) is present. Additional frontmatter fields (context, practices, validates, cohort) are not prohibited by the spec."
-      }
-    },
-    "244fa7f3:2b519849": {
-      "reviewer": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "2b519849"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-03T12:58:46.480Z",
-      "content_hash": "e81f97c9",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The file fully satisfies all criteria defined in the specification. It includes all required frontmatter fields with appropriate values, opens with a level-1 heading naming the expert and its alias, and clearly states in prose what the expert is the subject-matter expert on. The description effectively tells operators when to invoke the expert by specifying concrete situations and triggers."
-      }
-    },
     "244fa7f3:87a547f7": {
       "reviewer": {
         "name": "counter",

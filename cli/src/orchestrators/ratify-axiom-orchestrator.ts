@@ -59,7 +59,7 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
     ctx.render([
       {
         channel: "success",
-        text: `Rejected ${id}: ${reject} (recorded — reviewer-noise signal, 04).`,
+        text: `Rejected ${id}: ${reject} (recorded — feeds the reviewer-noise signal).`,
       },
     ]);
 
