@@ -8,13 +8,27 @@
         "hash": "87a547f7"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:10:51.582Z",
-      "content_hash": "60a083d7",
+      "cached_at": "2026-09-07T22:09:24.145Z",
+      "content_hash": "1d484578",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 815 words."
+        "reason": "Review input has 1155 words."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",
@@ -33,13 +47,27 @@
         "hash": "0ca26f36"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:14:08.211Z",
-      "content_hash": "60a083d7",
+      "cached_at": "2026-09-07T22:07:55.287Z",
+      "content_hash": "1d484578",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The loyalty feature conforms to the Feature Module Conventions. `index.ts` is the single entry point re-exporting the entire public API (`LoyaltyStanding`, `TrackPunchesInput`, `trackPunches`). Types live in the dedicated `loyalty-types.ts`, and the logic file `track-punches.ts` is verb-first kebab-case with one exported `run`, returning `Result<LoyaltyStanding>` (Results over exceptions) with a consumer-grade, actionable error message for unknown parlor ids. Both files are reachable from `index.ts` (no orphans), the feature serves one capability, and the name 'loyalty' describes the capability rather than its implementation."
+        "reason": "The loyalty feature conforms to the Feature Module Conventions. It has exactly one entry point (index.ts) that re-exports the entire public API (types from loyalty-types.ts, run as trackPunches from track-punches.ts); types live in the dedicated loyalty-types.ts file; the logic file track-punches.ts is verb-first kebab-case with a single exported `run`, returns Result values rather than throwing, and provides a consumer-grade error message for unknown parlor ids. Cohesion holds: both files are reachable from index.ts (no orphans), the feature serves one capability (loyalty standing tracking), and the name 'loyalty' describes the capability rather than its implementation. The structure mirrors the blessed awards exemplar."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",
@@ -58,13 +86,27 @@
         "hash": "63664cce"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:17:30.480Z",
-      "content_hash": "60a083d7",
+      "cached_at": "2026-09-07T22:09:00.545Z",
+      "content_hash": "1d484578",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The loyalty feature module satisfies all specification criteria: it has exactly one entry point index.ts that re-exports the public API, types are in a dedicated loyalty-types.ts file, logic files follow verb-first kebab-case naming with a single exported run function using Results over exceptions with consumer-grade error messages, all files are reachable from the entry point, the feature maintains cohesion around the loyalty capability, and the feature name appropriately describes the capability."
+        "reason": "The loyalty feature module satisfies all specification requirements: it has a single entry point index.ts that re-exports the public API, types are in a dedicated loyalty-types.ts file, the logic file uses verb-first kebab-case naming and follows service conventions, all files are connected through imports, and the feature focuses on one capability (loyalty tracking)."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",

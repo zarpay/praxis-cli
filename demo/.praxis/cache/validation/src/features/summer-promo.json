@@ -8,13 +8,27 @@
         "hash": "87a547f7"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:10:51.583Z",
-      "content_hash": "ae35b04c",
+      "cached_at": "2026-09-07T22:09:24.146Z",
+      "content_hash": "8f973262",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 821 words."
+        "reason": "Review input has 1161 words."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",
@@ -33,13 +47,27 @@
         "hash": "0ca26f36"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:14:14.000Z",
-      "content_hash": "ae35b04c",
+      "cached_at": "2026-09-07T22:07:59.844Z",
+      "content_hash": "8f973262",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The summer-promo feature conforms to the Feature Module Conventions. It has exactly one entry point (index.ts) that re-exports the entire public API; types live in the dedicated summer-promo-types.ts; the logic file build-banner.ts is verb-first kebab-case and follows the service conventions (one exported run, Results over exceptions, a consumer-grade error message). Cohesion holds: every file is reachable from index.ts through its import graph, the files serve the single capability of building the summer banner, and the name 'summer-promo' describes the capability rather than its implementation."
+        "reason": "The summer-promo feature satisfies the Feature Module Conventions. It has exactly one entry point (index.ts) that re-exports the entire public API (both types and the run function). Types live in the dedicated summer-promo-types.ts. The logic file build-banner.ts is verb-first kebab-case, exports a single `run`, returns Results over exceptions, and provides a consumer-grade error message. All files are reachable from index.ts (no orphans), the feature serves one capability, and the name describes the capability rather than its implementation."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",
@@ -58,13 +86,27 @@
         "hash": "63664cce"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:17:46.006Z",
-      "content_hash": "ae35b04c",
+      "cached_at": "2026-09-07T22:09:08.733Z",
+      "content_hash": "8f973262",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The summer-promo feature module satisfies all specification criteria: it has exactly one entry point (index.ts) that re-exports the entire public API, types are in a dedicated summer-promo-types.ts file, logic files follow verb-first kebab-case naming and service conventions (one exported run function, Results over exceptions, consumer-grade error messages), all files are reachable from index.ts through the import graph, the module serves one unified capability (building summer promotion banners), and the feature name describes the capability rather than implementation."
+        "reason": "The summer-promo feature module satisfies all criteria defined in the specification. It has exactly one entry point (index.ts) that re-exports the entire public API, types are in a dedicated summer-promo-types.ts file, logic files follow verb-first kebab-case naming (build-banner.ts) and service conventions with one exported 'run' function, Results over exceptions, and consumer-grade error messages. The feature demonstrates cohesion with no orphaned files (all files are reachable from index.ts), serves one clear capability (summer promotion banner building), and uses a capability-descriptive name."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",

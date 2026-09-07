@@ -8,13 +8,27 @@
         "hash": "87a547f7"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:10:51.584Z",
-      "content_hash": "cbd707ee",
+      "cached_at": "2026-09-07T22:09:24.147Z",
+      "content_hash": "ea004542",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 883 words."
+        "reason": "Review input has 1223 words."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",
@@ -33,13 +47,27 @@
         "hash": "0ca26f36"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:14:27.982Z",
-      "content_hash": "cbd707ee",
+      "cached_at": "2026-09-07T22:08:29.659Z",
+      "content_hash": "ea004542",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The tasting-menu feature conforms to the specification. It has exactly one entry point (index.ts) that re-exports the entire public API (run as buildMenu, plus the types). Types live in the dedicated tasting-menu-types.ts file. The logic file build-menu.ts is verb-first kebab-case, exports a single `run`, returns a Result instead of throwing, and provides a consumer-grade error message ('stops must be a whole number of 1 or more'). Cohesion holds: every file is reachable from index.ts through the import graph (index → build-menu → tasting-menu-types), all files serve the single tasting-menu capability, and the feature name describes the capability rather than its implementation."
+        "reason": "The tasting-menu feature satisfies all specification criteria. The structure is compliant: index.ts is the single entry point re-exporting the complete public API, types live in a dedicated tasting-menu-types.ts, and the logic file build-menu.ts is verb-first kebab-case with one exported run, returning Results with consumer-grade error messages. Cohesion holds: both files are reachable from index.ts (no orphans), the files compose a single capability, and the feature name describes the capability rather than its implementation."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",
@@ -58,13 +86,27 @@
         "hash": "63664cce"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:17:57.903Z",
-      "content_hash": "cbd707ee",
+      "cached_at": "2026-09-07T22:09:24.129Z",
+      "content_hash": "ea004542",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The tasting-menu feature module fully complies with all specification requirements: it has exactly one entry point (index.ts) that re-exports the public API, types are properly separated into tasting-menu-types.ts, logic files follow verb-first kebab-case naming with a run function, all files are reachable from the entry point, the feature represents a single coherent capability, and the naming describes the user-facing functionality."
+        "reason": "The tasting-menu feature directory satisfies all criteria defined in the specification. It has exactly one entry point (index.ts) that re-exports the entire public API, a dedicated types file (tasting-menu-types.ts), and a logic file with verb-first kebab-case naming (build-menu.ts) that follows service conventions. The feature demonstrates cohesion with no orphaned files, serves one clear capability (curated flavor tours), and uses a descriptive name that describes the capability rather than implementation."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",

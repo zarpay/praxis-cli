@@ -8,13 +8,27 @@
         "hash": "87a547f7"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:10:51.580Z",
-      "content_hash": "67edd1dd",
+      "cached_at": "2026-09-07T22:09:24.144Z",
+      "content_hash": "1120a03e",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 714 words."
+        "reason": "Review input has 1054 words."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",
@@ -33,25 +47,34 @@
         "hash": "0ca26f36"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:14:01.746Z",
-      "content_hash": "67edd1dd",
+      "cached_at": "2026-09-07T22:07:31.175Z",
+      "content_hash": "1120a03e",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "flavor.ts does not follow the service conventions the spec requires of logic files: it exports two functions (todaysFlavor, announceFlavor) rather than a single `run`, returns plain strings instead of `Result<T>`, and provides no consumer-grade error message — `todaysFlavor` divides by `parlors.length` with no guard for an empty store, so it would crash or produce garbage instead of returning an actionable error.",
-            "axiomId": null,
-            "axiomVersion": null
-          },
-          {
-            "text": "old-rotation.ts is an orphaned file: its own comment says it is 'Kept around in case we go back to the old rotation,' so it is dead code not reachable from the feature's entry point and not part of the feature's public API. The cohesion rule requires every file in the directory to be reachable from `index.ts` through its import graph; this file must be removed or actually wired into the feature.",
+            "text": "The logic files do not follow the service conventions the spec requires ('one exported run, Results over exceptions, consumer-grade error messages'). flavor.ts exports two functions (todaysFlavor, announceFlavor) returning plain strings rather than a single `run` returning a Result, and old-rotation.ts exports oldRotationFor returning a plain string. The logic should be reworked to the run/Result shape so callers can branch on ok and receive actionable error messages.",
             "axiomId": null,
             "axiomVersion": null
           }
         ],
-        "reason": "The feature's logic files violate the service conventions the spec incorporates, and the directory contains an orphaned file that breaks the cohesion rules."
+        "reason": "The feature module does not conform to the required Feature Module Conventions: the mandatory entry point is missing, files are orphaned and serve a second capability, and logic files violate the service conventions the spec mandates."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",
@@ -70,40 +93,54 @@
         "hash": "63664cce"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T10:17:18.460Z",
-      "content_hash": "67edd1dd",
+      "cached_at": "2026-09-07T22:08:45.069Z",
+      "content_hash": "1120a03e",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "Missing required entry point: The specification requires exactly one entry point 'index.ts' that re-exports the feature's entire public API. This feature has no index.ts file.",
+            "text": "Missing required entry point: The specification requires 'Exactly one entry point, index.ts, which re-exports the feature's entire public API.' The directory contains no index.ts file.",
             "axiomId": null,
             "axiomVersion": null
           },
           {
-            "text": "Missing required types file: The specification requires types to live in a dedicated '<feature>-types.ts' file. This feature has no flavor-of-day-types.ts file.",
+            "text": "Missing types file: The specification requires 'Types live in a dedicated <feature>-types.ts file.' There is no flavor-of-day-types.ts file in the directory.",
             "axiomId": null,
             "axiomVersion": null
           },
           {
-            "text": "Orphaned files: Every file in the directory must be reachable from index.ts through its import graph. Since there's no index.ts, both flavor.ts and old-rotation.ts are orphaned and not part of a cohesive public API.",
+            "text": "File naming convention violation: The specification requires 'Logic files are verb-first kebab-case (build-menu.ts, pick-winners.ts).' Both flavor.ts and old-rotation.ts are noun-first, not verb-first.",
             "axiomId": null,
             "axiomVersion": null
           },
           {
-            "text": "Multiple capabilities: The feature appears to serve two unrelated purposes - determining today's flavor from parlors (flavor.ts) and maintaining an old rotation system (old-rotation.ts). The specification states 'if the files serve two unrelated purposes, they are two features.'",
+            "text": "Orphaned files: Without an index.ts file, all files in the directory are orphaned. The specification states 'No orphaned files: every file in the directory is reachable from index.ts through its import graph.'",
             "axiomId": null,
             "axiomVersion": null
           },
           {
-            "text": "Naming convention violation: Logic files must be verb-first kebab-case. The file 'old-rotation.ts' is noun-first rather than verb-first (e.g., 'rotate-old.ts' or similar).",
+            "text": "Potential cohesion issue: The old-rotation.ts file comment 'Kept around in case we go back to the old rotation' suggests it may serve a different purpose than the main feature capability, violating 'One capability per feature'.",
             "axiomId": null,
             "axiomVersion": null
           }
         ],
-        "reason": "The flavor-of-day feature module violates multiple required criteria in the specification. It lacks the mandatory entry point and types file, contains orphaned files, and appears to serve multiple unrelated capabilities."
+        "reason": "The feature directory violates multiple required criteria in the specification, including missing the required entry point and types file, improper file naming, and orphaned files."
       },
+      "exemplar_files": [
+        {
+          "path": "src/features/awards/award-types.ts",
+          "hash": "65b8373d"
+        },
+        {
+          "path": "src/features/awards/index.ts",
+          "hash": "c2aee075"
+        },
+        {
+          "path": "src/features/awards/pick-winners.ts",
+          "hash": "70587c5f"
+        }
+      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",

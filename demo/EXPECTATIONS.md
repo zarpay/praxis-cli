@@ -44,12 +44,12 @@ a bug.
 | Reviewers | `flash` (deepseek-v4-flash-0731), `v32` (deepseek-v3.2), `counter` (offline `./praxis-providers/word-count.js`) |
 | Curator | anthropic/claude-sonnet-4.5 |
 | Spec pattern | `{README.md,*.sme.md}` — hand-authored READMEs plus the hand-authored `experts.sme.md` (compiled profiles land in `agent-profiles/*.expert.md`, which is not a source dir and does not govern) |
-| Corpus units | 18 per reviewer (54 verdicts across three reviewers) |
+| Corpus units | 17 per reviewer (51 verdicts across three reviewers) — awards is exemplar-shielded |
 | Axioms | 13 total: 11 active, 2 deprecated (AX-96ff9c; AX-fac03c merged into AX-b951db 2026-09-07); ids under `.praxis/axioms/` |
 | Known real findings (corpus) | flash 2 failing, v32 2 failing, counter 0 (re-baselined at the 2026-09-07 epoch) |
 | Known violating files | `src/features/flavor-of-day/` and `src/services/rank-parlors.ts` (both reviewers) |
 | Signature merge | AX-fac03c → AX-b951db (2026-09-07): 8 critiques re-labeled by merge records; `eval report --axiom AX-b951db` counts them |
-| Exemplar / excluded / wip | `create-review.ts` exemplar · `legacy-import.ts` excluded · `_wip-refund.ts` template-skipped. Nuance: excludes shield **full runs only** — `eval run src/services/legacy-import.ts` reviews it on explicit ask (exit 0, evidence on record 2026-09-08) |
+| Exemplar / excluded / wip | `create-review.ts` exemplar · `src/features/awards/*` cohort exemplar (blessed 2026-09-08 — the awards directory is shielded from review and inlined as the features spec's positive example) · `legacy-import.ts` excluded · `_wip-refund.ts` template-skipped. Nuance: excludes shield **full runs only** — `eval run src/services/legacy-import.ts` reviews it on explicit ask (exit 0, evidence on record 2026-09-08) |
 | Signature axiom | AX-b951db — error messages name what was wrong and what would be accepted |
 
 ## The matrix
