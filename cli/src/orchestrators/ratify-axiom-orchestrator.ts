@@ -100,10 +100,15 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
     throw errors.documentNotFound(specPath);
   }
 
+  const taxonomy = axioms
+    .filter((axiom) => axiom.id !== id && axiom.status !== "deprecated")
+    .map((axiom) => ({ id: axiom.id, statement: axiom.statement() }));
+
   const gate = await assessAxiomGateService(cfg, {
     statement: proposal.statement(),
     violatingExample: proposal.violatingExample(),
     compliantExample: proposal.compliantExample(),
+    existing: taxonomy,
   });
 
   const traceability = await assessTraceabilityService(cfg, {

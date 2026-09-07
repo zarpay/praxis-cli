@@ -45,9 +45,17 @@ Shows the proposal, its supporting critiques, the gate's verdict, and the curato
 
 Use `--spec <path>` for human-authored proposals with no critique parentage.
 
+## praxis axioms deprecate \<id\> · merge
+
+`deprecate <id> --reason "<why>"` retires an active axiom: the file flips to `deprecated`, the reason lands in the ledger, and history stays frozen — the id and every record under it remain readable forever.
+
+`merge <ids...> --into <id>` collapses over-split axioms — several near-twins dividing one principle's evidence into separate rates. Every critique labeled under a merged-away axiom is re-labeled to the survivor (append-only: the prior label stays in the ledger beneath the merge record), the losers deprecate with the merge named, and the survivor's population clock moves to the earliest `introduced` among the merged. Reports recompute instantly — nothing is rewritten.
+
+Prevention runs ahead of the cure: the authoring gate checks every draft against the taxonomy (active **and** proposed) and folds a same-remediation candidate into the axiom that already carries it, and `audit` flags same-remediation pairs among active axioms with the merge command ready to copy.
+
 ## praxis axioms list · show \<id\> · audit
 
-`list` is the store at a glance (proposals counted, ratify command named); `show <id>` is the drill-down every finding cites — statement, both examples, derivation, lifecycle; `audit` re-runs the authoring gate over active axioms and flags removal candidates (tooling grows — an axiom appropriate last year may be a lint rule now). All take `--json`.
+`list` is the store at a glance (proposals counted, ratify command named); `show <id>` is the drill-down every finding cites — statement, both examples, derivation, lifecycle; `audit` re-runs the authoring gate over active axioms, flagging removal candidates (tooling grows — an axiom appropriate last year may be a lint rule now) and same-remediation twins as merge candidates. All take `--json`.
 
 ## See also
 

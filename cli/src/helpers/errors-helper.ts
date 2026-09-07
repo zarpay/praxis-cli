@@ -33,6 +33,7 @@ export type PraxisErrorCode =
   | "NO_TOOL_CALL"
   | "UNEXPECTED_TOOL_CALL"
   | "AXIOM_NOT_FOUND"
+  | "MERGE_NEEDS_SOURCES"
   | "CURATOR_NOT_CONFIGURED"
   | "CURATOR_MISSING_FIELD"
   | "PROVIDER_CANNOT_COMPLETE"
@@ -66,6 +67,7 @@ export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErr
   "API_KEY_NOT_SET",
   "AXIOM_NOT_FOUND",
   "CURATOR_MISSING_FIELD",
+  "MERGE_NEEDS_SOURCES",
   "CURATOR_NOT_CONFIGURED",
   "DOCUMENT_NOT_FOUND",
   "EXPERT_NOT_FOUND",
@@ -370,6 +372,14 @@ export const errors = {
     return new PraxisError(
       "AXIOM_NOT_FOUND",
       `No axiom "${id}" in .praxis/axioms/. Run \`praxis axioms list\` to see what exists.`,
+    );
+  },
+
+  /** A merge that names no source axioms besides the survivor. */
+  mergeNeedsSources(into: string): PraxisError {
+    return new PraxisError(
+      "MERGE_NEEDS_SOURCES",
+      `Nothing to merge into "${into}": name at least one other active axiom, e.g. \`praxis axioms merge AX-aaaaaa AX-bbbbbb --into ${into}\`.`,
     );
   },
 };

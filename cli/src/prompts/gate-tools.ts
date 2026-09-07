@@ -27,8 +27,13 @@ export default function gateTools() {
               description:
                 "For split: the judgment half alone, redrafted as an admissible statement. Otherwise null.",
             },
+            duplicate_of: {
+              type: ["string", "null"],
+              description:
+                "The id of an existing axiom whose remediation is the same as the candidate's, or null. A duplicate folds; it is never drafted twice.",
+            },
           },
-          required: ["assessment", "reasoning", "judgment_half"],
+          required: ["assessment", "reasoning", "judgment_half", "duplicate_of"],
         },
       },
     },

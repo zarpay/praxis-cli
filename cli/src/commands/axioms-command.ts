@@ -2,7 +2,9 @@ import type { CommandRegistrar } from "@framework/types.js";
 
 import auditAxiomsOrchestrator from "@/orchestrators/audit-axioms-orchestrator.js";
 import curateAxiomsOrchestrator from "@/orchestrators/curate-axioms-orchestrator.js";
+import deprecateAxiomOrchestrator from "@/orchestrators/deprecate-axiom-orchestrator.js";
 import listAxiomsOrchestrator from "@/orchestrators/list-axioms-orchestrator.js";
+import mergeAxiomsOrchestrator from "@/orchestrators/merge-axioms-orchestrator.js";
 import ratifyAxiomOrchestrator from "@/orchestrators/ratify-axiom-orchestrator.js";
 import showAxiomOrchestrator from "@/orchestrators/show-axiom-orchestrator.js";
 import triageAxiomsOrchestrator from "@/orchestrators/triage-axioms-orchestrator.js";
@@ -57,12 +59,14 @@ Example:
     .addHelpText(
       "after",
       `
-When to use: whenever pending critiques have piled up — an async batch
-pass, run on demand. The curator classifies each pending critique
-against the active axioms derived from its spec: squarely-an-instance
-gets an assignment record (provenance: matcher, human-overridable at
-curate); everything else stays pending for \`praxis axioms curate\`.
-No curator configured → warns and does nothing.
+When to use: whenever untriaged critiques have piled up — an async
+pass, run on demand, one curator call per critique. The curator
+classifies each against ALL active axioms (an axiom abstracts a
+principle — any spec's critique can land in any axiom):
+squarely-an-instance gets an assignment record (provenance: matcher,
+human-overridable at curate); a no-match moves the critique to
+\`praxis axioms curate\`'s queue. No curator configured → warns and
+does nothing.
 
 Example:
   $ praxis axioms triage --dry-run`,
@@ -98,14 +102,52 @@ Example:
     .addHelpText(
       "after",
       `
-When to use: a triage session drafted a proposal. Ratification demands
-spec traceability — an axiom activates only when its principle traces to a spec
-sentence — and activation re-reviews exactly what that spec governs.
+When to use: a curate session drafted a proposal. Ratification demands
+spec traceability — an axiom activates only when its principle traces
+to a spec sentence. Activation has no cache effect; the next triage
+labels against it.
 
 Example:
   $ praxis axioms ratify AX-3f9a1c`,
     )
     .action(ratifyAxiomOrchestrator);
+
+  axiomsCmd
+    .command("deprecate <id>")
+    .description("Retire an active axiom: status flips, records stay readable forever")
+    .requiredOption("--reason <reason>", "why the standard is retired (recorded)")
+    .addHelpText(
+      "after",
+      `
+When to use: a standard stopped mattering, moved into static tooling,
+or was merged away. Deprecation never deletes: the id and every record
+under it stay readable; it simply stops labeling and accruing.
+
+Example:
+  $ praxis axioms deprecate AX-3f9a1c --reason "now a lint rule"`,
+    )
+    .action(deprecateAxiomOrchestrator);
+
+  axiomsCmd
+    .command("merge <ids...>")
+    .description(
+      "Collapse over-split axioms into one: re-label their critiques, deprecate the rest",
+    )
+    .requiredOption("--into <id>", "the surviving axiom")
+    .addHelpText(
+      "after",
+      `
+When to use: several axioms say the same thing — one principle split
+into near-twins divides its evidence into separate rates. Merging
+re-labels every critique of the merged-away axioms to the survivor
+(append-only; prior labels stay in the ledger), deprecates them with
+the merge named, and moves the survivor's population clock to the
+earliest among the merged. Reports recompute instantly.
+
+Example:
+  $ praxis axioms merge AX-aaaaaa AX-bbbbbb --into AX-cccccc`,
+    )
+    .action(mergeAxiomsOrchestrator);
 
   axiomsCmd
     .command("audit")

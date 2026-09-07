@@ -35,6 +35,13 @@ const ratifyView: View<RatifyReview> = ({ axiom, supportingCritiques, gate, trac
         `Supporting critiques: ${supportingCritiques}`,
         `Authoring gate: ${gateColor(gate.assessment)} — ${gate.reasoning}`,
         ...(gate.judgmentHalf ? [`  Judgment half: ${gate.judgmentHalf}`] : []),
+        ...(gate.duplicateOf
+          ? [
+              chalk.yellow(
+                `  Same remediation as ${gate.duplicateOf} — consider rejecting and folding the evidence there.`,
+              ),
+            ]
+          : []),
         `Spec traceability: ${traceLine}`,
         ...(traceability.quotedBasis === ""
           ? []

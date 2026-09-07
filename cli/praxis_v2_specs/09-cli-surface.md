@@ -59,7 +59,7 @@ One CLI, two reading styles. The split is by **command default plus `--json`**, 
 
 ### Interaction
 
-- **Triage and ratification are the deliberately interactive moments.** `praxis axioms triage` is a review session: the LLM groups critiques and suggests assignments; the human folds, dismisses, or accepts drafts (04) — the primary human touchpoint in the loop. `praxis axioms ratify <id>` shows the proposed axiom, its supporting critiques, its gate verdict and spec traceability, then confirms. Both are human verbs by design (LLM proposes, human decides) — they may prompt, but every prompt has a flag equivalent (`--yes`, `--reject "reason"`) so they script; scripting past them is a choice the reports will reflect.
+- **Curation and ratification are the deliberately interactive moments** (updated 2026-09-07: the verb formerly named triage). `praxis axioms triage` is the async labeling pass — one curator call per untriaged critique, no prompts. `praxis axioms curate` is the review session: the LLM clusters the unmatched residue and suggests; the human folds, dismisses, or accepts drafts (04) — the primary human touchpoint in the loop. `praxis axioms ratify <id>` shows the proposed axiom, its supporting critiques, its gate verdict and spec traceability, then confirms. The interactive verbs may prompt, but every prompt has a flag equivalent (`--yes`, `--reject "reason"`) so they script; scripting past them is a choice the reports will reflect. `deprecate <id> --reason` and `merge <ids...> --into <id>` are the taxonomy's lifecycle verbs (04): retirement and collapse, both append-only.
 - **Agent-reachable commands never prompt** (rule above, restated because it is the boundary of interactivity).
 - **No TUI.** Richness comes from good text and drill-down, not modes. If a surface ever genuinely needs more than text (trend charts), that is an export (`--json` piped to the user's tooling), not an interactive screen.
 
@@ -73,7 +73,7 @@ One CLI, two reading styles. The split is by **command default plus `--json`**, 
 
 - `praxis eval run [targets...] [--type] [--json]` — no targets = full run; one target = the fast loop; extended output carries axioms on matched critiques (04, 08) and epoch-boundary warnings (02)
 - `praxis eval report [<path|glob>] [--since] [--branch] [--commit <sha>] [--commits <sha...>] [--axiom] [--json]` (07; three scope levels — files/glob, commit, PR)
-- `praxis axioms triage | ratify <id> | show <id> | list | audit` (03, 04)
+- `praxis axioms triage | curate | ratify <id> | deprecate <id> | merge <ids...> | show <id> | list | audit` (03, 04)
 - `praxis calibrate run | status` (06)
 - `praxis debt report [--json]` (07)
 - `praxis harness suggest` (08)

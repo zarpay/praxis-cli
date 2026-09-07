@@ -410,6 +410,7 @@ async function propose(
       statement: draft.statement,
       violatingExample: draft.violatingExample,
       compliantExample: draft.compliantExample,
+      existing: existingTaxonomy(session),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -434,6 +435,20 @@ async function propose(
       },
     ]);
     session.skipped += critiques.length;
+
+    return;
+  }
+
+  if (gate.duplicateOf !== null) {
+    // The taxonomy already carries this remediation: fold, never twin.
+    const version = versionOf(session, gate.duplicateOf);
+    assign(session, critiques, gate.duplicateOf, version);
+    session.ctx.render([
+      {
+        channel: "success",
+        text: `Gate: same remediation as ${gate.duplicateOf} — folded the cluster there instead of drafting a twin.`,
+      },
+    ]);
 
     return;
   }
@@ -479,4 +494,22 @@ function addUsage(session: CurateSession, usage: ProviderUsage | null): void {
   if (cost === null || cost === undefined) return;
 
   session.costUsd = (session.costUsd ?? 0) + cost;
+}
+
+/** The taxonomy the gate checks duplication against: active + proposed + this session's. */
+function existingTaxonomy(session: CurateSession): { id: string; statement: string }[] {
+  const store = new AxiomStore(session.cfg);
+  const onRecord = store
+    .all()
+    .axioms.filter((axiom) => axiom.status === "active" || axiom.status === "proposed")
+    .map((axiom) => ({ id: axiom.id, statement: axiom.statement() }));
+
+  return [...onRecord, ...session.proposalsThisSession];
+}
+
+/** An axiom's current version, defaulting to 1 for fresh proposals. */
+function versionOf(session: CurateSession, axiomId: string): number {
+  const { axioms } = new AxiomStore(session.cfg).all();
+
+  return axioms.find((axiom) => axiom.id === axiomId)?.version ?? 1;
 }

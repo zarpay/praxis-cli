@@ -179,7 +179,13 @@ export interface TriageAssignmentRecord {
   axiom_id: string;
   axiom_version: number;
   /** Both halves of the provenance: who decided, who suggested. */
-  assigned_by: { decision: "human" | "flag:--yes" | "matcher"; suggested_by: string };
+  /**
+   * Both halves of the provenance: who decided, who suggested. "merge"
+   * marks a re-assignment written by `axioms merge` — the critique's
+   * prior assignment to a merged-away axiom remains beneath it in the
+   * ledger.
+   */
+  assigned_by: { decision: "human" | "flag:--yes" | "matcher" | "merge"; suggested_by: string };
   timestamp: string;
 }
 
@@ -194,6 +200,14 @@ export interface TriageDismissalRecord {
 /** A proposal rejected at ratification — reviewer-noise signal (04). */
 export interface ProposalRejectionRecord {
   kind: "rejection";
+  axiom_id: string;
+  reason: string;
+  timestamp: string;
+}
+
+/** An active axiom retired (04): the id and its records stay readable forever. */
+export interface AxiomDeprecationRecord {
+  kind: "deprecation";
   axiom_id: string;
   reason: string;
   timestamp: string;
@@ -217,7 +231,11 @@ export interface TriageUnmatchedRecord {
 
 /** Everything a triage session appends. */
 export type TriageRecord =
-  TriageAssignmentRecord | TriageDismissalRecord | ProposalRejectionRecord | TriageUnmatchedRecord;
+  | TriageAssignmentRecord
+  | TriageDismissalRecord
+  | ProposalRejectionRecord
+  | AxiomDeprecationRecord
+  | TriageUnmatchedRecord;
 
 /** One unassigned open-channel critique, as triage works it. */
 export interface PendingCritique {

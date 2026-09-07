@@ -49,6 +49,8 @@ export interface GateAssessment {
   reasoning: string;
   /** On split: the judgment half, redrafted as the admissible statement. */
   judgmentHalf: string | null;
+  /** An existing axiom with the same remediation — fold there, never draft a twin. */
+  duplicateOf: string | null;
   usage: ProviderUsage | null;
 }
 

@@ -35,13 +35,23 @@ export const auditAxiomsOrchestrator: Orchestrator<AuditAxiomsOptions> = async (
   const rows = [];
 
   for (const axiom of active) {
+    const others = active
+      .filter((candidate) => candidate.id !== axiom.id)
+      .map((candidate) => ({ id: candidate.id, statement: candidate.statement() }));
+
     const gate = await assessAxiomGateService(cfg, {
       statement: axiom.statement(),
       violatingExample: axiom.violatingExample(),
       compliantExample: axiom.compliantExample(),
+      existing: others,
     });
 
-    rows.push({ id: axiom.id, assessment: gate.assessment, reasoning: gate.reasoning });
+    rows.push({
+      id: axiom.id,
+      assessment: gate.assessment,
+      reasoning: gate.reasoning,
+      duplicateOf: gate.duplicateOf,
+    });
   }
 
   const view = auditView({ rows, json });

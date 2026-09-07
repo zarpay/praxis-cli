@@ -45,9 +45,10 @@ a bug.
 | Curator | anthropic/claude-sonnet-4.5 |
 | Spec pattern | `{README.md,*.sme.md}` — hand-authored READMEs and compiled profiles both govern |
 | Corpus units | 18 per reviewer (54 verdicts across three reviewers) |
-| Axioms | 13 total: 12 active, 1 deprecated (AX-96ff9c); ids under `.praxis/axioms/` |
+| Axioms | 13 total: 11 active, 2 deprecated (AX-96ff9c; AX-fac03c merged into AX-b951db 2026-09-07); ids under `.praxis/axioms/` |
 | Known real findings (corpus) | flash 2 failing, v32 2 failing, counter 0 (re-baselined at the 2026-09-07 epoch) |
 | Known violating files | `src/features/flavor-of-day/` and `src/services/rank-parlors.ts` (both reviewers) |
+| Signature merge | AX-fac03c → AX-b951db (2026-09-07): 8 critiques re-labeled by merge records; `eval report --axiom AX-b951db` counts them |
 | Exemplar / excluded / wip | `create-review.ts` exemplar · `legacy-import.ts` excluded · `_wip-refund.ts` template-skipped |
 | Signature axiom | AX-b951db — error messages name what was wrong and what would be accepted |
 
@@ -100,6 +101,8 @@ calls · **[scratch]** run in a copy.
 | `axioms show AX-b951db` | Statement, both examples, grounding, lifecycle; `--json` stable |
 | `axioms triage` [scratch, paid] | The labeling pass over **untriaged** critiques only: one curator call each (order can't bias a verdict), per-verdict progress lines; matches land as matcher assignments, no-matches as unmatched records (→ curate's queue, re-queued for triage if the axiom set changes); hallucinated ids = failed calls, stay untriaged; `--dry-run` writes nothing; no curator → warns "labeling is deferred" |
 | `axioms curate --reject "<reason>"` [scratch] | Dismisses the **unmatched** queue (untriaged critiques are named and untouched), writes a triage session file, no curator call |
+| `axioms deprecate <id> --reason` [scratch] | Status flips to deprecated, body untouched, deprecation record in the ledger; reports keep the id's history readable |
+| `axioms merge <ids...> --into <id>` [scratch] | Losers deprecate, their critiques re-label to the survivor (decision "merge"), survivor's introduced moves to the earliest among the merged; `eval report --axiom <survivor>` immediately counts the merged evidence |
 | `axioms curate` / `ratify` / `audit` [scratch, paid] | Curator clusters the residue / traceability gates / gate re-runs — exercise only when the milestone touched them. Ratification has **no cache effect**: the next run after a ratify stays all-hits |
 
 ### Project lifecycle [scratch]

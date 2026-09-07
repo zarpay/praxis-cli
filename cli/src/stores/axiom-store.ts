@@ -3,6 +3,7 @@ import type { ActiveAxiom, ListAxiomsResult, Severity, StoreProblem } from "@/ty
 
 import { randomBytes } from "node:crypto";
 
+import { errors } from "@/helpers/errors-helper.js";
 import {
   exists,
   listFilesRecursive,
@@ -155,6 +156,56 @@ export class AxiomStore {
     removeFile(proposedPath);
 
     return { id, path: activePath };
+  }
+
+  /**
+   * Retires an active axiom (04): `status: active` flips to
+   * `deprecated`, body preserved byte-for-byte. The id and its records
+   * stay readable forever; the recorded reason is the caller's to land
+   * in the triage ledger.
+   *
+   * @throws PraxisError when no active axiom file carries the id, or
+   *   the amended document would not validate
+   */
+  deprecate(id: string): WriteAxiomProposalResult {
+    const path = joinPath(this.axiomsDir, `${id}.md`);
+
+    if (!exists(path)) throw errors.axiomNotFound(id);
+
+    const current = readText(path);
+    const retired = current.replace(/^status: active$/m, "status: deprecated");
+
+    // Refuse to write anything the model would reject.
+    AxiomFile.fromContent(retired, path);
+
+    writeText(path, retired);
+
+    return { id, path };
+  }
+
+  /**
+   * Rewrites an active axiom's `introduced` date — the population
+   * clock. Only `axioms merge` calls this, so the survivor inherits the
+   * earliest clock among the merged: critiques folded in retroactively
+   * must not be misread as pre-spec debt.
+   *
+   * @throws PraxisError when no axiom file carries the id, or the
+   *   amended document would not validate
+   */
+  amendIntroduced(id: string, introduced: string): WriteAxiomProposalResult {
+    const path = joinPath(this.axiomsDir, `${id}.md`);
+
+    if (!exists(path)) throw errors.axiomNotFound(id);
+
+    const current = readText(path);
+    const amended = current.replace(/^introduced: .*$/m, `introduced: ${introduced}`);
+
+    // Refuse to write anything the model would reject.
+    AxiomFile.fromContent(amended, path);
+
+    writeText(path, amended);
+
+    return { id, path };
   }
 
   /**

@@ -7,6 +7,8 @@ interface AxiomAuditRow {
   id: string;
   assessment: string;
   reasoning: string;
+  /** Another active axiom carrying the same remediation — a merge candidate. */
+  duplicateOf: string | null;
 }
 
 /** The audit's advisory rows, for a human to act on. */
@@ -29,20 +31,39 @@ const auditView: View<AxiomAudit & { json?: boolean }> = ({ rows, json }) => {
   }
 
   const flagged = rows.filter((row) => row.assessment !== "appropriate").length;
+  const duplicates = rows.filter((row) => row.duplicateOf !== null);
 
   return [
     { channel: "heading", text: `Audit — ${rows.length} active axioms, ${flagged} flagged` },
     {
       channel: "content",
-      entries: rows.map((row) => `${row.id}  ${label(row.assessment)}  ${row.reasoning}`),
+      entries: rows.map((row) => {
+        const twin = row.duplicateOf === null ? "" : chalk.yellow(`  ≈ ${row.duplicateOf}`);
+
+        return `${row.id}  ${label(row.assessment)}${twin}  ${row.reasoning}`;
+      }),
     },
+    ...(duplicates.length > 0
+      ? [
+          {
+            channel: "content" as const,
+            entries: [
+              "",
+              ...duplicates.map(
+                (row) =>
+                  `${row.id} ≈ ${row.duplicateOf ?? ""}: same remediation — collapse with \`praxis axioms merge ${row.id} --into ${row.duplicateOf ?? ""}\`.`,
+              ),
+            ],
+          },
+        ]
+      : []),
     ...(flagged > 0
       ? [
           {
             channel: "content" as const,
             entries: [
               "",
-              "Flagged axioms are removal candidates: deprecate by editing status (history stays frozen, 04).",
+              "Flagged axioms are removal candidates: `praxis axioms deprecate <id> --reason` retires them (history stays frozen, 04).",
             ],
           },
         ]

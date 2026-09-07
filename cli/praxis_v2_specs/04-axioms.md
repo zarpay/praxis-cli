@@ -179,9 +179,26 @@ costs one curate moment; a wrong label corrupts a rate).
   `version`. A version bump changes nothing about reviews (see the
   separation principle) — the next triage simply labels against the new
   wording.
-- **Deprecation keeps history**: the id and its records stay readable
-  forever; a replacement is simply a new id, and the lineage lives in
-  git and the triage ledger.
+- **Deprecation keeps history**: `praxis axioms deprecate <id>
+  --reason` retires an active axiom — the id and its records stay
+  readable forever, a deprecation record lands in the triage ledger,
+  and (the active set having changed) every unidentified critique
+  re-queues for triage. A replacement is simply a new id; lineage lives
+  in git and the ledger.
+- **Over-splitting is collapsed, never endured** (owner, 2026-09-07).
+  Prevention: the authoring gate checks every draft against the
+  taxonomy on record (active + proposed) and answers `duplicate_of` —
+  a candidate with the SAME REMEDIATION as an existing axiom folds its
+  cluster there instead of landing as a twin; curate also offers
+  standing proposals as fold targets, and `axioms audit` flags
+  same-remediation pairs among active axioms as merge candidates.
+  Cure: `praxis axioms merge <ids...> --into <id>` — every critique
+  whose effective label is a merged-away axiom gets a re-assignment
+  record to the survivor (decision "merge"; the prior label stays in
+  the ledger beneath it), the losers deprecate with the merge named,
+  and the survivor's `introduced` moves to the earliest among the
+  merged so folded evidence is not misread as pre-spec debt. Nothing
+  is rewritten; reports recompute from the join instantly.
 - **Per-axiom population clocks** start at `introduced` (01): critiques
   on code born before the axiom are pre-spec debt, never blamed on the
   present.

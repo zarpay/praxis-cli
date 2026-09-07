@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import { curateAxiomsOrchestrator } from "@/orchestrators/curate-axioms-orchestrator.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { TriageStore } from "@/stores/triage-store.js";
+import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
@@ -70,12 +71,12 @@ function triageProject(plan: Parameters<typeof curatorProviderModule>[0]): strin
 }
 
 /** Triage's verdict on record: these critiques matched no active axiom. */
-function markUnmatched(root: string, critiqueIds: string[]): void {
+function markUnmatched(root: string, critiqueIds: string[], considered: string[] = []): void {
   new TriageStore(testConfig(root)).writeSession(
     critiqueIds.map((critiqueId) => ({
       kind: "unmatched" as const,
       critique_id: critiqueId,
-      considered: [],
+      considered,
       suggested_by: "scripted",
       timestamp: "2026-09-07T10:00:00.000Z",
     })),
@@ -219,6 +220,72 @@ describe("curateAxiomsOrchestrator", () => {
     const dismissals = records.filter((record) => record.kind === "dismissal");
     const dismissedIds = dismissals.map((record) => record.critique_id).sort();
     expect(dismissedIds).toEqual(["r1:1", "r1:2", "r1:3"]);
+  });
+
+  it("a draft whose remediation an existing axiom carries folds there — never a twin", async () => {
+    const axiom = axiomContent(
+      { id: "AX-ffff99", grounded_in: "docs/README.md#error-messages" },
+      { statement: "Error messages name what was wrong and what would be accepted." },
+    );
+    const { root, cleanup } = createValidatorTmpdir({
+      sources: ["docs"],
+      files: {
+        "docs/README.md":
+          "# Spec\n\n## Error messages\n\nError messages name what would be accepted.",
+        "docs/guide.md": "# Guide",
+        [".praxis/axioms/AX-ffff99.md"]: axiom,
+        "curator.js": curatorProviderModule({
+          organization: {
+            clusters: [
+              {
+                critique_ids: ["r1:1"],
+                rationale: "Consumer-hostile error message.",
+                suggestion: "propose",
+                draft: {
+                  statement: "Errors must say what would be accepted.",
+                  severity: "warning",
+                  violating_example: "bad",
+                  compliant_example: "good",
+                  grounding_hint: "Error messages name what would be accepted.",
+                },
+              },
+            ],
+          },
+          gate: {
+            assessment: "appropriate",
+            reasoning: "Turns on meaning.",
+            judgment_half: null,
+            duplicate_of: "AX-ffff99",
+          },
+        }),
+      },
+      curator: { model: "scripted", apiKeyEnvVar: "OPENROUTER_API_KEY", provider: "./curator.js" },
+    });
+    cleanups.push(cleanup);
+
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      extraLines: [guideCritique(1, "Error message 'bad subject' names nothing.")],
+    });
+    markUnmatched(root, ["r1:1"], ["AX-ffff99@1"]);
+    const { logger } = createCaptureLogger();
+
+    const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
+
+    expect(outcome).toBe("ok");
+
+    // No proposal was written; the cluster folded into the existing axiom.
+    const proposedDir = join(root, ".praxis", "axioms", "proposed");
+    expect(existsSync(proposedDir)).toBe(false);
+
+    const records = triageRecords(root);
+    const assignments = records.filter((record) => record.kind === "assignment");
+    expect(assignments).toHaveLength(1);
+    expect(assignments[0]).toMatchObject({
+      critique_id: "r1:1",
+      axiom_id: "AX-ffff99",
+    });
   });
 
   it("with --reject: dismisses the whole queue with the reason", async () => {

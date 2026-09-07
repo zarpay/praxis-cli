@@ -1,7 +1,7 @@
 ---
 id: AX-fac03c
 version: 1
-status: active
+status: deprecated
 mode: judgment
 scope: file
 severity: error
