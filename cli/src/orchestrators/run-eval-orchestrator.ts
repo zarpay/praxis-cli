@@ -84,6 +84,12 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
       ctx.render(targetView);
     };
 
+    if (options.spec !== undefined && targets.length > 1) {
+      ctx.logger.warn(
+        "--spec applies only to a single named target — with several, each reviews against its own governing spec.",
+      );
+    }
+
     const { errors } = await reviewNamedService(cfg, {
       targets,
       spec: options.spec,
