@@ -3,6 +3,8 @@ import type { PendingCritique, ProviderUsage, Service, TriageAssignmentRecord } 
 
 import { joinPath } from "@/helpers/paths-helper.js";
 import curatorSystemPrompt from "@/prompts/curator-system-prompt.js";
+import labelingAxiomBlock from "@/prompts/labeling-axiom-block.js";
+import labelingCritiqueLine from "@/prompts/labeling-critique-line.js";
 import labelingQuestion from "@/prompts/labeling-question.js";
 import labelingTools from "@/prompts/labeling-tools.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
@@ -79,9 +81,25 @@ const labelCritiquesService: Service<LabelCritiquesInput, Promise<LabelCritiques
       continue;
     }
 
+    const axiomBlocks = axioms
+      .map((axiom) =>
+        labelingAxiomBlock({ id: axiom.id, severity: axiom.severity, body: axiom.body.trim() }),
+      )
+      .join("\n\n");
+    const critiqueLines = critiques
+      .map((critique) =>
+        labelingCritiqueLine({
+          id: critique.id,
+          filePath: critique.filePath,
+          text: critique.text,
+        }),
+      )
+      .join("\n");
+    const userPrompt = labelingQuestion({ specPath, axiomBlocks, critiqueLines });
+
     const completion = await requestCuratorCompletionService(cfg, {
       systemPrompt: curatorSystemPrompt(),
-      userPrompt: labelingQuestion({ specPath, axioms, pending: critiques }),
+      userPrompt,
       tools: labelingTools(),
     });
 

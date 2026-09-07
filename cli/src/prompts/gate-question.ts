@@ -1,3 +1,7 @@
+import type { Prompt } from "@framework/types.js";
+
+import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
+
 /**
  * The authoring gate's question (03): is this candidate axiom
  * appropriate for judgment-based review at all?
@@ -6,24 +10,21 @@
  * the boundary's teeth, and the gate is advisory — the assessment is
  * shown to the human who decides.
  */
-export default function gateQuestion({
-  statement,
-  violatingExample,
-  compliantExample,
-}: {
+interface GateQuestionVariables {
   statement: string;
   violatingExample: string;
   compliantExample: string;
-}): string {
-  return `## CANDIDATE AXIOM
+}
 
-Statement: ${statement}
+const TEMPLATE = `## CANDIDATE AXIOM
+
+Statement: {statement}
 
 Violating example:
-${violatingExample}
+{violatingExample}
 
 Compliant example:
-${compliantExample}
+{compliantExample}
 
 ## YOUR TASK
 
@@ -35,4 +36,7 @@ Assess whether deciding this standard requires reading comprehension, applying t
 - Does the candidate mix both — a mechanical half and a judgment half in one statement? That is the common case in real specs → **split**, and redraft the judgment half alone as the admissible statement.
 
 The aphorism that governs: if you can write the check, write the check; if you can only describe the standard, write the axiom.`;
-}
+
+const gateQuestion: Prompt<GateQuestionVariables> = preparePrompt(TEMPLATE);
+
+export default gateQuestion;

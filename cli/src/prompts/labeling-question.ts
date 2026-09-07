@@ -1,4 +1,6 @@
-import type { ActiveAxiom, PendingCritique } from "@/types.js";
+import type { Prompt } from "@framework/types.js";
+
+import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
  * The labeling question (04, review→label): given one spec's active
@@ -7,33 +9,23 @@ import type { ActiveAxiom, PendingCritique } from "@/types.js";
  * label at curate — so the instruction optimizes for precision over
  * coverage: an uncertain critique left unlabeled costs one curate
  * moment, a wrong label corrupts a rate.
+ *
+ * `axiomBlocks` and `critiqueLines` arrive pre-rendered by the caller
+ * from labeling-axiom-block and labeling-critique-line.
  */
-export default function labelingQuestion({
-  specPath,
-  axioms,
-  pending,
-}: {
+interface LabelingQuestionVariables {
   specPath: string;
-  axioms: readonly ActiveAxiom[];
-  pending: readonly PendingCritique[];
-}): string {
-  const axiomBlocks = axioms.map(
-    (axiom) => `### ${axiom.id} (severity: ${axiom.severity})
+  axiomBlocks: string;
+  critiqueLines: string;
+}
 
-${axiom.body.trim()}`,
-  );
+const TEMPLATE = `## THE ACTIVE AXIOMS OF {specPath}
 
-  const critiqueLines = pending.map(
-    (critique) => `- [${critique.id}] (${critique.filePath}) ${critique.text}`,
-  );
-
-  return `## THE ACTIVE AXIOMS OF ${specPath}
-
-${axiomBlocks.join("\n\n")}
+{axiomBlocks}
 
 ## THE PENDING CRITIQUES
 
-${critiqueLines.join("\n")}
+{critiqueLines}
 
 ## YOUR TASK
 
@@ -43,4 +35,7 @@ For each critique, decide whether it is squarely an instance of exactly one axio
 - Anything else — partially related, two axioms at once, a new idea, uncertain — label it null. Unlabeled critiques go to a human session; a wrong label corrupts every rate computed under the axiom.
 
 Call the labeling tool with one entry per critique, in the order given.`;
-}
+
+const labelingQuestion: Prompt<LabelingQuestionVariables> = preparePrompt(TEMPLATE);
+
+export default labelingQuestion;

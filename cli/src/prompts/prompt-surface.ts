@@ -1,24 +1,19 @@
-import type { AssistFile } from "@/types.js";
-
+import cohortSubject from "@/prompts/cohort-subject.js";
+import contextBlock from "@/prompts/context-block.js";
+import contextSection from "@/prompts/context-section.js";
+import exemplarBlock from "@/prompts/exemplar-block.js";
+import exemplarSection from "@/prompts/exemplar-section.js";
+import fileSubject from "@/prompts/file-subject.js";
 import reviewTools from "@/prompts/review-tools.js";
 import systemPrompt from "@/prompts/system-prompt.js";
 import validationQuestion from "@/prompts/validation-question.js";
 
 /** Sentinel assist file so the section templates render deterministically. */
-const SENTINEL_FILE: AssistFile = { path: "«path»", content: "«content»" };
-
-/** Sentinel inputs for the question template, one per variant. */
-const SENTINEL_INPUT = {
-  specContent: "«spec»",
-  targetContent: "«target»",
-  targetPath: "«dir»/«file»",
-  exemplars: [SENTINEL_FILE],
-  context: [SENTINEL_FILE],
-} as const;
+const SENTINEL_FILE = { path: "«path»", content: "«content»" };
 
 /**
  * The reviewer's complete prompt surface as one deterministic string:
- * system prompt, tool definitions, and every question template rendered
+ * system prompt, tool definitions, and the validation question rendered
  * with sentinel inputs (both subject variants, both assist sections).
  *
  * This is the prompt component of the reviewer hash (reviewer.ts).
@@ -28,10 +23,22 @@ const SENTINEL_INPUT = {
  * bumping, no prompt edit that silently serves stale verdicts.
  */
 export default function promptSurface(): string {
-  return [
-    systemPrompt(),
-    JSON.stringify(reviewTools()),
-    validationQuestion({ ...SENTINEL_INPUT, kind: "file" }),
-    validationQuestion({ ...SENTINEL_INPUT, kind: "cohort" }),
-  ].join("\n«»\n");
+  const exemplarBlocks = exemplarBlock(SENTINEL_FILE);
+  const contextBlocks = contextBlock(SENTINEL_FILE);
+  const sections = {
+    specContent: "«spec»",
+    exemplarSection: exemplarSection({ blocks: exemplarBlocks }),
+    contextSection: contextSection({ blocks: contextBlocks }),
+    targetContent: "«target»",
+  };
+  const fileVariant = validationQuestion({
+    ...sections,
+    subject: fileSubject({ fileName: "«file»", directory: "«dir»" }),
+  });
+  const cohortVariant = validationQuestion({
+    ...sections,
+    subject: cohortSubject({ targetPath: "«dir»/«file»" }),
+  });
+
+  return [systemPrompt(), JSON.stringify(reviewTools()), fileVariant, cohortVariant].join("\n«»\n");
 }

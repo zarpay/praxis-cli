@@ -1,22 +1,29 @@
-import type { AssistFile } from "@/types.js";
+import type { Prompt } from "@framework/types.js";
+
+import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
  * The CONTEXT prompt section: assist-only reference files that inform
- * the review and never receive a verdict (03). Empty string when the
- * spec declares none, so the section vanishes from the prompt entirely.
+ * the review and never receive a verdict (03). `blocks` is the
+ * context-block renderings joined; when the spec declares none the
+ * caller passes "" for the whole section instead, so it vanishes from
+ * the prompt entirely. The trailing blank line is structural — it
+ * separates this section from what follows in the validation question.
  */
-export default function contextSection(context: readonly AssistFile[]): string {
-  if (context.length === 0) return "";
+interface ContextSectionVariables {
+  blocks: string;
+}
 
-  const blocks = context.map((c) => `===== CONTEXT: ${c.path} =====\n\n${c.content}`).join("\n\n");
-
-  return `## CONTEXT
+const TEMPLATE = `## CONTEXT
 
 The following files are reference context: what the specification's
 subject matter is about. They are not under review and must not be
 critiqued — use them only to inform your review.
 
-${blocks}
+{blocks}
 
 `;
-}
+
+const contextSection: Prompt<ContextSectionVariables> = preparePrompt(TEMPLATE);
+
+export default contextSection;

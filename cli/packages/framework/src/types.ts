@@ -104,11 +104,18 @@ export type CommandOutcome = "ok" | "failed";
 export type View<Data> = (data: Data) => ReportLine[];
 
 /**
- * The one signature every prompt has: the framework fixes the shape —
- * a function from the prompt's template variables (if any) to the
- * finished string.
+ * The one signature every prompt has: a templated prompt is a function
+ * from its variables — a record of string values, one per `{name}`
+ * placeholder — to the finished string; a plain prompt (no template
+ * slots) takes no variables at all. The self-referential constraint
+ * (`Record<keyof Variables, string>`) is what enforces string values
+ * while still admitting interface-declared variable shapes.
  */
-export type Prompt<Options = NoOptions> = (variables: Options) => string;
+export type Prompt<Variables extends Record<keyof Variables, string> | void = void> = [
+  Variables,
+] extends [void]
+  ? () => string
+  : (variables: Variables) => string;
 
 /**
  * The one signature every orchestrator has.

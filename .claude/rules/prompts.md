@@ -12,9 +12,16 @@ agent-facing its prose — that is the distinction `praxis-skill.ts` sitting in
 `spec/prompts/` used to blur.
 
 One LLM- or agent-facing prompt per file, as that file's default-export
-function, with typed parameters when it templates. No prompt text lives anywhere
-else. Reviewer prompts belong to `eval`; Claude Code plugin templates belong to
-`spec`.
+`Prompt` (`@framework/types`): a `const TEMPLATE` with `{name}` slots wrapped
+by `preparePrompt(TEMPLATE)` (`helpers/prepare-prompt-helper.ts`) — the
+returned function takes the template's variables as a record of string values,
+or nothing when the template has no slots. Structure never enters a prompt's
+signature: a list renders through its own per-item prompt file
+(`labeling-critique-line`, `exemplar-block`), and the caller maps, joins, and
+passes the assembled string as one variable. The exception is the `*-tools.ts`
+files, which return tool definitions (objects), not prompt strings. No prompt
+text lives anywhere else. Reviewer prompts belong to `eval`; Claude Code
+plugin templates belong to `spec`.
 
 **Rewording any reviewer-facing prompt changes the reviewer's identity.**
 `prompt-surface.ts` renders the complete surface — system prompt, tool

@@ -1,3 +1,7 @@
+import type { Prompt } from "@framework/types.js";
+
+import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
+
 /**
  * System prompt for the LLM reviewer.
  *
@@ -8,8 +12,7 @@
  * and the zero-findings paragraph counters completeness pressure: the
  * measured cause of reviewers stretching standards to appear thorough.
  */
-const TEXT = `
-Determine whether the following documents satisfy the specification's standards.
+const TEXT = `Determine whether the following documents satisfy the specification's standards.
 
 ## Process
 
@@ -28,9 +31,8 @@ A compliant document yields zero findings — that is the common, correct outcom
 
 ## Out of scope
 
-Mechanical criteria — anything a linter, regex, or type check could decide (a required key being present, a naming pattern, file placement) — are out of scope and must not be evaluated or reported, even where the specification states them. Other tooling owns those. Report only violations that require reading comprehension to decide: quality, intent, meaning, completeness relative to purpose.
-`;
+Mechanical criteria — anything a linter, regex, or type check could decide (a required key being present, a naming pattern, file placement) — are out of scope and must not be evaluated or reported, even where the specification states them. Other tooling owns those. Report only violations that require reading comprehension to decide: quality, intent, meaning, completeness relative to purpose.`;
 
-export default function prompt(): string {
-  return TEXT.trim();
-}
+const systemPrompt: Prompt = preparePrompt(TEXT);
+
+export default systemPrompt;

@@ -1,4 +1,6 @@
-import type { OrganizeTriageInput } from "@/types.js";
+import type { Prompt } from "@framework/types.js";
+
+import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
  * The triage organization request (04): one spec's unassigned
@@ -6,42 +8,34 @@ import type { OrganizeTriageInput } from "@/types.js";
  * itself for grounding. The curator clusters and suggests; the human
  * session that follows decides.
  *
- * Critiques and axioms arrive sorted by the caller, so identical state
- * renders identical bytes.
+ * `axiomLines` and `critiqueLines` arrive pre-rendered by the caller
+ * (triage-axiom-line, triage-critique-line, triage-axioms-fallback),
+ * sorted so identical state renders identical bytes.
  */
-export default function triageQuestion({
-  specPath,
-  specContent,
-  critiques,
-  axioms,
-}: Pick<OrganizeTriageInput, "specPath" | "specContent" | "critiques" | "axioms">): string {
-  const critiqueLines = critiques.map(
-    (critique) =>
-      `- id: ${critique.id}\n  file: ${critique.filePath}\n  reviewer: ${critique.reviewerName}\n  severity: ${critique.severity}\n  critique: ${critique.text}`,
-  );
+interface TriageQuestionVariables {
+  specPath: string;
+  specContent: string;
+  axiomLines: string;
+  critiqueLines: string;
+}
 
-  const axiomLines =
-    axioms.length === 0
-      ? ["(none yet — every cluster is either a proposal or unassignable)"]
-      : axioms.map((axiom) => `- ${axiom.id}: ${axiom.statement}`);
-
-  return `## THE SPECIFICATION (${specPath})
+const TEMPLATE = `## THE SPECIFICATION ({specPath})
 
 \`\`\`
-${specContent}
+{specContent}
 \`\`\`
 
 ## ESTABLISHED AXIOMS
 
 Critiques that are squarely instances of one of these fold into it:
 
-${axiomLines.join("\n")}
+{axiomLines}
 
 ## UNASSIGNED CRITIQUES
 
 Open-channel critiques from real reviews of files this specification governs:
 
-${critiqueLines.join("\n")}
+{critiqueLines}
 
 ## YOUR TASK
 
@@ -52,4 +46,7 @@ Group these critiques into clusters of the same underlying standard, and for eac
 3. **unassignable** — the cluster cannot be grounded in this specification's text. Say why, and say which reading your rationale supports: reviewer noise (the reviewer invented or drifted), or a real standard no spec states yet — the second is how unstated team values get discovered, and the humans reading it will extend the specs.
 
 Every critique id appears in exactly one cluster. A cluster of one is fine. Do not force unrelated critiques together to reduce cluster count.`;
-}
+
+const triageQuestion: Prompt<TriageQuestionVariables> = preparePrompt(TEMPLATE);
+
+export default triageQuestion;

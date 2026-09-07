@@ -9,6 +9,9 @@ import type {
 } from "@/types.js";
 
 import curatorSystemPrompt from "@/prompts/curator-system-prompt.js";
+import triageAxiomLine from "@/prompts/triage-axiom-line.js";
+import triageAxiomsFallback from "@/prompts/triage-axioms-fallback.js";
+import triageCritiqueLine from "@/prompts/triage-critique-line.js";
 import triageQuestion from "@/prompts/triage-question.js";
 import triageTools from "@/prompts/triage-tools.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
@@ -48,9 +51,31 @@ const organizeTriageService: Service<OrganizeTriageInput, Promise<TriageOrganiza
   cfg,
   input,
 ) => {
+  const critiqueLines = input.critiques
+    .map((critique) =>
+      triageCritiqueLine({
+        id: critique.id,
+        filePath: critique.filePath,
+        reviewerName: critique.reviewerName,
+        severity: critique.severity,
+        text: critique.text,
+      }),
+    )
+    .join("\n");
+  const axiomItems = input.axioms.map((axiom) =>
+    triageAxiomLine({ id: axiom.id, statement: axiom.statement }),
+  );
+  const axiomLines = axiomItems.length === 0 ? triageAxiomsFallback() : axiomItems.join("\n");
+  const userPrompt = triageQuestion({
+    specPath: input.specPath,
+    specContent: input.specContent,
+    axiomLines,
+    critiqueLines,
+  });
+
   const completion = await requestCuratorCompletionService(cfg, {
     systemPrompt: curatorSystemPrompt(),
-    userPrompt: triageQuestion(input),
+    userPrompt,
     tools: triageTools(),
   });
 

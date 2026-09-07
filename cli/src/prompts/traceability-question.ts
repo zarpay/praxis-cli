@@ -1,6 +1,6 @@
 import type { Prompt } from "@framework/types.js";
 
-import { preparePrompt } from "@/helpers/prepare-prompt.js";
+import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
  * Ratification's traceability question (04): which spec criterion
@@ -8,14 +8,13 @@ import { preparePrompt } from "@/helpers/prepare-prompt.js";
  * fix-the-spec, or reviewer-invention are the three human outcomes,
  * and this assessment is evidence for that call, never the call.
  */
-interface PromptOptions {
+interface TraceabilityQuestionVariables {
   specPath: string;
   specContent: string;
   statement: string;
 }
 
-const TEMPLATE = `
-## THE SPECIFICATION ({specPath})
+const TEMPLATE = `## THE SPECIFICATION ({specPath})
 
 {specContent}
 
@@ -33,6 +32,6 @@ Answer: which criterion in this specification grounds the proposed axiom?
 
 Never stretch a passage to cover a standard it does not state. A generous reading here corrupts every rate computed under the axiom later.`;
 
-const prompt: Prompt<PromptOptions> = (variables) => preparePrompt(TEMPLATE, variables).trim();
+const traceabilityQuestion: Prompt<TraceabilityQuestionVariables> = preparePrompt(TEMPLATE);
 
-export default prompt;
+export default traceabilityQuestion;
