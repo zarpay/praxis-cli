@@ -42,7 +42,7 @@ interface LabelCritiquesResult {
   labels: CritiqueLabel[];
   /** Critiques the matcher considered and could not label — curate's queue now. */
   sentToCurate: number;
-  /** Critiques whose spec has no active axioms — nothing to label against. */
+  /** Critiques whose spec has no active axioms — trivially unmatched, sent to curate without a call. */
   skippedNoAxioms: number;
   /** Critiques whose labeling call failed — they stay untriaged; rerun retries. */
   failed: number;
@@ -102,7 +102,20 @@ const labelCritiquesService: Service<LabelCritiquesInput, Promise<LabelCritiques
     const axioms = axiomStore.activeFor(joinPath(cfg.root, specPath));
 
     if (axioms.length === 0) {
+      // Nothing to match against: the verdict is trivially "unmatched
+      // against the empty set" — recorded without a curator call, so
+      // the critiques reach curate instead of stalling untriaged.
       skippedNoAxioms += critiques.length;
+
+      for (const critique of critiques) {
+        records.push({
+          kind: "unmatched",
+          critique_id: critique.id,
+          considered: [],
+          suggested_by: suggestedBy,
+          timestamp: new Date().toISOString(),
+        });
+      }
 
       continue;
     }

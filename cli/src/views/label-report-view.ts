@@ -36,13 +36,15 @@ const labelReportView: View<LabelReportData> = (data) => {
 
   const entries: DisplayEntry[] = [
     `Labeled: ${data.labels.length} · Sent to curate: ${data.sentToCurate}` +
-      (data.skippedNoAxioms > 0 ? ` · No axioms to label against: ${data.skippedNoAxioms}` : ""),
+      (data.skippedNoAxioms > 0
+        ? ` · No axioms to label against: ${data.skippedNoAxioms} (→ curate)`
+        : ""),
     ...axiomLines,
     data.failed > 0
       ? `${data.failed} labeling call(s) failed — their critiques stay untriaged; rerun triage to retry.`
       : null,
     costLine,
-    data.sentToCurate > 0
+    data.sentToCurate + data.skippedNoAxioms > 0
       ? "The unmatched critiques are for humans: `praxis axioms curate` clusters, dismisses, and assigns them."
       : null,
   ];

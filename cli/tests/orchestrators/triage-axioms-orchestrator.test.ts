@@ -169,6 +169,47 @@ describe("triageAxiomsOrchestrator", () => {
     expect(triageRecords(root)).toHaveLength(0);
   });
 
+  it("a spec with no active axioms sends its critiques to curate without a call", async () => {
+    const { root, cleanup } = createValidatorTmpdir({
+      sources: ["docs"],
+      files: {
+        "docs/README.md": "# Spec",
+        "docs/guide.md": "# Guide",
+        "curator.js": curatorProviderModule({}),
+      },
+      curator: { model: "scripted", apiKeyEnvVar: "OPENROUTER_API_KEY", provider: "./curator.js" },
+    });
+    cleanups.push(cleanup);
+
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      runId: "r1",
+      extraLines: [
+        critiqueLine({
+          runId: "r1",
+          seq: 1,
+          filePath: "docs/guide.md",
+          specPath: "docs/README.md",
+          text: "The guide teaches nothing.",
+        }),
+      ],
+    });
+    const { logger } = createCaptureLogger();
+
+    const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { dryRun: false });
+
+    expect(outcome).toBe("ok");
+
+    const records = triageRecords(root);
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({
+      kind: "unmatched",
+      critique_id: "r1:1",
+      considered: [],
+    });
+  });
+
   it("an empty backlog says so and stops", async () => {
     const { root, cleanup } = createValidatorTmpdir({
       sources: ["docs"],

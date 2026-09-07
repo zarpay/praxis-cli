@@ -128,9 +128,12 @@ Labels are applied as append-only records, by two verbs:
    everything else stays pending. The hallucination guard lives here:
    an id not among the spec's active axioms never becomes an
    assignment (nor an unmatched verdict — a hallucinating call is a
-   failed call, and its critique stays untriaged for retry). `--dry-run`
-   proposes without writing; no curator configured → warn and defer,
-   never fake. Each verdict streams to the terminal as it lands.
+   failed call, and its critique stays untriaged for retry). A spec
+   with no active axioms needs no call: its critiques are trivially
+   unmatched against the empty set and move straight to curate's
+   queue. `--dry-run` proposes without writing; no curator configured →
+   warn and defer, never fake. Each verdict streams to the terminal as
+   it lands.
 2. **`praxis axioms curate` — the human session** (the verb formerly
    named triage). Interactive work on the **unidentified** critiques —
    never the merely untriaged, which it names and defers to triage.
