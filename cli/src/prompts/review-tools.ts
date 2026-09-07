@@ -32,7 +32,7 @@ export default function reviewTools() {
       function: {
         name: "validation_pass",
         description:
-          "The file satisfies all criteria defined in the specification. Call this when the file conforms to every requirement the spec establishes — nothing required is missing and no violations are present.",
+          "The document satisfies all criteria defined in the specification. Call this when the file conforms to every requirement the spec establishes — nothing required is missing and no violations are present.",
         parameters: {
           type: "object",
           properties: {
@@ -50,7 +50,7 @@ export default function reviewTools() {
       function: {
         name: "validation_warn",
         description:
-          "The file satisfies the core requirements of the specification but deviates in ways that are non-critical — optional criteria unmet, stylistic inconsistencies, or minor gaps that do not break the intended pattern. Call this when the file is usable but improvement is expected.",
+          "The document satisfies the core requirements of the specification but deviates in ways that are non-critical — optional criteria unmet or minor gaps that do not break the intended pattern. Call this when the document is usable but improvement is expected.",
         parameters: {
           type: "object",
           properties: {
@@ -62,7 +62,7 @@ export default function reviewTools() {
               type: "array",
               items: issueItems,
               description:
-                "Each deviation from the specification, tagged with the checklist axiom it violates, or null for open-channel deviations.",
+                "Each deviation from the specification described as an individual critique.",
             },
           },
           required: ["reason", "issues"],
@@ -74,19 +74,19 @@ export default function reviewTools() {
       function: {
         name: "validation_fail",
         description:
-          "The file violates one or more required criteria in the specification. Call this when required elements are absent, patterns the spec mandates are broken, or the file fundamentally does not conform to what the spec defines as valid.",
+          "The document violates one or more required criteria in the specification. Call this when required elements are absent, patterns the spec mandates are broken, or the document fundamentally does not conform to what the spec defines as valid.",
         parameters: {
           type: "object",
           properties: {
             reason: {
               type: "string",
-              description: "Overall summary of how the file fails to meet the specification.",
+              description: "Overall summary of how the document fails to meet the specification.",
             },
             issues: {
               type: "array",
               items: issueItems,
               description:
-                "Each violation of the specification, tagged with the checklist axiom it violates, or null for open-channel violations.",
+                "Each violation from the specification described as an individual critique.",
             },
           },
           required: ["reason", "issues"],

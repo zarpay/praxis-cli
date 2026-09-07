@@ -104,6 +104,16 @@ export type CommandOutcome = "ok" | "failed";
 export type View<Data> = (data: Data) => ReportLine[];
 
 /**
+ * The one signature every prompt has.
+ *
+ * Generix in it's context: the framework fixes the shape - a template (string)
+ * and it's template-able variables, if any are required.
+ */
+export type Prompt<Options = NoOptions> = (
+  variables: Options,
+) => string;
+
+/**
  * The one signature every orchestrator has.
  *
  * Generic in its context: the framework fixes the shape — a context, the
