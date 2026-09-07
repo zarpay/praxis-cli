@@ -34,8 +34,8 @@ interface CurateSession {
   /** The curator model, recorded as the suggester in every assignment. */
   suggestedBy: string;
   records: TriageRecord[];
-  /** Proposals accepted for the current spec — later cohorts fold into them. */
-  proposalsThisSpec: { id: string; statement: string }[];
+  /** Proposals accepted this session — later cohorts fold into them. */
+  proposalsThisSession: { id: string; statement: string }[];
   assigned: number;
   proposed: number;
   dismissed: number;
@@ -116,7 +116,7 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
     prompter,
     suggestedBy: curator.model,
     records: [],
-    proposalsThisSpec: [],
+    proposalsThisSession: [],
     assigned: 0,
     proposed: 0,
     dismissed: 0,
@@ -174,6 +174,11 @@ async function organizeAndDecide(
   const store = new AxiomStore(session.cfg);
   const versions = new Map(store.all().axioms.map((axiom) => [axiom.id, axiom.version]));
 
+  // Fold targets are ALL active axioms — an axiom is an abstraction over
+  // evidence, never a child of one spec (owner, 2026-09-07) — plus
+  // whatever this session proposes as it goes.
+  const established = store.active().map((axiom) => ({ id: axiom.id, statement: axiom.statement }));
+
   for (const [specPath, critiques] of groupBySpec(pending)) {
     const specFile = joinPath(session.cfg.root, specPath);
 
@@ -187,13 +192,6 @@ async function organizeAndDecide(
       session.skipped += critiques.length;
       continue;
     }
-
-    // Fold targets are the spec's own axioms (04: derivation is per-spec),
-    // plus whatever this session proposes as it goes.
-    const established = store
-      .activeFor(specFile)
-      .map((axiom) => ({ id: axiom.id, statement: axiom.statement }));
-    session.proposalsThisSpec = [];
 
     const deduped = dedupByText(critiques);
     const cohorts = chunk(deduped, COHORT_SIZE);
@@ -237,7 +235,7 @@ async function organizeCohort(
       specPath,
       specContent,
       critiques: cohort.map((entry) => entry.representative),
-      axioms: [...established, ...session.proposalsThisSpec],
+      axioms: [...established, ...session.proposalsThisSession],
     });
   } catch (err) {
     // A curator failure loses one cohort, never the decisions already
@@ -452,7 +450,7 @@ async function propose(
 
   session.proposed++;
   assign(session, critiques, id, 1);
-  session.proposalsThisSpec.push({ id, statement });
+  session.proposalsThisSession.push({ id, statement });
   session.ctx.render([
     {
       channel: "success",

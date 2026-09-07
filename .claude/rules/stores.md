@@ -63,7 +63,7 @@ described none of them — it is `RunFile`/`TriageSessionFile` (models),
   | `write<Noun>(…)`     | land records as a new file, hard-fail (`writeRun`, `writeSession`, `writeVerdict`) |
   | `read<Noun>({keys})` | one keyed entry, null when absent                             |
   | `by<Field>(value)`   | find one by a field, null when absent                         |
-  | `<noun>For(subject)` | derive the noun for a subject (`pathFor`, `activeFor`)     |
+  | `<noun>For(subject)` | derive the noun for a subject (`pathFor`, `governingPath`) |
   | `mint<Noun>()`       | new collision-safe identity                                   |
   | `has<Fact>(…)`       | boolean membership question                                   |
   | `prune(…)`           | drop dead entries, report the count                           |

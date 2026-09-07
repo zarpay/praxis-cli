@@ -10,7 +10,7 @@ import {
   removeFile,
   writeText,
 } from "@/helpers/files-helper.js";
-import { joinPath, relativePath } from "@/helpers/paths-helper.js";
+import { joinPath } from "@/helpers/paths-helper.js";
 import { AxiomFile } from "@/models/axiom-file.js";
 import axiomFileTemplate from "@/templates/axiom-file-template.js";
 
@@ -72,21 +72,19 @@ export class AxiomStore {
   }
 
   /**
-   * The labeling set for one spec (04): every **active** axiom whose
-   * `derived_from` names it, sorted by id so identical state always
-   * renders identical bytes.
+   * The labeling set (04): every **active** axiom, sorted by id so
+   * identical state always renders identical bytes.
    *
-   * Proposed axioms have no metric effect and never label; deprecated
-   * ones stopped being asked. Derivation is per-spec (04's cross-spec
-   * question stays open): `derived_from`'s path segment must equal the
-   * spec's project-relative path.
+   * An axiom is an abstraction over evidence, never a child of one spec
+   * (owner, 2026-09-07): multiple specs can state in prose the same
+   * principle an axiom captures discretely, so a critique from any spec
+   * can label into any active axiom — `derived_from` is provenance of
+   * birth, not a labeling scope. Proposed axioms have no metric effect
+   * and never label; deprecated ones stopped being asked.
    */
-  activeFor(specPath: string): ActiveAxiom[] {
-    const spec = relativePath(this.projectRoot, specPath);
-
+  active(): ActiveAxiom[] {
     return this.all()
       .axioms.filter((axiom) => axiom.status === "active")
-      .filter((axiom) => axiom.derivedFrom !== null && axiom.derivedFrom.split("#")[0] === spec)
       .sort((a, b) => a.id.localeCompare(b.id))
       .map((axiom) => ({
         id: axiom.id,

@@ -6,7 +6,6 @@ import type {
   TriageUnmatchedRecord,
 } from "@/types.js";
 
-import { joinPath } from "@/helpers/paths-helper.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { RunStore } from "@/stores/run-store.js";
 import { TriageStore } from "@/stores/triage-store.js";
@@ -40,10 +39,11 @@ interface TriageState {
  *    against an axiom set that has since changed. `axioms triage`
  *    categorizes these.
  * 2. **Unidentified** (`unidentified`) — the matcher considered it
- *    against the spec's current active axioms and found no squarely
- *    matching one. `axioms curate` works these, and only these: the
- *    question "does this need a NEW axiom" is only well-posed after
- *    triage has said no existing one fits.
+ *    against the current active axioms (ALL of them — an axiom is an
+ *    abstraction over evidence, never a child of one spec) and found no
+ *    squarely matching one. `axioms curate` works these, and only
+ *    these: the question "does this need a NEW axiom" is only
+ *    well-posed after triage has said no existing one fits.
  * 3. **Identified** — an assignment record labels it (or a dismissal
  *    settles it); it appears in neither queue.
  *
@@ -65,21 +65,8 @@ const deriveTriageStateService: Service<NoInput, TriageState> = (cfg) => {
     if (record.kind === "unmatched") unmatched.set(record.critique_id, record);
   }
 
-  const axiomStore = new AxiomStore(cfg);
-  const activeSetBySpec = new Map<string, string>();
-
-  /** The spec's current active axiom set, as a comparable key. */
-  function activeSetOf(specPath: string): string {
-    const known = activeSetBySpec.get(specPath);
-
-    if (known !== undefined) return known;
-
-    const axioms = axiomStore.activeFor(joinPath(cfg.root, specPath));
-    const key = axioms.map((axiom) => `${axiom.id}@${axiom.version}`).join(",");
-    activeSetBySpec.set(specPath, key);
-
-    return key;
-  }
+  const active = new AxiomStore(cfg).active();
+  const activeSet = active.map((axiom) => `${axiom.id}@${axiom.version}`).join(",");
 
   const pending: PendingCritique[] = [];
   const unidentified: PendingCritique[] = [];
@@ -102,8 +89,7 @@ const deriveTriageStateService: Service<NoInput, TriageState> = (cfg) => {
 
     const record = unmatched.get(critique.id);
     const consideredCurrent =
-      record !== undefined &&
-      [...record.considered].sort().join(",") === activeSetOf(critique.spec_path);
+      record !== undefined && [...record.considered].sort().join(",") === activeSet;
 
     if (consideredCurrent) {
       unidentified.push(queued);

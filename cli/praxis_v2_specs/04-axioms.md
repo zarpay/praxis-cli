@@ -115,8 +115,12 @@ states (owner, 2026-09-07), decided in one place
 Labels are applied as append-only records, by two verbs:
 
 1. **`praxis axioms triage` — the labeling pass** (async,
-   non-interactive). The curator classifies each pending critique
-   against the active axioms derived from its governing spec —
+   non-interactive). The curator classifies each untriaged critique
+   against **all active axioms** — an axiom is an abstraction of
+   principle, never a child of one spec: multiple specs can state in
+   prose what one axiom captures discretely, so a critique from any
+   spec can land in any axiom (owner, 2026-09-07); `derived_from` is
+   provenance of birth, never a labeling scope —
    temperature 0, **one call per critique** (owner, 2026-09-07): a
    batched list lets earlier answers anchor later ones and dilutes
    attention, so ordering becomes a source of mislabeling; a
@@ -128,9 +132,9 @@ Labels are applied as append-only records, by two verbs:
    everything else stays pending. The hallucination guard lives here:
    an id not among the spec's active axioms never becomes an
    assignment (nor an unmatched verdict — a hallucinating call is a
-   failed call, and its critique stays untriaged for retry). A spec
-   with no active axioms needs no call: its critiques are trivially
-   unmatched against the empty set and move straight to curate's
+   failed call, and its critique stays untriaged for retry). A project
+   with no active axioms needs no calls: every critique is trivially
+   unmatched against the empty set and moves straight to curate's
    queue. `--dry-run` proposes without writing; no curator configured →
    warn and defer, never fake. Each verdict streams to the terminal as
    it lands.
@@ -197,8 +201,14 @@ critique no record covers yet — a queue, not a judgment.
 
 1. Re-labeling after taxonomy changes: resolved by construction
    (2026-09-07) — an unmatched record pins the axiom set it was judged
-   against, so ratifying or versioning an axiom automatically re-queues
-   every unidentified critique of that spec for triage; the next
+   against, so ratifying or versioning any axiom automatically
+   re-queues every unidentified critique for triage; the next
    `axioms triage` reconsiders them against the new set without
    touching a single review. Already-assigned critiques keep their
    labels unless a human re-decides them at curate.
+2. Cross-spec axioms: resolved (owner, 2026-09-07) — there is no
+   cross-spec question, because axioms were never per-spec. An axiom
+   abstracts a principle; any spec's critiques label into it. The rate
+   question this raises (which opportunities form a cross-spec axiom's
+   denominator) is 07's to answer honestly — until then the small-n
+   floor and the uncalibrated banner carry the uncertainty.

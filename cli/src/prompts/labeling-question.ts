@@ -18,12 +18,11 @@ import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
  * from labeling-axiom-block and labeling-critique-line.
  */
 interface LabelingQuestionVariables {
-  specPath: string;
   axiomBlocks: string;
   critiqueLine: string;
 }
 
-const TEMPLATE = `## THE ACTIVE AXIOMS OF {specPath}
+const TEMPLATE = `## THE ACTIVE AXIOMS
 
 {axiomBlocks}
 

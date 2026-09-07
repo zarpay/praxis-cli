@@ -8,7 +8,6 @@ import type {
   TriageRecord,
 } from "@/types.js";
 
-import { joinPath } from "@/helpers/paths-helper.js";
 import curatorSystemPrompt from "@/prompts/curator-system-prompt.js";
 import labelingAxiomBlock from "@/prompts/labeling-axiom-block.js";
 import labelingCritiqueLine from "@/prompts/labeling-critique-line.js";
@@ -61,11 +60,12 @@ interface LabelOutcome {
 
 /**
  * The labeling pass (04, review→label): classifies each **untriaged**
- * critique against its spec's active axioms — one curator call per
- * critique, temperature 0, so no critique's verdict can be biased by
- * its neighbors or its position in a list (owner, 2026-09-07). Calls
- * run a few at a time; order-independence is what makes the
- * parallelism safe.
+ * critique against ALL active axioms — an axiom is an abstraction over
+ * evidence, never a child of one spec, so a critique from any spec can
+ * land in any axiom (owner, 2026-09-07). One curator call per critique,
+ * temperature 0, so no critique's verdict can be biased by its
+ * neighbors or its position in a list. Calls run a few at a time;
+ * order-independence is what makes the parallelism safe.
  *
  * Every considered critique leaves categorized: a squarely-an-instance
  * match appends a matcher assignment record; a no-match appends an
@@ -84,8 +84,7 @@ const labelCritiquesService: Service<LabelCritiquesInput, Promise<LabelCritiques
   cfg,
   { pending, dryRun = false, onProgress },
 ) => {
-  const axiomStore = new AxiomStore(cfg);
-  const bySpec = groupBySpec(pending);
+  const active = new AxiomStore(cfg).active();
 
   const labels: CritiqueLabel[] = [];
   const records: TriageRecord[] = [];
@@ -96,87 +95,73 @@ const labelCritiquesService: Service<LabelCritiquesInput, Promise<LabelCritiques
   let failed = 0;
   let done = 0;
 
-  const batches: { specPath: string; axioms: ActiveAxiom[]; critiques: PendingCritique[] }[] = [];
+  if (active.length === 0) {
+    // Nothing to match against anywhere: every verdict is trivially
+    // "unmatched against the empty set" — recorded without a curator
+    // call, so the critiques reach curate instead of stalling untriaged.
+    skippedNoAxioms = pending.length;
 
-  for (const [specPath, critiques] of bySpec) {
-    const axioms = axiomStore.activeFor(joinPath(cfg.root, specPath));
-
-    if (axioms.length === 0) {
-      // Nothing to match against: the verdict is trivially "unmatched
-      // against the empty set" — recorded without a curator call, so
-      // the critiques reach curate instead of stalling untriaged.
-      skippedNoAxioms += critiques.length;
-
-      for (const critique of critiques) {
-        records.push({
-          kind: "unmatched",
-          critique_id: critique.id,
-          considered: [],
-          suggested_by: suggestedBy,
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      continue;
-    }
-
-    batches.push({ specPath, axioms, critiques });
-  }
-
-  const total = batches.reduce((sum, batch) => sum + batch.critiques.length, 0);
-
-  for (const { specPath, axioms, critiques } of batches) {
-    const consideredSet = axioms.map((axiom) => `${axiom.id}@${axiom.version}`).sort();
-
-    const outcomes = await labelSpecBatch(cfg, {
-      specPath,
-      axioms,
-      critiques,
-      onOutcome: (outcome) => {
-        done++;
-        onProgress?.({
-          done,
-          total,
-          critiqueId: outcome.critique.id,
-          filePath: outcome.critique.filePath,
-          outcome: outcomeKind(outcome),
-          axiomId: outcome.label?.axiomId ?? null,
-        });
-      },
-    });
-
-    for (const outcome of outcomes) {
-      usages.push(outcome.usage);
-
-      if (outcome.failed) {
-        failed++;
-
-        continue;
-      }
-
-      if (outcome.label !== null) {
-        labels.push(outcome.label);
-        records.push({
-          kind: "assignment",
-          critique_id: outcome.label.critiqueId,
-          axiom_id: outcome.label.axiomId,
-          axiom_version: outcome.label.axiomVersion,
-          assigned_by: { decision: "matcher", suggested_by: suggestedBy },
-          timestamp: new Date().toISOString(),
-        });
-
-        continue;
-      }
-
-      sentToCurate++;
+    for (const critique of pending) {
       records.push({
         kind: "unmatched",
-        critique_id: outcome.critique.id,
-        considered: consideredSet,
+        critique_id: critique.id,
+        considered: [],
         suggested_by: suggestedBy,
         timestamp: new Date().toISOString(),
       });
     }
+  }
+
+  const consideredSet = active.map((axiom) => `${axiom.id}@${axiom.version}`).sort();
+  const queue = active.length === 0 ? [] : pending;
+
+  const outcomes = await labelBatch(cfg, {
+    axioms: active,
+    critiques: queue,
+    onOutcome: (outcome) => {
+      done++;
+      onProgress?.({
+        done,
+        total: queue.length,
+        critiqueId: outcome.critique.id,
+        filePath: outcome.critique.filePath,
+        outcome: outcomeKind(outcome),
+        axiomId: outcome.label?.axiomId ?? null,
+      });
+    },
+  });
+
+  for (const outcome of outcomes) {
+    usages.push(outcome.usage);
+
+    if (outcome.failed) {
+      failed++;
+
+      continue;
+    }
+
+    if (outcome.label !== null) {
+      labels.push(outcome.label);
+      records.push({
+        kind: "assignment",
+        critique_id: outcome.label.critiqueId,
+        axiom_id: outcome.label.axiomId,
+        axiom_version: outcome.label.axiomVersion,
+        assigned_by: { decision: "matcher", suggested_by: suggestedBy },
+        timestamp: new Date().toISOString(),
+      });
+
+      continue;
+    }
+
+    sentToCurate++;
+    records.push({
+      kind: "unmatched",
+      critique_id: outcome.critique.id,
+      considered: consideredSet,
+      suggested_by: suggestedBy,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   const sessionPath =
@@ -201,30 +186,16 @@ function outcomeKind(outcome: LabelOutcome): LabelProgressEvent["outcome"] {
   return outcome.label === null ? "unmatched" : "labeled";
 }
 
-/** The pending queue keyed by governing spec. */
-function groupBySpec(pending: PendingCritique[]): Map<string, PendingCritique[]> {
-  const groups = new Map<string, PendingCritique[]>();
-
-  for (const critique of pending) {
-    const group = groups.get(critique.specPath) ?? [];
-    group.push(critique);
-    groups.set(critique.specPath, group);
-  }
-
-  return groups;
-}
-
-/** One spec's critiques labeled, a few calls in flight at a time. */
-async function labelSpecBatch(
+/** The critiques labeled, a few calls in flight at a time. */
+async function labelBatch(
   cfg: PraxisConfig,
   input: {
-    specPath: string;
     axioms: ActiveAxiom[];
     critiques: PendingCritique[];
     onOutcome: (outcome: LabelOutcome) => void;
   },
 ): Promise<LabelOutcome[]> {
-  const { specPath, axioms, critiques, onOutcome } = input;
+  const { axioms, critiques, onOutcome } = input;
   const axiomBlocks = axioms
     .map((axiom) =>
       labelingAxiomBlock({ id: axiom.id, severity: axiom.severity, body: axiom.body.trim() }),
@@ -243,7 +214,7 @@ async function labelSpecBatch(
 
       if (critique === undefined) continue;
 
-      const outcome = await labelOne(cfg, { specPath, axiomBlocks, versions, critique });
+      const outcome = await labelOne(cfg, { axiomBlocks, versions, critique });
       outcomes[index] = outcome;
       onOutcome(outcome);
     }
@@ -259,13 +230,12 @@ async function labelSpecBatch(
 async function labelOne(
   cfg: PraxisConfig,
   input: {
-    specPath: string;
     axiomBlocks: string;
     versions: Map<string, number>;
     critique: PendingCritique;
   },
 ): Promise<LabelOutcome> {
-  const { specPath, axiomBlocks, versions, critique } = input;
+  const { axiomBlocks, versions, critique } = input;
   const critiqueLine = labelingCritiqueLine({
     id: critique.id,
     filePath: critique.filePath,
@@ -277,7 +247,7 @@ async function labelOne(
   try {
     completion = await requestCuratorCompletionService(cfg, {
       systemPrompt: curatorSystemPrompt(),
-      userPrompt: labelingQuestion({ specPath, axiomBlocks, critiqueLine }),
+      userPrompt: labelingQuestion({ axiomBlocks, critiqueLine }),
       tools: labelingTools(),
     });
   } catch {

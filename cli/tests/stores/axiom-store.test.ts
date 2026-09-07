@@ -96,13 +96,13 @@ describe("AxiomStore", () => {
     });
   });
 
-  describe("activeFor", () => {
+  describe("active", () => {
     const SPEC = "docs/README.md";
 
-    it("selects active axioms derived from the spec, with their teaching material", () => {
+    it("selects every active axiom, with its teaching material", () => {
       seedAxiom("AX-aaaa11", { derivedFrom: `${SPEC}#payloads` });
 
-      const checklist = store.activeFor(join(root, SPEC));
+      const checklist = store.active();
 
       expect(checklist).toHaveLength(1);
       expect(checklist[0]).toMatchObject({
@@ -113,22 +113,24 @@ describe("AxiomStore", () => {
       });
     });
 
-    it("excludes proposed and deprecated axioms — they never reach the reviewer", () => {
+    it("excludes proposed and deprecated axioms — they never label", () => {
       seedAxiom("AX-aaaa11", { status: "proposed", derivedFrom: SPEC, proposed: true });
       seedAxiom("AX-bbbb22", { status: "deprecated", derivedFrom: SPEC });
 
-      expect(store.activeFor(join(root, SPEC))).toEqual([]);
+      expect(store.active()).toEqual([]);
     });
 
-    it("excludes axioms grounded elsewhere or nowhere, sorted by id", () => {
+    it("includes every active axiom regardless of derivation, sorted by id", () => {
+      // An axiom is an abstraction, never a child of one spec: axioms
+      // derived from any spec (or none) all label.
       seedAxiom("AX-cccc33", { derivedFrom: SPEC });
       seedAxiom("AX-aaaa11", { derivedFrom: `${SPEC}#section` });
       seedAxiom("AX-bbbb22");
       seedAxiom("AX-dddd44", { derivedFrom: "src/services/README.md#behavior" });
 
-      const ids = store.activeFor(join(root, SPEC)).map((axiom) => axiom.id);
+      const ids = store.active().map((axiom) => axiom.id);
 
-      expect(ids).toEqual(["AX-aaaa11", "AX-cccc33"]);
+      expect(ids).toEqual(["AX-aaaa11", "AX-bbbb22", "AX-cccc33", "AX-dddd44"]);
     });
   });
 
