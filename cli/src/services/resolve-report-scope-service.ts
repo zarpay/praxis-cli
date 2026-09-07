@@ -3,6 +3,7 @@ import type { ScopedLedger, Service } from "@/types.js";
 import picomatch from "picomatch";
 
 import { commitDateOf, commitExists } from "@/helpers/git-helper.js";
+import joinCritiqueLabelsService from "@/services/join-critique-labels-service.js";
 import { RunStore } from "@/stores/run-store.js";
 
 /** Everything `resolve-report-scope` needs to build a scope. */
@@ -58,8 +59,7 @@ const resolveReportScopeService: Service<ResolveReportScopeInput, ScopedLedger> 
   const runIds = new Set(runs.map((run) => run.run_id));
   const matchesTarget = target ? picomatch(target, { dot: true }) : null;
 
-  const critiques = runStore
-    .critiques()
+  const critiques = joinCritiqueLabelsService(cfg, { critiques: runStore.critiques() })
     .filter((critique) => runIds.has(critique.run_id))
     .filter(
       (critique) =>

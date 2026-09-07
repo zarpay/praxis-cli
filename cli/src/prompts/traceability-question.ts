@@ -33,7 +33,6 @@ Answer: which criterion in this specification grounds the proposed axiom?
 
 Never stretch a passage to cover a standard it does not state. A generous reading here corrupts every rate computed under the axiom later.`;
 
-const prompt: Prompt<PromptOptions> = (variables) =>
-  preparePrompt(TEMPLATE, variables).trim();
+const prompt: Prompt<PromptOptions> = (variables) => preparePrompt(TEMPLATE, variables).trim();
 
 export default prompt;

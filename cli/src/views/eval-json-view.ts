@@ -37,11 +37,9 @@ function targetJson(target: ReviewedTarget): object {
   };
 }
 
-/** The match-state feedback shape (08-d): axiom reference or raw critique. */
+/** A raw finding (04, review→label): labels arrive later, at triage. */
 function findingJson(finding: Finding): object {
   return {
-    axiom_id: finding.axiomId,
-    channel: finding.axiomId === null ? "open" : "matched",
     text: finding.text,
     severity: finding.severity,
     witnesses: finding.witnesses,
