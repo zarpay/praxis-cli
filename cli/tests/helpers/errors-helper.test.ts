@@ -176,7 +176,7 @@ describe("USAGE_ERROR_CODES", () => {
   it("classifies usage/config mistakes, not runtime failures (09-o)", () => {
     expect(USAGE_ERROR_CODES.has("ROOT_NOT_FOUND")).toBe(true);
     expect(USAGE_ERROR_CODES.has("INVALID_CONFIG_JSON")).toBe(true);
-    expect(USAGE_ERROR_CODES.has("DIFF_WITH_TARGETS")).toBe(true);
+    expect(USAGE_ERROR_CODES.has("UNKNOWN_REVIEWER")).toBe(true);
     expect(USAGE_ERROR_CODES.has("API_KEY_NOT_SET")).toBe(true);
 
     expect(USAGE_ERROR_CODES.has("REVIEWER_API_ERROR")).toBe(false);

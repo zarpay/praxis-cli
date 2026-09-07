@@ -1,7 +1,5 @@
-// The eval loop: subjects, verdicts, critiques, units, runs — and the
-// diff unit (12) with its flow shapes.
+// The eval loop: subjects, verdicts, critiques, units, runs.
 
-import type { LedgerFlow } from "@/types/ledger.js";
 import type { Severity } from "@/types/shared.js";
 
 /** How a spec groups its targets into review units. */
@@ -277,80 +275,4 @@ export interface PruneCacheResult {
   entriesPruned: number;
   /** Files deleted: emptied by pruning, or unreadable/outdated outright. */
   filesRemoved: number;
-}
-
-/** One changed, spec-covered file of a diff run. */
-export interface DiffTarget {
-  /** Absolute path in the working tree (the cache and spec key). */
-  path: string;
-  /** Project-relative, as git names it. */
-  relPath: string;
-  /** Absolute path of the governing spec. */
-  specPath: string;
-  status: "added" | "deleted" | "modified";
-}
-
-/** The resolved diff: what to review, and what the specs cannot see. */
-export interface ResolveDiffResult {
-  baseRef: string;
-  baseSha: string;
-  headSha: string;
-  targets: DiffTarget[];
-  /** Changed files no spec governs, project-relative — the invisible work (01). */
-  uncovered: string[];
-}
-
-/** One side of a verdict comparison, with the provenance that gates it. */
-export interface FlowSide {
-  issues: Critique[];
-  specContentHash: string;
-  reviewerHash: string;
-}
-
-/** One covered file's outcome under one reviewer. */
-export interface DiffTargetOutcome {
-  relPath: string;
-  reviewerName: string;
-  status: DiffTarget["status"];
-  /** After-side critiques with their flow labels; empty for deleted files. */
-  findings: { critique: Critique; flow: LedgerFlow | null; severity: Severity }[];
-  resolved: Critique[];
-  /** Either side could not be reviewed — flow withheld for this target. */
-  unverified: boolean;
-  /** Why the target went unverified; null otherwise. */
-  unverifiedReason: string | null;
-}
-
-/** What a diff review produced across all reviewers. */
-export interface ReviewDiffResult {
-  perTarget: DiffTargetOutcome[];
-  summary: {
-    introduced: number;
-    resolved: number;
-    inherited: number;
-    /** Introduced findings of error severity — what fails the gate. */
-    errorsIntroduced: number;
-    unverified: number;
-  };
-  cacheStats: { hits: number; misses: number };
-}
-
-/**
- * One before-only violation a diff run erased (12): the evidence for a
- * `flow: "resolved"` record, carried as plain data — the write service
- * is the only assembler of ledger records.
- */
-export interface ResolvedEvent {
-  /** Project-relative path of the file the violation lived in. */
-  filePath: string;
-  /** Absolute path of the governing spec. */
-  specPath: string;
-  /** Hash of the before-side content the critique described. */
-  targetContentHash: string;
-  specContentHash: string;
-  /** The vanished critique, axiom identity included. */
-  critique: Critique;
-  severity: Severity;
-  /** The most recent git author touching the file in base..head; null when unanswerable. */
-  resolvedBy: string | null;
 }

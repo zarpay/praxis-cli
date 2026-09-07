@@ -1,7 +1,6 @@
 import type { NoInput, Orientation, Service } from "@/types.js";
 
-import { Reviewer } from "@/models/reviewer.js";
-import deriveCalibrationStatusService from "@/services/derive-calibration-status-service.js";
+import { CALIBRATION_STATUS } from "@/helpers/metrics-helper.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { RunStore } from "@/stores/run-store.js";
@@ -39,15 +38,12 @@ const buildOrientationService: Service<NoInput, Orientation> = (cfg) => {
 
   const debtLine = latestCorpusByReviewer.size === 0 ? null : [...latestCorpusByReviewer.values()];
 
-  const reviewerModels = cfg.reviewers.map((config) => Reviewer.fromConfig(config));
-  const calibration = deriveCalibrationStatusService(cfg, { reviewers: reviewerModels });
-
   return {
     lastRun,
     pendingTriage: state.pending.length,
     proposalsPending: axioms.filter((axiom) => axiom.status === "proposed").length,
     activeAxioms: axioms.filter((axiom) => axiom.status === "active").length,
-    calibration: calibration.banner,
+    calibration: CALIBRATION_STATUS,
     debtLine,
   };
 };

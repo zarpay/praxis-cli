@@ -1,4 +1,4 @@
-import type { ReviewDiffResult, ReviewedTarget } from "@/types.js";
+import type { ReviewedTarget } from "@/types.js";
 
 import { describe, expect, it } from "vitest";
 
@@ -55,42 +55,6 @@ describe("evalJsonView", () => {
     const targets = payload["targets"] as Record<string, unknown>[];
 
     expect(targets[0]["status"]).toBe("unverified");
-  });
-
-  it("diff mode carries flow labels, resolution credit shape, and coverage", () => {
-    const result: ReviewDiffResult = {
-      perTarget: [
-        {
-          relPath: "src/services/refund.ts",
-          reviewerName: "v32",
-          status: "modified",
-          findings: [
-            {
-              critique: { text: "vague", axiomId: "AX-b951db", axiomVersion: 2 },
-              flow: "introduced",
-              severity: "error",
-            },
-          ],
-          resolved: [{ text: "fixed one", axiomId: "AX-a108ea", axiomVersion: 1 }],
-          unverified: false,
-          unverifiedReason: null,
-        },
-      ],
-      summary: { introduced: 1, resolved: 1, inherited: 0, errorsIntroduced: 1, unverified: 0 },
-      cacheStats: { hits: 1, misses: 1 },
-    };
-
-    const payload = parse(
-      evalJsonView({ kind: "diff", result, base: "abc", head: "def", uncovered: ["notes.txt"] }),
-    );
-    const targets = payload["targets"] as Record<string, unknown>[];
-    const findings = targets[0]["findings"] as Record<string, unknown>[];
-
-    expect(payload["mode"]).toBe("diff");
-    expect(payload["base"]).toBe("abc");
-    expect(payload["uncovered"]).toEqual(["notes.txt"]);
-    expect(findings[0]).toMatchObject({ axiom_id: "AX-b951db", flow: "introduced" });
-    expect(targets[0]["resolved"]).toEqual([{ axiom_id: "AX-a108ea", text: "fixed one" }]);
   });
 
   it("corpus mode is the summary and the cache economics", () => {

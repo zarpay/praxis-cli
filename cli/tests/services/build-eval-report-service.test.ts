@@ -203,8 +203,7 @@ describe("buildEvalReportService", () => {
 
     const built = report();
 
-    // One finding; the resolved event reads as flow, never as stock.
+    // Historical flow:"resolved" records are paydown facts, never stock.
     expect(built.panel.critiques).toBe(1);
-    expect(built.flow?.rows[0]).toMatchObject({ axiomId: "AX-aaaa11", resolved: 1 });
   });
 });

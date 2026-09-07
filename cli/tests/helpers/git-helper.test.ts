@@ -7,16 +7,9 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
   authorsOfRange,
-  changedFilesOfRange,
   commitExists,
-  defaultBranchRef,
   fileFirstCommitDate,
   gitFacts,
-  interventionsFor,
-  lastAuthorOfRange,
-  mergeBase,
-  resolveSha,
-  showFileAt,
 } from "@/helpers/git-helper.js";
 
 /** Runs git quietly in the test repo. */
@@ -116,98 +109,5 @@ describe("gitFacts", () => {
     const facts = gitFacts(root);
 
     expect(facts).toMatchObject({ inRepo: true, commitSha: null, branch: null });
-  });
-
-  describe("the diff-unit operations (12)", () => {
-    /** A repo with a main branch and a feature branch that changed things. */
-    function initDiffRepo(): { baseSha: string; headSha: string } {
-      initRepo();
-      writeFileSync(join(root, "keep.md"), "# Keep\n");
-      writeFileSync(join(root, "gone.md"), "# Gone\n");
-      git(root, "add", "-A");
-      git(root, "commit", "-qm", "base");
-      const baseSha = git(root, "rev-parse", "HEAD");
-
-      git(root, "checkout", "-qb", "feature");
-      git(root, "config", "user.name", "Feature Author");
-      writeFileSync(join(root, "keep.md"), "# Keep — edited\n");
-      writeFileSync(join(root, "new.md"), "# New\n");
-      git(root, "rm", "-q", "gone.md");
-      git(root, "add", "-A");
-      git(root, "commit", "-qm", "feature work");
-
-      return { baseSha, headSha: git(root, "rev-parse", "HEAD") };
-    }
-
-    it("detects the default branch from local heads when origin is absent", () => {
-      initRepo();
-
-      expect(defaultBranchRef(root)).toBe("main");
-    });
-
-    it("answers null outside a repo — the caller asks for an explicit base", () => {
-      expect(defaultBranchRef(root)).toBeNull();
-      expect(mergeBase(root, "main")).toBeNull();
-      expect(resolveSha(root, "HEAD")).toBeNull();
-    });
-
-    it("finds the merge-base of a feature branch and resolves shas", () => {
-      const { baseSha, headSha } = initDiffRepo();
-
-      expect(mergeBase(root, "main")).toBe(baseSha);
-      expect(resolveSha(root, "HEAD")).toBe(headSha);
-      expect(resolveSha(root, "no-such-ref")).toBeNull();
-    });
-
-    it("names what a range changed, statuses included", () => {
-      const { baseSha } = initDiffRepo();
-
-      const changed = changedFilesOfRange(root, baseSha);
-
-      expect(changed).toContainEqual({ path: "keep.md", status: "modified" });
-      expect(changed).toContainEqual({ path: "new.md", status: "added" });
-      expect(changed).toContainEqual({ path: "gone.md", status: "deleted" });
-    });
-
-    it("shows a file at a ref byte-exact — the trailing newline joins the content hash", () => {
-      const { baseSha } = initDiffRepo();
-
-      expect(showFileAt(root, baseSha, "keep.md")).toBe("# Keep\n");
-      expect(showFileAt(root, "HEAD", "keep.md")).toBe("# Keep — edited\n");
-      expect(showFileAt(root, baseSha, "new.md")).toBeNull();
-    });
-
-    it("credits the most recent author touching a file in the range", () => {
-      const { baseSha, headSha } = initDiffRepo();
-
-      expect(lastAuthorOfRange(root, baseSha, headSha, "keep.md")).toBe("Feature Author");
-      expect(lastAuthorOfRange(root, baseSha, headSha, "untouched.md")).toBeNull();
-    });
-  });
-
-  describe("interventionsFor", () => {
-    it("finds commits whose trailer names the axiom, exactly (08-n)", () => {
-      initRepo();
-      git(
-        root,
-        "commit",
-        "-qm",
-        "harness: carry the error-message standard\n\nPraxis-Intervention: AX-b951db, AX-a108ea",
-        "--allow-empty",
-      );
-      git(root, "commit", "-qm", "unrelated", "--allow-empty");
-
-      const hits = interventionsFor(root, "AX-b951db");
-      const near = interventionsFor(root, "AX-b951");
-
-      expect(hits).toHaveLength(1);
-      expect(hits[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(interventionsFor(root, "AX-a108ea")).toHaveLength(1);
-      expect(near).toHaveLength(0);
-    });
-
-    it("is empty outside a repository", () => {
-      expect(interventionsFor(root, "AX-b951db")).toEqual([]);
-    });
   });
 });

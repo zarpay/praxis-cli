@@ -1,6 +1,11 @@
 # 01 — Populations and the Eval Unit
 
 **Status:** Draft
+
+> **Scope note (2026-09-07):** the diff unit, flow labels, and the
+> introduction rate are withdrawn to `roadmap/12-git-integration.md`.
+> In core, the eval units are the corpus and named files; populations
+> (pre/post-spec) still qualify every count.
 **Depends on:** [vocabulary.md](./vocabulary.md)
 
 ## The problem this solves

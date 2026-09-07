@@ -90,13 +90,9 @@ A `[AX-…]` citation marks a **matched** finding — a ratified axiom, drill-do
 
 ---
 
-### `praxis eval run --diff [base]`
 
-Reviews the branch against its merge-base (12) — the PR-shaped unit the eval measures. The base defaults to the detected default branch; name one explicitly when the detection can't (`--diff develop`).
 
 ```bash
-praxis eval run --diff
-praxis eval run --diff origin/main
 ```
 
 Mechanics: changed files are filtered to spec-covered targets (the uncovered remainder is named — work the specs can't see is never invisibly invisible); both sides of each covered file are reviewed as ordinary targets — the **after** side at HEAD, the **before** side at the merge-base, both read from git so a dirty tree can't leak into a measured run. The before side is usually a cache hit from the base branch's own runs, so a diff costs about **one reviewer call per changed file**.
@@ -122,17 +118,13 @@ A full run with a structured summary, for pull request pipelines.
 ```bash
 praxis eval ci
 praxis eval ci --strict
-praxis eval ci --diff          # the PR gate: verify the merge-base diff
 ```
 
 **Options:**
 
 | Flag            | Description                                                        |
 | --------------- | ------------------------------------------------------------------ |
-| `--strict`      | Fail on warnings as well as errors (with `--diff`: on any introduced finding) |
-| `--diff [base]` | Verify the merge-base diff instead of the corpus                   |
 
-CI verifies and leaves no trace: no ledger records, and the cache runs read-only so a miss never writes back. With `--diff`, CI also warns (never fails) when the branch's ledger carries no local diff-run — the durable flow evidence comes from `eval run --diff` on the branch.
 
 **Exit code:** 0 if all pass (or no errors with `--strict` off), 1 otherwise.
 
@@ -140,7 +132,7 @@ CI verifies and leaves no trace: no ledger records, and the cache runs read-only
 
 ### `--json`: the fast loop's delivery
 
-`praxis eval run <target> --json` emits the outcome as stable JSON on stdout — the feedback a coding agent or a harness hook consumes directly ([harness feedback](/validation/harness-feedback)). Matched findings carry their axiom id and statement (depth stays behind `axioms show <id>`); open-channel critiques carry their raw text; corpus and diff modes emit their summaries with flow labels and coverage. `eval verdict` and bare `praxis` take `--json` too.
+`praxis eval run <target> --json` emits the outcome as stable JSON on stdout — the feedback a coding agent or a harness hook consumes directly ([harness feedback](/validation/harness-feedback)). Matched findings carry their axiom id and statement (depth stays behind `axioms show <id>`); open-channel critiques carry their raw text; corpus mode emits the run summary. `eval verdict` and bare `praxis` take `--json` too.
 
 ## `praxis eval verdict <path>`
 
@@ -200,9 +192,8 @@ The read side of the ledger — never a reviewer call. Scopes compose: `eval rep
 - rates as `violations/opportunities (x%)` with the denominator always shown; cells under the small-n floor (5) render **insufficient data**, never a number. Current stock anchors to the latest *evidenced* corpus run (one with cache misses) and prints its date — an all-hit run proves nothing new and never moves the anchor
 - one reviewer, one series — never pooled; every count qualified by population (pre-spec / post-spec / unknown, derived from git birthdates against each axiom's clock)
 - epoch boundaries as named furniture; nothing trends across one
-- the per-reviewer calibration banner on every report (see [calibration](/validation/calibration))
+- the calibration banner on every report (uncalibrated — numbers are directional)
 - costs, residual rate, and the pending-triage queue
-- **violation flow** (once diff runs exist): introduced / resolved / inherited per axiom per reviewer over each branch's latest diff run, and the **post-spec introduction rate** — the eval's number — as violations per applicable opportunity
 - a requested sha that no longer resolves renders the missing-commit note (squash workflows orphan branch shas by policy) — the run's attestation stays usable
 
 `--json` emits the built payload verbatim — the stable machine contract.

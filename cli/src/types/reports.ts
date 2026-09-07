@@ -163,37 +163,6 @@ export interface AxiomReportRow {
   segments: { epochLabel: string; violations: number; runs: number }[];
 }
 
-/** One axiom × reviewer row of the flow section (01, 12). */
-export interface FlowRow {
-  axiomId: string;
-  statement: string;
-  reviewerName: string;
-  introduced: number;
-  resolved: number;
-  inherited: number;
-  /**
-   * Introduced counts qualified by population — the head commit's date
-   * against the axiom's clock; unknown when the sha expired (12).
-   */
-  introducedByPopulation: Record<PopulationQualifier, number>;
-  /**
-   * The eval's number (01): post-spec introduced violations over the
-   * spec's applicable opportunities across the selected runs.
-   */
-  introductionRate: RateCell;
-}
-
-/**
- * The flow section (01's violation flow): computed over each branch's
- * latest diff run per reviewer, within each reviewer's current epoch,
- * so reruns replace the picture and nothing sums across a boundary.
- */
-export interface FlowReport {
-  /** Diff runs the section computed over, after latest-per-branch selection. */
-  runsConsidered: number;
-  rows: FlowRow[];
-}
-
 /** The eval report payload — the stable `--json` contract (09). */
 export interface EvalReport {
   scope: ReportScope;
@@ -216,8 +185,6 @@ export interface EvalReport {
   /** Dismissed + rejected over all critiques, floor-aware (04). */
   residual: RateCell;
   epochs: EpochSeries[];
-  /** Violation flow over diff runs; null when the scope holds none (M5). */
-  flow: FlowReport | null;
 }
 
 /** The single-axiom drill-down payload. */
@@ -225,17 +192,6 @@ export interface AxiomReport {
   axiomId: string;
   /** The per-reviewer calibration banner (06-h) — carried on the payload like every other report. */
   calibration: string;
-  /** Named when a calibration run flagged this axiom's scores as drifted (06): rates across that boundary are not comparable. */
-  driftNote: string | null;
-  /** Harness PRs whose Praxis-Intervention trailer targeted this axiom (08-n), newest first — annotated boundaries, never attribution. */
-  interventions: { sha: string; date: string }[];
-  /**
-   * Inter-reviewer agreement over the scoped evidence (06-p), null with
-   * fewer than two reviewers: `corroborated` files were flagged by two
-   * or more reviewers; `disagreed` files by exactly one — corpus runs
-   * review everything, so a lone witness means the others passed it.
-   */
-  agreement: { corroborated: number; disagreed: number } | null;
   statement: string;
   status: AxiomStatus;
   severity: Severity;

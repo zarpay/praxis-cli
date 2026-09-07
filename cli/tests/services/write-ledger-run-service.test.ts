@@ -194,7 +194,6 @@ describe("writeLedgerRunService", () => {
       axiom_id: null,
       population: "unknown",
       authorship: "unknown",
-      flow: null,
     });
   });
 

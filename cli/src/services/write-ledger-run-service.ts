@@ -2,14 +2,12 @@ import type {
   CacheReviewerIdentity,
   CalibrationStatus,
   LedgerCritiqueRecord,
-  LedgerDiffFacts,
   LedgerEntry,
   LedgerRecord,
   LedgerRunRecord,
   LedgerScope,
   LedgerTrigger,
   ProviderUsage,
-  ResolvedEvent,
   Service,
   WriteLedgerRunResult,
 } from "@/types.js";
@@ -28,11 +26,6 @@ interface WriteLedgerRunInput {
   calibrationStatus?: CalibrationStatus;
   /** Evaluated units per governing spec, project-relative paths. */
   specUnits?: Record<string, number>;
-  /** Present on scope "diff" runs: the run facts and the resolved events. */
-  diff?: {
-    facts: Omit<LedgerDiffFacts, "resolved_count">;
-    resolved: ResolvedEvent[];
-  };
 }
 
 /**
@@ -49,7 +42,7 @@ interface WriteLedgerRunInput {
  */
 const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> = (
   cfg,
-  { reviewer, trigger, scope, entries, specUnits, diff, calibrationStatus },
+  { reviewer, trigger, scope, entries, specUnits, calibrationStatus },
 ) => {
   const root = cfg.root;
   const runStore = new RunStore(cfg);
@@ -59,15 +52,11 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
 
   const critiques: LedgerCritiqueRecord[] = [];
 
-  // Cache hits write no critiques — nothing new was reviewed (05) —
-  // EXCEPT on diff runs: the comparison is new evidence even when both
-  // verdicts came from cache, and the flow labels are the run's whole
-  // point. A replay that recorded nothing would erase the flow the
-  // latest-per-branch reports read (12).
-  for (const { verdict, cacheHit, evidence, flow, beforeRunId } of entries) {
-    if (!evidence || (cacheHit && scope !== "diff")) continue;
+  // Cache hits write no critiques — nothing new was reviewed (05).
+  for (const { verdict, cacheHit, evidence } of entries) {
+    if (!evidence || cacheHit) continue;
 
-    for (const [at, issue] of verdict.issues.entries()) {
+    for (const issue of verdict.issues) {
       critiques.push({
         kind: "critique",
         id: `${runId}:${critiques.length + 1}`,
@@ -93,45 +82,8 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
         authorship_evidence: null,
         agent_involved: null,
         pre_review: null,
-        // Set-difference labels on diff runs (12); null everywhere else.
-        flow: flow?.[at] ?? null,
-        before_run_id: beforeRunId === "self" ? runId : null,
-        resolved_by: null,
       });
     }
-  }
-
-  // Resolved events (12): the before-only violations this diff erased,
-  // recorded critique-shaped so the axiom identity travels, but hashed
-  // over the *before* content — that is what the critique described.
-  for (const event of diff?.resolved ?? []) {
-    critiques.push({
-      kind: "critique",
-      id: `${runId}:${critiques.length + 1}`,
-      run_id: runId,
-      timestamp,
-      file_path: event.filePath,
-      spec_path: relativePath(root, event.specPath),
-      target_content_hash: event.targetContentHash,
-      spec_content_hash: event.specContentHash,
-      reviewer_name: reviewer.name,
-      reviewer_model: reviewer.model,
-      reviewer_hash: reviewer.hash,
-      severity: event.severity,
-      text: stripControlChars(event.critique.text),
-      mode: "judgment",
-      axiom_id: event.critique.axiomId,
-      axiom_version: event.critique.axiomVersion,
-      assigned_by: event.critique.axiomId === null ? null : "checklist",
-      population: "unknown",
-      authorship: "unknown",
-      authorship_evidence: null,
-      agent_involved: null,
-      pre_review: null,
-      flow: "resolved",
-      before_run_id: null,
-      resolved_by: event.resolvedBy,
-    });
   }
 
   const run: LedgerRunRecord = {
@@ -150,11 +102,8 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
     cache_hits: entries.filter((entry) => entry.cacheHit).length,
     cache_misses: entries.filter((entry) => !entry.cacheHit && entry.evidence).length,
     ...verdictCounts(entries),
-    // After-side critiques only: resolved events are paydown facts,
-    // counted by diff.resolved_count, never inflating stock.
-    critique_count: critiques.length - (diff?.resolved.length ?? 0),
+    critique_count: critiques.length,
     ...(specUnits && { spec_units: specUnits }),
-    ...(diff && { diff: { ...diff.facts, resolved_count: diff.resolved.length } }),
     calibration_status_at_run: calibrationStatus ?? "uncalibrated",
     baseline: isBaseline(runStore, scope, reviewer.hash),
   };

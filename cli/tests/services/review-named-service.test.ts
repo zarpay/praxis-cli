@@ -73,7 +73,7 @@ describe("reviewNamedService", () => {
   it("resolves a paths-targeted spec when no sibling matches — profiles govern from afar (11)", async () => {
     useVerdict("validation_pass", { reason: "fine" });
     const { root, cfg } = (() => {
-      const { root, abs, cleanup } = createValidatorTmpdir({
+      const { root, cleanup } = createValidatorTmpdir({
         sources: ["lib", "profiles"],
         files: {
           "profiles/core.expert.md": '---\npaths:\n  - "lib/*.rb"\n---\n\n# Core rules',
@@ -84,7 +84,7 @@ describe("reviewNamedService", () => {
       });
       cleanups.push(cleanup);
 
-      return { root, cfg: new PraxisConfig(root), abs };
+      return { root, cfg: new PraxisConfig(root) };
     })();
 
     const result = await reviewNamedService(cfg, {
