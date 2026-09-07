@@ -21,6 +21,17 @@ const evalReportView: View<EvalReport & { json?: boolean }> = (report) => {
 
   for (const missing of report.scope.unresolvableShas) {
     lines.push({ channel: "warning", text: missingCommitNote(missing) });
+    lines.push({
+      channel: "content",
+      entries: [
+        "  Praxis read the sha from a provably clean tree when the run happened; the",
+        "  commit has since left this clone's history — most likely a squash-merge or",
+        "  rebase, an unpushed commit, a shallow clone (`git fetch --all --unshallow`),",
+        "  or a deleted branch. The critique's content hashes still attest exactly what",
+        "  was reviewed; relocate the code with `git log --all -- <file_path>`.",
+        "",
+      ],
+    });
   }
 
   lines.push(
@@ -44,7 +55,8 @@ const evalReportView: View<EvalReport & { json?: boolean }> = (report) => {
     channel: "content",
     entries: [
       "",
-      `Untriaged: ${report.pendingTriage} (\`praxis axioms triage\`) · Awaiting curation: ${report.awaitingCuration} (\`praxis axioms curate\`)`,
+      `Untriaged: ${report.pendingTriage} (\`praxis axioms triage\`)`,
+      `Awaiting curation: ${report.awaitingCuration} (\`praxis axioms curate\`)`,
       `Residual (dismissed + rejected over critiques): ${report.residual.display}`,
     ],
   });
@@ -63,7 +75,7 @@ function missingCommitNote(missing: {
   const recorded =
     missing.at === null ? "" : ` (branch ${missing.branch ?? "—"}, ${missing.at.slice(0, 10)})`;
 
-  return `Commit ${missing.sha.slice(0, 7)}${recorded} is not reachable in this clone. The record is sound — praxis read the sha from a provably clean tree when the run happened — but the commit has since left this clone's history. Most likely, in order: the branch was squash-merged or rebased, so the same work now lives under a different sha; the commit was never pushed from the machine that ran the eval; this clone is shallow or unfetched (\`git fetch --all --unshallow\` may recover it); or the branch was deleted unmerged. The evidence still stands either way: the critique's content hashes attest exactly what was reviewed. To relocate the reviewed code, match target_content_hash against the file's surviving history (\`git log --all -- <file_path>\`).`;
+  return `Commit ${missing.sha.slice(0, 7)}${recorded} is not reachable in this clone — the record is sound.`;
 }
 
 /** Epoch boundaries as named, first-class furniture (07 rule 6). */
@@ -93,7 +105,8 @@ function axiomLines(rows: AxiomReportRow[]): ReportLine[] {
 
     return [
       `${row.axiomId} ${chalk.gray(`[${row.reviewerName}]`)} ${row.statement}`,
-      `  current stock: ${row.rate.display}${asOf(row)} · critiques by population: ${populations}`,
+      `  current stock: ${row.rate.display}${asOf(row)}`,
+      `  critiques by population: ${populations}`,
       ...row.segments.map(
         (segment) =>
           `  ${chalk.gray(`${segment.epochLabel}: ${segment.violations} critiques over ${segment.runs} runs`)}`,
@@ -101,7 +114,9 @@ function axiomLines(rows: AxiomReportRow[]): ReportLine[] {
     ].join("\n");
   });
 
-  return [{ channel: "content", entries }];
+  const spaced = entries.flatMap((entry) => [entry, ""]);
+
+  return [{ channel: "content", entries: spaced }];
 }
 
 /** The stock's evidence date, empty when no evidenced corpus run exists. */

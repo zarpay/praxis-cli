@@ -16,7 +16,15 @@ const runAnchoringView: View<GitFacts> = ({ inRepo, commitSha }) => {
   return [
     {
       channel: "warning",
-      text: "Working tree is not clean — this run is feedback, not measurement: its critiques are attested by content hashes but carry no commit to reconstruct from. Commit first when you want forensic-grade evidence.",
+      text: "Working tree is not clean — this run is feedback, not measurement.",
+    },
+    {
+      channel: "content",
+      entries: [
+        "  Its critiques are attested by content hashes but carry no commit to reconstruct",
+        "  from. Commit first when you want forensic-grade evidence.",
+        "",
+      ],
     },
   ];
 };

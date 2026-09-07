@@ -39,7 +39,7 @@ describe("renderReport", () => {
       { logger },
     );
 
-    expect(logged).toBe("[INFO] Report\n[WARN] careful\n[OK] done\n");
+    expect(logged).toBe("\nReport\n[WARN] careful\n[OK] done\n");
     expect(stdout).toEqual([]);
   });
 
@@ -72,6 +72,6 @@ describe("renderReport", () => {
       { logger: trackingLogger },
     );
 
-    expect(order).toEqual(["err:[INFO] first", "out:second", "err:[WARN] third"]);
+    expect(order).toEqual(["err:first", "out:second", "err:[WARN] third"]);
   });
 });

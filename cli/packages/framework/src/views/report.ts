@@ -17,7 +17,7 @@ export function renderReport(
   for (const line of lines) {
     switch (line.channel) {
       case "heading":
-        logger.info(line.text);
+        logger.heading(line.text);
         break;
       case "warning":
         logger.warn(line.text);

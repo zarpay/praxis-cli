@@ -43,7 +43,6 @@ describe("epochBoundaryView", () => {
     const warningText = warning.channel === "warning" ? warning.text : "";
 
     expect(warningText).toContain("config or prompt surface");
-    expect(warningText).toContain("CLI versions");
   });
 
   it("recommends the re-baseline after the warnings", () => {
@@ -53,7 +52,7 @@ describe("epochBoundaryView", () => {
     const recommendation = lines[lines.length - 1];
     const rendered = JSON.stringify(recommendation);
 
-    expect(lines).toHaveLength(3);
+    expect(lines).toHaveLength(5);
     expect(recommendation.channel).toBe("content");
     expect(rendered).toContain("praxis eval run");
   });

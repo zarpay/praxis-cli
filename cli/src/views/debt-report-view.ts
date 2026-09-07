@@ -31,7 +31,7 @@ const debtReportView: View<DebtReport & { json?: boolean }> = (report) => {
     { channel: "warning", text: `Calibration: ${report.calibration}` },
     {
       channel: "content",
-      entries: [...report.evidence.map(evidenceLine), ...report.rows.map(rowLine)],
+      entries: [...report.evidence.map(evidenceLine), "", ...report.rows.map(rowLine)],
     },
   ];
 
@@ -59,12 +59,16 @@ const debtReportView: View<DebtReport & { json?: boolean }> = (report) => {
 
 export default debtReportView;
 
-/** One axiom's stock movement, one reviewer's series. */
+/** One axiom's stock movement, one reviewer's series — a two-line block. */
 function rowLine(row: DebtReport["rows"][number]): string {
   const paid = chalk.green(String(row.paydown));
   const appeared = chalk.red(String(row.appearedSinceBaseline));
 
-  return `${row.axiomId} ${chalk.gray(`[${row.reviewerName}]`)} baseline ${row.baselineStock} → current ${row.currentStock} · paid down ${paid} · appeared since baseline ${appeared}`;
+  return [
+    `${row.axiomId} ${chalk.gray(`[${row.reviewerName}]`)}`,
+    `  baseline ${row.baselineStock} → current ${row.currentStock} · paid down ${paid} · appeared ${appeared}`,
+    "",
+  ].join("\n");
 }
 
 /** Where the current stock lives, worst directories first. */

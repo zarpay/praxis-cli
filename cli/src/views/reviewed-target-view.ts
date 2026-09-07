@@ -5,10 +5,9 @@ import chalk from "chalk";
 
 /**
  * One named target's outcome as it lands: the badge for the worst
- * verdict, then the deduplicated finding list — matched findings
- * cite their axiom and count their witnesses, open-channel findings
- * carry the raw critique. The drill-down for a cited axiom is
- * `praxis axioms show <id>`.
+ * verdict, then the deduplicated finding list — raw reviewer prose,
+ * with witnesses counted when several reviewers agree. Labels arrive
+ * later, at triage, and show in reports.
  */
 const reviewedTargetView: View<ReviewedTarget> = ({
   path,
@@ -21,6 +20,7 @@ const reviewedTargetView: View<ReviewedTarget> = ({
     {
       channel: "content",
       entries: [
+        "",
         verdictBadge(path, verdict),
         ...findings.map((finding) => findingLine(finding, reviewerCount)),
         ...(verbose ? ["", "Reasoning:", verdict.reason] : []),

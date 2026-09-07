@@ -37,10 +37,10 @@ const auditView: View<AxiomAudit & { json?: boolean }> = ({ rows, json }) => {
     { channel: "heading", text: `Audit — ${rows.length} active axioms, ${flagged} flagged` },
     {
       channel: "content",
-      entries: rows.map((row) => {
+      entries: rows.flatMap((row) => {
         const twin = row.duplicateOf === null ? "" : chalk.yellow(`  ≈ ${row.duplicateOf}`);
 
-        return `${row.id}  ${label(row.assessment)}${twin}  ${row.reasoning}`;
+        return [`${row.id}  ${label(row.assessment)}${twin}`, `  ${chalk.dim(row.reasoning)}`, ""];
       }),
     },
     ...(duplicates.length > 0
@@ -48,7 +48,6 @@ const auditView: View<AxiomAudit & { json?: boolean }> = ({ rows, json }) => {
           {
             channel: "content" as const,
             entries: [
-              "",
               ...duplicates.map(
                 (row) =>
                   `${row.id} ≈ ${row.duplicateOf ?? ""}: same remediation — collapse with \`praxis axioms merge ${row.id} --into ${row.duplicateOf ?? ""}\`.`,
@@ -63,7 +62,7 @@ const auditView: View<AxiomAudit & { json?: boolean }> = ({ rows, json }) => {
             channel: "content" as const,
             entries: [
               "",
-              "Flagged axioms are removal candidates: `praxis axioms deprecate <id> --reason` retires them (history stays frozen, 04).",
+              "Flagged axioms are removal candidates: `praxis axioms deprecate <id> --reason` retires them; history stays frozen.",
             ],
           },
         ]

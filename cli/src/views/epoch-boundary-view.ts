@@ -15,30 +15,44 @@ const epochBoundaryView: View<EpochBoundary[]> = (boundaries) => {
   if (boundaries.length === 0) return [];
 
   return [
-    ...boundaries.map(warningLine),
+    ...boundaries.flatMap(boundaryLines),
     {
       channel: "content",
       entries: [
-        "Numbers do not cross an epoch boundary. Run a full `praxis eval run` to open the new epoch with a baseline.",
+        "  Numbers do not cross an epoch boundary. Run a full `praxis eval run` to open",
+        "  the new epoch with a baseline.",
+        "",
       ],
     },
   ];
 };
 
-/** One boundary, named by what changed. */
-function warningLine(boundary: EpochBoundary): ReportLine {
+/** One boundary: the fact as a warning, the reading of it as detail. */
+function boundaryLines(boundary: EpochBoundary): ReportLine[] {
   const { reviewerName, currentModel, previousModel, lastRunTimestamp } = boundary;
   const date = lastRunTimestamp.slice(0, 10);
 
-  const cause =
-    currentModel === previousModel
-      ? "config or prompt surface changed — a praxis upgrade changes the prompt surface, so check CLI versions across the team"
-      : `model → ${currentModel}`;
+  if (currentModel !== previousModel) {
+    return [
+      {
+        channel: "warning",
+        text: `Epoch boundary — reviewer "${reviewerName}": model → ${currentModel} (last run ${date})`,
+      },
+    ];
+  }
 
-  return {
-    channel: "warning",
-    text: `Epoch boundary — reviewer "${reviewerName}": ${cause} (last run ${date})`,
-  };
+  return [
+    {
+      channel: "warning",
+      text: `Epoch boundary — reviewer "${reviewerName}": config or prompt surface changed (last run ${date})`,
+    },
+    {
+      channel: "content",
+      entries: [
+        "  A praxis upgrade changes the prompt surface, so check CLI versions across the team.",
+      ],
+    },
+  ];
 }
 
 export default epochBoundaryView;

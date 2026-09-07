@@ -19,23 +19,29 @@ interface TriageClusterCard {
 }
 
 /**
- * One cluster of the curate session: the curator's grouping and
- * suggestion, with the distinct critiques as evidence (duplicates
- * counted, not repeated) — everything the human needs on screen to
- * fold, dismiss, or accept.
+ * One cluster of the curate session, framed as a card the human decides
+ * on: the curator's rationale as the heading, each distinct critique as
+ * its own two-line block (duplicates counted, not repeated), a blank
+ * line, then the suggestion — one cluster at a time, nothing running
+ * together.
  */
 const curateClusterView: View<TriageClusterCard> = ({ index, total, cluster, critiques }) => {
+  const critiqueBlocks = critiques.flatMap((critique) => {
+    const copies = critique.copies > 1 ? chalk.gray(` (×${critique.copies})`) : "";
+
+    return [
+      `  ${critique.filePath} ${chalk.gray(`[${critique.reviewerName}]`)}${copies} ${chalk.gray(critique.id)}`,
+      `    ${chalk.dim(critique.text)}`,
+      "",
+    ];
+  });
+
   const lines: ReportLine[] = [
     { channel: "heading", text: `Cluster ${index}/${total} — ${cluster.rationale}` },
     {
       channel: "content",
-      entries: critiques.map((critique) => {
-        const copies = critique.copies > 1 ? chalk.gray(` (×${critique.copies})`) : "";
-
-        return `  ${chalk.gray(critique.id)} ${critique.filePath} ${chalk.gray(`[${critique.reviewerName}]`)}${copies}\n    ${critique.text}`;
-      }),
+      entries: [...critiqueBlocks, ...suggestionLines(cluster)],
     },
-    { channel: "content", entries: ["", ...suggestionLines(cluster)] },
   ];
 
   return lines;
@@ -56,9 +62,11 @@ function suggestionLines(cluster: TriageCluster): string[] {
 
     return [
       `${chalk.cyan("Suggests:")} propose a new axiom (severity: ${draft.severity})`,
+      "",
       `  ${chalk.bold(draft.statement)}`,
-      `  Violating: ${draft.violatingExample}`,
-      `  Compliant: ${draft.compliantExample}`,
+      "",
+      `  Violating:  ${draft.violatingExample}`,
+      `  Compliant:  ${draft.compliantExample}`,
       draft.groundingHint === "" ? "" : `  Grounded in: ${chalk.gray(draft.groundingHint)}`,
     ].filter(Boolean);
   }

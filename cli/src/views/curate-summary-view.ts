@@ -1,5 +1,7 @@
 import type { View } from "@framework/types.js";
 
+import { statLines } from "@framework/views/stats.js";
+
 /** A curate session's counted outcome. */
 interface TriageOutcome {
   assigned: number;
@@ -13,8 +15,8 @@ interface TriageOutcome {
 }
 
 /**
- * A curate session's outcome: every decision counted, the residual
- * named, and the next commands in reach.
+ * A curate session's outcome: every decision counted, one per line, the
+ * residual named, and the next command in reach.
  */
 const curateSummaryView: View<TriageOutcome> = ({
   assigned,
@@ -24,15 +26,21 @@ const curateSummaryView: View<TriageOutcome> = ({
   pendingLeft,
   costUsd,
 }) => {
-  const cost = costUsd === null ? "" : ` · curator cost $${costUsd.toFixed(4)}`;
+  const counts: [string, string | number][] = [
+    ["Assigned", assigned],
+    ["Proposed", proposed],
+    ["Dismissed", dismissed],
+    ["Skipped", skipped],
+    ["Still pending", pendingLeft],
+  ];
 
   return [
     { channel: "heading", text: "Curate session" },
     {
       channel: "content",
       entries: [
-        `Assigned: ${assigned} · Proposed into new axioms: ${proposed} · Dismissed: ${dismissed} · Skipped: ${skipped}`,
-        `Pending after session: ${pendingLeft}${cost}`,
+        ...statLines(counts),
+        ...(costUsd === null ? [] : ["", `Curator cost: $${costUsd.toFixed(4)}`]),
         ...(proposed > 0
           ? [
               "",

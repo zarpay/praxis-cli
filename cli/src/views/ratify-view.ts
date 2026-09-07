@@ -33,7 +33,9 @@ const ratifyView: View<RatifyReview> = ({ axiom, supportingCritiques, gate, trac
         axiom.statement(),
         "",
         `Supporting critiques: ${supportingCritiques}`,
-        `Authoring gate: ${gateColor(gate.assessment)} — ${gate.reasoning}`,
+        "",
+        `Authoring gate: ${gateColor(gate.assessment)}`,
+        `  ${chalk.dim(gate.reasoning)}`,
         ...(gate.judgmentHalf ? [`  Judgment half: ${gate.judgmentHalf}`] : []),
         ...(gate.duplicateOf
           ? [
@@ -42,6 +44,7 @@ const ratifyView: View<RatifyReview> = ({ axiom, supportingCritiques, gate, trac
               ),
             ]
           : []),
+        "",
         `Spec traceability: ${traceLine}`,
         ...(traceability.quotedBasis === ""
           ? []

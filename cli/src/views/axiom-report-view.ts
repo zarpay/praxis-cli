@@ -17,7 +17,7 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
 
   const examples = report.examples.map(
     (example) =>
-      `  ${chalk.gray(example.id)} ${example.filePath} ${chalk.gray(`[${example.reviewerName}]`)}\n    ${example.text}`,
+      `  ${example.filePath} ${chalk.gray(`[${example.reviewerName}]`)} ${chalk.gray(example.id)}\n    ${chalk.dim(example.text)}\n`,
   );
 
   return [
@@ -30,14 +30,16 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
       channel: "content",
       entries: [
         report.statement,
+        "",
         `derived from: ${report.derivedFrom ?? "— (not ratified)"} · introduced: ${report.introduced}`,
         "",
-        ...report.rows.map(
-          (row) =>
-            `[${row.reviewerName}] current stock: ${row.rate.display}${asOf(row)} · files ever flagged: ${row.files} · pre-spec ${row.byPopulation.pre_spec} / post-spec ${row.byPopulation.post_spec} / unknown ${row.byPopulation.unknown}`,
-        ),
-        ...(examples.length > 0 ? ["", "Representative critiques:", ...examples] : []),
-        "",
+        ...report.rows.flatMap((row) => [
+          `[${row.reviewerName}]`,
+          `  current stock: ${row.rate.display}${asOf(row)} · files ever flagged: ${row.files}`,
+          `  critiques by population: pre-spec ${row.byPopulation.pre_spec} · post-spec ${row.byPopulation.post_spec} · unknown ${row.byPopulation.unknown}`,
+          "",
+        ]),
+        ...(examples.length > 0 ? ["Representative critiques:", "", ...examples] : []),
         "Removal candidacy: `praxis axioms audit` re-runs the authoring gate.",
       ],
     },

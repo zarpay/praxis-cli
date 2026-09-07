@@ -63,8 +63,8 @@ describe("evalReportView", () => {
 
     const text = reportText(evalReportView(scoped));
 
-    expect(text).toContain("squash-merged or rebased");
-    expect(text).toContain("The evidence still stands");
+    expect(text).toContain("squash-merge or");
+    expect(text).toContain("still attest exactly what");
   });
 
   it("emits the payload verbatim as the json contract", () => {

@@ -29,10 +29,12 @@ const mergeReportView: View<MergeReport> = (report) => {
         report.survivorStatement,
         "",
         ...movedLines,
+        "",
         `${total} critique(s) now count under ${report.survivorId} — prior labels stay in the ledger beneath the merge records.`,
         report.introducedChanged
           ? `Population clock: introduced moves to ${report.introduced} (the earliest among the merged).`
           : `Population clock unchanged: ${report.introduced}.`,
+        "",
         "Reports recompute from the join — no history was rewritten.",
       ],
     },

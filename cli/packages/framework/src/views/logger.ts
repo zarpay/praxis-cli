@@ -34,6 +34,16 @@ export class Logger {
     this.log("[INFO]", message, chalk.blue);
   }
 
+  /**
+   * Render a section heading: a leading blank line, then the title in
+   * bold — no log prefix. A heading names what follows; prefixing it
+   * [INFO] made every section read as one more log line.
+   */
+  heading(message: string): void {
+    const text = this.colorEnabled ? chalk.bold(message) : message;
+    this.output.write(`\n${text}\n`);
+  }
+
   /** Log a success message (green [OK] prefix). */
   success(message: string): void {
     this.log("[OK]", message, chalk.green);

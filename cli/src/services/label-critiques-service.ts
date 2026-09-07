@@ -125,6 +125,7 @@ const labelCritiquesService: Service<LabelCritiquesInput, Promise<LabelCritiques
         total: queue.length,
         critiqueId: outcome.critique.id,
         filePath: outcome.critique.filePath,
+        text: outcome.critique.text,
         outcome: outcomeKind(outcome),
         axiomId: outcome.label?.axiomId ?? null,
       });

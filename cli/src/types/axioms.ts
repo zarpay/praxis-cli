@@ -83,6 +83,8 @@ export interface LabelProgressEvent {
   total: number;
   critiqueId: string;
   filePath: string;
+  /** The critique's text, for the human watching the stream. */
+  text: string;
   outcome: "labeled" | "unmatched" | "failed";
   /** The axiom labeled under, when outcome is "labeled". */
   axiomId: string | null;
