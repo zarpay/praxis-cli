@@ -24,11 +24,15 @@ export default function scriptedCurator() {
     },
     async complete(request) {
       const toolName = request.tools[0].function.name;
-      const args =
-        toolName === "triage_organization" ? PLAN.organization
-        : toolName === "authoring_gate" ? PLAN.gate
-        : toolName === "label_critiques" ? PLAN.labels
-        : PLAN.traceability;
+      let args;
+      if (toolName === "triage_organization") args = PLAN.organization;
+      else if (toolName === "authoring_gate") args = PLAN.gate;
+      else if (toolName === "label_critique") {
+        // One critique per call: answer by the id in the prompt's critique line.
+        const match = request.userPrompt.match(/^- \\[([^\\]]+)\\]/m);
+        const entry = (PLAN.labels?.labels ?? []).find((l) => l.critique_id === match?.[1]);
+        args = { axiom_id: entry ? entry.axiom_id : null };
+      } else args = PLAN.traceability;
       return { toolName, args, usage: { promptTokens: 10, completionTokens: 5, costUsd: 0.001 } };
     },
   };

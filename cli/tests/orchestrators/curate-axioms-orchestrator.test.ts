@@ -160,6 +160,51 @@ describe("curateAxiomsOrchestrator", () => {
     expect(output()).toContain("not appropriate");
   });
 
+  it("identical critique texts dedup into one cluster member, but every duplicate gets a record", async () => {
+    const { root, cleanup } = createValidatorTmpdir({
+      sources: ["docs"],
+      files: {
+        "docs/README.md":
+          "# Spec\n\n## Error messages\n\nError messages name what would be accepted.",
+        "docs/guide.md": "# Guide",
+        "curator.js": curatorProviderModule({
+          organization: {
+            clusters: [
+              {
+                critique_ids: ["r1:1"],
+                rationale: "The same consumer-hostile message, three runs over.",
+                suggestion: "unassignable",
+                why_unassignable: "The spec never mentions it.",
+              },
+            ],
+          },
+        }),
+      },
+      curator: { model: "scripted", apiKeyEnvVar: "OPENROUTER_API_KEY", provider: "./curator.js" },
+    });
+    cleanups.push(cleanup);
+
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      extraLines: [
+        guideCritique(1, "Error message 'bad subject' names nothing."),
+        guideCritique(2, "Error message 'bad subject' names nothing."),
+        guideCritique(3, "Error message 'bad subject' names nothing."),
+      ],
+    });
+    const { logger } = createCaptureLogger();
+
+    const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
+
+    expect(outcome).toBe("ok");
+
+    const records = triageRecords(root);
+    const dismissals = records.filter((record) => record.kind === "dismissal");
+    const dismissedIds = dismissals.map((record) => record.critique_id).sort();
+    expect(dismissedIds).toEqual(["r1:1", "r1:2", "r1:3"]);
+  });
+
   it("with --reject: dismisses the whole queue with the reason", async () => {
     const root = triageProject(standardPlan());
 

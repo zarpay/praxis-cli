@@ -97,19 +97,33 @@ field, and the run writes critique records with `axiom_id: null`,
 `assigned_by: null`. Labels are applied afterwards, as append-only
 records, by two verbs:
 
-1. **`praxis axioms triage` — the labeling pass** (async, batch,
+1. **`praxis axioms triage` — the labeling pass** (async,
    non-interactive). The curator classifies each pending critique
    against the active axioms derived from its governing spec —
-   temperature 0, one call per spec batch. Squarely-an-instance matches
-   append assignment records with `assigned_by: {decision: "matcher",
-   suggested_by: <model>}`; everything else stays pending. The
-   hallucination guard lives here: an id not among the spec's active
-   axioms never becomes an assignment. `--dry-run` proposes without
-   writing; no curator configured → warn and defer, never fake.
+   temperature 0, **one call per critique** (owner, 2026-09-07): a
+   batched list lets earlier answers anchor later ones and dilutes
+   attention, so ordering becomes a source of mislabeling; a
+   single-critique prompt has no order to bias it, and a failed call
+   costs one critique, not a batch. Calls run a few at a time —
+   order-independence is what makes the parallelism safe.
+   Squarely-an-instance matches append assignment records with
+   `assigned_by: {decision: "matcher", suggested_by: <model>}`;
+   everything else stays pending. The hallucination guard lives here:
+   an id not among the spec's active axioms never becomes an
+   assignment. `--dry-run` proposes without writing; no curator
+   configured → warn and defer, never fake.
 2. **`praxis axioms curate` — the human session** (the verb formerly
    named triage). Interactive work on the residue: cluster recurring
    critiques into proposed axioms, dismiss noise with reasons, assign
-   stragglers by hand. Every decision is a ledger record.
+   stragglers by hand. Every decision is a ledger record. Clustering
+   cannot happen per-critique — a category only emerges from a grouping
+   large enough to show it — but the grouping is bounded (owner,
+   2026-09-07): identical critique texts dedup into one member (its
+   duplicates counted, and every duplicate receives the member's
+   decision), and the curator sees at most one **cohort** (~30 distinct
+   critiques) per call, with the session's accepted proposals carried
+   into later cohorts as fold targets so categories consolidate instead
+   of re-emerging per cohort.
 
 **Labels are assignment records, and readers join them.** A critique's
 effective axiom identity is decided in exactly one place

@@ -3,29 +3,37 @@ import type { ReportLine, View } from "@framework/types.js";
 
 import chalk from "chalk";
 
-/** One cluster of a triage session, framed for its decision. */
+/** One distinct critique shown for a cluster, with its duplicate count. */
+type ClusterCritique = PendingCritique & {
+  /** Pending critiques sharing this exact text (1 = no duplicates). */
+  copies: number;
+};
+
+/** One cluster of a curate session, framed for its decision. */
 interface TriageClusterCard {
   /** 1-based position in the session. */
   index: number;
   total: number;
   cluster: TriageCluster;
-  critiques: PendingCritique[];
+  critiques: ClusterCritique[];
 }
 
 /**
- * One cluster of the triage session (04): the curator's grouping and
- * suggestion, with the critiques as evidence — everything the human
- * needs on screen to fold, dismiss, or accept.
+ * One cluster of the curate session (04): the curator's grouping and
+ * suggestion, with the distinct critiques as evidence (duplicates
+ * counted, not repeated) — everything the human needs on screen to
+ * fold, dismiss, or accept.
  */
 const curateClusterView: View<TriageClusterCard> = ({ index, total, cluster, critiques }) => {
   const lines: ReportLine[] = [
     { channel: "heading", text: `Cluster ${index}/${total} — ${cluster.rationale}` },
     {
       channel: "content",
-      entries: critiques.map(
-        (critique) =>
-          `  ${chalk.gray(critique.id)} ${critique.filePath} ${chalk.gray(`[${critique.reviewerName}]`)}\n    ${critique.text}`,
-      ),
+      entries: critiques.map((critique) => {
+        const copies = critique.copies > 1 ? chalk.gray(` (×${critique.copies})`) : "";
+
+        return `  ${chalk.gray(critique.id)} ${critique.filePath} ${chalk.gray(`[${critique.reviewerName}]`)}${copies}\n    ${critique.text}`;
+      }),
     },
     { channel: "content", entries: ["", ...suggestionLines(cluster)] },
   ];

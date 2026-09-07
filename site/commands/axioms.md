@@ -23,13 +23,13 @@ The curator organizes; you decide. Nothing it suggests takes effect without a hu
 
 ## praxis axioms triage
 
-The labeling pass — async, batch, non-interactive. The curator classifies each pending critique against the active axioms derived from its governing spec (temperature 0, one call per spec): a critique that is squarely an instance of exactly one axiom gets a machine label — an append-only assignment record marked `matcher`, human-overridable at `curate` — and everything else stays pending. An axiom id the curator invents never becomes an assignment; a spec with no active axioms is skipped.
+The labeling pass — async, non-interactive. The curator considers each pending critique against the active axioms derived from its governing spec, **one critique per call** (temperature 0, a few calls in flight at a time), so no critique's verdict is biased by its neighbors or its position in a list: a critique that is squarely an instance of exactly one axiom gets a machine label — an append-only assignment record marked `matcher`, human-overridable at `curate` — and everything else stays pending. An axiom id the curator invents never becomes an assignment; a spec with no active axioms is skipped.
 
 `--dry-run` proposes without writing. Without a curator configured, triage warns and defers — critiques simply stay pending; nothing is ever labeled silently.
 
 ## praxis axioms curate
 
-The deliberately interactive session, for the residue triage can't label. The curator groups the still-pending critiques per spec, suggests folding each cluster into an established axiom, drafts a new proposal, or flags it unassignable — and you decide, cluster by cluster: `[a]ccept / [d]ismiss / [s]kip`.
+The deliberately interactive session, for the residue triage can't label. The curator groups the still-pending critiques per spec — identical texts deduped into one member with its duplicates counted, at most a cohort of ~30 distinct critiques per call, with the session's accepted proposals carried into later cohorts as fold targets — and suggests folding each cluster into an established axiom, drafting a new proposal, or flagging it unassignable. You decide, cluster by cluster: `[a]ccept / [d]ismiss / [s]kip`; a decision on a deduped member applies to every duplicate behind it.
 
 Accepted drafts pass the **authoring gate** first: anything a regex or linter could decide is refused — _if you can write the check, write the check; if you can only describe the standard, write the axiom._ Accepted proposals land in `.praxis/axioms/proposed/` with no effect on metrics until ratified.
 

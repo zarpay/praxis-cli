@@ -6,6 +6,8 @@ interface LabelReportData {
   labels: { critiqueId: string; axiomId: string }[];
   leftPending: number;
   skippedNoAxioms: number;
+  /** Labeling calls that failed — their critiques stay pending. */
+  failed: number;
   usage: ProviderUsage | null;
   sessionPath: string | null;
   dryRun: boolean;
@@ -35,6 +37,9 @@ const labelReportView: View<LabelReportData> = (data) => {
     `Labeled: ${data.labels.length} · Left pending: ${data.leftPending}` +
       (data.skippedNoAxioms > 0 ? ` · No axioms to label against: ${data.skippedNoAxioms}` : ""),
     ...axiomLines,
+    data.failed > 0
+      ? `${data.failed} labeling call(s) failed — their critiques stay pending; rerun triage to retry.`
+      : null,
     costLine,
     data.leftPending > 0
       ? "The residue is for humans: `praxis axioms curate` clusters, dismisses, and assigns it."

@@ -22,8 +22,11 @@ import curateClusterView from "@/views/curate-cluster-view.js";
 import curateSummaryView from "@/views/curate-summary-view.js";
 import { Prompter } from "@framework/views/prompter.js";
 
-/** What one interactive triage session accumulates as it walks clusters. */
-interface TriageSession {
+/** Unique critiques per curator clustering call (04: cohorting). */
+const COHORT_SIZE = 30;
+
+/** What one interactive curate session accumulates as it walks clusters. */
+interface CurateSession {
   ctx: CommandContext;
   cfg: PraxisConfig;
   yes: boolean;
@@ -31,6 +34,8 @@ interface TriageSession {
   /** The curator model, recorded as the suggester in every assignment. */
   suggestedBy: string;
   records: TriageRecord[];
+  /** Proposals accepted for the current spec — later cohorts fold into them. */
+  proposalsThisSpec: { id: string; statement: string }[];
   assigned: number;
   proposed: number;
   dismissed: number;
@@ -38,8 +43,15 @@ interface TriageSession {
   costUsd: number | null;
 }
 
-/** Options for `praxis axioms triage`. */
-interface TriageAxiomsOptions {
+/** One distinct critique text, with every pending duplicate behind it. */
+interface DedupedCritique {
+  representative: PendingCritique;
+  /** Every pending critique with this exact text, representative included. */
+  members: PendingCritique[];
+}
+
+/** Options for `praxis axioms curate`. */
+interface CurateAxiomsOptions {
   /** Accept every curator suggestion without prompting. */
   yes?: boolean;
   /** Dismiss everything pending, with this reason. */
@@ -47,11 +59,17 @@ interface TriageAxiomsOptions {
 }
 
 /**
- * What `praxis axioms triage` does: the human review session (04).
+ * What `praxis axioms curate` does: the human review session (04).
  *
  * The division of labor is fixed: the curator organizes — clusters the
- * pending open-channel critiques per spec, suggests assignments, drafts
- * proposals — and the human decides, cluster by cluster. Accepted
+ * pending critiques per spec, suggests assignments, drafts proposals —
+ * and the human decides, cluster by cluster. Clustering needs the set
+ * (a category only emerges from a grouping large enough to show it),
+ * but the set is bounded (owner, 2026-09-07): identical critique texts
+ * dedup into one member with its duplicates counted, and each curator
+ * call sees at most one cohort of unique critiques, with the session's
+ * accepted proposals carried into later cohorts as fold targets so
+ * categories consolidate instead of re-emerging per cohort. Accepted
  * drafts pass the authoring gate before anything is written (03).
  * Every decision lands in the ledger's triage partition; `--yes`
  * accepts every suggestion and is recorded as such — an unreviewed
@@ -59,7 +77,7 @@ interface TriageAxiomsOptions {
  *
  * @throws PraxisError without a curator, or interactive without a TTY
  */
-export const curateAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async (
+export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async (
   ctx,
   { yes = false, reject },
 ) => {
@@ -79,16 +97,17 @@ export const curateAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
   const prompter = new Prompter();
 
   if (!yes && reject === undefined && !prompter.interactive) {
-    throw errors.notATty("praxis axioms triage", '--yes or --reject "<reason>"');
+    throw errors.notATty("praxis axioms curate", '--yes or --reject "<reason>"');
   }
 
-  const session: TriageSession = {
+  const session: CurateSession = {
     ctx,
     cfg,
     yes,
     prompter,
     suggestedBy: curator.model,
     records: [],
+    proposalsThisSpec: [],
     assigned: 0,
     proposed: 0,
     dismissed: 0,
@@ -126,7 +145,7 @@ export const curateAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
 export default prepareOrchestrator(curateAxiomsOrchestrator);
 
 /** The whole queue dismissed with one reason — the `--reject` path. */
-function dismissAll(session: TriageSession, pending: PendingCritique[], reason: string): void {
+function dismissAll(session: CurateSession, pending: PendingCritique[], reason: string): void {
   for (const critique of pending) {
     session.records.push({
       kind: "dismissal",
@@ -138,16 +157,13 @@ function dismissAll(session: TriageSession, pending: PendingCritique[], reason: 
   }
 }
 
-/** The session proper: per spec, organize with the curator, then decide. */
+/** The session proper: per spec, dedup, cohort, organize, then decide. */
 async function organizeAndDecide(
-  session: TriageSession,
+  session: CurateSession,
   pending: PendingCritique[],
 ): Promise<void> {
-  const { axioms } = new AxiomStore(session.cfg).all();
-  const established = axioms
-    .filter((axiom) => axiom.status === "active")
-    .map((axiom) => ({ id: axiom.id, statement: axiom.statement() }));
-  const versions = new Map(axioms.map((axiom) => [axiom.id, axiom.version]));
+  const store = new AxiomStore(session.cfg);
+  const versions = new Map(store.all().axioms.map((axiom) => [axiom.id, axiom.version]));
 
   for (const [specPath, critiques] of groupBySpec(pending)) {
     const specFile = joinPath(session.cfg.root, specPath);
@@ -163,55 +179,129 @@ async function organizeAndDecide(
       continue;
     }
 
-    let organization;
+    // Fold targets are the spec's own axioms (04: derivation is per-spec),
+    // plus whatever this session proposes as it goes.
+    const established = store
+      .activeFor(specFile)
+      .map((axiom) => ({ id: axiom.id, statement: axiom.statement }));
+    session.proposalsThisSpec = [];
 
-    try {
-      organization = await organizeTriageService(session.cfg, {
-        specPath,
-        specContent: readText(specFile),
-        critiques,
-        axioms: established,
-      });
-    } catch (err) {
-      // A curator failure loses one spec's session, never the decisions
-      // already made: pending is derived, so rerunning triage resumes.
-      const message = err instanceof Error ? err.message : String(err);
-      session.ctx.render([
-        {
-          channel: "warning",
-          text: `Curator failed organizing ${specPath}: ${message} — its critiques stay pending; rerun triage to retry.`,
-        },
-      ]);
-      session.skipped += critiques.length;
-      continue;
+    const deduped = dedupByText(critiques);
+    const cohorts = chunk(deduped, COHORT_SIZE);
+
+    if (cohorts.length > 1 || deduped.length < critiques.length) {
+      session.ctx.logger.info(
+        `${specPath}: ${deduped.length} distinct critique(s) (${critiques.length} pending) in ${cohorts.length} cohort(s)`,
+      );
     }
 
-    addUsage(session, organization.usage);
-
-    const byId = new Map(critiques.map((critique) => [critique.id, critique]));
-
-    for (const [index, cluster] of organization.clusters.entries()) {
-      const clusterCritiques = cluster.critiqueIds
-        .map((id) => byId.get(id))
-        .filter((critique): critique is PendingCritique => critique !== undefined);
-
-      const clusterView = curateClusterView({
-        index: index + 1,
-        total: organization.clusters.length,
-        cluster,
-        critiques: clusterCritiques,
+    for (const cohort of cohorts) {
+      await organizeCohort(session, {
+        specPath,
+        specContent: readText(specFile),
+        cohort,
+        established,
+        versions,
       });
-
-      session.ctx.render(clusterView);
-
-      await decideCluster(session, cluster, clusterCritiques, versions);
     }
   }
 }
 
+/** One cohort organized by the curator, then decided cluster by cluster. */
+async function organizeCohort(
+  session: CurateSession,
+  input: {
+    specPath: string;
+    specContent: string;
+    cohort: DedupedCritique[];
+    established: { id: string; statement: string }[];
+    versions: Map<string, number>;
+  },
+): Promise<void> {
+  const { specPath, specContent, cohort, established, versions } = input;
+  const memberCount = cohort.reduce((sum, entry) => sum + entry.members.length, 0);
+
+  let organization;
+
+  try {
+    organization = await organizeTriageService(session.cfg, {
+      specPath,
+      specContent,
+      critiques: cohort.map((entry) => entry.representative),
+      axioms: [...established, ...session.proposalsThisSpec],
+    });
+  } catch (err) {
+    // A curator failure loses one cohort, never the decisions already
+    // made: pending is derived, so rerunning curate resumes.
+    const message = err instanceof Error ? err.message : String(err);
+    session.ctx.render([
+      {
+        channel: "warning",
+        text: `Curator failed organizing ${specPath}: ${message} — its critiques stay pending; rerun curate to retry.`,
+      },
+    ]);
+    session.skipped += memberCount;
+
+    return;
+  }
+
+  addUsage(session, organization.usage);
+
+  const byId = new Map(cohort.map((entry) => [entry.representative.id, entry]));
+
+  for (const [index, cluster] of organization.clusters.entries()) {
+    const clusterEntries = cluster.critiqueIds
+      .map((id) => byId.get(id))
+      .filter((entry): entry is DedupedCritique => entry !== undefined);
+    const clusterCritiques = clusterEntries.flatMap((entry) => entry.members);
+
+    const clusterView = curateClusterView({
+      index: index + 1,
+      total: organization.clusters.length,
+      cluster,
+      critiques: clusterEntries.map((entry) => ({
+        ...entry.representative,
+        copies: entry.members.length,
+      })),
+    });
+
+    session.ctx.render(clusterView);
+
+    await decideCluster(session, cluster, clusterCritiques, versions);
+  }
+}
+
+/** Identical critique texts folded into one member with its duplicates. */
+function dedupByText(critiques: PendingCritique[]): DedupedCritique[] {
+  const byText = new Map<string, DedupedCritique>();
+
+  for (const critique of critiques) {
+    const entry = byText.get(critique.text);
+
+    if (entry === undefined) {
+      byText.set(critique.text, { representative: critique, members: [critique] });
+    } else {
+      entry.members.push(critique);
+    }
+  }
+
+  return [...byText.values()];
+}
+
+/** The list in slices of at most `size`, order preserved. */
+function chunk<Item>(items: Item[], size: number): Item[][] {
+  const slices: Item[][] = [];
+
+  for (let start = 0; start < items.length; start += size) {
+    slices.push(items.slice(start, start + size));
+  }
+
+  return slices;
+}
+
 /** One cluster's human decision, applied. */
 async function decideCluster(
-  session: TriageSession,
+  session: CurateSession,
   cluster: TriageCluster,
   critiques: PendingCritique[],
   versions: Map<string, number>,
@@ -247,7 +337,7 @@ async function decideCluster(
 
 /** The curator's suggestion, accepted: assign, propose (gated), or dismiss. */
 async function acceptSuggestion(
-  session: TriageSession,
+  session: CurateSession,
   cluster: TriageCluster,
   critiques: PendingCritique[],
   versions: Map<string, number>,
@@ -279,7 +369,7 @@ async function acceptSuggestion(
 
 /** Folds critiques into an established (or newly proposed) axiom. */
 function assign(
-  session: TriageSession,
+  session: CurateSession,
   critiques: PendingCritique[],
   axiomId: string,
   axiomVersion: number,
@@ -302,7 +392,7 @@ function assign(
 
 /** An accepted draft: gate first (03), then the proposal file plus parentage. */
 async function propose(
-  session: TriageSession,
+  session: CurateSession,
   critiques: PendingCritique[],
   draft: AxiomDraft,
 ): Promise<void> {
@@ -353,6 +443,7 @@ async function propose(
 
   session.proposed++;
   assign(session, critiques, id, 1);
+  session.proposalsThisSpec.push({ id, statement });
   session.ctx.render([
     {
       channel: "success",
@@ -375,7 +466,7 @@ function groupBySpec(pending: PendingCritique[]): Map<string, PendingCritique[]>
 }
 
 /** Accumulates curator spend across the session's calls. */
-function addUsage(session: TriageSession, usage: ProviderUsage | null): void {
+function addUsage(session: CurateSession, usage: ProviderUsage | null): void {
   const cost = usage?.costUsd;
 
   if (cost === null || cost === undefined) return;
