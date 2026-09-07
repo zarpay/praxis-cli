@@ -37,7 +37,7 @@ Example:
 
   axiomsCmd
     .command("show <id>")
-    .description("Show one axiom in full: statement, examples, grounding, lifecycle")
+    .description("Show one axiom in full: statement, examples, derivation, lifecycle")
     .option("--json", "machine-readable output (stable contract)")
     .addHelpText(
       "after",
@@ -59,7 +59,7 @@ Example:
       `
 When to use: whenever pending critiques have piled up — an async batch
 pass, run on demand. The curator classifies each pending critique
-against the active axioms grounded in its spec: squarely-an-instance
+against the active axioms derived from its spec: squarely-an-instance
 gets an assignment record (provenance: matcher, human-overridable at
 curate); everything else stays pending for \`praxis axioms curate\`.
 No curator configured → warns and does nothing.
@@ -99,7 +99,7 @@ Example:
       "after",
       `
 When to use: a triage session drafted a proposal. Ratification demands
-spec traceability — an axiom activates only when grounded in a spec
+spec traceability — an axiom activates only when its principle traces to a spec
 sentence — and activation re-reviews exactly what that spec governs.
 
 Example:

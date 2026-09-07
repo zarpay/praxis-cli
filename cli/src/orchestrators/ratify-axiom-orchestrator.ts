@@ -28,7 +28,7 @@ interface RatifyAxiomOptions {
  *
  * Renders the proposal with its supporting critiques, the authoring
  * gate's verdict, and the curator's traceability assessment; then the
- * three outcomes: traceable → ratify with grounding; real but
+ * three outcomes: traceable → ratify, recording the derivation; real but
  * untraceable → instruct fixing the spec (nothing written, exit 1);
  * not intended → `--reject` removes the proposal and records the
  * rejection, feeding the reviewer-noise signal.
@@ -134,7 +134,7 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
   }
 
   const confirmed =
-    yes || (await prompter.confirm(`Ratify ${id}, grounded in ${traceability.grounding}?`));
+    yes || (await prompter.confirm(`Ratify ${id}, derived from ${traceability.grounding}?`));
 
   prompter.close();
 
@@ -144,7 +144,7 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
   ctx.render([
     {
       channel: "success",
-      text: `${id} is active, grounded in ${traceability.grounding}. The next \`praxis axioms triage\` can label against it.`,
+      text: `${id} is active, derived from ${traceability.grounding}. The next \`praxis axioms triage\` can label against it.`,
     },
   ]);
 

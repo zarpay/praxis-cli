@@ -72,21 +72,21 @@ export class AxiomStore {
   }
 
   /**
-   * The checklist channel for one spec (04): every **active** axiom
-   * whose `grounded_in` names it, sorted by id so identical state
-   * always renders — and hashes — identical bytes.
+   * The labeling set for one spec (04): every **active** axiom whose
+   * `derived_from` names it, sorted by id so identical state always
+   * renders identical bytes.
    *
-   * Proposed axioms have no metric effect and never reach the reviewer;
-   * deprecated ones stopped being asked. Grounding is per-spec (04's
-   * cross-spec question stays open): `grounded_in`'s path segment must
-   * equal the spec's project-relative path.
+   * Proposed axioms have no metric effect and never label; deprecated
+   * ones stopped being asked. Derivation is per-spec (04's cross-spec
+   * question stays open): `derived_from`'s path segment must equal the
+   * spec's project-relative path.
    */
   activeFor(specPath: string): ActiveAxiom[] {
     const spec = relativePath(this.projectRoot, specPath);
 
     return this.all()
       .axioms.filter((axiom) => axiom.status === "active")
-      .filter((axiom) => axiom.groundedIn !== null && axiom.groundedIn.split("#")[0] === spec)
+      .filter((axiom) => axiom.derivedFrom !== null && axiom.derivedFrom.split("#")[0] === spec)
       .sort((a, b) => a.id.localeCompare(b.id))
       .map((axiom) => ({
         id: axiom.id,
@@ -99,7 +99,7 @@ export class AxiomStore {
 
   /**
    * Lands one triage-accepted draft in `proposed/` (04): a freshly
-   * minted id, `status: proposed`, no grounding — ratification
+   * minted id, `status: proposed`, no derivation — ratification
    * establishes that, and `status: active` is a human decision this
    * store never makes on its own.
    */
@@ -117,7 +117,7 @@ export class AxiomStore {
       mode: "judgment",
       severity: draft.severity,
       introduced: new Date().toISOString().slice(0, 10),
-      groundedIn: null,
+      derivedFrom: null,
       statement: draft.statement,
       violatingExample: draft.violatingExample,
       compliantExample: draft.compliantExample,
@@ -132,7 +132,7 @@ export class AxiomStore {
 
   /**
    * Ratification's store move (04): the proposal becomes active and
-   * records its grounding, leaving `proposed/`.
+   * records its derivation, leaving `proposed/`.
    *
    * The body is preserved byte-for-byte — a human may have edited the
    * proposal file, and ratifying must never rewrite what a human
@@ -141,14 +141,14 @@ export class AxiomStore {
    *
    * @throws PraxisError when the moved document would not validate
    */
-  ratify(id: string, groundedIn: string): WriteAxiomProposalResult {
+  ratify(id: string, derivedFrom: string): WriteAxiomProposalResult {
     const proposedPath = joinPath(this.proposedDir, `${id}.md`);
     const activePath = joinPath(this.axiomsDir, `${id}.md`);
 
     const proposal = readText(proposedPath);
     const ratified = proposal
       .replace(/^status: proposed$/m, "status: active")
-      .replace(/^introduced:/m, `grounded_in: ${groundedIn}\nintroduced:`);
+      .replace(/^introduced:/m, `derived_from: ${derivedFrom}\nintroduced:`);
 
     // Refuse to write anything the model would reject.
     AxiomFile.fromContent(ratified, activePath);

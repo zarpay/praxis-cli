@@ -64,7 +64,7 @@ const buildAxiomReportService: Service<BuildAxiomReportInput, AxiomReport> = (
     statement: axiom.statement(),
     status: axiom.status,
     severity: axiom.severity,
-    groundedIn: axiom.groundedIn,
+    derivedFrom: axiom.derivedFrom,
     introduced: axiom.introduced,
     version: axiom.version,
     rows,

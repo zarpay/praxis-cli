@@ -20,9 +20,8 @@ const axiomShowView: View<ShownAxiom & { json?: boolean }> = ({ axiom, json }) =
       status: axiom.status,
       mode: axiom.mode,
       severity: axiom.severity,
-      grounded_in: axiom.groundedIn,
+      derived_from: axiom.derivedFrom,
       introduced: axiom.introduced,
-      supersedes: axiom.supersedes ?? null,
       statement: axiom.statement(),
       body: axiom.body,
     };
@@ -37,8 +36,7 @@ const axiomShowView: View<ShownAxiom & { json?: boolean }> = ({ axiom, json }) =
       entries: [
         `severity: ${axiom.severity} · mode: ${axiom.mode}`,
         `introduced: ${axiom.introduced}`,
-        `grounded in: ${axiom.groundedIn ?? "— (not ratified yet)"}`,
-        ...(axiom.supersedes ? [`supersedes: ${axiom.supersedes}`] : []),
+        `derived from: ${axiom.derivedFrom ?? "— (not ratified yet)"}`,
         "",
         axiom.body.trim(),
       ],

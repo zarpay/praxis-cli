@@ -77,9 +77,8 @@ function axiomJson(axiom: AxiomFile): Record<string, unknown> {
     status: axiom.status,
     mode: axiom.mode,
     severity: axiom.severity,
-    grounded_in: axiom.groundedIn,
+    derived_from: axiom.derivedFrom,
     introduced: axiom.introduced,
-    supersedes: axiom.supersedes ?? null,
     statement: axiom.statement(),
   };
 }

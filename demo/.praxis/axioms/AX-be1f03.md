@@ -5,7 +5,7 @@ status: active
 mode: judgment
 scope: file
 severity: warning
-grounded_in: knowledge/experts/experts.sme.md#required-frontmatter
+derived_from: knowledge/experts/experts.sme.md#required-frontmatter
 introduced: 2026-09-03
 ---
 

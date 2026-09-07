@@ -18,9 +18,10 @@ const SEVERITIES: readonly Severity[] = ["error", "warning"];
  *
  * The identity rules are the actual spec: an id is random-minted, never
  * reused and never renumbered; clarifying wording bumps `version`;
- * changing what counts as a violation is a new id with `supersedes`.
- * Every field is read and validated in the constructor, so an AxiomFile
- * that exists is a valid axiom.
+ * changing what counts as a violation is a new id. Every field is read
+ * and validated in the constructor, so an AxiomFile that exists is a
+ * valid axiom. The retired `grounded_in` key parses as `derived_from`;
+ * a retired `supersedes` key is ignored (both historical, 2026-09-07).
  *
  * @throws PraxisError when any declared field is malformed
  */
@@ -31,19 +32,22 @@ export class AxiomFile {
   readonly id: string;
   /** Wording revision; bumped only when the extension is unchanged. */
   readonly version: number;
-  /** Lifecycle state; only `active` axioms reach the reviewer or metrics. */
+  /** Lifecycle state; only `active` axioms label critiques or reach metrics. */
   readonly status: AxiomStatus;
   /** How the axiom is evaluated; `judgment` unless explicitly opted out. */
   readonly mode: AxiomMode;
   /** What the reviewer reads to decide it. */
   /** What a violation of this axiom costs a verdict. */
   readonly severity: Severity;
-  /** The spec criterion that grounds it; null until ratification. */
-  readonly groundedIn: string | null;
+  /**
+   * The spec passage ratification derived it from — provenance
+   * metadata, never identity: an axiom is a principle derived from
+   * critiques, and this pointer may go stale as specs move. Null until
+   * ratification.
+   */
+  readonly derivedFrom: string | null;
   /** YYYY-MM-DD; this axiom's population clock starts here (01, 04). */
   readonly introduced: string;
-  /** The axiom this one replaced, when meaning changed. */
-  readonly supersedes: string | undefined;
   /** Statement and examples, as authored. */
   readonly body: string;
 
@@ -54,9 +58,9 @@ export class AxiomFile {
     this.status = fields.enumValue("status", STATUSES) ?? raiseMissing("status", path);
     this.mode = fields.enumValue("mode", MODES) ?? "judgment";
     this.severity = fields.enumValue("severity", SEVERITIES) ?? raiseMissing("severity", path);
-    this.groundedIn = fields.optionalString("grounded_in") ?? null;
+    this.derivedFrom =
+      fields.optionalString("derived_from") ?? fields.optionalString("grounded_in") ?? null;
     this.introduced = fields.requiredDate("introduced");
-    this.supersedes = fields.optionalString("supersedes");
     this.body = body;
   }
 

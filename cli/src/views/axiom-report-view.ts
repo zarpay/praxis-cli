@@ -30,7 +30,7 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
       channel: "content",
       entries: [
         report.statement,
-        `grounded in: ${report.groundedIn ?? "— (not ratified)"} · introduced: ${report.introduced}`,
+        `derived from: ${report.derivedFrom ?? "— (not ratified)"} · introduced: ${report.introduced}`,
         "",
         ...report.rows.map(
           (row) =>

@@ -195,7 +195,7 @@ export interface AxiomReport {
   statement: string;
   status: AxiomStatus;
   severity: Severity;
-  groundedIn: string | null;
+  derivedFrom: string | null;
   introduced: string;
   version: number;
   rows: AxiomReportRow[];

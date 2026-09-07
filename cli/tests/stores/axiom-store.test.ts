@@ -40,7 +40,7 @@ describe("AxiomStore", () => {
     fields: {
       status?: string;
       introduced?: string;
-      groundedIn?: string;
+      derivedFrom?: string;
       proposed?: boolean;
     } = {},
   ): void {
@@ -49,7 +49,7 @@ describe("AxiomStore", () => {
       severity: "warning",
       ...(fields.status !== undefined && { status: fields.status }),
       ...(fields.introduced !== undefined && { introduced: fields.introduced }),
-      ...(fields.groundedIn !== undefined && { grounded_in: fields.groundedIn }),
+      ...(fields.derivedFrom !== undefined && { derived_from: fields.derivedFrom }),
       ...(fields.proposed !== undefined && { proposed: fields.proposed }),
     });
   }
@@ -99,8 +99,8 @@ describe("AxiomStore", () => {
   describe("activeFor", () => {
     const SPEC = "docs/README.md";
 
-    it("selects active axioms grounded in the spec, with their teaching material", () => {
-      seedAxiom("AX-aaaa11", { groundedIn: `${SPEC}#payloads` });
+    it("selects active axioms derived from the spec, with their teaching material", () => {
+      seedAxiom("AX-aaaa11", { derivedFrom: `${SPEC}#payloads` });
 
       const checklist = store.activeFor(join(root, SPEC));
 
@@ -114,17 +114,17 @@ describe("AxiomStore", () => {
     });
 
     it("excludes proposed and deprecated axioms — they never reach the reviewer", () => {
-      seedAxiom("AX-aaaa11", { status: "proposed", groundedIn: SPEC, proposed: true });
-      seedAxiom("AX-bbbb22", { status: "deprecated", groundedIn: SPEC });
+      seedAxiom("AX-aaaa11", { status: "proposed", derivedFrom: SPEC, proposed: true });
+      seedAxiom("AX-bbbb22", { status: "deprecated", derivedFrom: SPEC });
 
       expect(store.activeFor(join(root, SPEC))).toEqual([]);
     });
 
     it("excludes axioms grounded elsewhere or nowhere, sorted by id", () => {
-      seedAxiom("AX-cccc33", { groundedIn: SPEC });
-      seedAxiom("AX-aaaa11", { groundedIn: `${SPEC}#section` });
+      seedAxiom("AX-cccc33", { derivedFrom: SPEC });
+      seedAxiom("AX-aaaa11", { derivedFrom: `${SPEC}#section` });
       seedAxiom("AX-bbbb22");
-      seedAxiom("AX-dddd44", { groundedIn: "src/services/README.md#behavior" });
+      seedAxiom("AX-dddd44", { derivedFrom: "src/services/README.md#behavior" });
 
       const ids = store.activeFor(join(root, SPEC)).map((axiom) => axiom.id);
 
@@ -142,7 +142,7 @@ describe("AxiomStore", () => {
       expect(path).toBe(join(root, ".praxis", "axioms", "proposed", `${id}.md`));
       expect(written.status).toBe("proposed");
       expect(written.version).toBe(1);
-      expect(written.groundedIn).toBeNull();
+      expect(written.derivedFrom).toBeNull();
     });
 
     it("stamps introduced with today's date — the axiom's population clock", () => {
@@ -170,7 +170,7 @@ describe("AxiomStore", () => {
       const ratified = AxiomFile.fromContent(readFileSync(path, "utf8"), path);
 
       expect(ratified.status).toBe("active");
-      expect(ratified.groundedIn).toBe("docs/README.md#error-messages");
+      expect(ratified.derivedFrom).toBe("docs/README.md#error-messages");
       expect(ratified.statement()).toBe(draft().statement);
       expect(existsSync(join(root, ".praxis", "axioms", "proposed", `${id}.md`))).toBe(false);
     });

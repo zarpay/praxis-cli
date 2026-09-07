@@ -20,8 +20,8 @@ evidence — they are never review input. Four grounds (owner, 2026-09-06,
 during the servus adoption):
 
 1. **Traceability makes injection redundant.** Every active axiom is
-   grounded in a sentence of its spec, so it carries no standard the
-   spec does not already state. A reviewer that needs the axiom restated
+   derived from critiques whose standard the spec already states, so it
+   carries no standard the spec does not. A reviewer that needs the axiom restated
    in its prompt is evidence the spec does not carry the standard — a
    defect injection would hide.
 2. **Symmetry.** Axioms never enter generation (the withdrawn 08's one
@@ -50,18 +50,29 @@ version: 2
 status: proposed | active | deprecated
 mode: judgment # see 03
 severity: error | warning
-grounded_in: backend/app/events/README.md#payload-schema # spec traceability, established at ratification
+derived_from: backend/app/events/README.md#payload-schema # provenance, established at ratification — see below
 introduced: 2026-08-29
-supersedes: AX-0003 # optional
 ---
 Statement of what the axiom asserts.
 A violating example. A compliant example.
 ```
 
+**`derived_from` is provenance, never identity** (owner, 2026-09-07,
+renamed from `grounded_in`): an axiom does not represent an exact spec
+passage — it is a principle derived from many critiques that were
+themselves consequences of the spec(s); the axiom layer is the
+bucketing/grouping layer over that evidence. The key records where the
+ratifier traced the principle at ratification time, and it may go stale
+as a spec is edited and its sections move — the axiom stays valid; the
+pointer is metadata. Never treat it as a live reference.
+
 The former `scope:`/`context:` keys are retired (2026-09-07): the spec
 alone declares review scope and context (03) — an axiom that never
-reaches the reviewer has nothing to scope. Historical files carrying the
-keys parse fine; the keys are ignored.
+reaches the reviewer has nothing to scope. `supersedes` is retired too
+(owner, 2026-09-07: not helpful at this point) — replacement history
+lives in git and the ledger. Historical files carrying retired keys
+parse fine; the keys are ignored, and a historical `grounded_in` reads
+as `derived_from`.
 
 **Implementation notes:** ids are `AX-` + 6 random hex, never
 sequential — two contributors minting on separate branches must not be
@@ -88,7 +99,7 @@ records, by two verbs:
 
 1. **`praxis axioms triage` — the labeling pass** (async, batch,
    non-interactive). The curator classifies each pending critique
-   against the active axioms grounded in its governing spec —
+   against the active axioms derived from its governing spec —
    temperature 0, one call per spec batch. Squarely-an-instance matches
    append assignment records with `assigned_by: {decision: "matcher",
    suggested_by: <model>}`; everything else stays pending. The
@@ -128,7 +139,8 @@ costs one curate moment; a wrong label corrupts a rate).
   separation principle) — the next triage simply labels against the new
   wording.
 - **Deprecation keeps history**: the id and its records stay readable
-  forever; `supersedes` chains identity across replacements.
+  forever; a replacement is simply a new id, and the lineage lives in
+  git and the triage ledger.
 - **Per-axiom population clocks** start at `introduced` (01): critiques
   on code born before the axiom are pre-spec debt, never blamed on the
   present.

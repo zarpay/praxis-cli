@@ -25,7 +25,7 @@ describe("axiomShowView", () => {
     const text = reportText(axiomShowView({ axiom: axiom() }));
 
     expect(text).toContain("AX-3f9c2d v2 — active");
-    expect(text).toContain("grounded in: src/services/README.md#behavior");
+    expect(text).toContain("derived from: src/services/README.md#behavior");
     expect(text).toContain("## Violating example");
     expect(text).toContain("## Compliant example");
   });
@@ -51,7 +51,7 @@ describe("axiomShowView", () => {
     expect(parsed).toMatchObject({
       id: "AX-3f9c2d",
       version: 2,
-      grounded_in: "src/services/README.md#behavior",
+      derived_from: "src/services/README.md#behavior",
     });
     expect(parsed["body"]).toContain("## Compliant example");
   });

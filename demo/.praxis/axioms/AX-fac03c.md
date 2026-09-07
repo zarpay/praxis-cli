@@ -5,7 +5,7 @@ status: active
 mode: judgment
 scope: file
 severity: error
-grounded_in: src/features/README.md#structure
+derived_from: src/features/README.md#structure
 introduced: 2026-09-03
 ---
 

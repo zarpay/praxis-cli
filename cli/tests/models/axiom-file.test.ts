@@ -23,9 +23,8 @@ describe("AxiomFile", () => {
     expect(axiom.status).toBe("active");
     expect(axiom.mode).toBe("judgment");
     expect(axiom.severity).toBe("error");
-    expect(axiom.groundedIn).toBe("docs/README.md#payloads");
+    expect(axiom.derivedFrom).toBe("docs/README.md#payloads");
     expect(axiom.introduced).toBe("2026-08-29");
-    expect(axiom.supersedes).toBeUndefined();
   });
 
   it("statement() is the body before the first section heading", () => {
@@ -40,13 +39,28 @@ describe("AxiomFile", () => {
     expect(axiom.statement()).toBe("Just the statement.");
   });
 
-  it("grounded_in is null until ratification writes it", () => {
+  it("derived_from is null until ratification writes it", () => {
     const axiom = AxiomFile.fromContent(
       axiomContent({ status: "proposed", grounded_in: null }),
       "a.md",
     );
 
-    expect(axiom.groundedIn).toBeNull();
+    expect(axiom.derivedFrom).toBeNull();
+  });
+
+  it("a historical grounded_in key parses as derived_from", () => {
+    const axiom = AxiomFile.fromContent(axiomContent(), "a.md");
+
+    expect(axiom.derivedFrom).toBe("docs/README.md#payloads");
+  });
+
+  it("derived_from wins when both keys are present", () => {
+    const axiom = AxiomFile.fromContent(
+      axiomContent({ derived_from: "docs/README.md#errors" }),
+      "a.md",
+    );
+
+    expect(axiom.derivedFrom).toBe("docs/README.md#errors");
   });
 
   it("rejects an id that is not AX- plus 6 hex", () => {
@@ -73,13 +87,12 @@ describe("AxiomFile", () => {
     expect(readBadVersion).toThrow(/whole number/);
   });
 
-  it("accepts supersedes and the schema-only modes and scopes", () => {
+  it("accepts the schema-only mode and ignores retired keys", () => {
     const axiom = AxiomFile.fromContent(
       axiomContent({ mode: "agentic", scope: "cohort", supersedes: "AX-9e21aa" }),
       "a.md",
     );
 
     expect(axiom.mode).toBe("agentic");
-    expect(axiom.supersedes).toBe("AX-9e21aa");
   });
 });

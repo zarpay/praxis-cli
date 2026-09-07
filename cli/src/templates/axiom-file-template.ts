@@ -8,8 +8,8 @@ interface AxiomTemplateVars {
   severity: Severity;
   /** YYYY-MM-DD; per-axiom population clocks start here (04). */
   introduced: string;
-  /** Spec traceability; null until ratification establishes it. */
-  groundedIn: string | null;
+  /** The spec passage ratification derived it from; null until then. */
+  derivedFrom: string | null;
   statement: string;
   violatingExample: string;
   compliantExample: string;
@@ -19,7 +19,7 @@ interface AxiomTemplateVars {
  * The document a triage-accepted draft becomes: one axiom file, ready
  * for `.praxis/axioms/proposed/` (04).
  *
- * `grounded_in` is written only once ratification establishes it — an
+ * `derived_from` is written only once ratification establishes it — an
  * absent key and a null are the same claim, and absence keeps proposal
  * files honest about what has not happened yet.
  */
@@ -29,12 +29,12 @@ export default function axiomFileTemplate({
   mode,
   severity,
   introduced,
-  groundedIn,
+  derivedFrom,
   statement,
   violatingExample,
   compliantExample,
 }: AxiomTemplateVars): string {
-  const grounding = groundedIn === null ? "" : `grounded_in: ${groundedIn}\n`;
+  const derivation = derivedFrom === null ? "" : `derived_from: ${derivedFrom}\n`;
 
   return `---
 id: ${id}
@@ -42,7 +42,7 @@ version: 1
 status: ${status}
 mode: ${mode}
 severity: ${severity}
-${grounding}introduced: ${introduced}
+${derivation}introduced: ${introduced}
 ---
 
 ${statement}

@@ -5,7 +5,7 @@ status: active
 mode: judgment
 scope: file
 severity: error
-grounded_in: tests/README.md#one-assertion-per-block
+derived_from: tests/README.md#one-assertion-per-block
 introduced: 2026-09-02
 ---
 

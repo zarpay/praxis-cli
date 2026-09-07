@@ -57,7 +57,7 @@ describe("axiomListView", () => {
     expect(parsed[0]).toMatchObject({
       id: "AX-aaaa11",
       status: "active",
-      grounded_in: null,
+      derived_from: null,
       statement: "Statement of AX-aaaa11.",
     });
   });

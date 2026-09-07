@@ -12,7 +12,7 @@ function vars() {
     scope: "file" as const,
     severity: "warning" as const,
     introduced: "2026-09-02",
-    groundedIn: null,
+    derivedFrom: null,
     statement: "Error messages name what would be accepted instead.",
     violatingExample: '`throw new Error("bad subject")`',
     compliantExample: '`{ ok: false, error: "subject must be a non-empty string" }`',
@@ -28,23 +28,23 @@ describe("axiomFileTemplate", () => {
     expect(axiom.id).toBe("AX-3f9c2d");
     expect(axiom.status).toBe("proposed");
     expect(axiom.version).toBe(1);
-    expect(axiom.groundedIn).toBeNull();
+    expect(axiom.derivedFrom).toBeNull();
     expect(axiom.statement()).toBe("Error messages name what would be accepted instead.");
   });
 
-  it("keeps grounded_in absent until ratification establishes it", () => {
+  it("keeps derived_from absent until ratification establishes it", () => {
     const document = axiomFileTemplate(vars());
 
-    expect(document).not.toContain("grounded_in");
+    expect(document).not.toContain("derived_from");
   });
 
-  it("writes grounded_in when ratification supplies it", () => {
+  it("writes derived_from when ratification supplies it", () => {
     const document = axiomFileTemplate({
       ...vars(),
-      groundedIn: "src/services/README.md#behavior",
+      derivedFrom: "src/services/README.md#behavior",
     });
 
-    expect(document).toContain("grounded_in: src/services/README.md#behavior");
+    expect(document).toContain("derived_from: src/services/README.md#behavior");
   });
 
   it("carries both examples under their section headings", () => {

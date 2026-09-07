@@ -26,7 +26,7 @@ The **curator** (a dedicated model configured beside your reviewers — worth a 
 
 An accepted draft must first pass the **authoring gate**: anything a regex or linter could decide is refused. *If you can write the check, write the check; if you can only describe the standard, write the axiom.*
 
-## 3. Ratification grounds the standard
+## 3. Ratification names the standard
 
 The accepted proposal lands in `.praxis/axioms/proposed/` with a random-minted, permanent id. It affects nothing until:
 
@@ -34,7 +34,7 @@ The accepted proposal lands in `.praxis/axioms/proposed/` with a random-minted, 
 praxis axioms ratify AX-b951db
 ```
 
-Ratification is spec traceability: the curator quotes the spec text that grounds the proposal, and you make the call. Three outcomes — traceable (ratify), real-but-untraceable (the spec is incomplete; extend it and rerun), or not intended (reject; the rejection is recorded and feeds the reviewer-noise signal).
+Ratification is spec traceability: the curator quotes the spec text the principle derives from, and you make the call. Three outcomes — traceable (ratify), real-but-untraceable (the spec is incomplete; extend it and rerun), or not intended (reject; the rejection is recorded and feeds the reviewer-noise signal).
 
 Ratified, the axiom is a markdown file in `.praxis/axioms/`:
 
@@ -44,7 +44,7 @@ id: AX-b951db
 version: 1
 status: active
 severity: error
-grounded_in: src/services/README.md#behavior
+derived_from: src/services/README.md#behavior
 introduced: 2026-09-02
 ---
 

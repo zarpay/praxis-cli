@@ -11,7 +11,7 @@ When `praxis eval run` reviews a target, each configured reviewer:
 3. If the file holds an entry for this (spec, reviewer) pair and the hash matches — returns the cached verdict without any API call
 4. If there is no entry, or the hash doesn't match — calls the provider and writes the verdict
 
-The hash covers everything the reviewer saw. Editing the target, the spec, an exemplar, a context file — or ratifying an axiom grounded in the spec — invalidates exactly the verdicts those inputs produced. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
+The hash covers everything the reviewer saw. Editing the target, the spec, an exemplar, or a context file invalidates exactly the verdicts those inputs produced — and nothing else does: ratifying an axiom has no cache effect, because axioms never enter the review. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
 
 ## Cache file structure
 

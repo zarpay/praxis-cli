@@ -103,7 +103,7 @@ describe("ratifyAxiomOrchestrator", () => {
 
     expect(outcome).toBe("ok");
     expect(ratified.status).toBe("active");
-    expect(ratified.groundedIn).toBe("docs/README.md#error-messages");
+    expect(ratified.derivedFrom).toBe("docs/README.md#error-messages");
     // The body a human may have edited is preserved verbatim.
     expect(ratified.statement()).toBe("Error messages name what would be accepted instead.");
     expect(existsSync(join(root, ".praxis", "axioms", "proposed", "AX-aaaa11.md"))).toBe(false);
