@@ -72,8 +72,8 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 	· The happy path begins before the parlor id is validated.
 [3/4] redeem-coupon.ts
 	✗ FAIL
-	· [AX-b951db] Error messages name what was wrong and what would be
-	  accepted instead.
+	· Error message 'bad input' tells the consumer nothing about what was
+	  wrong or what would be accepted.
 
 ==================================================
 Summary — corpus conformance (includes pre-spec debt)
@@ -84,30 +84,9 @@ Total documents: 4
 [Errors] 1
 ```
 
-A `[AX-…]` citation marks a **matched** finding — a ratified axiom, drill-down at `praxis axioms show <id>`. Unmarked critiques are open-channel and flow onward to [triage](/commands/axioms).
+Critiques print raw — the reviewer's own words against the spec. Labels come later: `praxis axioms triage` classifies the pending backlog under ratified axioms, and from then on reports cite the axiom's id and ratified words (drill-down at `praxis axioms show <id>`).
 
 **Exit code:** 0 if no errors, 1 if any errors (warnings do not fail).
-
----
-
-
-
-```bash
-```
-
-Mechanics: changed files are filtered to spec-covered targets (the uncovered remainder is named — work the specs can't see is never invisibly invisible); both sides of each covered file are reviewed as ordinary targets — the **after** side at HEAD, the **before** side at the merge-base, both read from git so a dirty tree can't leak into a measured run. The before side is usually a cache hit from the base branch's own runs, so a diff costs about **one reviewer call per changed file**.
-
-Flow is then computed, never reviewed: set-difference on axiom identity labels each matched finding **introduced** (after-only), **resolved** (before-only, credited to the git author who touched the file), or **inherited** (both sides — pre-existing debt, not this PR's doing). Open-channel critiques carry no label and go to triage as ever.
-
-```
-[FAIL] src/services/redeem-coupon.ts
-  - [introduced] [AX-b951db] Error messages name what was wrong and what
-    would be accepted instead.
-  - [inherited] [AX-6e307b] Services must perform all I/O through their
-    injected Store dependency.
-```
-
-**Exit code:** the diff is judged on its own contribution — introduced error-severity findings or any unverified target fail; inherited debt and resolutions never do. Re-running is idempotent: each run is a fresh snapshot against the same base, and reports read the latest diff run per branch.
 
 ---
 
@@ -124,6 +103,7 @@ praxis eval ci --strict
 
 | Flag            | Description                                                        |
 | --------------- | ------------------------------------------------------------------ |
+| `--strict`      | Fail on warnings too                                               |
 
 
 **Exit code:** 0 if all pass (or no errors with `--strict` off), 1 otherwise.
@@ -132,7 +112,7 @@ praxis eval ci --strict
 
 ### `--json`: the fast loop's delivery
 
-`praxis eval run <target> --json` emits the outcome as stable JSON on stdout — the feedback a coding agent or a harness hook consumes directly ([harness feedback](/validation/harness-feedback)). Matched findings carry their axiom id and statement (depth stays behind `axioms show <id>`); open-channel critiques carry their raw text; corpus mode emits the run summary. `eval verdict` and bare `praxis` take `--json` too.
+`praxis eval run <target> --json` emits the outcome as stable JSON on stdout — the feedback a coding agent or a CI hook consumes directly. Critiques carry their raw text (labels are applied later, at triage, and appear in reports); corpus mode emits the run summary. `eval verdict` and bare `praxis` take `--json` too.
 
 ## `praxis eval verdict <path>`
 
@@ -181,7 +161,7 @@ The cache answers "is this compliant now" and overwrites; the ledger answers "wh
 
 Two things never write the ledger: `eval ci` (CI verifies without writing — the branch's own runs are the evidence) and cache hits (nothing new was reviewed; they are counted on the run record instead).
 
-**Evidence grades**: a run made from a clean tree on a branch records its `commit_sha`, and that sha reconstructs everything — the target, the spec, and the axiom checklist all live in that commit. A fast-loop run on a dirty tree is _attested_ (content hashes prove what the reviewers saw) but not reconstructable, and praxis says so at run start. Praxis never creates commits — when you want archive-grade evidence on every run, run eval from a hook or CI, where clean trees are free.
+**Evidence grades**: a run made from a clean tree on a branch records its `commit_sha`, and that sha reconstructs everything — the target and the spec live in that commit. A fast-loop run on a dirty tree is _attested_ (content hashes prove what the reviewers saw) but not reconstructable, and praxis says so at run start. Praxis never creates commits — when you want archive-grade evidence on every run, run eval from a hook or CI, where clean trees are free.
 
 A target that cannot be reviewed at all — unreadable, or a cohort too large for the model's context window — is reported **UNVERIFIED**: counted separately, never as a violation, and the run fails so it cannot pass unseen.
 
@@ -198,9 +178,9 @@ The read side of the ledger — never a reviewer call. Scopes compose: `eval rep
 
 `--json` emits the built payload verbatim — the stable machine contract.
 
-## The two channels
+## Raw critiques, labeled later
 
-Once axioms are ratified (see [praxis axioms](/commands/axioms)), the reviewer's prompt carries their checklist: violations of a checklist axiom come back **matched** — cited by id, rendered in the axiom's ratified words, deduplicated across reviewers into one finding with its witnesses counted. Everything else arrives on the **open channel** as raw critique prose and flows onward to triage — today's raw critique is tomorrow's axiom. The reviewer is also told the judgment boundary: mechanical criteria (anything a linter could decide) are out of scope and must not be reported.
+Every critique arrives raw — the reviewer sees only the spec, never the axioms (see [praxis axioms](/commands/axioms)): labels are applied afterwards by `axioms triage`, and reports then cite ratified ids and words. The reviewer is told the judgment boundary: mechanical criteria (anything a linter could decide) are out of scope and must not be reported.
 
 ## Epoch boundaries
 

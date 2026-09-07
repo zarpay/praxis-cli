@@ -22,7 +22,6 @@ describe("AxiomFile", () => {
     expect(axiom.version).toBe(1);
     expect(axiom.status).toBe("active");
     expect(axiom.mode).toBe("judgment");
-    expect(axiom.scope).toBe("file");
     expect(axiom.severity).toBe("error");
     expect(axiom.groundedIn).toBe("docs/README.md#payloads");
     expect(axiom.introduced).toBe("2026-08-29");
@@ -81,7 +80,6 @@ describe("AxiomFile", () => {
     );
 
     expect(axiom.mode).toBe("agentic");
-    expect(axiom.scope).toBe("cohort");
     expect(axiom.supersedes).toBe("AX-9e21aa");
   });
 });

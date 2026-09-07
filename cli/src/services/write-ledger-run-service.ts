@@ -74,9 +74,10 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
         mode: "judgment",
         // Born matched = assigned at review time by the checklist (04-t);
         // open-channel critiques stay null until triage assigns them.
-        axiom_id: issue.axiomId,
-        axiom_version: issue.axiomVersion,
-        assigned_by: issue.axiomId === null ? null : "checklist",
+        // Born unlabeled (04): labels live in triage assignment records.
+        axiom_id: null,
+        axiom_version: null,
+        assigned_by: null,
         population: "unknown",
         authorship: "unknown",
         authorship_evidence: null,

@@ -1,7 +1,6 @@
-import type { AssistFile, ChecklistAxiom } from "@/types.js";
+import type { AssistFile } from "@/types.js";
 
 import { baseName, parentDir } from "@/helpers/paths-helper.js";
-import axiomChecklistSection from "@/prompts/axiom-checklist-section.js";
 import contextSection from "@/prompts/context-section.js";
 import exemplarSection from "@/prompts/exemplar-section.js";
 
@@ -15,8 +14,6 @@ interface ValidationQuestionInput {
   targetPath: string;
   /** Whether the target is one file or a pre-assembled cohort of files. */
   kind: "file" | "cohort";
-  /** The active axioms grounded in this spec — the checklist channel (04). */
-  checklist: readonly ChecklistAxiom[];
   /** Spec-blessed positive examples, inlined and never reviewed. */
   exemplars: readonly AssistFile[];
   /** Assist-only reference files, inlined and never reviewed. */
@@ -25,7 +22,7 @@ interface ValidationQuestionInput {
 
 /**
  * The user prompt sent to the LLM for one review: specification, the
- * axiom checklist when one governs the spec, optional exemplar/context
+ * optional exemplar/context
  * sections, then the target under review — framed per file or per
  * cohort.
  */
@@ -34,7 +31,6 @@ export default function validationQuestion({
   targetContent,
   targetPath,
   kind,
-  checklist,
   exemplars,
   context,
 }: ValidationQuestionInput): string {
@@ -57,7 +53,7 @@ Directory: ${parentDir(targetPath)}`;
 ${specContent}
 \`\`\`
 
-${axiomChecklistSection(checklist)}${exemplarSection(exemplars)}${contextSection(context)}${subject}
+${exemplarSection(exemplars)}${contextSection(context)}${subject}
 
 \`\`\`
 ${targetContent}

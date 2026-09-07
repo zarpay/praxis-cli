@@ -104,6 +104,13 @@ export type CommandOutcome = "ok" | "failed";
 export type View<Data> = (data: Data) => ReportLine[];
 
 /**
+ * The one signature every prompt has: the framework fixes the shape —
+ * a function from the prompt's template variables (if any) to the
+ * finished string.
+ */
+export type Prompt<Options = NoOptions> = (variables: Options) => string;
+
+/**
  * The one signature every orchestrator has.
  *
  * Generic in its context: the framework fixes the shape — a context, the

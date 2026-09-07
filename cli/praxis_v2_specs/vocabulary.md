@@ -49,7 +49,7 @@ Settled in review (Aug 2026); these bind every document and the v2 implementatio
 
 **Finding** — The deduplicated, axiom-anchored unit every consumed surface shows: one per (target, axiom), regardless of how many reviewers witnessed it (each witness is corroboration, recorded). Critiques are evidence; findings are what developers and coding agents work through; violations are findings, when counted (07).
 
-**Open code** — A critique treated as raw qualitative data, before categorization. The term is from grounded theory, and the borrowing is deliberate: triage (04) is open coding → axial coding — critiques either fall under established axioms or propose new ones — and that methodology's warnings (don't let categories drift mid-study, don't code with a taxonomy you haven't ratified) apply directly.
+**Open code** — A critique treated as raw qualitative data, before categorization. The term is from grounded theory, and the borrowing is deliberate: triage (04) is open coding → axial coding — critiques are born raw; triage labels them under established axioms, curation grounds new ones — and that methodology's warnings (don't let categories drift mid-study, don't code with a taxonomy you haven't ratified) apply directly.
 
 **Calibration** — Measuring the reviewer against frozen, human-adjudicated cases. Produces agreement, precision, recall, and false-positive rate _for the reviewer itself_. A conformance number from an uncalibrated reviewer is not interpretable, and the system should say so rather than print it.
 

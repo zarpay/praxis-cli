@@ -7,7 +7,6 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PraxisConfig } from "@/models/praxis-config.js";
 import reviewNamedService from "@/services/review-named-service.js";
-import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import {
   OPENROUTER_URL,
   createOpenRouterServer,
@@ -215,106 +214,53 @@ describe("reviewNamedService", () => {
       );
   }
 
-  describe("the two channels (04)", () => {
-    /** A reviewing project whose spec has one active axiom grounded in it. */
-    function projectWithAxiom(reviewers = [KEYED]): {
-      root: string;
-      cfg: PraxisConfig;
-      abs: (rel: string) => string;
-    } {
-      const axiom = axiomContent(
-        { version: "2", severity: "warning", grounded_in: "specs/README.md#titles" },
-        { statement: "Titles say what the document is about." },
-      );
+  describe("critiques are born raw (04, review→label)", () => {
+    it("a provider-cited axiom id is discarded — labels belong to triage, never review", async () => {
+      useVerdict("validation_fail", {
+        reason: "no",
+        issues: [{ axiom: "AX-aaaa11", text: "Title is vague." }],
+      });
+      const { cfg, abs } = reviewingProject();
+      const targets: ReviewedTarget[] = [];
 
+      await reviewNamedService(cfg, {
+        targets: [abs("specs/doc.md")],
+        useCache: false,
+        onTarget: (event) => targets.push(event),
+      });
+
+      const finding = targets[0].findings[0];
+      const critiqueRecords = ledgerRuns(cfg.root)
+        .flat()
+        .filter((record) => record.kind === "critique");
+
+      expect(finding).toMatchObject({ axiomId: null, text: "Title is vague." });
+      expect(critiqueRecords[0]).toMatchObject({
+        axiom_id: null,
+        axiom_version: null,
+        assigned_by: null,
+      });
+    });
+
+    it("two reviewers writing the same sentence corroborate one finding", async () => {
+      useVerdict("validation_fail", { reason: "no", issues: ["Title is vague."] });
       const { root, abs, cleanup } = createValidatorTmpdir({
         sources: ["specs"],
-        files: {
-          "specs/README.md": "# Spec\n\nDocuments must have a title.",
-          "specs/doc.md": "# Doc",
-          ".praxis/axioms/AX-aaaa11.md": axiom,
-        },
-        reviewers,
+        files: { "specs/README.md": "# Spec", "specs/doc.md": "# Doc" },
+        reviewers: [KEYED, { name: "second", model: "m2", apiKeyEnvVar: KEYED.apiKeyEnvVar }],
       });
       cleanups.push(cleanup);
-
-      return { root, cfg: new PraxisConfig(root), abs };
-    }
-
-    it("a cited checklist axiom lands matched: version resolved, provenance recorded", async () => {
-      useVerdict("validation_fail", {
-        reason: "no",
-        issues: [{ axiom: "AX-aaaa11", text: "Title is vague." }],
-      });
-      const { cfg, abs } = projectWithAxiom();
       const targets: ReviewedTarget[] = [];
 
-      await reviewNamedService(cfg, {
+      await reviewNamedService(new PraxisConfig(root), {
         targets: [abs("specs/doc.md")],
         useCache: false,
-        onTarget: (event) => targets.push(event),
-      });
-
-      const finding = targets[0].findings[0];
-      const critiqueRecords = ledgerRuns(cfg.root)
-        .flat()
-        .filter((record) => record.kind === "critique");
-
-      // The finding speaks in the axiom's ratified terms, not run-varying prose.
-      expect(finding).toMatchObject({
-        axiomId: "AX-aaaa11",
-        text: "Titles say what the document is about.",
-        severity: "warning",
-      });
-      expect(critiqueRecords[0]).toMatchObject({
-        axiom_id: "AX-aaaa11",
-        axiom_version: 2,
-        assigned_by: "checklist",
-      });
-    });
-
-    it("a hallucinated axiom id demotes to the open channel — never a ledger assignment", async () => {
-      useVerdict("validation_fail", {
-        reason: "no",
-        issues: [{ axiom: "AX-ffffff", text: "Invented citation." }],
-      });
-      const { cfg, abs } = projectWithAxiom();
-      const targets: ReviewedTarget[] = [];
-
-      await reviewNamedService(cfg, {
-        targets: [abs("specs/doc.md")],
-        useCache: false,
-        onTarget: (event) => targets.push(event),
-      });
-
-      const finding = targets[0].findings[0];
-      const critiqueRecords = ledgerRuns(cfg.root)
-        .flat()
-        .filter((record) => record.kind === "critique");
-
-      expect(finding.axiomId).toBeNull();
-      expect(finding.text).toBe("Invented citation.");
-      expect(critiqueRecords[0]).toMatchObject({ axiom_id: null, assigned_by: null });
-    });
-
-    it("two reviewers citing one axiom collapse to one finding with two witnesses (06)", async () => {
-      useVerdict("validation_fail", {
-        reason: "no",
-        issues: [{ axiom: "AX-aaaa11", text: "Title is vague." }],
-      });
-      const second = { name: "v32", model: "m2", apiKeyEnvVar: "OPENROUTER_API_KEY" };
-      const { cfg, abs } = projectWithAxiom([KEYED, second]);
-      const targets: ReviewedTarget[] = [];
-
-      await reviewNamedService(cfg, {
-        targets: [abs("specs/doc.md")],
-        useCache: false,
+        ledger: false,
         onTarget: (event) => targets.push(event),
       });
 
       expect(targets[0].findings).toHaveLength(1);
-      expect(targets[0].findings[0].witnesses).toEqual(["flash", "v32"]);
-      expect(targets[0].reviewerCount).toBe(2);
+      expect(targets[0].findings[0].witnesses).toEqual(["flash", "second"]);
     });
   });
 

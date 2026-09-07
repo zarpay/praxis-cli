@@ -26,7 +26,7 @@ export interface AssistFileRecord {
  * ratified standard with its full teaching material, so the reviewer
  * judges against the extension, not just a label.
  */
-export interface ChecklistAxiom {
+export interface ActiveAxiom {
   id: string;
   version: number;
   severity: Severity;

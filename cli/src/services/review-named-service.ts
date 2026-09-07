@@ -1,13 +1,5 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type {
-  ChecklistAxiom,
-  Critique,
-  Finding,
-  LedgerEntry,
-  ReviewedTarget,
-  Service,
-  Verdict,
-} from "@/types.js";
+import type { Finding, LedgerEntry, ReviewedTarget, Service, Verdict } from "@/types.js";
 
 import { PraxisError } from "@/helpers/errors-helper.js";
 import { relativePath, resolvePath } from "@/helpers/paths-helper.js";
@@ -17,7 +9,6 @@ import discoverDomainsService from "@/services/discover-domains-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
-import { AxiomStore } from "@/stores/axiom-store.js";
 import { SpecStore } from "@/stores/spec-store.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
 
@@ -82,7 +73,6 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
       targetPath,
       specPath: specOverride ?? governingSpecFor(cfg, specStore, targetPath),
       root,
-      checklistFor: (resolvedSpec) => new AxiomStore(cfg).checklistFor(resolvedSpec),
     });
 
     const specKey = relativePath(root, subject.specPath);
@@ -127,7 +117,7 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
       onTarget?.({
         path: targetPath,
         verdict: worst,
-        findings: assembleFindings(verdicts, subject.checklist),
+        findings: assembleFindings(verdicts),
         reviewerCount: reviewers.length,
       });
     }
@@ -155,54 +145,35 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
 export default reviewNamedService;
 
 /**
- * Collapses one target's critiques into findings (08, 06).
- *
- * Matched critiques dedup on their axiom id — the shared identity that
- * already exists — one finding, every flagging reviewer a witness, the
- * text and severity taken from the ratified axiom so the same violation
- * reads the same every run. Open-channel critiques have no shared
- * identity yet: each stands alone, deduped only when two reviewers
- * produce byte-identical text.
+ * The deduplicated finding list a caller works through (vocabulary):
+ * every critique is born raw, so identity is the critique's exact text —
+ * two reviewers writing the same sentence corroborate one finding, and
+ * near-duplicates stay separate until triage labels them under one
+ * axiom.
  */
-function assembleFindings(
-  verdicts: { reviewerName: string; verdict: Verdict }[],
-  checklist: ChecklistAxiom[],
-): Finding[] {
-  const axiomsById = new Map(checklist.map((axiom) => [axiom.id, axiom]));
-  const findings = new Map<string, Finding>();
+function assembleFindings(verdicts: { reviewerName: string; verdict: Verdict }[]): Finding[] {
+  const byText = new Map<string, Finding>();
 
   for (const { reviewerName, verdict } of verdicts) {
     for (const critique of verdict.issues) {
-      const key = critique.axiomId ?? `open:${critique.text}`;
-      const existing = findings.get(key);
+      const held = byText.get(critique.text);
 
-      if (existing) {
-        if (!existing.witnesses.includes(reviewerName)) existing.witnesses.push(reviewerName);
+      if (held) {
+        if (!held.witnesses.includes(reviewerName)) held.witnesses.push(reviewerName);
 
         continue;
       }
 
-      findings.set(key, findingFor(critique, reviewerName, axiomsById));
+      byText.set(critique.text, {
+        axiomId: null,
+        text: critique.text,
+        severity: verdict.severity ?? "error",
+        witnesses: [reviewerName],
+      });
     }
   }
 
-  return [...findings.values()];
-}
-
-/** One critique's finding: the axiom's terms when matched, its own otherwise. */
-function findingFor(
-  critique: Critique,
-  reviewerName: string,
-  axiomsById: Map<string, ChecklistAxiom>,
-): Finding {
-  const axiom = critique.axiomId === null ? undefined : axiomsById.get(critique.axiomId);
-
-  return {
-    axiomId: critique.axiomId,
-    text: axiom ? axiom.statement : critique.text,
-    severity: axiom ? axiom.severity : "error",
-    witnesses: [reviewerName],
-  };
+  return [...byText.values()];
 }
 
 /**

@@ -45,6 +45,51 @@
         "issues": [],
         "reason": "The test file fully satisfies all criteria defined in the specification and complies with all axioms in the checklist."
       }
+    },
+    "dacac2eb:87a547f7": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "87a547f7"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:10:51.592Z",
+      "content_hash": "0f402b1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 502 words."
+      }
+    },
+    "dacac2eb:0ca26f36": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ca26f36"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:16:00.903Z",
+      "content_hash": "0f402b1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The suite conforms to every rule in the specification. The top-level describe names the unit by its module name ('send-newsletter'), each nested describe is a 'when' clause, and each it states one observable outcome so describe + it reads as a sentence. Every it block contains exactly one expect, with compound shapes asserted once via toEqual/toMatchObject. Tests exercise only the exported run function and the honest in-memory store collaborator, with no spies, mocks, or module-scope reaching, and each test builds its data fresh on a new store with no cross-suite dependencies."
+      }
+    },
+    "dacac2eb:63664cce": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "63664cce"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:19:10.134Z",
+      "content_hash": "0f402b1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully satisfies all criteria in the specification: 1) Proper subject framing with top-level module name, nested 'when' clauses, and readable it statements; 2) Exactly one assertion per it block; 3) Focuses on functionality through the public API without implementation details, using honest implementations and fresh test data."
+      }
     }
   }
 }

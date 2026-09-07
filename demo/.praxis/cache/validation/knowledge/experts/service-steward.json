@@ -45,6 +45,51 @@
         "issues": [],
         "reason": "The file fully satisfies all requirements in the specification. It includes all required frontmatter fields with appropriate values, has the correct heading structure, clearly states what the expert is an SME on, and provides a description that properly tells operators when to invoke it. The axiom checklist is also satisfied as the description clearly indicates when to use this expert."
       }
+    },
+    "244fa7f3:87a547f7": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "87a547f7"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-07T10:10:51.576Z",
+      "content_hash": "3fcfd2ce",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 288 words."
+      }
+    },
+    "244fa7f3:0ca26f36": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ca26f36"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-07T10:12:42.134Z",
+      "content_hash": "3fcfd2ce",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document satisfies the specification. Frontmatter includes all required fields: title ('Service Steward'), type ('expert'), alias ('Scooper'), and a two-sentence description of when to invoke the expert. The body opens with a level-1 heading naming the expert and its alias ('# Service Steward (a.k.a **Scooper**)'), and states in prose that the expert is the subject-matter expert on how Scoop Society services are written and reviewed. No placeholder text (TODO, TBD, lorem ipsum) is present."
+      }
+    },
+    "244fa7f3:63664cce": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "63664cce"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-07T10:16:43.214Z",
+      "content_hash": "3fcfd2ce",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document contains all required frontmatter fields (title, type, alias, description) with correct values, opens with a level-1 heading naming the expert and its alias, clearly states what the expert is the subject-matter expert on, and contains no placeholder text."
+      }
     }
   }
 }

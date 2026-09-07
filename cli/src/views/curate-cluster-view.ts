@@ -17,7 +17,7 @@ interface TriageClusterCard {
  * suggestion, with the critiques as evidence — everything the human
  * needs on screen to fold, dismiss, or accept.
  */
-const triageClusterView: View<TriageClusterCard> = ({ index, total, cluster, critiques }) => {
+const curateClusterView: View<TriageClusterCard> = ({ index, total, cluster, critiques }) => {
   const lines: ReportLine[] = [
     { channel: "heading", text: `Cluster ${index}/${total} — ${cluster.rationale}` },
     {
@@ -33,7 +33,7 @@ const triageClusterView: View<TriageClusterCard> = ({ index, total, cluster, cri
   return lines;
 };
 
-export default triageClusterView;
+export default curateClusterView;
 
 /** The curator's suggestion, framed for the decision it asks for. */
 function suggestionLines(cluster: TriageCluster): string[] {
@@ -47,7 +47,7 @@ function suggestionLines(cluster: TriageCluster): string[] {
     const { draft } = suggestion;
 
     return [
-      `${chalk.cyan("Suggests:")} propose a new axiom (severity: ${draft.severity}, scope: ${draft.scope})`,
+      `${chalk.cyan("Suggests:")} propose a new axiom (severity: ${draft.severity})`,
       `  ${chalk.bold(draft.statement)}`,
       `  Violating: ${draft.violatingExample}`,
       `  Compliant: ${draft.compliantExample}`,

@@ -126,10 +126,10 @@ praxis eval report  # rates, costs, and epochs computed over the ledger
 Run reviews for a week and the same critiques start repeating — "error message tells the consumer nothing" shows up across five services. That's when you run:
 
 ```bash
-praxis axioms triage
+praxis axioms curate
 ```
 
-A **curator** model clusters the pending critiques and drafts a proposal; you accept; `praxis axioms ratify` traces it to the spec and activates it. From then on the standard has a name — `AX-b951db` — every reviewer checks it explicitly, findings cite it, and `praxis axioms show AX-b951db` teaches it with a violating and a compliant example. Standards stop being folklore. See [the evidence loop](/concepts/evidence-loop).
+A **curator** model clusters the pending critiques and drafts a proposal; you accept; `praxis axioms ratify` traces it to the spec and activates it. From then on the standard has a name — `AX-b951db` — `praxis axioms triage` batch-labels every recurring critique under it (the reviewer itself keeps seeing only the spec), reports cite it, and `praxis axioms show AX-b951db` teaches it with a violating and a compliant example. Standards stop being folklore. See [the evidence loop](/concepts/evidence-loop).
 
 ## Optional: the spec layer
 

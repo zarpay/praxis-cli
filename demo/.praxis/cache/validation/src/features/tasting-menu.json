@@ -75,6 +75,81 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:87a547f7": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "87a547f7"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-07T10:10:51.584Z",
+      "content_hash": "cbd707ee",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 883 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:0ca26f36": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ca26f36"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-07T10:14:27.982Z",
+      "content_hash": "cbd707ee",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The tasting-menu feature conforms to the specification. It has exactly one entry point (index.ts) that re-exports the entire public API (run as buildMenu, plus the types). Types live in the dedicated tasting-menu-types.ts file. The logic file build-menu.ts is verb-first kebab-case, exports a single `run`, returns a Result instead of throwing, and provides a consumer-grade error message ('stops must be a whole number of 1 or more'). Cohesion holds: every file is reachable from index.ts through the import graph (index → build-menu → tasting-menu-types), all files serve the single tasting-menu capability, and the feature name describes the capability rather than its implementation."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:63664cce": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "63664cce"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-07T10:17:57.903Z",
+      "content_hash": "cbd707ee",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The tasting-menu feature module fully complies with all specification requirements: it has exactly one entry point (index.ts) that re-exports the public API, types are properly separated into tasting-menu-types.ts, logic files follow verb-first kebab-case naming with a run function, all files are reachable from the entry point, the feature represents a single coherent capability, and the naming describes the user-facing functionality."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

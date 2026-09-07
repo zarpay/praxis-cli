@@ -45,3 +45,10 @@ Follow the existing pattern (`VerdictReporter` in `verdict-reporter.ts`): a pure
 1. Time bucketing: by calendar period, by run, or by N-diff windows? Sparse orgs make calendar buckets noisy; tentative: run-indexed with calendar annotations.
 2. Where does `praxis status` end and `eval report` begin? Status stays the quick health dashboard (counts, dangling refs, coverage snapshot); eval reports own anything with a denominator or a trend.
 3. Export: is `--json` enough for teams piping into their own dashboards, or does a flat CSV per metric earn its place early?
+
+> **Unlabeled critiques are pending, never zero** (2026-09-07): per-axiom
+> counts are computed over the effective labels (assignment records
+> joined at read time), and every report names the pending count beside
+> them — a backlog awaiting `praxis axioms triage` is visible, not
+> silently uncounted.
+

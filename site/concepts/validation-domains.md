@@ -19,7 +19,7 @@ The same pattern works for any organized body of files — `decisions/`, `api/sp
 
 ## The spec file
 
-The spec defines what the reviewers check — judgment standards, written in clear human language (see [Writing Specs](/validation/writing-specs), especially the judgment boundary: mechanical criteria are refused by design). When `praxis eval run` runs, every configured reviewer reads the spec and each governed file, and answers through a required tool call — pass, warn, or fail — with specific critiques on two channels: matched to a ratified axiom's id, or open-channel prose.
+The spec defines what the reviewers check — judgment standards, written in clear human language (see [Writing Specs](/validation/writing-specs), especially the judgment boundary: mechanical criteria are refused by design). When `praxis eval run` runs, every configured reviewer reads the spec and each governed file, and answers through a required tool call — pass, warn, or fail — with specific critiques as raw reviewer prose, labeled under ratified axioms afterwards at triage.
 
 ## Configurable spec file name
 

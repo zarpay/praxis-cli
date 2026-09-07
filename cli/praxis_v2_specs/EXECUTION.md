@@ -98,6 +98,16 @@ lives in `roadmap/`. Historical ledger fields remain readable.
 **Withdrawn to roadmap (owner, 2026-09-07).** Shipped during v2
 development, then removed with the core simplification — the design
 lives in `roadmap/`. Historical ledger fields remain readable.
+## Review→Label (2026-09-07, owner)
+
+| Req | Sources | Status |
+| --- | --- | --- |
+| Reviewer sees only the spec: checklist out of prompts, tool schema, ReviewSubject, and the content hash; critiques born raw | 04 (rewritten) | ✅ prompt-surface lock 0717752e → 41134ad4 (the deliberate epoch); cache re-reviews once |
+| Labels are assignment records; readers join (newest wins, dismissals unlabel, historical inline labels stand) | 04, 05 | ✅ join-critique-labels wired into report scope + debt; fixes the human-assignments-never-counted hole |
+| `axioms triage` = async batch labeler (curator, temp 0, --dry-run, no-curator warns); `axioms curate` = the interactive session | 04, 09 | ✅ hallucination guard moved to the labeler; matcher provenance recorded |
+| Axiom frontmatter slims: scope:/context: retired; atomic statements | 03, 04 | ✅ historical keys parse-tolerated |
+| Ratification has no cache effect | 04 | ✅ ratify message updated |
+
 ## Cross-cutting CLI contract (09) — applies to everything above
 
 | Req                                                                                                          | Sources           | Status                                                                                                                                                                                                                                                                                                                                             |

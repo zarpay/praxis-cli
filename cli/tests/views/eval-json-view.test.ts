@@ -25,19 +25,18 @@ const REVIEWED: ReviewedTarget = {
 };
 
 describe("evalJsonView", () => {
-  it("targets mode carries the match-state contract (08-d)", () => {
+  it("targets mode carries raw findings — labels arrive at triage (04)", () => {
     const payload = parse(evalJsonView({ kind: "targets", targets: [REVIEWED] }));
     const targets = payload["targets"] as Record<string, unknown>[];
     const findings = targets[0]["findings"] as Record<string, unknown>[];
 
     expect(payload["mode"]).toBe("targets");
     expect(targets[0]["status"]).toBe("fail");
-    expect(findings[0]).toMatchObject({
-      axiom_id: "AX-b951db",
-      channel: "matched",
+    expect(findings[0]).toEqual({
+      text: "Error messages must be specific…",
+      severity: "error",
       witnesses: ["v32", "flash"],
     });
-    expect(findings[1]).toMatchObject({ axiom_id: null, channel: "open" });
   });
 
   it("an unverified target says so instead of passing silently", () => {

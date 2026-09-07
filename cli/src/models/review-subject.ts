@@ -1,4 +1,4 @@
-import type { AssistFileRecord, AssistFile, ChecklistAxiom } from "@/types.js";
+import type { AssistFileRecord, AssistFile } from "@/types.js";
 
 import fg from "fast-glob";
 
@@ -41,8 +41,6 @@ export class ReviewSubject {
   readonly kind: "file" | "cohort";
   /** The spec's resolved assist inputs: exemplars and context files. */
   readonly assist: AssistInputs;
-  /** The active axioms grounded in the spec — the checklist channel (04). */
-  readonly checklist: ChecklistAxiom[];
 
   private constructor(fields: {
     targetPath: string;
@@ -51,7 +49,6 @@ export class ReviewSubject {
     specContent: string;
     kind: "file" | "cohort";
     assist: AssistInputs;
-    checklist: ChecklistAxiom[];
   }) {
     this.targetPath = fields.targetPath;
     this.specPath = fields.specPath;
@@ -59,7 +56,6 @@ export class ReviewSubject {
     this.specContent = fields.specContent;
     this.kind = fields.kind;
     this.assist = fields.assist;
-    this.checklist = fields.checklist;
   }
 
   /**
@@ -74,7 +70,6 @@ export class ReviewSubject {
     kind = "file",
     specPath,
     root,
-    checklistFor,
   }: {
     targetPath: string;
     /** Pre-assembled input (cohorts); read from targetPath when omitted. */
@@ -84,12 +79,6 @@ export class ReviewSubject {
     specPath: string;
     /** Project root; required when the spec declares scoping globs. */
     root?: string;
-    /**
-     * Supplies the resolved spec's checklist axioms (04). Injected by
-     * the caller because the spec is discovered here but the axiom
-     * store is a service's business, and models never import services.
-     */
-    checklistFor?: (specPath: string) => ChecklistAxiom[];
   }): ReviewSubject {
     const specContent = readText(specPath);
 
@@ -100,20 +89,17 @@ export class ReviewSubject {
       specContent,
       kind,
       assist: resolveAssist(specContent, specPath, root),
-      checklist: checklistFor?.(specPath) ?? [],
     });
   }
 
   /**
    * The cache-invalidation hash over the full review input.
    *
-   * Target, spec and assist all participate, so editing any input the
+   * Target, spec, and assist all participate, so editing any input the
    * reviewer saw invalidates the verdict keyed on it.
    */
   contentHash(): string {
-    return hash8(
-      this.targetContent + this.specContent + this.assistInput() + this.checklistInput(),
-    );
+    return hash8(this.targetContent + this.specContent + this.assistInput());
   }
 
   /** Provenance hash of the target alone, for the ledger (05). */
@@ -138,20 +124,6 @@ export class ReviewSubject {
       ...this.assist.exemplars.map((file) => `EXEMPLAR ${file.path}\n${file.content}`),
       ...this.assist.context.map((file) => `CONTEXT ${file.path}\n${file.content}`),
     ].join("\n");
-  }
-
-  /**
-   * The checklist component of the content hash.
-   *
-   * Ratifying, versioning, or deprecating an axiom changes what the
-   * reviewer is asked, so it must invalidate the verdicts of every
-   * target its spec governs. Empty when no axioms govern the spec,
-   * which keeps bootstrap projects' hashes — and their caches — intact.
-   */
-  private checklistInput(): string {
-    return this.checklist
-      .map((axiom) => `AXIOM ${axiom.id} v${axiom.version}\n${axiom.body}`)
-      .join("\n");
   }
 
   /** Per-file provenance for the cache entry: what was inlined, and its hash. */

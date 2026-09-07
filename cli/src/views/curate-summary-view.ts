@@ -1,22 +1,22 @@
 import type { View } from "@framework/types.js";
 
-/** A triage session's counted outcome. */
+/** A curate session's counted outcome. */
 interface TriageOutcome {
   assigned: number;
   proposed: number;
   dismissed: number;
   skipped: number;
-  /** Open-channel critiques still waiting after the session. */
+  /** Pending critiques still waiting after the session. */
   pendingLeft: number;
   /** Curator spend across the session, or null when nothing reported. */
   costUsd: number | null;
 }
 
 /**
- * A triage session's outcome: every decision counted, the residual
+ * A curate session's outcome: every decision counted, the residual
  * named, and the next commands in reach (09: drill-down, not dumps).
  */
-const triageSummaryView: View<TriageOutcome> = ({
+const curateSummaryView: View<TriageOutcome> = ({
   assigned,
   proposed,
   dismissed,
@@ -27,7 +27,7 @@ const triageSummaryView: View<TriageOutcome> = ({
   const cost = costUsd === null ? "" : ` · curator cost $${costUsd.toFixed(4)}`;
 
   return [
-    { channel: "heading", text: "Triage session" },
+    { channel: "heading", text: "Curate session" },
     {
       channel: "content",
       entries: [
@@ -44,4 +44,4 @@ const triageSummaryView: View<TriageOutcome> = ({
   ];
 };
 
-export default triageSummaryView;
+export default curateSummaryView;

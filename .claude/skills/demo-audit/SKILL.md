@@ -28,7 +28,11 @@ product.
    zero misses, zero errors**. A single miss means the reviewer's
    behavioral hash changed — an epoch event. Stop and investigate: if
    the change was deliberate (prompt/config edit), say so and expect the
-   owner's confirmation; if not, it's a bug.
+   owner's confirmation; if not, it's a bug. (Historical carve-out: the
+   2026-09-07 review→label epoch — reviewer prompt surface and tool
+   schema changed once, deliberately, so that day's canary was a full
+   18-miss re-baseline. `baseline: true` on run
+   `20260907T101051593Z-4ee5224e` marks it.)
 3. **Work through `demo/EXPECTATIONS.md` top to bottom**, matching each
    command's real output against its row. Honor the legend:
    - **[free]** rows always run.

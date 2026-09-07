@@ -1,11 +1,10 @@
-import type { AxiomMode, AxiomScope, AxiomStatus, Severity } from "@/types.js";
+import type { AxiomMode, AxiomStatus, Severity } from "@/types.js";
 
 /** The fields the proposal template renders into an axiom file. */
 interface AxiomTemplateVars {
   id: string;
   status: AxiomStatus;
   mode: AxiomMode;
-  scope: AxiomScope;
   severity: Severity;
   /** YYYY-MM-DD; per-axiom population clocks start here (04). */
   introduced: string;
@@ -28,7 +27,6 @@ export default function axiomFileTemplate({
   id,
   status,
   mode,
-  scope,
   severity,
   introduced,
   groundedIn,
@@ -43,7 +41,6 @@ id: ${id}
 version: 1
 status: ${status}
 mode: ${mode}
-scope: ${scope}
 severity: ${severity}
 ${grounding}introduced: ${introduced}
 ---

@@ -18,7 +18,10 @@ import promptSurface from "@/prompts/prompt-surface.js";
 // Epoch history: 61132753 (v2 pre-axioms) → 0717752e (2026-09-03, the
 // two-channel reviewer: axiom checklist + open channel + the judgment-
 // boundary posture, 03/04 — the M3 epoch roll, intentional).
-const LOCKED_SURFACE_SHA8 = "0717752e";
+// Epoch history: "0717752e" (two-channel checklist surface, M3–M7) →
+// "41134ad4" (2026-09-07: review→label — the checklist leaves the
+// reviewer entirely; owner's single-channel prompt; issues untagged).
+const LOCKED_SURFACE_SHA8 = "41134ad4";
 
 describe("promptSurface", () => {
   it("is deterministic", () => {
@@ -28,7 +31,7 @@ describe("promptSurface", () => {
   it("covers the system prompt, the tools, and both question framings", () => {
     const surface = promptSurface();
 
-    expect(surface).toContain("compliance reviewer");
+    expect(surface).toContain("satisfy the specification's standards");
     expect(surface).toContain("validation_pass");
     expect(surface).toContain("FILE TO VALIDATE");
     expect(surface).toContain("FILES TO VALIDATE");

@@ -3,7 +3,6 @@ import type { ReviewSubject } from "@/models/review-subject.js";
 import type { Reviewer } from "@/models/reviewer.js";
 import type { VerdictStore } from "@/stores/verdict-store.js";
 import type {
-  ChecklistAxiom,
   Critique,
   ProviderRequest,
   ProviderResult,
@@ -107,7 +106,6 @@ async function requestVerdict(
       targetContent: target.targetContent,
       targetPath: target.targetPath,
       kind: target.kind,
-      checklist: target.checklist,
       exemplars: target.assist.exemplars,
       context: target.assist.context,
     }),
@@ -123,7 +121,7 @@ async function requestVerdict(
     const { verdict, usage } = await provider.review(request);
 
     return {
-      verdict: { ...verdict, issues: normalizeCritiques(verdict.issues, target.checklist) },
+      verdict: { ...verdict, issues: normalizeCritiques(verdict.issues) },
       usage,
     };
   } catch (err) {
@@ -134,28 +132,15 @@ async function requestVerdict(
 }
 
 /**
- * Settles each critique's channel against the actual checklist.
- *
- * A cited id that matches a checklist axiom gets that axiom's version —
- * the assignment provenance the ledger records (04-t). A cited id the
- * checklist does not carry is a hallucination and demotes to the open
- * channel: an unratified id must never enter the ledger as an
- * assignment. A bare string (a custom provider still returning v1
- * issues) is an open-channel critique as-is.
+ * Normalizes provider issues to critiques: every critique is born raw
+ * (04 — axioms are taxonomy applied at triage, never review input). A
+ * bare string (a custom provider returning v1 issues) normalizes the
+ * same way.
  */
-function normalizeCritiques(
-  issues: readonly (Critique | string)[],
-  checklist: readonly ChecklistAxiom[],
-): Critique[] {
-  const versions = new Map(checklist.map((axiom) => [axiom.id, axiom.version]));
-
+function normalizeCritiques(issues: readonly (Critique | string)[]): Critique[] {
   return issues.map((issue) => {
     if (typeof issue === "string") return { text: issue, axiomId: null, axiomVersion: null };
 
-    const version = issue.axiomId === null ? undefined : versions.get(issue.axiomId);
-
-    if (version === undefined) return { ...issue, axiomId: null, axiomVersion: null };
-
-    return { ...issue, axiomVersion: version };
+    return { text: issue.text, axiomId: null, axiomVersion: null };
   });
 }

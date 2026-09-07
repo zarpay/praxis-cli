@@ -121,7 +121,7 @@ export interface LedgerCritiqueRecord {
   /** The checklist axiom the critique was born under; null = open channel. */
   axiom_id: string | null;
   axiom_version: number | null;
-  /** How the assignment happened; "checklist" = born matched (04-t). */
+  /** Historical: "checklist" = born matched under the withdrawn two-channel model; current records are always null (labels live in assignment records). */
   assigned_by: "checklist" | null;
   /** M2 writes "unknown" — never guessed (05). */
   population: "pre_spec" | "post_spec" | "unknown";
@@ -179,7 +179,7 @@ export interface TriageAssignmentRecord {
   axiom_id: string;
   axiom_version: number;
   /** Both halves of the provenance: who decided, who suggested. */
-  assigned_by: { decision: "human" | "flag:--yes"; suggested_by: string };
+  assigned_by: { decision: "human" | "flag:--yes" | "matcher"; suggested_by: string };
   timestamp: string;
 }
 

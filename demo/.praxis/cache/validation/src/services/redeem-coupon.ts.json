@@ -97,6 +97,69 @@
           "hash": "a1beb8f5"
         }
       ]
+    },
+    "0311531a:87a547f7": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "87a547f7"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-07T10:10:51.588Z",
+      "content_hash": "b609d269",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 635 words."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:0ca26f36": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ca26f36"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-07T10:15:07.515Z",
+      "content_hash": "b609d269",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The service conforms to the specification: it exports a single `run` entry point taking the `Store` first and one input object, returning a `Result<number>` from the domain types. Domain failures are returned as values with consumer-oriented error messages that name the problem and the accepted alternative, validation runs top-to-bottom before the happy path, there is no I/O beyond the injected Store, and the doc comment states the purpose in one sentence and enumerates the failure modes."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
+    },
+    "0311531a:63664cce": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "63664cce"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-07T10:18:17.380Z",
+      "content_hash": "b609d269",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document satisfies all criteria defined in the specification: it exports exactly one run function with the correct signature, follows verb-first kebab-case naming, returns domain failures as values with descriptive error messages, validates input before work, has a single responsibility, uses only injected Store for I/O, and includes a complete doc comment with purpose and failure modes enumeration."
+      },
+      "exemplar_files": [
+        {
+          "path": "src/services/create-review.ts",
+          "hash": "a1beb8f5"
+        }
+      ]
     }
   }
 }

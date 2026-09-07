@@ -12,6 +12,7 @@ export function curatorProviderModule(plan: {
   organization?: unknown;
   gate?: unknown;
   traceability?: unknown;
+  labels?: unknown;
 }): string {
   return `const PLAN = ${JSON.stringify(plan)};
 
@@ -26,6 +27,7 @@ export default function scriptedCurator() {
       const args =
         toolName === "triage_organization" ? PLAN.organization
         : toolName === "authoring_gate" ? PLAN.gate
+        : toolName === "label_critiques" ? PLAN.labels
         : PLAN.traceability;
       return { toolName, args, usage: { promptTokens: 10, completionTokens: 5, costUsd: 0.001 } };
     },
