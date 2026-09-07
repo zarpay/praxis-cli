@@ -11,10 +11,8 @@ import type {
   Service,
 } from "@/types.js";
 
-import { rateCell } from "@/helpers/metrics-helper.js";
-import { Reviewer } from "@/models/reviewer.js";
+import { CALIBRATION_STATUS, rateCell } from "@/helpers/metrics-helper.js";
 import countSpecUnitsService from "@/services/count-spec-units-service.js";
-import deriveCalibrationStatusService from "@/services/derive-calibration-status-service.js";
 import deriveEpochsService from "@/services/derive-epochs-service.js";
 import derivePopulationService from "@/services/derive-population-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
@@ -40,8 +38,6 @@ interface BuildEvalReportInput {
  * (rule 4).
  */
 const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, { scoped }) => {
-  const reviewerModels = cfg.reviewers.map((config) => Reviewer.fromConfig(config));
-  const calibration = deriveCalibrationStatusService(cfg, { reviewers: reviewerModels });
   const { runs } = scoped;
   // Historical tolerance: withdrawn diff-era records marked
   // flow:"resolved" were paydown facts, never findings — exclude them
@@ -94,7 +90,7 @@ const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, 
         .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
         .map((run) => ({ runId: run.run_id, at: run.timestamp, costUsd: run.cost_usd ?? null })),
     },
-    calibration: calibration.banner,
+    calibration: CALIBRATION_STATUS,
     axioms: rows.sort((a, b) => a.axiomId.localeCompare(b.axiomId)),
     pendingTriage: state.pending.length,
     residual: rateCell(state.dismissed + state.rejectedProposals, critiques.length),

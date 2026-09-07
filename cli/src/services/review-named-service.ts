@@ -13,7 +13,6 @@ import { PraxisError } from "@/helpers/errors-helper.js";
 import { relativePath, resolvePath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
-import deriveCalibrationStatusService from "@/services/derive-calibration-status-service.js";
 import discoverDomainsService from "@/services/discover-domains-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
@@ -135,9 +134,6 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
   }
 
   if (ledger) {
-    const reviewerModels = reviewers.map((config) => Reviewer.fromConfig(config));
-    const calibration = deriveCalibrationStatusService(cfg, { reviewers: reviewerModels });
-
     for (const reviewerConfig of reviewers) {
       const entries = entriesByReviewer.get(reviewerConfig.name);
 
@@ -149,7 +145,6 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
         scope: "files",
         entries,
         specUnits,
-        calibrationStatus: calibration.stamps[reviewerConfig.name],
       });
     }
   }

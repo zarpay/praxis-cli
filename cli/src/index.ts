@@ -2,7 +2,6 @@ import { Command, CommanderError } from "commander";
 
 import registerAddCommand from "@/commands/add-command.js";
 import registerAxiomsCommand from "@/commands/axioms-command.js";
-import registerCalibrateCommand from "@/commands/calibrate-command.js";
 import registerCompileCommand from "@/commands/compile-command.js";
 import registerConfigCommand from "@/commands/config-command.js";
 import registerDebtCommand from "@/commands/debt-command.js";
@@ -64,7 +63,6 @@ Exit codes:
   registerCompileCommand(program);
   registerEvalCommand(program);
   registerAxiomsCommand(program);
-  registerCalibrateCommand(program);
   registerDebtCommand(program);
   registerAddCommand(program);
   registerStatusCommand(program);

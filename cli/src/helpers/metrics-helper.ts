@@ -7,6 +7,9 @@ import type { RateCell } from "@/types.js";
  * and a cell under the floor says "insufficient data", never a number.
  */
 
+/** The calibration banner every report carries (07 rule 4) — static until calibration returns from the roadmap. */
+export const CALIBRATION_STATUS = "uncalibrated — numbers are directional, not interpretable";
+
 /** Cells with fewer applicable opportunities than this suppress (07 rule 3). */
 export const SMALL_N_FLOOR = 5;
 

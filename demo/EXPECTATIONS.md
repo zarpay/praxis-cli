@@ -55,9 +55,7 @@ calls · **[scratch]** run in a copy.
 
 | Command | Expect |
 | --- | --- |
-| `praxis` | Orientation screen: last run line, active axioms + proposals, pending triage, calibration banner, per-reviewer debt lines, each naming its command |
 | `praxis status` | Per-reviewer PASS/WARN/FAIL/NOT VALIDATED blocks (never pooled); counts for experts/practices/references/context; exits 0 with `No issues found` |
-| `praxis status --json` | `evalState` carries `pending_triage`, `proposals_pending`, `calibration_stale: true`, `epoch_boundary_detected`, `last_run_at`; `issueCount: 0` |
 | `praxis config show` | Header with the config path, then the raw file as written |
 
 ### Compile (spec layer) [free]
@@ -81,44 +79,10 @@ calls · **[scratch]** run in a copy.
 | `eval verdict src/services/redeem-coupon.ts` [free] | Cached verdict per reviewer, no API call; STALE when the file changed since |
 | `eval prune` [free] | "Nothing to prune" when all reviewers current; prunes only orphaned hashes |
 
-### Diff units (M5)
-
-| Command | Expect |
-| --- | --- |
-| `eval run --diff <base> --reviewer v32` [paid] | Headline names base→head sha7s + coverage split; before sides hit the cache; findings labeled `[introduced]`/`[inherited]`, vanished ones `[resolved]` with git author credit; open-channel critiques `[open]`; gate fails only on introduced errors or unverified |
-| Rerun of the same `--diff` [cheap] | Fresh `scope: "diff"` run file; labels stable; flow labels recorded even for hit-served sides |
-| `--diff` + named targets | Instructive refusal — two different units |
-| `eval ci` [free when warm] | Verifies, exits on errors+unverified (`--strict` adds warnings); **writes nothing** — no ledger run, no cache mutation |
-| `eval ci --diff <base>` | Same gate as run --diff (strict = any introduced); warns on missing local diff-run; writes nothing. Known live behavior (2026-09-05): uncached sides are re-reviewed at gate time, so nondeterministic reviewers can flip the gate between invocations — keep the branch diff run committed and sides warm for a deterministic gate (12) |
-
-### Calibration (M6)
-
-| Command | Expect |
-| --- | --- |
-| `calibrate status` [free] | Per-reviewer badges: flash and v32 CALIBRATED with dates; counter ABSENT (the canary is not a judgment instrument — its uninterpretable banner is correct, forever) |
-| `calibrate run --reviewer v32` [paid, bypasses cache] | 6 cases reviewed fresh; verdict agreement with denominator; per-axiom precision/recall floored at n<5; record written to `.praxis/ledger/calibration/` |
-| Known live finding | Both flash and v32 fire one FP on AX-2559f7 (doc-comment axiom flagged where the adjudication forbids it) — corroborated over-triggering; the axiom's wording is a spec-clarification candidate (06-p) |
-| Spec edit under frozen cases | `calibrate status` flips both reviewers STALE naming the spec; reverting restores CALIBRATED |
-| Case set | 6 cases under `.praxis/calibration/cases/`: 3 fail (vague-error, missing-failure-modes, violator-redeem-coupon frozen) + 3 pass true negatives (specific-error, documented-failure-modes, exemplar-create-review frozen) |
-| Report banners | Every report and the orientation carry the per-reviewer banner; `status --json` `calibration_stale: true` while counter is absent |
-
-### Feedback surfaces (M7)
-
-| Command | Expect |
-| --- | --- |
-| `eval run <target> --json` [paid on miss] | Pure JSON on stdout (headlines suppressed): per-target status pass/warn/fail/unverified, findings with `channel` matched/open, matched carrying axiom id + statement, `witnesses` per reviewer |
-| `eval run --json` / `--diff --json` [free when warm] | Corpus mode: summary + cache; diff mode: base/head shas, uncovered paths, per-target flow labels, resolved credits |
-| `praxis --json` / `eval verdict <t> --json` [free] | Orientation payload; per-reviewer verdict status with staleness |
-| `harness suggest` [free] | Brief over the real ledger: per-reviewer calibration line, populations, top axioms with evidence + suggested diagnosis showing its reasoning, representative critiques by ledger id, removal candidates, guardrail note; floors suppress thin rates as insufficient_data |
-| `harness suggest --json` | Stable contract: period, populations, calibration, top_axioms, residual_summary, removal_candidates, note |
-| `praxis compile` | `plugins/praxis/commands/` gains `praxis-harness.md` beside `praxis-resolve.md` |
-| Known state note | `eval verdict` staleness was silently broken for checklisted specs since M3 (recompute omitted the checklist) — fixed 2026-09-05; create-review now reads PASS fresh, flash's redeem-coupon entry is genuinely stale (its last real review predates current inputs) |
-
 ### Reports (pure reads — never a reviewer call) [free]
 
 | Command | Expect |
 | --- | --- |
-| `eval report` | Calibration banner; runs/critiques/cost panel; epoch furniture with named boundaries; per-axiom current stock `(as of <date>)` with denominators or `insufficient data (n<5)`; **Violation flow** section (latest diff run per branch, per reviewer, introduction rate with populations) |
 | `eval report --axiom AX-b951db` | Drill-down: statement, grounding, per-reviewer rows, example critiques with ledger ids |
 | `eval report --commit deadbeef123` | The missing-commit note, verbatim from spec 12 — warning, never an error |
 | `debt report` | Per-reviewer evidence line (baseline date · current as-evidenced date); per-axiom baseline→current, paydown, appeared; concentration by directory; paydown credit by git author or the unanchored note |
@@ -139,22 +103,6 @@ calls · **[scratch]** run in a copy.
 | `praxis init` (empty dir) | Writes only `.praxis/config.json` |
 | `praxis init --spec-layer` | Adds the authoring taxonomy; re-run never overwrites |
 | `praxis add expert <n>` / `add practice <n>` | Scaffolds from template into configured dirs; refuses to overwrite |
-
-### Deep-campaign findings (2026-09-05, kept as regression context)
-
-- The "new" apply-discount role-play collided with an existing compliant
-  service — git honestly said Modified and the diff labels were right;
-  the system out-argued its author. Restored, with redeem-coupon's debt
-  paid down on the same branch (resolved credits recorded).
-- `calibrate run --repeat 2` measured real variance (0.25) on both
-  services axioms for v32 — the FP fires on one repeat, not the other.
-- flash's recalibration flipped the drift protocol live (its FP
-  vanished; accuracy delta > 0.1) — the drill-down annotates it.
-- Records written before 2026-09-05 lack `checklist_hash` and read
-  STALE under the third staleness input — recalibrated, by design.
-- Ratifying an axiom grounded in a governed spec flips calibration
-  stale ("a ratification changed what the cases ask") — found live,
-  regression-tested.
 
 ## After the audit
 
