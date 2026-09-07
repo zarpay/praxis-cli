@@ -2,18 +2,15 @@ import type { TriageRecord } from "@/types.js";
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, afterAll, describe, expect, it } from "vitest";
 
 import { triageAxiomsOrchestrator } from "@/orchestrators/triage-axioms-orchestrator.js";
-import { AxiomStore } from "@/stores/axiom-store.js";
+import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
-import { testConfig } from "@tests/helpers/test-config.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
-
-vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
 
 beforeAll(() => {
   process.env["OPENROUTER_API_KEY"] = "test-key";
@@ -29,177 +26,147 @@ afterEach(() => {
   while (cleanups.length) cleanups.pop()?.();
 });
 
-/** One open-channel critique on the guide, for the seeded run. */
-function guideCritique(seq: number, text: string): string {
-  return critiqueLine({
-    runId: "r1",
-    seq,
-    filePath: "docs/guide.md",
-    specPath: "docs/README.md",
-    text,
-  });
-}
+const AXIOM = "AX-aaaa11";
 
-/** A project with three pending critiques and a scripted curator. */
-function triageProject(plan: Parameters<typeof curatorProviderModule>[0]): string {
+/** A project with an active axiom, two pending critiques, a scripted curator. */
+function labelingProject(labels: unknown, withCurator = true): string {
+  const axiom = axiomContent(
+    { id: AXIOM, grounded_in: "docs/README.md#errors" },
+    { statement: "Error messages name what would be accepted." },
+  );
+
   const { root, cleanup } = createValidatorTmpdir({
     sources: ["docs"],
     files: {
-      "docs/README.md":
-        "# Spec\n\n## Error messages\n\nError messages name what would be accepted.",
+      "docs/README.md": "# Spec\n\n## Errors\n\nError messages name what would be accepted.",
       "docs/guide.md": "# Guide",
-      "curator.js": curatorProviderModule(plan),
+      [".praxis/axioms/AX-aaaa11.md"]: axiom,
+      "curator.js": curatorProviderModule({ labels }),
     },
-    curator: { model: "scripted", apiKeyEnvVar: "OPENROUTER_API_KEY", provider: "./curator.js" },
+    ...(withCurator
+      ? {
+          curator: {
+            model: "scripted",
+            apiKeyEnvVar: "OPENROUTER_API_KEY",
+            provider: "./curator.js",
+          },
+        }
+      : {}),
   });
   cleanups.push(cleanup);
 
   seedLedgerRun(root, {
     name: "flash",
     hash: "aaaa1111",
+    runId: "r1",
     extraLines: [
-      guideCritique(1, "Error message 'bad subject' names nothing."),
-      guideCritique(2, "Error text 'error' is not consumer-grade."),
-      guideCritique(3, "Recommended an async queue."),
+      critiqueLine({
+        runId: "r1",
+        seq: 1,
+        filePath: "docs/guide.md",
+        specPath: "docs/README.md",
+        text: "Error message 'bad subject' names nothing.",
+      }),
+      critiqueLine({
+        runId: "r1",
+        seq: 2,
+        filePath: "docs/guide.md",
+        specPath: "docs/README.md",
+        text: "Recommended an async queue.",
+      }),
     ],
   });
 
   return root;
 }
 
-/** The records a session appended, across all session files. */
+/** Every triage record across session files. */
 function triageRecords(root: string): TriageRecord[] {
   const dir = join(root, ".praxis", "ledger", "triage");
 
   if (!existsSync(dir)) return [];
 
-  return readdirSync(dir).flatMap((file) =>
-    readFileSync(join(dir, file), "utf8")
-      .trimEnd()
-      .split("\n")
-      .map((line) => JSON.parse(line) as TriageRecord),
-  );
-}
-
-/** The curator's organization for the standard project above. */
-function standardPlan() {
-  return {
-    organization: {
-      clusters: [
-        {
-          critique_ids: ["r1:1", "r1:2"],
-          rationale: "Both are consumer-hostile error messages.",
-          suggestion: "propose",
-          draft: {
-            statement: "Error messages name what was wrong and what would be accepted instead.",
-            severity: "warning",
-            scope: "file",
-            violating_example: "bad subject",
-            compliant_example: "subject must be a non-empty string",
-            grounding_hint: "Error messages name what would be accepted.",
-          },
-        },
-        {
-          critique_ids: ["r1:3"],
-          rationale: "No spec passage mentions queues.",
-          suggestion: "unassignable",
-          why_unassignable: "The spec never mentions queues.",
-        },
-      ],
-    },
-    gate: { assessment: "appropriate", reasoning: "Turns on meaning.", judgment_half: null },
-  };
+  return readdirSync(dir)
+    .sort()
+    .flatMap((file) =>
+      readFileSync(join(dir, file), "utf8")
+        .trimEnd()
+        .split("\n")
+        .map((line) => JSON.parse(line) as TriageRecord),
+    );
 }
 
 describe("triageAxiomsOrchestrator", () => {
-  it("with --yes: accepts the organization — proposal written, parentage assigned, residual dismissed", async () => {
-    const root = triageProject(standardPlan());
+  it("labels confident matches as matcher assignments; the residue stays pending", async () => {
+    const root = labelingProject({
+      labels: [
+        { critique_id: "r1:1", axiom_id: AXIOM },
+        { critique_id: "r1:2", axiom_id: null },
+      ],
+    });
     const { logger, output } = createCaptureLogger();
 
-    const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { yes: true });
+    const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { dryRun: false });
 
-    const { axioms } = new AxiomStore(testConfig(root)).all();
-    const proposal = axioms.find((axiom) => axiom.status === "proposed");
+    expect(outcome).toBe("ok");
+    expect(output()).toContain("Labeling 2 pending critique(s)");
+
     const records = triageRecords(root);
-    const assignments = records.filter((record) => record.kind === "assignment");
-    const dismissals = records.filter((record) => record.kind === "dismissal");
-
-    expect(outcome).toBe("ok");
-    expect(proposal).toBeDefined();
-    expect(proposal!.statement()).toBe(
-      "Error messages name what was wrong and what would be accepted instead.",
-    );
-    expect(assignments).toHaveLength(2);
-    expect(assignments[0]).toMatchObject({
-      axiom_id: proposal!.id,
-      assigned_by: { decision: "flag:--yes", suggested_by: "scripted" },
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({
+      kind: "assignment",
+      critique_id: "r1:1",
+      axiom_id: AXIOM,
+      axiom_version: 1,
+      assigned_by: { decision: "matcher", suggested_by: "scripted" },
     });
-    expect(dismissals).toHaveLength(1);
-    expect(dismissals[0]).toMatchObject({
-      reason: "unassignable: The spec never mentions queues.",
-    });
-    expect(output()).toContain("Proposed");
   });
 
-  it("the gate refuses a mechanical draft — nothing written, cluster stays pending (03)", async () => {
-    const plan = standardPlan();
-    plan.gate = {
-      assessment: "not_appropriate",
-      reasoning: "A regex could decide it.",
-      judgment_half: null,
-    };
-    const root = triageProject(plan);
+  it("a hallucinated axiom id never becomes an assignment", async () => {
+    const root = labelingProject({
+      labels: [{ critique_id: "r1:1", axiom_id: "AX-000000" }],
+    });
+    const { logger } = createCaptureLogger();
+
+    await triageAxiomsOrchestrator(testContext(root, logger), { dryRun: false });
+
+    expect(triageRecords(root)).toHaveLength(0);
+  });
+
+  it("--dry-run proposes without writing", async () => {
+    const root = labelingProject({
+      labels: [{ critique_id: "r1:1", axiom_id: AXIOM }],
+    });
     const { logger, output } = createCaptureLogger();
 
-    const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { yes: true });
+    await triageAxiomsOrchestrator(testContext(root, logger), { dryRun: true });
 
-    const { axioms } = new AxiomStore(testConfig(root)).all();
+    expect(triageRecords(root)).toHaveLength(0);
+    expect(output()).toContain("Dry run — nothing was written");
+  });
+
+  it("without a curator: warns, defers, writes nothing", async () => {
+    const root = labelingProject(undefined, false);
+    const { logger, output } = createCaptureLogger();
+
+    const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { dryRun: false });
 
     expect(outcome).toBe("ok");
-    expect(axioms).toHaveLength(0);
-    expect(output()).toContain("not appropriate");
+    expect(output()).toContain("no curator is configured — labeling is deferred");
+    expect(triageRecords(root)).toHaveLength(0);
   });
 
-  it("with --reject: dismisses the whole queue with the reason", async () => {
-    const root = triageProject(standardPlan());
-
-    const outcome = await triageAxiomsOrchestrator(testContext(root), { reject: "noisy epoch" });
-
-    const dismissals = triageRecords(root).filter((record) => record.kind === "dismissal");
-
-    expect(outcome).toBe("ok");
-    expect(dismissals).toHaveLength(3);
-    expect(dismissals[0]).toMatchObject({ reason: "noisy epoch" });
-  });
-
-  it("refuses to run interactively without a TTY, naming the flags", async () => {
-    const root = triageProject(standardPlan());
-
-    const runWithoutTty = triageAxiomsOrchestrator(testContext(root), {});
-
-    await expect(runWithoutTty).rejects.toThrow(/--yes or --reject/);
-  });
-
-  it("says so when nothing is pending", async () => {
+  it("an empty backlog says so and stops", async () => {
     const { root, cleanup } = createValidatorTmpdir({
       sources: ["docs"],
-      files: { "curator.js": curatorProviderModule({}) },
-      curator: { model: "scripted", apiKeyEnvVar: "OPENROUTER_API_KEY", provider: "./curator.js" },
+      files: { "docs/README.md": "# Spec" },
     });
     cleanups.push(cleanup);
+    const { logger, output } = createCaptureLogger();
 
-    const outcome = await triageAxiomsOrchestrator(testContext(root), {});
+    const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { dryRun: false });
 
     expect(outcome).toBe("ok");
-    expect(triageRecords(root)).toEqual([]);
-  });
-
-  it("requires a curator, with the instructive error", async () => {
-    const { root, cleanup } = createValidatorTmpdir({ sources: ["docs"], files: {} });
-    cleanups.push(cleanup);
-
-    const runWithoutCurator = triageAxiomsOrchestrator(testContext(root), { yes: true });
-
-    await expect(runWithoutCurator).rejects.toThrow(/"curator": \{/);
+    expect(output()).toContain("backlog is empty");
   });
 });

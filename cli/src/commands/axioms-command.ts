@@ -1,6 +1,7 @@
 import type { CommandRegistrar } from "@framework/types.js";
 
 import auditAxiomsOrchestrator from "@/orchestrators/audit-axioms-orchestrator.js";
+import curateAxiomsOrchestrator from "@/orchestrators/curate-axioms-orchestrator.js";
 import listAxiomsOrchestrator from "@/orchestrators/list-axioms-orchestrator.js";
 import ratifyAxiomOrchestrator from "@/orchestrators/ratify-axiom-orchestrator.js";
 import showAxiomOrchestrator from "@/orchestrators/show-axiom-orchestrator.js";
@@ -51,22 +52,42 @@ Example:
 
   axiomsCmd
     .command("triage")
+    .description("Label the pending critique backlog against active axioms (batch, curator)")
+    .option("--dry-run", "print the proposed labels without writing anything", false)
+    .addHelpText(
+      "after",
+      `
+When to use: whenever pending critiques have piled up — an async batch
+pass, run on demand. The curator classifies each pending critique
+against the active axioms grounded in its spec: squarely-an-instance
+gets an assignment record (provenance: matcher, human-overridable at
+curate); everything else stays pending for \`praxis axioms curate\`.
+No curator configured → warns and does nothing.
+
+Example:
+  $ praxis axioms triage --dry-run`,
+    )
+    .action(triageAxiomsOrchestrator);
+
+  axiomsCmd
+    .command("curate")
     .description(
-      "Review unassigned critiques with the curator: fold into axioms, dismiss, or accept drafted proposals",
+      "Work the still-pending residue with the curator: cluster into proposals, dismiss, or assign",
     )
     .option("--yes", "accept every curator suggestion without prompting (recorded as such)", false)
     .option("--reject <reason>", "dismiss everything pending, with this reason")
     .addHelpText(
       "after",
       `
-When to use: when the orientation screen shows pending triage. The
-curator groups recurring open-channel critiques into proposals; every
-decision is recorded in the ledger. Consumes the pending queue.
+When to use: after triage has labeled what it confidently can — this is
+the interactive session for the residue: cluster recurring critiques
+into proposed axioms, dismiss noise with reasons, assign stragglers.
+Every decision is recorded in the ledger.
 
 Example:
-  $ praxis axioms triage`,
+  $ praxis axioms curate`,
     )
-    .action(triageAxiomsOrchestrator);
+    .action(curateAxiomsOrchestrator);
 
   axiomsCmd
     .command("ratify <id>")

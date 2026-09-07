@@ -144,7 +144,7 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
   ctx.render([
     {
       channel: "success",
-      text: `${id} is active, grounded in ${traceability.grounding}. Its spec's targets re-review under the new checklist.`,
+      text: `${id} is active, grounded in ${traceability.grounding}. The next \`praxis axioms triage\` can label against it.`,
     },
   ]);
 

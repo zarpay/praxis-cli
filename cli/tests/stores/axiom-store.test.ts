@@ -96,13 +96,13 @@ describe("AxiomStore", () => {
     });
   });
 
-  describe("checklistFor", () => {
+  describe("activeFor", () => {
     const SPEC = "docs/README.md";
 
     it("selects active axioms grounded in the spec, with their teaching material", () => {
       seedAxiom("AX-aaaa11", { groundedIn: `${SPEC}#payloads` });
 
-      const checklist = store.checklistFor(join(root, SPEC));
+      const checklist = store.activeFor(join(root, SPEC));
 
       expect(checklist).toHaveLength(1);
       expect(checklist[0]).toMatchObject({
@@ -117,7 +117,7 @@ describe("AxiomStore", () => {
       seedAxiom("AX-aaaa11", { status: "proposed", groundedIn: SPEC, proposed: true });
       seedAxiom("AX-bbbb22", { status: "deprecated", groundedIn: SPEC });
 
-      expect(store.checklistFor(join(root, SPEC))).toEqual([]);
+      expect(store.activeFor(join(root, SPEC))).toEqual([]);
     });
 
     it("excludes axioms grounded elsewhere or nowhere, sorted by id", () => {
@@ -126,7 +126,7 @@ describe("AxiomStore", () => {
       seedAxiom("AX-bbbb22");
       seedAxiom("AX-dddd44", { groundedIn: "src/services/README.md#behavior" });
 
-      const ids = store.checklistFor(join(root, SPEC)).map((axiom) => axiom.id);
+      const ids = store.activeFor(join(root, SPEC)).map((axiom) => axiom.id);
 
       expect(ids).toEqual(["AX-aaaa11", "AX-cccc33"]);
     });

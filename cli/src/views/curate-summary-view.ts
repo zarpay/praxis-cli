@@ -16,7 +16,7 @@ interface TriageOutcome {
  * A triage session's outcome: every decision counted, the residual
  * named, and the next commands in reach (09: drill-down, not dumps).
  */
-const triageSummaryView: View<TriageOutcome> = ({
+const curateSummaryView: View<TriageOutcome> = ({
   assigned,
   proposed,
   dismissed,
@@ -44,4 +44,4 @@ const triageSummaryView: View<TriageOutcome> = ({
   ];
 };
 
-export default triageSummaryView;
+export default curateSummaryView;
