@@ -16,7 +16,6 @@ import { Reviewer } from "@/models/reviewer.js";
 import countSpecUnitsService from "@/services/count-spec-units-service.js";
 import deriveCalibrationStatusService from "@/services/derive-calibration-status-service.js";
 import deriveEpochsService from "@/services/derive-epochs-service.js";
-import deriveFlowMetricsService from "@/services/derive-flow-metrics-service.js";
 import derivePopulationService from "@/services/derive-population-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
@@ -44,9 +43,9 @@ const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, 
   const reviewerModels = cfg.reviewers.map((config) => Reviewer.fromConfig(config));
   const calibration = deriveCalibrationStatusService(cfg, { reviewers: reviewerModels });
   const { runs } = scoped;
-  // Resolved events are paydown facts a diff run recorded, not findings:
-  // the original violation is already a record — counting both would
-  // double every resolution. Flow reads them; stock never does.
+  // Historical tolerance: withdrawn diff-era records marked
+  // flow:"resolved" were paydown facts, never findings — exclude them
+  // from every violation-shaped count, forever.
   const critiques = scoped.critiques.filter((critique) => critique.flow !== "resolved");
   const epochs = deriveEpochsService(cfg, { runs });
   const { axioms } = new AxiomStore(cfg).all();
@@ -100,7 +99,6 @@ const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, 
     pendingTriage: state.pending.length,
     residual: rateCell(state.dismissed + state.rejectedProposals, critiques.length),
     epochs,
-    flow: deriveFlowMetricsService(cfg, { scoped }),
   };
 };
 

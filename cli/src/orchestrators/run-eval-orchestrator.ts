@@ -1,16 +1,11 @@
 import type { EvalProgress, Orchestrator, ReviewedTarget } from "@/types.js";
 
-import { errors } from "@/helpers/errors-helper.js";
 import { gitFacts } from "@/helpers/git-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
-import resolveDiffService from "@/services/resolve-diff-service.js";
 import reviewAllService from "@/services/review-all-service.js";
-import reviewDiffService from "@/services/review-diff-service.js";
 import reviewNamedService from "@/services/review-named-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
-import diffHeadlineView from "@/views/diff-headline-view.js";
-import diffReportView from "@/views/diff-report-view.js";
 import epochBoundaryView from "@/views/epoch-boundary-view.js";
 import evalHeadlineView from "@/views/eval-headline-view.js";
 import evalJsonView from "@/views/eval-json-view.js";
@@ -35,8 +30,6 @@ interface RunEvalOptions {
   failFast?: boolean;
   /** Whether to consult the verdict cache. */
   cache?: boolean;
-  /** Review the branch against its merge-base; a string names the base ref. */
-  diff?: boolean | string;
   /** Emit the outcome as stable JSON on stdout (08-g, 09-af). */
   json?: boolean;
 }
@@ -70,55 +63,6 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
   const anchoringView = runAnchoringView(gitFacts(root));
 
   ctx.render(anchoringView);
-
-  if (options.diff) {
-    if (targets.length > 0) throw errors.diffWithTargets();
-
-    const diff = resolveDiffService(cfg, {
-      base: typeof options.diff === "string" ? options.diff : undefined,
-    });
-
-    if (!options.json) {
-      const headlineView = diffHeadlineView(diff);
-      ctx.render(headlineView);
-    }
-
-    if (diff.targets.length === 0) {
-      const emptyView = options.json
-        ? evalJsonView({ kind: "diff", result: emptyDiffResult() })
-        : [{ channel: "content" as const, entries: ["No spec-covered files changed."] }];
-      ctx.render(emptyView);
-
-      return "ok";
-    }
-
-    const onProgress = (event: EvalProgress) => {
-      const progressView = runProgressView(event);
-      ctx.render(progressView);
-    };
-
-    const run = await reviewDiffService(cfg, {
-      reviewers,
-      diff,
-      useCache: cache,
-      onProgress: options.json ? undefined : onProgress,
-    });
-
-    const reportView = options.json
-      ? evalJsonView({
-          kind: "diff",
-          result: run,
-          base: diff.baseSha,
-          head: diff.headSha,
-          uncovered: diff.uncovered,
-        })
-      : diffReportView(run);
-    ctx.render(reportView);
-
-    // The diff is judged on its own contribution (12): introduced
-    // errors or an incomparable target fail; inherited debt never does.
-    return run.summary.errorsIntroduced + run.summary.unverified === 0 ? "ok" : "failed";
-  }
 
   if (targets.length > 0) {
     if (!options.json) {
@@ -186,12 +130,3 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 };
 
 export default prepareOrchestrator(runEvalOrchestrator);
-
-/** The empty diff outcome, so `--json` emits the contract even with nothing covered. */
-function emptyDiffResult() {
-  return {
-    perTarget: [],
-    summary: { introduced: 0, resolved: 0, inherited: 0, errorsIntroduced: 0, unverified: 0 },
-    cacheStats: { hits: 0, misses: 0 },
-  };
-}

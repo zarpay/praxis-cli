@@ -22,7 +22,6 @@ function report(overrides: Partial<EvalReport> = {}): EvalReport {
     calibration: "v32: uninterpretable — recalibrate",
     axioms: [],
     pendingTriage: 0,
-    flow: null,
     residual: rateCell(1, 10),
     epochs: [],
     ...overrides,

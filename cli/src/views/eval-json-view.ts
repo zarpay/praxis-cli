@@ -1,25 +1,10 @@
-import type {
-  Critique,
-  DiffTargetOutcome,
-  EvalSummary,
-  Finding,
-  ReviewDiffResult,
-  ReviewedTarget,
-  Verdict,
-} from "@/types.js";
+import type { EvalSummary, Finding, ReviewedTarget, Verdict } from "@/types.js";
 import type { View } from "@framework/types.js";
 
-/** The three shapes `eval run --json` can end in. */
+/** The two shapes `eval run --json` can end in. */
 type EvalJsonData =
   | { kind: "targets"; targets: ReviewedTarget[] }
-  | { kind: "corpus"; summary: EvalSummary; cacheStats: { hits: number; misses: number } }
-  | {
-      kind: "diff";
-      result: ReviewDiffResult;
-      base?: string;
-      head?: string;
-      uncovered?: string[];
-    };
+  | { kind: "corpus"; summary: EvalSummary; cacheStats: { hits: number; misses: number } };
 
 /**
  * The machine contract for `eval run --json` (08-g, 09-af): the run's
@@ -39,19 +24,7 @@ function payloadOf(data: EvalJsonData): object {
     return { mode: "targets", targets: data.targets.map(targetJson) };
   }
 
-  if (data.kind === "corpus") {
-    return { mode: "corpus", summary: data.summary, cache: data.cacheStats };
-  }
-
-  return {
-    mode: "diff",
-    base: data.base ?? null,
-    head: data.head ?? null,
-    uncovered: data.uncovered ?? [],
-    summary: data.result.summary,
-    cache: data.result.cacheStats,
-    targets: data.result.perTarget.map(diffTargetJson),
-  };
+  return { mode: "corpus", summary: data.summary, cache: data.cacheStats };
 }
 
 /** One fast-loop target: status, reason, and the deduplicated findings. */
@@ -72,27 +45,6 @@ function findingJson(finding: Finding): object {
     text: finding.text,
     severity: finding.severity,
     witnesses: finding.witnesses,
-  };
-}
-
-/** One diff target with its flow labels and resolutions. */
-function diffTargetJson(outcome: DiffTargetOutcome): object {
-  return {
-    path: outcome.relPath,
-    reviewer: outcome.reviewerName,
-    status: outcome.status,
-    unverified: outcome.unverified,
-    unverified_reason: outcome.unverifiedReason,
-    findings: outcome.findings.map((finding) => ({
-      axiom_id: finding.critique.axiomId,
-      text: finding.critique.text,
-      severity: finding.severity,
-      flow: finding.flow,
-    })),
-    resolved: outcome.resolved.map((critique: Critique) => ({
-      axiom_id: critique.axiomId,
-      text: critique.text,
-    })),
   };
 }
 

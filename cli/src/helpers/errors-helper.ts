@@ -36,10 +36,6 @@ export type PraxisErrorCode =
   | "CURATOR_NOT_CONFIGURED"
   | "CURATOR_MISSING_FIELD"
   | "PROVIDER_CANNOT_COMPLETE"
-  | "DIFF_BASE_UNRESOLVABLE"
-  | "DIFF_BASE_INVALID"
-  | "DIFF_OUTSIDE_GIT"
-  | "DIFF_WITH_TARGETS"
   | "INVALID_CALIBRATION_CASE"
   | "NOT_A_TTY";
 
@@ -71,10 +67,6 @@ export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErr
   "AXIOM_NOT_FOUND",
   "CURATOR_MISSING_FIELD",
   "CURATOR_NOT_CONFIGURED",
-  "DIFF_BASE_INVALID",
-  "DIFF_BASE_UNRESOLVABLE",
-  "DIFF_OUTSIDE_GIT",
-  "DIFF_WITH_TARGETS",
   "DOCUMENT_NOT_FOUND",
   "EXPERT_NOT_FOUND",
   "INVALID_CONFIG_JSON",
@@ -237,38 +229,6 @@ export const errors = {
     return new PraxisError(
       "UNKNOWN_DOCUMENT_TYPE",
       `Unknown document type "${type}" — this project has: ${available.join(", ")}`,
-    );
-  },
-
-  /** `--diff` with no base argument, and no default branch to detect. */
-  diffBaseUnresolvable(): PraxisError {
-    return new PraxisError(
-      "DIFF_BASE_UNRESOLVABLE",
-      "No default branch detected (no origin/HEAD, main, or master) — name the base explicitly: praxis eval run --diff <base>",
-    );
-  },
-
-  /** The named base ref has no merge-base with HEAD. */
-  diffBaseInvalid(baseRef: string): PraxisError {
-    return new PraxisError(
-      "DIFF_BASE_INVALID",
-      `No merge-base between "${baseRef}" and HEAD — check the ref exists and shares history (a shallow clone may need \`git fetch --unshallow\`)`,
-    );
-  },
-
-  /** `--diff` invoked outside a git repository. */
-  diffOutsideGit(): PraxisError {
-    return new PraxisError(
-      "DIFF_OUTSIDE_GIT",
-      "praxis eval run --diff measures a branch against its merge-base, which needs a git repository — run it inside one, or review targets directly: praxis eval run <targets...>",
-    );
-  },
-
-  /** `--diff` combined with named targets — two different units. */
-  diffWithTargets(): PraxisError {
-    return new PraxisError(
-      "DIFF_WITH_TARGETS",
-      "--diff reviews what the branch changed; named targets review files. Pick one: praxis eval run --diff [base], or praxis eval run <targets...>",
     );
   },
 

@@ -1,18 +1,10 @@
-import type { CommandContext } from "@/models/command-context.js";
-import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { EvalProgress } from "@/types.js";
 import type { Orchestrator } from "@/types.js";
 
-import { gitFacts } from "@/helpers/git-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
-import resolveDiffService from "@/services/resolve-diff-service.js";
 import reviewAllService from "@/services/review-all-service.js";
-import reviewDiffService from "@/services/review-diff-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
-import { RunStore } from "@/stores/run-store.js";
-import diffHeadlineView from "@/views/diff-headline-view.js";
-import diffReportView from "@/views/diff-report-view.js";
 import epochBoundaryView from "@/views/epoch-boundary-view.js";
 import evalHeadlineView from "@/views/eval-headline-view.js";
 import runProgressView from "@/views/run-progress-view.js";
@@ -22,8 +14,6 @@ import runReportView from "@/views/run-report-view.js";
 interface CiRunOptions {
   /** Count warnings as failures alongside errors. */
   strict?: boolean;
-  /** Verify the merge-base diff instead of the corpus; a string names the base. */
-  diff?: boolean | string;
 }
 
 /**
@@ -38,10 +28,7 @@ interface CiRunOptions {
  * `--diff [base]` — the same merge-base evaluation `eval run --diff`
  * measures, judged on what the branch introduced.
  */
-export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (
-  ctx,
-  { strict = false, diff = false },
-) => {
+export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { strict = false }) => {
   const cfg = ctx.config;
 
   const evalView = evalHeadlineView({ ci: true });
@@ -61,38 +48,6 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (
     const progressView = runProgressView(event);
     ctx.render(progressView);
   };
-
-  if (diff) {
-    const resolved = resolveDiffService(cfg, {
-      base: typeof diff === "string" ? diff : undefined,
-    });
-
-    const headlineView = diffHeadlineView(resolved);
-    ctx.render(headlineView);
-
-    renderEvidenceGap(ctx, cfg);
-
-    if (resolved.targets.length === 0) {
-      ctx.render([{ channel: "content", entries: ["No spec-covered files changed."] }]);
-
-      return "ok";
-    }
-
-    const run = await reviewDiffService(cfg, {
-      reviewers,
-      diff: resolved,
-      ledger: false,
-      readOnlyCache: true,
-      onProgress,
-    });
-
-    const reportView = diffReportView(run);
-    ctx.render(reportView);
-
-    const introduced = strict ? run.summary.introduced : run.summary.errorsIntroduced;
-
-    return introduced + run.summary.unverified === 0 ? "ok" : "failed";
-  }
 
   const run = await reviewAllService(cfg, {
     reviewers,
@@ -114,27 +69,3 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (
 };
 
 export default prepareOrchestrator(ciRunOrchestrator);
-
-/**
- * The evidence-gap notice (12, open Q1 resolved as a warning): a PR
- * whose branch carries no local diff-run has cache-verified enforcement
- * but no durable flow evidence — say so, never fail on it.
- */
-function renderEvidenceGap(ctx: CommandContext, cfg: PraxisConfig): void {
-  const { branch } = gitFacts(cfg.root);
-
-  if (branch === null) return;
-
-  const hasLocalDiffRun = new RunStore(cfg)
-    .runs()
-    .some((run) => run.scope === "diff" && run.branch === branch);
-
-  if (hasLocalDiffRun) return;
-
-  ctx.render([
-    {
-      channel: "warning",
-      text: `No local diff-run in this branch's ledger — CI verifies the verdicts, but the flow evidence gap remains until someone runs \`praxis eval run --diff\` on the branch.`,
-    },
-  ]);
-}

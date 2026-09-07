@@ -9,7 +9,11 @@ import type { Severity } from "@/types/shared.js";
 /** What caused a ledger run (05). M2 writes only "manual". */
 export type LedgerTrigger = "manual" | "ci" | "watch";
 
-/** What a run covered (05). M2 writes "corpus" (full run) or "files" (named). */
+/**
+ * What a run covered (05): "corpus" (full run) or "files" (named).
+ * "diff" is historical — written by the withdrawn diff-units feature
+ * (roadmap, 2026-09-07); readers tolerate it, nothing produces it.
+ */
 export type LedgerScope = "corpus" | "diff" | "files";
 
 /**
@@ -19,14 +23,14 @@ export type LedgerScope = "corpus" | "diff" | "files";
  */
 export type CalibrationStatus = "uncalibrated" | "calibrated" | "stale";
 
-/** Verdict-diff classification of a critique (01). Null: no diff comparison existed. */
+/**
+ * Historical (withdrawn diff-units feature, roadmap 2026-09-07):
+ * verdict-diff classification. Never written by current code; kept so
+ * committed records stay typed.
+ */
 export type LedgerFlow = "introduced" | "inherited" | "resolved";
 
-/**
- * A diff run's facts (12, flagged 05 addition, forward-only): what the
- * branch was measured against, and how much changed work the specs
- * could even see (01: the report must say how much work was invisible).
- */
+/** Historical (withdrawn diff-units feature, roadmap 2026-09-07). */
 export interface LedgerDiffFacts {
   /** The ref the base was resolved from (e.g. "origin/main"). */
   base_ref: string;
@@ -82,7 +86,7 @@ export interface LedgerRunRecord {
    * data rather than padding.
    */
   spec_units?: Record<string, number>;
-  /** Present on scope "diff" runs only (12, forward-only). */
+  /** Historical: present on withdrawn scope-"diff" runs only. */
   diff?: LedgerDiffFacts;
   calibration_status_at_run: CalibrationStatus;
   baseline: boolean;
@@ -126,12 +130,12 @@ export interface LedgerCritiqueRecord {
   authorship_evidence: null;
   agent_involved: null;
   pre_review: null;
-  /** Set-difference label on diff runs (12); null elsewhere — working-tree runs are feedback, never measurement. */
-  flow: LedgerFlow | null;
-  /** The run supplying the before-side verdict: this run's id when freshly reviewed, null on a cache hit (a cache entry carries no run identity — never guessed). */
-  before_run_id: string | null;
-  /** Resolved events only: the most recent git author touching the file in base..head. */
-  resolved_by: string | null;
+  /** Historical (withdrawn diff feature): flow label; null on all current records. */
+  flow?: LedgerFlow | null;
+  /** Historical (withdrawn diff feature). */
+  before_run_id?: string | null;
+  /** Historical (withdrawn diff feature). */
+  resolved_by?: string | null;
 }
 
 /** Any line of a run file. */
@@ -160,14 +164,6 @@ export interface LedgerEntry {
   cacheHit: boolean;
   /** Null ⇒ the unit went unverified ⇒ it fans out no critiques. */
   evidence: LedgerEvidence | null;
-  /** Flow label per issue, parallel to `verdict.issues` (diff runs only). */
-  flow?: (LedgerFlow | null)[];
-  /**
-   * Who supplied the before-side verdict: "self" when this run freshly
-   * reviewed it (the write service substitutes the minted run id),
-   * null on a cache hit. Absent outside diff runs.
-   */
-  beforeRunId?: "self" | null;
 }
 
 /** Where a run landed. */

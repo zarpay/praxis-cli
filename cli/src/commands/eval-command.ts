@@ -25,25 +25,20 @@ const evalCommand: CommandRegistrar = (program) => {
     .option("--fail-fast", "stop on first error (full run only)", false)
     .option("--no-cache", "disable the verdict cache")
     .option(
-      "--diff [base]",
-      "review the branch against its merge-base (default base: the default branch)",
-    )
-    .option(
       "--json",
       "machine-readable outcome on stdout (stable contract; the fast loop's feedback)",
     )
     .addHelpText(
       "after",
       `
-When to use: after changing a file (the fast loop), or on a branch with
---diff to see what it introduced, resolved, and inherited. Reviewer
-calls happen only on cache misses; unchanged content is free.
+When to use: after changing a file (the fast loop), or with no targets
+for the full corpus. Reviewer calls happen only on cache misses;
+unchanged content is free.
 
 Examples:
   $ praxis eval run src/services/checkout.ts
       [1/1] checkout.ts  ✓ PASS   (or findings citing [AX-…] with witnesses)
-  $ praxis eval run --diff main
-      findings labeled [introduced]/[inherited], vanished ones [resolved]`,
+`,
     )
     .action(runEvalOrchestrator);
 
@@ -51,16 +46,14 @@ Examples:
     .command("ci")
     .description("Run a full review in CI mode (verifies without writing)")
     .option("--strict", "fail on warnings too", false)
-    .option("--diff [base]", "verify the merge-base diff instead of the corpus (PR gate)")
     .addHelpText(
       "after",
       `
 When to use: in a pipeline. Verifies against committed verdicts and
-writes nothing — no ledger run, no cache mutation. With --diff it is
-the PR gate: only introduced errors or unverified targets fail.
+writes nothing — no ledger run, no cache mutation.
 
 Example:
-  $ praxis eval ci --diff main    # exit 0 = mergeable, 1 = introduced errors`,
+  $ praxis eval ci    # exit 0 = clean, 1 = errors or unverified`,
     )
     .action(ciRunOrchestrator);
 
