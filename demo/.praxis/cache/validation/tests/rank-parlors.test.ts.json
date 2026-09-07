@@ -45,6 +45,51 @@
         "issues": [],
         "reason": "The test file fully satisfies all criteria in the specification and all axioms in the checklist. It uses proper subject framing with nested describe blocks for different scenarios, maintains one assertion per test block, exercises only public API functionality, builds fresh test data for each scenario, and uses clear, complete sentence descriptions for each test case."
       }
+    },
+    "dacac2eb:87a547f7": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "87a547f7"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:10:51.592Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 585 words."
+      }
+    },
+    "dacac2eb:0ca26f36": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ca26f36"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:16:11.913Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The suite conforms to every convention in the specification. The top-level describe names the unit by module name ('rank-parlors'), each nested describe is a 'when' clause, and each it states a single observable outcome so describe + it reads as a sentence. Every it block contains exactly one expect, with compound shapes asserted once via toMatchObject/toEqual. Tests exercise only the public API (the exported run functions of rank-parlors and create-review), observe state through the injected in-memory Store, use no spies or mocks, and build data fresh via beforeEach setup with no cross-suite dependencies."
+      }
+    },
+    "dacac2eb:63664cce": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "63664cce"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:19:19.348Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with the specification: subject framing follows the module name + 'when' clause pattern, each it block contains exactly one assertion, and tests exercise only the public API without implementation details or improper mocking."
+      }
     }
   }
 }

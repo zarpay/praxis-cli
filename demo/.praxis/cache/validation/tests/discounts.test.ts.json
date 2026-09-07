@@ -52,6 +52,51 @@
         ],
         "reason": "The file violates the requirement for fresh test data construction, relying on pre-existing state in the memory store rather than explicitly building test data within each test or describe setup."
       }
+    },
+    "dacac2eb:87a547f7": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "87a547f7"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:10:51.591Z",
+      "content_hash": "e82dd9b3",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 503 words."
+      }
+    },
+    "dacac2eb:0ca26f36": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ca26f36"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:15:48.155Z",
+      "content_hash": "e82dd9b3",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test suite conforms to all three conventions. The top-level describe names the unit by module name ('apply-discount'), nested describes use 'when' clauses, and each it states one observable outcome reading as a sentence. Every it block contains exactly one expect, using toEqual/toMatchObject for compound shapes. Tests exercise only the public run function and observable returned values, build data fresh inside each test, and use no spies, mocks, or module-scope access."
+      }
+    },
+    "dacac2eb:63664cce": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "63664cce"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:18:59.427Z",
+      "content_hash": "e82dd9b3",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with all specification requirements: proper subject framing with module name and when clauses, one assertion per test block, and adherence to functionality-focused testing without implementation details."
+      }
     }
   }
 }

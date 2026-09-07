@@ -45,6 +45,51 @@
         "issues": [],
         "reason": "The file fully satisfies all criteria in the specification. It properly uses nested describe blocks to frame different scenarios, builds fresh test data for each scenario, writes clear it descriptions that form complete sentences with their context, separates distinct outcomes into separate it blocks, follows the one assertion per block rule, tests only public API functionality, and demonstrates all best practices outlined in the specification."
       }
+    },
+    "dacac2eb:87a547f7": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "87a547f7"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:10:51.591Z",
+      "content_hash": "9d212d01",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 681 words."
+      }
+    },
+    "dacac2eb:0ca26f36": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "0ca26f36"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:15:42.579Z",
+      "content_hash": "9d212d01",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file conforms to all three conventions. The top-level describe names the unit by module name ('create-review'), nested describes use 'when' clauses, and each it states one observable outcome so describe + it reads as a sentence. Every it block contains exactly one expect, using toMatchObject for compound shapes. Tests exercise only the public run function and observable state (store.listReviews), with no spies, no mocking of the honest in-memory store, and no reaching into module scope. Test data is built fresh via validInput() inside each test, and beforeEach creates a fresh store, so suites do not depend on each other's state."
+      }
+    },
+    "dacac2eb:63664cce": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "63664cce"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-07T10:18:49.962Z",
+      "content_hash": "9d212d01",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with the Test Conventions specification. It correctly frames subjects with module-named top-level describe and 'when' clause nested describes, maintains exactly one assertion per it block using toMatchObject for compound shapes, and exercises only public API functionality without implementation details."
+      }
     }
   }
 }
