@@ -116,6 +116,7 @@ function evalStateOf(cfg: PraxisConfig): StatusReport["evalState"] {
 
   return {
     pending_triage: state.pending.length,
+    awaiting_curation: state.unidentified.length,
     proposals_pending: axioms.filter((axiom) => axiom.status === "proposed").length,
     calibration_stale: true,
     epoch_boundary_detected: boundaries.length > 0,

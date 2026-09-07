@@ -94,8 +94,25 @@ reviewer.
 
 Every critique is **born raw**: the reviewer's tool schema has no axiom
 field, and the run writes critique records with `axiom_id: null`,
-`assigned_by: null`. Labels are applied afterwards, as append-only
-records, by two verbs:
+`assigned_by: null`. From there a critique is in exactly one of three
+states (owner, 2026-09-07), decided in one place
+(`derive-triage-state`):
+
+1. **Untriaged** — no triage record covers it. Triage's queue: "let's
+   categorize these critiques we've never seen before."
+2. **Unidentified** — the matcher considered it against the spec's
+   current active axioms and found no squarely-matching one, recorded
+   as an **unmatched record** pinning the axiom set considered
+   (`considered: ["AX-x@1", …]`). Curate's queue, and ONLY curate's:
+   the question "does this need a NEW axiom" is well-posed only after
+   triage has said no existing one fits. When the spec's active set
+   later changes, the pinned set no longer matches and the critique
+   re-queues for triage automatically — "never seen before" means
+   never seen against the current taxonomy.
+3. **Identified** — an assignment record labels it (or a dismissal
+   settles it); it appears in no queue.
+
+Labels are applied as append-only records, by two verbs:
 
 1. **`praxis axioms triage` — the labeling pass** (async,
    non-interactive). The curator classifies each pending critique
@@ -110,12 +127,15 @@ records, by two verbs:
    `assigned_by: {decision: "matcher", suggested_by: <model>}`;
    everything else stays pending. The hallucination guard lives here:
    an id not among the spec's active axioms never becomes an
-   assignment. `--dry-run` proposes without writing; no curator
-   configured → warn and defer, never fake.
+   assignment (nor an unmatched verdict — a hallucinating call is a
+   failed call, and its critique stays untriaged for retry). `--dry-run`
+   proposes without writing; no curator configured → warn and defer,
+   never fake. Each verdict streams to the terminal as it lands.
 2. **`praxis axioms curate` — the human session** (the verb formerly
-   named triage). Interactive work on the residue: cluster recurring
-   critiques into proposed axioms, dismiss noise with reasons, assign
-   stragglers by hand. Every decision is a ledger record. Clustering
+   named triage). Interactive work on the **unidentified** critiques —
+   never the merely untriaged, which it names and defers to triage.
+   Cluster recurring critiques into proposed axioms, dismiss noise with
+   reasons, assign stragglers by hand. Every decision is a ledger record. Clustering
    cannot happen per-critique — a category only emerges from a grouping
    large enough to show it — but the grouping is bounded (owner,
    2026-09-07): identical critique texts dedup into one member (its
@@ -173,7 +193,9 @@ critique no record covers yet — a queue, not a judgment.
 ## Open questions
 
 1. Re-labeling after taxonomy changes: resolved by construction
-   (2026-09-07) — labels are cheap append-only records, so re-running
-   triage after ratifying or versioning axioms re-labels the pending
-   backlog without touching a single review. Already-assigned critiques
-   keep their labels unless a human re-decides them at curate.
+   (2026-09-07) — an unmatched record pins the axiom set it was judged
+   against, so ratifying or versioning an axiom automatically re-queues
+   every unidentified critique of that spec for triage; the next
+   `axioms triage` reconsiders them against the new set without
+   touching a single review. Already-assigned critiques keep their
+   labels unless a human re-decides them at curate.

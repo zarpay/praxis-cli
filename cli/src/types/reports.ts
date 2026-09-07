@@ -37,7 +37,10 @@ export interface StatusReport {
   issueCount: number;
   /** The situational-poll facts an agent reads from one call (09-ae). */
   evalState: {
+    /** Untriaged critiques — `axioms triage` categorizes them. */
     pending_triage: number;
+    /** Unmatched critiques — `axioms curate` works them. */
+    awaiting_curation: number;
     proposals_pending: number;
     /** True until calibration exists (M6). */
     calibration_stale: boolean;
@@ -60,6 +63,7 @@ export interface StatusReport {
 export interface Orientation {
   lastRun: { at: string; reviewerName: string; anchored: boolean } | null;
   pendingTriage: number;
+  awaitingCuration: number;
   proposalsPending: number;
   activeAxioms: number;
   calibration: string;
@@ -180,8 +184,10 @@ export interface EvalReport {
   /** "uncalibrated" until M6; rendered on every report (07 rule 4). */
   calibration: string;
   axioms: AxiomReportRow[];
-  /** Open-channel critiques with no assignment yet — the triage queue. */
+  /** Untriaged critiques — the triage queue. */
   pendingTriage: number;
+  /** Unmatched critiques — the curate queue. */
+  awaitingCuration: number;
   /** Dismissed + rejected over all critiques, floor-aware (04). */
   residual: RateCell;
   epochs: EpochSeries[];

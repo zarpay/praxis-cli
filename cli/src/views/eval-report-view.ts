@@ -44,7 +44,7 @@ const evalReportView: View<EvalReport & { json?: boolean }> = (report) => {
     channel: "content",
     entries: [
       "",
-      `Pending triage: ${report.pendingTriage} (\`praxis axioms triage\`)`,
+      `Untriaged: ${report.pendingTriage} (\`praxis axioms triage\`) · Awaiting curation: ${report.awaitingCuration} (\`praxis axioms curate\`)`,
       `Residual (dismissed + rejected over critiques): ${report.residual.display}`,
     ],
   });

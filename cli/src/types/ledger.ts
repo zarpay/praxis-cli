@@ -199,8 +199,25 @@ export interface ProposalRejectionRecord {
   timestamp: string;
 }
 
+/**
+ * The matcher considered a critique and found no squarely-matching
+ * axiom (04): the critique is categorized as needing curation, not
+ * merely untriaged. `considered` pins the axiom set it was judged
+ * against — when the spec's active set changes, the critique re-queues
+ * for triage automatically.
+ */
+export interface TriageUnmatchedRecord {
+  kind: "unmatched";
+  critique_id: string;
+  /** The axiom set judged against, as sorted `id@version` entries. */
+  considered: string[];
+  suggested_by: string;
+  timestamp: string;
+}
+
 /** Everything a triage session appends. */
-export type TriageRecord = TriageAssignmentRecord | TriageDismissalRecord | ProposalRejectionRecord;
+export type TriageRecord =
+  TriageAssignmentRecord | TriageDismissalRecord | ProposalRejectionRecord | TriageUnmatchedRecord;
 
 /** One unassigned open-channel critique, as triage works it. */
 export interface PendingCritique {

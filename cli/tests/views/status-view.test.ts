@@ -12,6 +12,7 @@ function report(fields: Partial<StatusReport> = {}): StatusReport {
     counts: { experts: 0, practices: 0, references: 0, context: 0 },
     validation: [],
     evalState: {
+      awaiting_curation: 0,
       pending_triage: 0,
       proposals_pending: 0,
       calibration_stale: true,

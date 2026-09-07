@@ -98,8 +98,8 @@ calls · **[scratch]** run in a copy.
 | --- | --- |
 | `axioms list` | 13 axioms, chronological; proposals counted with the ratify pointer |
 | `axioms show AX-b951db` | Statement, both examples, grounding, lifecycle; `--json` stable |
-| `axioms triage` [scratch, paid] | The labeling pass: one curator call per pending critique against its spec's active axioms (order can't bias a verdict); matcher assignment records land in `.praxis/ledger/triage/`; hallucinated ids never written; failed calls stay pending and are named; `--dry-run` proposes without writing; no curator → warns "labeling is deferred" |
-| `axioms curate --reject "<reason>"` [scratch] | Dismisses the pending queue, writes a triage session file, no curator call |
+| `axioms triage` [scratch, paid] | The labeling pass over **untriaged** critiques only: one curator call each (order can't bias a verdict), per-verdict progress lines; matches land as matcher assignments, no-matches as unmatched records (→ curate's queue, re-queued for triage if the axiom set changes); hallucinated ids = failed calls, stay untriaged; `--dry-run` writes nothing; no curator → warns "labeling is deferred" |
+| `axioms curate --reject "<reason>"` [scratch] | Dismisses the **unmatched** queue (untriaged critiques are named and untouched), writes a triage session file, no curator call |
 | `axioms curate` / `ratify` / `audit` [scratch, paid] | Curator clusters the residue / traceability gates / gate re-runs — exercise only when the milestone touched them. Ratification has **no cache effect**: the next run after a ratify stays all-hits |
 
 ### Project lifecycle [scratch]

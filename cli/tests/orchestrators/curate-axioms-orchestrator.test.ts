@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 
 import { curateAxiomsOrchestrator } from "@/orchestrators/curate-axioms-orchestrator.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
+import { TriageStore } from "@/stores/triage-store.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
@@ -63,8 +64,22 @@ function triageProject(plan: Parameters<typeof curatorProviderModule>[0]): strin
       guideCritique(3, "Recommended an async queue."),
     ],
   });
+  markUnmatched(root, ["r1:1", "r1:2", "r1:3"]);
 
   return root;
+}
+
+/** Triage's verdict on record: these critiques matched no active axiom. */
+function markUnmatched(root: string, critiqueIds: string[]): void {
+  new TriageStore(testConfig(root)).writeSession(
+    critiqueIds.map((critiqueId) => ({
+      kind: "unmatched" as const,
+      critique_id: critiqueId,
+      considered: [],
+      suggested_by: "scripted",
+      timestamp: "2026-09-07T10:00:00.000Z",
+    })),
+  );
 }
 
 /** The records a session appended, across all session files. */
@@ -193,6 +208,7 @@ describe("curateAxiomsOrchestrator", () => {
         guideCritique(3, "Error message 'bad subject' names nothing."),
       ],
     });
+    markUnmatched(root, ["r1:1", "r1:2", "r1:3"]);
     const { logger } = createCaptureLogger();
 
     const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });

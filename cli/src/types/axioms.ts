@@ -72,3 +72,16 @@ export interface OrganizeTriageInput {
   /** Established axioms the critiques may fold into: id + statement. */
   axioms: { id: string; statement: string }[];
 }
+
+/** One critique's labeling outcome, streamed as the pass runs (04). */
+export interface LabelProgressEvent {
+  /** Completed calls so far, this event included. */
+  done: number;
+  /** Critiques the pass will consider (specs with active axioms only). */
+  total: number;
+  critiqueId: string;
+  filePath: string;
+  outcome: "labeled" | "unmatched" | "failed";
+  /** The axiom labeled under, when outcome is "labeled". */
+  axiomId: string | null;
+}

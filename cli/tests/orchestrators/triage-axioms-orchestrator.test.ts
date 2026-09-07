@@ -109,22 +109,35 @@ describe("triageAxiomsOrchestrator", () => {
     const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { dryRun: false });
 
     expect(outcome).toBe("ok");
-    expect(output()).toContain("Labeling 2 pending critique(s)");
+    expect(output()).toContain("Labeling 2 untriaged critique(s)");
 
     const records = triageRecords(root);
-    expect(records).toHaveLength(1);
-    expect(records[0]).toMatchObject({
+    const assignments = records.filter((record) => record.kind === "assignment");
+    const unmatched = records.filter((record) => record.kind === "unmatched");
+    expect(assignments).toHaveLength(1);
+    expect(assignments[0]).toMatchObject({
       kind: "assignment",
       critique_id: "r1:1",
       axiom_id: AXIOM,
       axiom_version: 1,
       assigned_by: { decision: "matcher", suggested_by: "scripted" },
     });
+    // The declined critique is categorized, not forgotten: an unmatched
+    // record pins the axiom set it was judged against.
+    expect(unmatched).toHaveLength(1);
+    expect(unmatched[0]).toMatchObject({
+      kind: "unmatched",
+      critique_id: "r1:2",
+      considered: [`${AXIOM}@1`],
+    });
   });
 
-  it("a hallucinated axiom id never becomes an assignment", async () => {
+  it("a hallucinated axiom id never becomes an assignment or an unmatched verdict", async () => {
     const root = labelingProject({
-      labels: [{ critique_id: "r1:1", axiom_id: "AX-000000" }],
+      labels: [
+        { critique_id: "r1:1", axiom_id: "AX-000000" },
+        { critique_id: "r1:2", axiom_id: "AX-000000" },
+      ],
     });
     const { logger } = createCaptureLogger();
 
@@ -167,6 +180,6 @@ describe("triageAxiomsOrchestrator", () => {
     const outcome = await triageAxiomsOrchestrator(testContext(root, logger), { dryRun: false });
 
     expect(outcome).toBe("ok");
-    expect(output()).toContain("backlog is empty");
+    expect(output()).toContain("Nothing untriaged");
   });
 });

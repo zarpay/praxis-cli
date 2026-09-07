@@ -31,7 +31,7 @@ const orientationView: View<Orientation & { json?: boolean }> = (orientation) =>
       entries: [
         lastRunLine,
         `Axioms: ${orientation.activeAxioms} active · ${orientation.proposalsPending} awaiting ratification (\`praxis axioms list\`)`,
-        `Pending triage: ${orientation.pendingTriage} (\`praxis axioms triage\`)`,
+        `Untriaged: ${orientation.pendingTriage} (\`praxis axioms triage\`) · Awaiting curation: ${orientation.awaitingCuration} (\`praxis axioms curate\`)`,
         chalk.gray(`Calibration: ${orientation.calibration}`),
         ...debtLines,
         "",

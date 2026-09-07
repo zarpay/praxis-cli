@@ -88,8 +88,17 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
 
   const state = deriveTriageStateService(cfg, {});
 
-  if (state.pending.length === 0) {
-    ctx.render([{ channel: "content", entries: ["Nothing pending triage."] }]);
+  // Curate works ONLY the unmatched residue (04): "does this need a NEW
+  // axiom" is well-posed only after triage has said no existing one fits.
+  if (state.pending.length > 0) {
+    ctx.logger.warn(
+      `${state.pending.length} critique(s) are untriaged and not part of this session — ` +
+        "`praxis axioms triage` categorizes them first.",
+    );
+  }
+
+  if (state.unidentified.length === 0) {
+    ctx.render([{ channel: "content", entries: ["Nothing awaiting curation."] }]);
 
     return "ok";
   }
@@ -116,9 +125,9 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
   };
 
   if (reject === undefined) {
-    await organizeAndDecide(session, state.pending);
+    await organizeAndDecide(session, state.unidentified);
   } else {
-    dismissAll(session, state.pending, reject);
+    dismissAll(session, state.unidentified, reject);
   }
 
   prompter.close();
@@ -127,7 +136,7 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
     new TriageStore(cfg).writeSession(session.records);
   }
 
-  const pendingLeft = state.pending.length - session.assigned - session.dismissed;
+  const pendingLeft = state.unidentified.length - session.assigned - session.dismissed;
   const summary = curateSummaryView({
     assigned: session.assigned,
     proposed: session.proposed,

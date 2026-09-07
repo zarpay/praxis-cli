@@ -243,6 +243,7 @@ describe("buildStatusReportService", () => {
 
     expect(report.evalState).toEqual({
       pending_triage: 0,
+      awaiting_curation: 0,
       proposals_pending: 0,
       calibration_stale: true,
       epoch_boundary_detected: false,

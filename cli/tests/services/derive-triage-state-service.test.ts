@@ -26,6 +26,7 @@ describe("deriveTriageStateService", () => {
   it("derives an empty queue from an empty ledger", () => {
     expect(deriveTriageStateService(testConfig(root), {})).toEqual({
       pending: [],
+      unidentified: [],
       assignments: [],
       dismissed: 0,
       rejectedProposals: 0,
@@ -88,6 +89,38 @@ describe("deriveTriageStateService", () => {
     expect(ids).toEqual(["r1:3"]);
     expect(state.assignments).toHaveLength(1);
     expect(state.dismissed).toBe(1);
+  });
+
+  it("an unmatched record moves a critique to the curate queue; a stale set re-queues it for triage", () => {
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      extraLines: [critiqueLine({ runId: "r1", seq: 1 }), critiqueLine({ runId: "r1", seq: 2 })],
+    });
+
+    // r1:1 was considered against the current (empty) active set; r1:2
+    // against a set that no longer exists — it goes back to triage.
+    new TriageStore(testConfig(root)).writeSession([
+      {
+        kind: "unmatched",
+        critique_id: "r1:1",
+        considered: [],
+        suggested_by: "big/model",
+        timestamp: "2026-09-07T10:00:00.000Z",
+      },
+      {
+        kind: "unmatched",
+        critique_id: "r1:2",
+        considered: ["AX-gone00@1"],
+        suggested_by: "big/model",
+        timestamp: "2026-09-07T10:00:00.000Z",
+      },
+    ]);
+
+    const state = deriveTriageStateService(testConfig(root), {});
+
+    expect(state.unidentified.map((critique) => critique.id)).toEqual(["r1:1"]);
+    expect(state.pending.map((critique) => critique.id)).toEqual(["r1:2"]);
   });
 
   it("counts rejections for the residual signal", () => {

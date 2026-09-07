@@ -115,7 +115,7 @@ function evalStateLines(report: StatusReport): string[] {
   const lastRun = evalState.last_run_at === null ? "never" : evalState.last_run_at.slice(0, 10);
 
   return [
-    `Last run: ${lastRun} · Pending triage: ${evalState.pending_triage} · Proposals awaiting ratification: ${evalState.proposals_pending}`,
+    `Last run: ${lastRun} · Untriaged: ${evalState.pending_triage} · Awaiting curation: ${evalState.awaiting_curation} · Proposals awaiting ratification: ${evalState.proposals_pending}`,
     ...(evalState.epoch_boundary_detected
       ? ["Epoch boundary detected — the next full run opens a new baseline."]
       : []),
