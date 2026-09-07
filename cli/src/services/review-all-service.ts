@@ -20,7 +20,6 @@ import discoverDomainsService from "@/services/discover-domains-service.js";
 import resolveUnitsService from "@/services/resolve-units-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
-import { AxiomStore } from "@/stores/axiom-store.js";
 import { DocumentStore } from "@/stores/document-store.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
 
@@ -236,7 +235,6 @@ const reviewUnit: Service<
       kind: cohort ? "cohort" : "file",
       specPath,
       root,
-      checklistFor: (spec) => new AxiomStore(cfg).checklistFor(spec),
     });
 
     const { verdict, cacheHit, usage } = await reviewTargetService(cfg, {
