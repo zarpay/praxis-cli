@@ -9,7 +9,7 @@ import type { View } from "@framework/types.js";
  */
 const compileProgressView: View<CompileProgress> = (event) => {
   if (event.kind === "compiled") {
-    return [{ channel: "success", text: `Compiled ${event.alias.toLowerCase()}.md` }];
+    return [{ channel: "success", text: `Compiled ${event.alias.toLowerCase()}.expert.md` }];
   }
 
   if (event.kind === "skipped") {

@@ -70,6 +70,40 @@ describe("reviewNamedService", () => {
     return { root, cfg: new PraxisConfig(root), abs };
   }
 
+  it("resolves a paths-targeted spec when no sibling matches — profiles govern from afar (11)", async () => {
+    useVerdict("validation_pass", { reason: "fine" });
+    const { root, cfg } = (() => {
+      const { root, abs, cleanup } = createValidatorTmpdir({
+        sources: ["lib", "profiles"],
+        files: {
+          "profiles/core.expert.md": '---\npaths:\n  - "lib/*.rb"\n---\n\n# Core rules',
+          "lib/base.rb": "class Base; end",
+        },
+        reviewers: [KEYED],
+        specFilePattern: "{README.md,*.expert.md}",
+      });
+      cleanups.push(cleanup);
+
+      return { root, cfg: new PraxisConfig(root), abs };
+    })();
+
+    const result = await reviewNamedService(cfg, {
+      targets: [join(root, "lib", "base.rb")],
+      ledger: false,
+    });
+
+    expect(result.errors).toBe(0);
+  });
+
+  it("still raises the instructive error when nothing governs the target", async () => {
+    const { cfg, abs } = reviewingProject();
+    const orphan = abs("specs/../orphan.md");
+
+    const review = reviewNamedService(cfg, { targets: [orphan], ledger: false });
+
+    await expect(review).rejects.toThrow("write one there");
+  });
+
   it("counts an error verdict for a named target", async () => {
     useVerdict("validation_fail");
     const { cfg, abs } = reviewingProject();

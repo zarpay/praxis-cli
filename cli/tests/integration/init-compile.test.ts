@@ -90,7 +90,7 @@ describe("init → compile integration", () => {
   });
 
   it("pure profiles do not contain Claude Code frontmatter", () => {
-    const content = readFileSync(join(dir, "agent-profiles", "stewart.md"), "utf-8");
+    const content = readFileSync(join(dir, "agent-profiles", "stewart.expert.md"), "utf-8");
     expect(content).not.toMatch(/^---\n/);
     expect(content).not.toContain("name: stewart");
     expect(content).toContain("# Role");

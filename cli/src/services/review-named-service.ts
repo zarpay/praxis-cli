@@ -1,3 +1,4 @@
+import type { PraxisConfig } from "@/models/praxis-config.js";
 import type {
   ChecklistAxiom,
   Critique,
@@ -8,10 +9,12 @@ import type {
   Verdict,
 } from "@/types.js";
 
-import { relativePath } from "@/helpers/paths-helper.js";
+import { PraxisError } from "@/helpers/errors-helper.js";
+import { relativePath, resolvePath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
 import deriveCalibrationStatusService from "@/services/derive-calibration-status-service.js";
+import discoverDomainsService from "@/services/discover-domains-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
@@ -78,7 +81,7 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
   for (const targetPath of targets) {
     const subject = ReviewSubject.resolve({
       targetPath,
-      specPath: specOverride ?? specStore.governingPath(targetPath),
+      specPath: specOverride ?? governingSpecFor(cfg, specStore, targetPath),
       root,
       checklistFor: (resolvedSpec) => new AxiomStore(cfg).checklistFor(resolvedSpec),
     });
@@ -231,4 +234,33 @@ function severityRank(verdict: Verdict): number {
   if (verdict.compliant) return 0;
 
   return verdict.severity === "warning" ? 1 : 2;
+}
+
+/**
+ * The spec governing a named target, resolved exactly like a full run:
+ * the sibling pattern first, then the paths-targeted domains — a
+ * compiled expert governs from afar (11), and the fast loop must see it
+ * (found live in servus, 2026-09-06).
+ *
+ * @throws the sibling lookup's instructive error when neither names it
+ */
+function governingSpecFor(cfg: PraxisConfig, specStore: SpecStore, targetPath: string): string {
+  try {
+    return specStore.governingPath(targetPath);
+  } catch (err) {
+    if (!(err instanceof PraxisError) || err.code !== "SPEC_NOT_FOUND") throw err;
+
+    const absolute = resolvePath(targetPath);
+    const domains = discoverDomainsService(cfg, {});
+    const owner = domains.find((domain) => {
+      const files = domain.targetFiles ?? [];
+      const dirs = domain.targetDirs ?? [];
+
+      return files.includes(absolute) || dirs.some((dir) => absolute.startsWith(`${dir}/`));
+    });
+
+    if (owner) return owner.specPath;
+
+    throw err;
+  }
 }

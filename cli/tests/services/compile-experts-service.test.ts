@@ -69,7 +69,7 @@ describe("compileExpertsService", () => {
       await compileFile(expertFile);
 
       expect(existsSync(join(agentsOutputDir, "tester.md"))).toBe(true);
-      expect(existsSync(join(agentProfilesDir, "tester.md"))).toBe(true);
+      expect(existsSync(join(agentProfilesDir, "tester.expert.md"))).toBe(true);
     });
 
     it("includes the expert body in plugin output", async () => {
@@ -159,7 +159,7 @@ describe("compileExpertsService", () => {
       );
 
       await compileFile(expertFile);
-      const profile = readFileSync(join(agentProfilesDir, "grouper.md"), "utf-8");
+      const profile = readFileSync(join(agentProfilesDir, "grouper.expert.md"), "utf-8");
 
       expect(profile).toContain("cohort: by_directory");
     });
@@ -210,7 +210,7 @@ describe("compileExpertsService", () => {
 
     it("compiles excludes through to the pure profile frontmatter", async () => {
       await compileFile(writeExcludingExpert());
-      const profile = readFileSync(join(agentProfilesDir, "excluder.md"), "utf-8");
+      const profile = readFileSync(join(agentProfilesDir, "excluder.expert.md"), "utf-8");
 
       expect(profile).toContain("excludes:");
       expect(profile).toContain('- "src/events/application_event.rb"');
@@ -244,7 +244,7 @@ describe("compileExpertsService", () => {
       );
 
       await compileFile(expertFile);
-      const profile = readFileSync(join(agentProfilesDir, "blesser.md"), "utf-8");
+      const profile = readFileSync(join(agentProfilesDir, "blesser.expert.md"), "utf-8");
 
       expect(profile).toContain("exemplars:");
       expect(profile).toContain('- "src/events/referral_event.rb"');
@@ -308,7 +308,7 @@ describe("compileExpertsService", () => {
 
       await compileAll();
 
-      expect(existsSync(join(agentProfilesDir, "todo.md"))).toBe(false);
+      expect(existsSync(join(agentProfilesDir, "todo.expert.md"))).toBe(false);
     });
   });
 
@@ -359,7 +359,7 @@ describe("compileExpertsService", () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
       await compileFile(expertFile);
-      const profile = readFileSync(join(agentProfilesDir, "tester.md"), "utf-8");
+      const profile = readFileSync(join(agentProfilesDir, "tester.expert.md"), "utf-8");
 
       // Pure profile has no frontmatter
       expect(profile).not.toMatch(/^---\n/);
@@ -372,7 +372,7 @@ describe("compileExpertsService", () => {
       await compileFile(expertFile);
 
       const pluginOutput = readFileSync(join(agentsOutputDir, "tester.md"), "utf-8");
-      const profileOutput = readFileSync(join(agentProfilesDir, "tester.md"), "utf-8");
+      const profileOutput = readFileSync(join(agentProfilesDir, "tester.expert.md"), "utf-8");
 
       expect(pluginOutput).toMatch(/^---\n/);
       expect(pluginOutput).toContain("name: tester");
@@ -399,7 +399,7 @@ describe("compileExpertsService", () => {
 
       // Plugin output exists, profile dir does not
       expect(existsSync(join(agentsOutputDir, "tester.md"))).toBe(true);
-      expect(existsSync(join(agentProfilesDir, "tester.md"))).toBe(false);
+      expect(existsSync(join(agentProfilesDir, "tester.expert.md"))).toBe(false);
     });
 
     it("skips plugin output when plugins array is empty", async () => {
@@ -421,7 +421,7 @@ describe("compileExpertsService", () => {
       });
 
       // Profile exists, plugin output does not
-      expect(existsSync(join(agentProfilesDir, "tester.md"))).toBe(true);
+      expect(existsSync(join(agentProfilesDir, "tester.expert.md"))).toBe(true);
       expect(existsSync(join(agentsOutputDir, "tester.md"))).toBe(false);
     });
   });
@@ -431,7 +431,7 @@ describe("compileExpertsService", () => {
       const expertFile = join(expertsDir, "validates-expert.md");
 
       await compileFile(expertFile);
-      const profile = readFileSync(join(agentProfilesDir, "servusexpert.md"), "utf-8");
+      const profile = readFileSync(join(agentProfilesDir, "servusexpert.expert.md"), "utf-8");
 
       expect(profile).toMatch(/^---\n/);
       expect(profile).toContain("paths:");
@@ -444,7 +444,7 @@ describe("compileExpertsService", () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
       await compileFile(expertFile);
-      const profile = readFileSync(join(agentProfilesDir, "tester.md"), "utf-8");
+      const profile = readFileSync(join(agentProfilesDir, "tester.expert.md"), "utf-8");
 
       expect(profile).not.toMatch(/^---\n/);
     });

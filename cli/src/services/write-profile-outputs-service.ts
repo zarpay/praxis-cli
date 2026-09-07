@@ -41,7 +41,7 @@ const writeProfileOutputsService: Service<WriteProfileOutputsInput, void> = (
     const content =
       targeting.length > 0 ? `---\n${targeting.join("\n")}\n---\n\n${profile}` : profile;
 
-    writeText(joinPath(agentProfilesOutputDir, `${alias.toLowerCase()}.md`), content);
+    writeText(joinPath(agentProfilesOutputDir, `${alias.toLowerCase()}.expert.md`), content);
   }
 
   for (const plugin of plugins) {

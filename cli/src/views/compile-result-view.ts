@@ -14,7 +14,7 @@ const compileResultView: View<CompileOutcome> = (outcome) => {
 
   return [
     ...outcome.warnings.map((text) => ({ channel: "warning" as const, text })),
-    { channel: "success", text: `Compiled ${outcome.alias.toLowerCase()}.md` },
+    { channel: "success", text: `Compiled ${outcome.alias.toLowerCase()}.expert.md` },
   ];
 };
 
