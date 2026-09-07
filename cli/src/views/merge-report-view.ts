@@ -12,7 +12,7 @@ interface MergeReport {
 }
 
 /**
- * A merge's outcome (04): what folded into the survivor, what its
+ * A merge's outcome: what folded into the survivor, what its
  * clock is now, and the reminder that nothing was rewritten.
  */
 const mergeReportView: View<MergeReport> = (report) => {

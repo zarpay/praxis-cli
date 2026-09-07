@@ -3,13 +3,12 @@ import type { GitFacts } from "@/types.js";
 import { spawnSync } from "node:child_process";
 
 /**
- * The git facts a run is anchored by (05, 12).
+ * The git facts a run is anchored by.
  *
  * A sha is recorded only when the working tree provably equals HEAD —
- * clean, on a branch, inside a repo (12: a run reviews disk state, and
- * an uncommitted tree has no commit to anchor to). The branch is
+ * clean, on a branch, inside a repo. The branch is
  * recorded whenever one exists: it names a location, not content.
- * Anything the repo cannot answer is null, never guessed (05).
+ * Anything the repo cannot answer is null, never guessed.
  *
  * `.praxis/` is excluded from the dirty check: the run's own cache and
  * ledger writes are machine-owned bookkeeping, not reviewed content,
@@ -31,13 +30,13 @@ export function gitFacts(root: string): GitFacts {
   return { inRepo: true, commitSha: git(root, "rev-parse", "HEAD"), branch };
 }
 
-/** Whether a commit is reachable in this clone (12: expiry is a lifecycle event). */
+/** Whether a commit is reachable in this clone. */
 export function commitExists(root: string, sha: string): boolean {
   return git(root, "cat-file", "-e", `${sha}^{commit}`) !== null;
 }
 
 /**
- * The date (YYYY-MM-DD) of the first commit that touched a file — 01's
+ * The date (YYYY-MM-DD) of the first commit that touched a file — the
  * file-level population approximation. Null outside git, for untracked
  * files, and wherever git cannot answer: unknown, never guessed.
  */
@@ -53,7 +52,7 @@ export function fileFirstCommitDate(root: string, path: string): string | null {
 
 /**
  * Authors of the commits that touched a file between two anchored runs
- * — paydown credit (02: credit is attributable where blame is not).
+ * — paydown credit.
  * Empty when git cannot answer or nothing touched the file.
  */
 export function authorsOfRange(
@@ -71,7 +70,7 @@ export function authorsOfRange(
 
 /**
  * The commit shas a branch range contains, newest first — how `--commits`
- * resolves from a base..head range (07's PR scope).
+ * resolves a PR's scope from a base..head range.
  */
 export function commitsOfRange(root: string, base: string, head: string): string[] {
   const shas = git(root, "log", "--format=%H", `${base}..${head}`);

@@ -1,4 +1,4 @@
-// The authoring and compile side (11): experts in, SME agent
+// The authoring and compile side: experts in, SME agent
 // profiles out.
 
 import type { CompilerPlugin } from "@/types/extension-points.js";

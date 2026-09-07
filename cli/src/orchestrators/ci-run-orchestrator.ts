@@ -17,7 +17,7 @@ interface CiRunOptions {
 }
 
 /**
- * What `praxis eval ci` does: verify, and leave no trace (12).
+ * What `praxis eval ci` does: verify, and leave no trace.
  *
  * CI re-derives verdicts — identical content hashes mean cache hits —
  * sets the exit code, and commits nothing: no ledger records, and the
@@ -34,7 +34,7 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
   const evalView = evalHeadlineView({ ci: true });
   ctx.render(evalView);
 
-  // Announce any epoch boundary before reviewing (02): warn, never block.
+  // Announce any epoch boundary before reviewing: warn, never block.
   const reviewers = selectReviewersService(cfg, {});
   const boundaries = detectEpochBoundariesService(cfg, { reviewers });
   const boundaryView = epochBoundaryView(boundaries);
@@ -51,7 +51,7 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
 
   const run = await reviewAllService(cfg, {
     reviewers,
-    // CI verifies without writing (12): the branch's own runs are the evidence.
+    // CI verifies without writing: the branch's own runs are the evidence.
     ledger: false,
     readOnlyCache: true,
     onProgress,

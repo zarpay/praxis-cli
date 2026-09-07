@@ -6,7 +6,7 @@ import { AxiomStore } from "@/stores/axiom-store.js";
 import { RunStore } from "@/stores/run-store.js";
 
 /**
- * The orientation screen's facts (09-h): counts and staleness at a
+ * The orientation screen's facts: counts and staleness at a
  * glance — the entry point for a human returning after a week, and an
  * agent's cheapest situational poll's human twin.
  */

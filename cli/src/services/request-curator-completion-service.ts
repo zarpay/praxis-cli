@@ -12,7 +12,7 @@ interface RequestCuratorCompletionInput {
 }
 
 /**
- * One structured-output call as the curator (04).
+ * One structured-output call as the curator.
  *
  * The curator rides the reviewer plumbing — same defaults, same key
  * resolution, same provider selection, including `./relative` local

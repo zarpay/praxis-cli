@@ -5,7 +5,7 @@ import reportDebtOrchestrator from "@/orchestrators/report-debt-orchestrator.js"
 /**
  * Registers the `praxis debt` command group.
  *
- * Debt is nonconformance in code that predates its spec (01): a backlog
+ * Debt is nonconformance in code that predates its spec: a backlog
  * to burn down, honestly named, never chartable as agent performance.
  */
 const debtCommand: CommandRegistrar = (program) => {

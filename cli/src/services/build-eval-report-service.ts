@@ -24,7 +24,7 @@ interface BuildEvalReportInput {
 }
 
 /**
- * The eval report (07): one structured payload the view renders and
+ * The eval report: one structured payload the view renders and
  * `--json` emits verbatim — the build/display split that makes the
  * machine contract free.
  *
@@ -125,7 +125,7 @@ function axiomRow({
 
   // Current stock: the reviewer's latest *evidenced* corpus run — a
   // one-file fast loop is feedback, not a stock measurement, and an
-  // all-hit run restates no critiques (05), so neither moves the anchor.
+  // all-hit run restates no critiques, so neither moves the anchor.
   const latestRun = [...runs]
     .filter(
       (run) =>

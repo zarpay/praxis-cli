@@ -1,7 +1,7 @@
 import type { TriageRecord } from "@/types.js";
 
 /**
- * One triage session file's format (04, 05): one decision record per
+ * One triage session file's format: one decision record per
  * line — assignments, dismissals, rejections — written whole and never
  * touched again.
  *

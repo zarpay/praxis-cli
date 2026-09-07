@@ -39,7 +39,7 @@ interface TriageWireCluster {
 }
 
 /**
- * The curator's organization of one spec's pending critiques (04).
+ * The curator's organization of one spec's pending critiques.
  *
  * Renders the prompts, makes one completion call, and validates the
  * organization defensively: a cluster citing an unknown critique id or

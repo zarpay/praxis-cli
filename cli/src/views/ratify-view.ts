@@ -4,7 +4,7 @@ import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
 
-/** Everything the ratifier weighs before the human call (04). */
+/** Everything the ratifier weighs before the human call. */
 interface RatifyReview {
   axiom: AxiomFile;
   /** How many assigned critiques back the proposal. */
@@ -14,7 +14,7 @@ interface RatifyReview {
 }
 
 /**
- * Everything the ratifier weighs (04): the proposal, its supporting
+ * Everything the ratifier weighs: the proposal, its supporting
  * evidence, the authoring gate's verdict, and the curator's
  * traceability assessment — rendered before the human decides.
  */

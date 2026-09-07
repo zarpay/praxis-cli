@@ -2,7 +2,7 @@ import type { PopulationQualifier, Service } from "@/types.js";
 
 import { fileFirstCommitDate } from "@/helpers/git-helper.js";
 
-/** One file's population relative to one axiom's clock (01). */
+/** One file's population relative to one axiom's clock. */
 interface DerivePopulationInput {
   /** Project-relative, as critique records carry it. */
   filePath: string;
@@ -13,14 +13,14 @@ interface DerivePopulationInput {
 }
 
 /**
- * A file's population relative to one axiom (01, 04): pre-spec when the
+ * A file's population relative to one axiom: pre-spec when the
  * file predates the axiom's `introduced` date, post-spec otherwise,
  * unknown wherever git cannot answer — never guessed.
  *
  * Population clocks are per-axiom (01 open q1, resolved in 02): the
  * same file can be pre-spec debt for one axiom and post-spec signal for
  * a newer one. Derived read-side from provenance; the stored record's
- * "unknown" is a convenience, not truth (05).
+ * "unknown" is a convenience, not truth.
  *
  * Birthdates are memoized per service call via the caller-held cache,
  * because a report asks about the same files across many axioms.

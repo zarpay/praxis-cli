@@ -59,7 +59,7 @@ export class OpenRouterProvider implements ReviewProvider {
   /**
    * One raw structured-output call: same endpoint and protocol as a
    * review, but the tool call comes back unparsed — the curator's
-   * prompts (04) own their own shapes.
+   * prompts own their own shapes.
    *
    * @throws PraxisError on non-OK responses or a missing tool call
    */

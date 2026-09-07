@@ -13,7 +13,7 @@ interface TriageAxiomsOptions {
 }
 
 /**
- * What `praxis axioms triage` does (04, review→label): categorize the
+ * What `praxis axioms triage` does: categorize the
  * **untriaged** critiques — the ones never considered, or considered
  * against an axiom set that has since changed — one curator call each.
  * A match becomes a matcher assignment record; a no-match becomes an

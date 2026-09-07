@@ -19,7 +19,7 @@ const SENTINEL_FILE = { path: "«path»", content: "«content»" };
  * This is the prompt component of the reviewer hash (reviewer.ts).
  * Rewording ANY reviewer-facing prompt text — a tool description as much
  * as the system prompt — changes the reviewer's behavior, so it must
- * change the reviewer's identity (05): no version constant to forget
+ * change the reviewer's identity: no version constant to forget
  * bumping, no prompt edit that silently serves stale verdicts.
  */
 export default function promptSurface(): string {

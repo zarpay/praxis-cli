@@ -13,7 +13,7 @@ interface ShowAxiomOptions {
 
 /**
  * What `praxis axioms show <id>` does: one axiom in full — the
- * drill-down behind every finding that cites an id (08, 09).
+ * drill-down behind every finding that cites an id.
  *
  * @throws PraxisError when no axiom carries the id
  */

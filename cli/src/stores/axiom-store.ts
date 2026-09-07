@@ -23,7 +23,7 @@ interface WriteAxiomProposalResult {
 
 /**
  * The project's axiom store: `.praxis/axioms/` and its `proposed/`
- * subdirectory (04, 10).
+ * subdirectory.
  *
  * One handle owns the layout, the id minting, and the lifecycle moves —
  * propose lands a draft, ratify grounds and activates it. The store's
@@ -73,11 +73,11 @@ export class AxiomStore {
   }
 
   /**
-   * The labeling set (04): every **active** axiom, sorted by id so
+   * The labeling set: every **active** axiom, sorted by id so
    * identical state always renders identical bytes.
    *
    * An axiom is an abstraction over evidence, never a child of one spec
-   * (owner, 2026-09-07): multiple specs can state in prose the same
+   *: multiple specs can state in prose the same
    * principle an axiom captures discretely, so a critique from any spec
    * can label into any active axiom — `derived_from` is provenance of
    * birth, not a labeling scope. Proposed axioms have no metric effect
@@ -97,7 +97,7 @@ export class AxiomStore {
   }
 
   /**
-   * Lands one triage-accepted draft in `proposed/` (04): a freshly
+   * Lands one triage-accepted draft in `proposed/`: a freshly
    * minted id, `status: proposed`, no derivation — ratification
    * establishes that, and `status: active` is a human decision this
    * store never makes on its own.
@@ -130,12 +130,12 @@ export class AxiomStore {
   }
 
   /**
-   * Ratification's store move (04): the proposal becomes active and
+   * Ratification's store move: the proposal becomes active and
    * records its derivation, leaving `proposed/`.
    *
    * The body is preserved byte-for-byte — a human may have edited the
    * proposal file, and ratifying must never rewrite what a human
-   * authored (10). Only two frontmatter facts change, and the result is
+   * authored. Only two frontmatter facts change, and the result is
    * validated through the model before anything lands on disk.
    *
    * @throws PraxisError when the moved document would not validate
@@ -159,7 +159,7 @@ export class AxiomStore {
   }
 
   /**
-   * Retires an active axiom (04): `status: active` flips to
+   * Retires an active axiom: `status: active` flips to
    * `deprecated`, body preserved byte-for-byte. The id and its records
    * stay readable forever; the recorded reason is the caller's to land
    * in the triage ledger.

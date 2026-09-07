@@ -1,7 +1,7 @@
 import type { RateCell } from "@/types.js";
 
 /**
- * The metric rules (07) as one vocabulary, used by every builder and
+ * The metric rules as one vocabulary, used by every builder and
  * renderer — which is how "enforced in every renderer" stays true
  * rather than described. A rate never appears without its denominator,
  * and a cell under the floor says "insufficient data", never a number.

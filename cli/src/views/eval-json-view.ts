@@ -7,9 +7,9 @@ type EvalJsonData =
   | { kind: "corpus"; summary: EvalSummary; cacheStats: { hits: number; misses: number } };
 
 /**
- * The machine contract for `eval run --json` (08-g, 09-af): the run's
+ * The machine contract for `eval run --json`: the run's
  * outcome as stable JSON on stdout, nothing else. Findings are compact
- * by reference (09): a matched finding carries its axiom id and
+ * by reference: a matched finding carries its axiom id and
  * statement — the agent that wants examples runs `axioms show <id>`.
  */
 const evalJsonView: View<EvalJsonData> = (data) => {
@@ -37,7 +37,7 @@ function targetJson(target: ReviewedTarget): object {
   };
 }
 
-/** A raw finding (04, review→label): labels arrive later, at triage. */
+/** A raw finding: labels arrive later, at triage. */
 function findingJson(finding: Finding): object {
   return {
     text: finding.text,

@@ -6,7 +6,7 @@ import { createInterface } from "node:readline/promises";
 /**
  * The framework's one interactive input channel.
  *
- * Questions go to stderr — stdout stays data (09) — and answers come
+ * Questions go to stderr — stdout stays data — and answers come
  * from stdin. Callers check `interactive` before prompting and raise
  * their instructive not-a-TTY error themselves, so every interactive
  * command names its own scripting flags. Tests inject streams.

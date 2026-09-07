@@ -1,4 +1,4 @@
-// The axiom taxonomy (04): lifecycle, drafts, triage suggestions, and
+// The axiom taxonomy: lifecycle, drafts, triage suggestions, and
 // the curator's assessments.
 
 import type { AxiomFile } from "@/models/axiom-file.js";
@@ -6,10 +6,10 @@ import type { ProviderUsage } from "@/types/extension-points.js";
 import type { PendingCritique } from "@/types/ledger.js";
 import type { Severity, StoreProblem } from "@/types/shared.js";
 
-/** An axiom's lifecycle state (04): proposed until ratified, never deleted. */
+/** An axiom's lifecycle state: proposed until ratified, never deleted. */
 export type AxiomStatus = "proposed" | "active" | "deprecated";
 
-/** How the axiom is evaluated (03); `agentic` is schema-only until built. */
+/** How the axiom is evaluated; `agentic` is schema-only until built. */
 export type AxiomMode = "judgment" | "agentic";
 
 /** The store's contents, plus what could not be read. */
@@ -30,7 +30,7 @@ export interface AxiomDraft {
   groundingHint: string;
 }
 
-/** What the curator suggests doing with one cluster; a human decides (04). */
+/** What the curator suggests doing with one cluster; a human decides. */
 export type TriageSuggestion =
   | { kind: "assign"; axiomId: string }
   | { kind: "propose"; draft: AxiomDraft }
@@ -43,7 +43,7 @@ export interface TriageCluster {
   suggestion: TriageSuggestion;
 }
 
-/** The authoring gate's verdict on one candidate axiom (03). */
+/** The authoring gate's verdict on one candidate axiom. */
 export interface GateAssessment {
   assessment: "appropriate" | "not_appropriate" | "split";
   reasoning: string;
@@ -54,7 +54,7 @@ export interface GateAssessment {
   usage: ProviderUsage | null;
 }
 
-/** The curator's spec-traceability aid at ratification (04). */
+/** The curator's spec-traceability aid at ratification. */
 export interface TraceabilityAssessment {
   traceable: boolean;
   /** `<spec path>#<section>` when traceable. */
@@ -75,7 +75,7 @@ export interface OrganizeTriageInput {
   axioms: { id: string; statement: string }[];
 }
 
-/** One critique's labeling outcome, streamed as the pass runs (04). */
+/** One critique's labeling outcome, streamed as the pass runs. */
 export interface LabelProgressEvent {
   /** Completed calls so far, this event included. */
   done: number;

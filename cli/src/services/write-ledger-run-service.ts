@@ -22,14 +22,14 @@ interface WriteLedgerRunInput {
   trigger: LedgerTrigger;
   scope: LedgerScope;
   entries: LedgerEntry[];
-  /** The reviewer's interpretability state at run time (06); absent stamps "uncalibrated". */
+  /** The reviewer's interpretability state at run time; absent stamps "uncalibrated". */
   calibrationStatus?: CalibrationStatus;
   /** Evaluated units per governing spec, project-relative paths. */
   specUnits?: Record<string, number>;
 }
 
 /**
- * Persists one reviewer's completed run to the ledger (05).
+ * Persists one reviewer's completed run to the ledger.
  *
  * One file per run at `.praxis/ledger/runs/<run_id>.jsonl` — the run
  * record first, then one critique record per issue. The file is written
@@ -52,7 +52,7 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
 
   const critiques: LedgerCritiqueRecord[] = [];
 
-  // Cache hits write no critiques — nothing new was reviewed (05).
+  // Cache hits write no critiques — nothing new was reviewed.
   for (const { verdict, cacheHit, evidence } of entries) {
     if (!evidence || cacheHit) continue;
 
@@ -72,9 +72,9 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
         severity: verdict.severity ?? "error",
         text: stripControlChars(issue.text),
         mode: "judgment",
-        // Born matched = assigned at review time by the checklist (04-t);
+        // Born matched = assigned at review time by the checklist;
         // open-channel critiques stay null until triage assigns them.
-        // Born unlabeled (04): labels live in triage assignment records.
+        // Born unlabeled: labels live in triage assignment records.
         axiom_id: null,
         axiom_version: null,
         assigned_by: null,
@@ -117,7 +117,7 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
 export default writeLedgerRunService;
 
 /**
- * Whether this run opens its reviewer's epoch (02): the first full run
+ * Whether this run opens its reviewer's epoch: the first full run
  * under a behavioral hash no prior corpus run carries. A files-scope
  * fast loop never claims baseline — an epoch without an opening full
  * run has no denominator.

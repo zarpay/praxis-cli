@@ -12,10 +12,10 @@ interface BuildAxiomReportInput {
 }
 
 /**
- * The single-axiom drill-down (07): the standard itself, its per-
+ * The single-axiom drill-down: the standard itself, its per-
  * reviewer rows from the scoped evidence, and representative critiques
  * with ledger ids — the depth the fast loop's token economy deliberately
- * leaves behind `axioms show` and this report (09).
+ * leaves behind `axioms show` and this report.
  *
  * @throws PraxisError when no axiom carries the id
  */

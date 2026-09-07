@@ -2,7 +2,7 @@ import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
 
-/** One row of the gate re-assessment over active axioms (03). */
+/** One row of the gate re-assessment over active axioms. */
 interface AxiomAuditRow {
   id: string;
   assessment: string;
@@ -17,7 +17,7 @@ interface AxiomAudit {
 }
 
 /**
- * The gate re-assessment over active axioms (03): advisory rows a human
+ * The gate re-assessment over active axioms: advisory rows a human
  * acts on. `not_appropriate` names a removal candidate — the standard
  * became mechanically checkable, or never needed judgment.
  */

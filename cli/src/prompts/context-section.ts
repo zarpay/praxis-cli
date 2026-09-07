@@ -4,7 +4,7 @@ import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
  * The CONTEXT prompt section: assist-only reference files that inform
- * the review and never receive a verdict (03). `blocks` is the
+ * the review and never receive a verdict. `blocks` is the
  * context-block renderings joined; when the spec declares none the
  * caller passes "" for the whole section instead, so it vanishes from
  * the prompt entirely. The trailing blank line is structural — it

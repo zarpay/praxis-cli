@@ -12,7 +12,7 @@ import triageAxiomsOrchestrator from "@/orchestrators/triage-axioms-orchestrator
 /**
  * Registers the `praxis axioms` command group.
  *
- * Axioms are the named, stable standards critiques attach to (04).
+ * Axioms are the named, stable standards critiques attach to.
  * `list` and `show` read the store; `triage` and `ratify` are the
  * deliberately interactive lifecycle verbs (LLM proposes, human
  * decides); `audit` re-runs the authoring gate over what is active.

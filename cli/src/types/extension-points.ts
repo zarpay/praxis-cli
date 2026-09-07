@@ -72,7 +72,7 @@ export interface ReviewProvider {
   /** Obtains one verdict for a fully-prepared request. */
   review(request: ProviderRequest): Promise<ProviderResult>; /**
    * One raw structured-output call: the given tools, exactly one tool
-   * call back. What the curator's prompts ride on (04). Optional — a
+   * call back. What the curator's prompts ride on. Optional — a
    * provider without it can review but cannot curate.
    */
   complete?(request: ProviderRequest): Promise<ProviderCompletion>;

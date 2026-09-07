@@ -4,24 +4,24 @@ import type { AxiomMode, AxiomStatus, Severity } from "@/types.js";
 import { errors } from "@/helpers/errors-helper.js";
 import { MarkdownFile } from "@/models/markdown-file.js";
 
-/** The accepted lifecycle states (04). */
+/** The accepted lifecycle states. */
 const STATUSES: readonly AxiomStatus[] = ["proposed", "active", "deprecated"];
 
-/** The accepted evaluation modes (03); `agentic` is schema-only. */
+/** The accepted evaluation modes; `agentic` is schema-only. */
 const MODES: readonly AxiomMode[] = ["judgment", "agentic"];
 
 /** The accepted severities. */
 const SEVERITIES: readonly Severity[] = ["error", "warning"];
 
 /**
- * One axiom: a single, discrete, named standard (04).
+ * One axiom: a single, discrete, named standard.
  *
  * The identity rules are the actual spec: an id is random-minted, never
  * reused and never renumbered; clarifying wording bumps `version`;
  * changing what counts as a violation is a new id. Every field is read
  * and validated in the constructor, so an AxiomFile that exists is a
  * valid axiom. The retired `grounded_in` key parses as `derived_from`;
- * a retired `supersedes` key is ignored (both historical, 2026-09-07).
+ * a retired `supersedes` key is ignored.
  *
  * @throws PraxisError when any declared field is malformed
  */
@@ -36,7 +36,6 @@ export class AxiomFile {
   readonly status: AxiomStatus;
   /** How the axiom is evaluated; `judgment` unless explicitly opted out. */
   readonly mode: AxiomMode;
-  /** What the reviewer reads to decide it. */
   /** What a violation of this axiom costs a verdict. */
   readonly severity: Severity;
   /**
@@ -46,7 +45,7 @@ export class AxiomFile {
    * ratification.
    */
   readonly derivedFrom: string | null;
-  /** YYYY-MM-DD; this axiom's population clock starts here (01, 04). */
+  /** YYYY-MM-DD; this axiom's population clock starts here. */
   readonly introduced: string;
   /** Statement and examples, as authored. */
   readonly body: string;
@@ -74,7 +73,7 @@ export class AxiomFile {
   /**
    * What the axiom asserts: the body text before its first section
    * heading. This is the line checklists and findings carry; the
-   * examples stay behind `axioms show` (09, token economy).
+   * examples stay behind `axioms show`.
    */
   statement(): string {
     const headingStart = this.body.indexOf("\n## ");

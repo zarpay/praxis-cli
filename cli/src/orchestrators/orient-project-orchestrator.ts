@@ -6,7 +6,7 @@ import buildOrientationService from "@/services/build-orientation-service.js";
 import orientationView from "@/views/orientation-view.js";
 
 /**
- * What bare `praxis` does: the orientation screen (09-h) — counts and
+ * What bare `praxis` does: the orientation screen — counts and
  * staleness at a glance, each line naming its command.
  *
  * Outside a praxis project there is nothing to orient in, so the screen

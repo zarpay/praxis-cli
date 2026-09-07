@@ -6,7 +6,7 @@ import gateTools from "@/prompts/gate-tools.js";
 import triageAxiomLine from "@/prompts/triage-axiom-line.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
 
-/** One candidate axiom for the authoring gate (03). */
+/** One candidate axiom for the authoring gate. */
 interface AssessAxiomGateInput {
   statement: string;
   violatingExample: string;
@@ -16,9 +16,9 @@ interface AssessAxiomGateInput {
 }
 
 /**
- * The authoring gate (03): one candidate axiom, one assessment —
+ * The authoring gate: one candidate axiom, one assessment —
  * appropriate, not_appropriate, or split with the judgment half
- * redrafted — plus the duplication check (04): a candidate whose
+ * redrafted — plus the duplication check: a candidate whose
  * remediation an existing axiom already carries names it in
  * `duplicateOf`, so the evidence folds instead of splitting into a
  * twin. Advisory by design: the caller shows it to a human.

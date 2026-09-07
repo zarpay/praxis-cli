@@ -12,8 +12,8 @@ interface DeprecateAxiomOptions {
 }
 
 /**
- * What `praxis axioms deprecate <id>` does: retires an active axiom
- * (04). The file flips to `status: deprecated` (id and records stay
+ * What `praxis axioms deprecate <id>` does: retires an active axiom.
+ * The file flips to `status: deprecated` (id and records stay
  * readable forever), a deprecation record lands in the triage ledger
  * with the reason, and — because the active set changed — every
  * unidentified critique re-queues for triage automatically.

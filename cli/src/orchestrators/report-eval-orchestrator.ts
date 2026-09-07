@@ -19,8 +19,8 @@ interface EvalReportOptions {
 }
 
 /**
- * What `praxis eval report` does: read the ledger, compute under 07's
- * hard rules, render — never a reviewer call, never a write. Scopes
+ * What `praxis eval report` does: read the ledger, compute under the
+ * measurement hard rules, render — never a reviewer call, never a write. Scopes
  * compose (files/glob, --since, --branch, --commit/--commits); --axiom
  * switches to the single-axiom drill-down.
  */

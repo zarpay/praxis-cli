@@ -55,7 +55,7 @@ export class VerdictStore {
       reviewer?: CacheReviewerIdentity;
       /**
        * A cache that answers but never changes: writes are no-ops and
-       * reads never discard corrupt files. CI's mode (12) — it verifies
+       * reads never discard corrupt files. CI's mode — it verifies
        * against the branch's committed cache and must leave no trace.
        */
       readOnly?: boolean;

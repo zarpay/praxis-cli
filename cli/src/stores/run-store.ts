@@ -13,7 +13,7 @@ import { RunFile } from "@/models/run-file.js";
 
 /**
  * The ledger's runs partition: `.praxis/ledger/runs/`, one write-once
- * file per (invocation, reviewer) (05).
+ * file per (invocation, reviewer).
  *
  * Reads never raise — a ledger that cannot be fully read must not cost
  * the command that consults it. Writes always raise — an eval store
@@ -55,7 +55,7 @@ export class RunStore {
 
   /**
    * Whether any corpus run exists under a behavioral hash — the
-   * membership question baseline stamping asks (02): set membership,
+   * membership question baseline stamping asks: set membership,
    * not sequence position, so interleaved contributor runs and branch
    * merges cannot flip the answer.
    */

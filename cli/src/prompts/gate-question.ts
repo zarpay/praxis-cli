@@ -3,7 +3,7 @@ import type { Prompt } from "@framework/types.js";
 import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
- * The authoring gate's question (03): is this candidate axiom
+ * The authoring gate's question: is this candidate axiom
  * appropriate for judgment-based review at all?
  *
  * The litmus tests are the spec's own, verbatim in spirit: they are

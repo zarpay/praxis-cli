@@ -14,7 +14,7 @@ interface InitProjectOptions {
   directory: string;
   /** Scaffold source tree; defaults to the packaged one. */
   scaffoldDir?: string;
-  /** Whether to add the spec-layer authoring taxonomy (11: opt-in). */
+  /** Whether to add the spec-layer authoring taxonomy. */
   specLayer?: boolean;
   /** Called with each created file's path, relative to the target. */
   onFileCreated?: (path: string) => void;

@@ -109,7 +109,7 @@ function findings(report: StatusReport): { heading: string; items: string[] }[] 
   return blocks.filter((block) => block.items.length > 0);
 }
 
-/** The situational-poll facts, each naming its command (09). */
+/** The situational-poll facts, each naming its command. */
 function evalStateLines(report: StatusReport): string[] {
   const { evalState } = report;
   const lastRun = evalState.last_run_at === null ? "never" : evalState.last_run_at.slice(0, 10);

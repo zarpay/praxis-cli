@@ -5,10 +5,10 @@ import type { ReportLine, View } from "@framework/types.js";
 /**
  * The axiom store at a glance: one line per axiom, chronological,
  * proposals and problems counted at the end so the drill-down commands
- * are obvious (09: broad surfaces stay terse and name the next step).
+ * are obvious.
  *
  * With `json` set, the same state renders as the stable machine
- * contract instead — never both, never disagreeing (09).
+ * contract instead — never both, never disagreeing.
  */
 const axiomListView: View<ListAxiomsResult & { json?: boolean }> = ({ axioms, problems, json }) => {
   if (json) {

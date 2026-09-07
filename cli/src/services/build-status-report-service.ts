@@ -105,7 +105,7 @@ function evalOnlyReport(
   };
 }
 
-/** The situational-poll facts (09-ae), derived from the stores. */
+/** The situational-poll facts, derived from the stores. */
 function evalStateOf(cfg: PraxisConfig): StatusReport["evalState"] {
   const { axioms } = new AxiomStore(cfg).all();
   const state = deriveTriageStateService(cfg, {});

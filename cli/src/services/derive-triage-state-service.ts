@@ -29,9 +29,9 @@ interface TriageState {
 }
 
 /**
- * The triage queues, derived — never stored (04).
+ * The triage queues, derived — never stored.
  *
- * A critique has three states (owner, 2026-09-07), and this derivation
+ * A critique has three states, and this derivation
  * is the one place they are decided:
  *
  * 1. **Untriaged** (`pending`) — no assignment, dismissal, or unmatched

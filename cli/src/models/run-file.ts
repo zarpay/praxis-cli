@@ -1,7 +1,7 @@
 import type { LedgerCritiqueRecord, LedgerRecord, LedgerRunRecord } from "@/types.js";
 
 /**
- * One run file's format (05): the run record on line one, one critique
+ * One run file's format: the run record on line one, one critique
  * record per line beneath, written whole and never touched again.
  *
  * Parsing is tolerant the way evidence reading must be: a file whose

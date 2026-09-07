@@ -102,12 +102,12 @@ export class ReviewSubject {
     return hash8(this.targetContent + this.specContent + this.assistInput());
   }
 
-  /** Provenance hash of the target alone, for the ledger (05). */
+  /** Provenance hash of the target alone, for the ledger. */
   targetContentHash(): string {
     return hash8(this.targetContent);
   }
 
-  /** Provenance hash of the spec alone, for the ledger (05). */
+  /** Provenance hash of the spec alone, for the ledger. */
   specContentHash(): string {
     return hash8(this.specContent);
   }
@@ -138,7 +138,7 @@ export class ReviewSubject {
 /**
  * Resolves the spec's `exemplars:` and `context:` globs into file contents.
  *
- * The assist inputs a reviewer sees beyond the target itself (03): exemplars
+ * The assist inputs a reviewer sees beyond the target itself: exemplars
  * are spec-blessed positives, context is what the standard is about. Both
  * reach the prompt, so both join the content hash — a verdict keyed only on
  * target + spec would survive edits to inputs the reviewer actually saw.
@@ -177,7 +177,7 @@ function resolveAssistKey(
 }
 
 /**
- * The provenance records for one assist key (05): each file's path with
+ * The provenance records for one assist key: each file's path with
  * an 8-char hash of its content, so a later run can tell whether what the
  * reviewer was shown has changed.
  */

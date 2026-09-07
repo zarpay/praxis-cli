@@ -9,7 +9,7 @@ import { prepareOrchestrator as prepare } from "@framework/prepare-orchestrator.
  *
  * This is the composition root: the one place that decides a Praxis
  * command runs against a `CommandContext`, and the one place Praxis's
- * error classification meets the framework's exit policy (09-o): a
+ * error classification meets the framework's exit policy: a
  * usage or configuration error exits 2, everything else thrown exits 1
  * alongside genuine violations.
  */
@@ -20,7 +20,7 @@ export function prepareOrchestrator<Options>(
   return prepare(() => new CommandContext(), orchestrator, extra, exitCodeFor);
 }
 
-/** 2 for usage/config mistakes, 1 for everything else (09-o). */
+/** 2 for usage/config mistakes, 1 for everything else. */
 function exitCodeFor(err: unknown): number {
   if (err instanceof PraxisError && USAGE_ERROR_CODES.has(err.code)) return 2;
 

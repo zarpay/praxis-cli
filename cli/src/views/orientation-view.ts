@@ -4,7 +4,7 @@ import type { View } from "@framework/types.js";
 import chalk from "chalk";
 
 /**
- * Bare `praxis` (09-h): the project at a glance, every line naming the
+ * Bare `praxis`: the project at a glance, every line naming the
  * command that acts on it — drill-down, not dumps.
  */
 const orientationView: View<Orientation & { json?: boolean }> = (orientation) => {

@@ -58,7 +58,7 @@ export class PraxisError extends Error {
 }
 
 /**
- * The failure modes that are usage or configuration errors (09-o):
+ * The failure modes that are usage or configuration errors:
  * the invocation or the config was wrong, not the work. These exit 2;
  * everything else — runtime failures, project content problems — exits
  * 1 alongside genuine violations.
@@ -361,7 +361,7 @@ export const errors = {
     return new PraxisError(
       "INVALID_CALIBRATION_CASE",
       `Calibration case "${caseId}" is malformed: ${problem} — ` +
-        "a case directory holds one input file, the frozen spec as spec.md, and expected.json (06)",
+        "a case directory holds one input file, the frozen spec as spec.md, and expected.json",
     );
   },
 

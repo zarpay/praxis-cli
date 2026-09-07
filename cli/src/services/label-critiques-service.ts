@@ -59,10 +59,10 @@ interface LabelOutcome {
 }
 
 /**
- * The labeling pass (04, review→label): classifies each **untriaged**
+ * The labeling pass: classifies each **untriaged**
  * critique against ALL active axioms — an axiom is an abstraction over
  * evidence, never a child of one spec, so a critique from any spec can
- * land in any axiom (owner, 2026-09-07). One curator call per critique,
+ * land in any axiom. One curator call per critique,
  * temperature 0, so no critique's verdict can be biased by its
  * neighbors or its position in a list. Calls run a few at a time;
  * order-independence is what makes the parallelism safe.

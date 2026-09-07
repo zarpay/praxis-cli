@@ -150,7 +150,7 @@ export class PraxisConfig {
   }
 
   /**
-   * The curator — the taxonomy's librarian (04) — or null when the
+   * The curator — the taxonomy's librarian — or null when the
    * project has not chosen one. Callers that need it raise the
    * instructive error rather than falling back to a reviewer: taxonomy
    * work silently done by a cheap model is the failure mode the role

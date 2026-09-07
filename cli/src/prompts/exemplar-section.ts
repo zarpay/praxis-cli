@@ -4,7 +4,7 @@ import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
  * The EXEMPLARS prompt section: spec-blessed positive examples, shown
- * as labeled references and never reviewed (03). `blocks` is the
+ * as labeled references and never reviewed. `blocks` is the
  * exemplar-block renderings joined; when the spec blesses none the
  * caller passes "" for the whole section instead, so it vanishes from
  * the prompt entirely. The trailing blank line is structural — it

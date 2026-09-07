@@ -1,5 +1,5 @@
 /**
- * Tool definition for the authoring gate (03): one assessment,
+ * Tool definition for the authoring gate: one assessment,
  * structured, with the judgment half redrafted when the candidate
  * splits.
  */

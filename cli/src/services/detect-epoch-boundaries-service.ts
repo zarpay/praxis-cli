@@ -9,7 +9,7 @@ interface DetectEpochBoundariesInput {
 }
 
 /**
- * The reviewers whose behavioral hash the ledger has never seen (02).
+ * The reviewers whose behavioral hash the ledger has never seen.
  *
  * Detection is set-wise, not last-run-wise: contributors on different
  * praxis versions interleave runs under different hashes, and comparing

@@ -6,7 +6,7 @@ interface AxiomTemplateVars {
   status: AxiomStatus;
   mode: AxiomMode;
   severity: Severity;
-  /** YYYY-MM-DD; per-axiom population clocks start here (04). */
+  /** YYYY-MM-DD; per-axiom population clocks start here. */
   introduced: string;
   /** The spec passage ratification derived it from; null until then. */
   derivedFrom: string | null;
@@ -17,7 +17,7 @@ interface AxiomTemplateVars {
 
 /**
  * The document a triage-accepted draft becomes: one axiom file, ready
- * for `.praxis/axioms/proposed/` (04).
+ * for `.praxis/axioms/proposed/`.
  *
  * `derived_from` is written only once ratification establishes it — an
  * absent key and a null are the same claim, and absence keeps proposal

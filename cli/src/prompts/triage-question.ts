@@ -3,7 +3,7 @@ import type { Prompt } from "@framework/types.js";
 import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
- * The triage organization request (04): one spec's unassigned
+ * The triage organization request: one spec's unassigned
  * critiques, the established axioms they may fold into, and the spec
  * itself for grounding. The curator clusters and suggests; the human
  * session that follows decides.

@@ -11,7 +11,7 @@ interface DebtReportOptions {
 
 /**
  * What `praxis debt report` does: render the P1 surface — baseline
- * stock, corpus paydown, concentration, re-baseline deltas (02). Reads
+ * stock, corpus paydown, concentration, re-baseline deltas. Reads
  * the ledger only; never a reviewer call, never a write.
  */
 export const reportDebtOrchestrator: Orchestrator<DebtReportOptions> = async (

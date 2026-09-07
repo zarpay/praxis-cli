@@ -4,10 +4,10 @@ import type { ReportLine, View } from "@framework/types.js";
 import chalk from "chalk";
 
 /**
- * The eval report, rendered under 07's hard rules: the calibration
+ * The eval report, rendered under the measurement hard rules: the calibration
  * banner first (rule 4), every rate beside its denominator (rule 3),
  * one reviewer one series (rule 7), populations qualifying counts
- * (rule 2), epoch boundaries as named furniture (rule 6), and 12's
+ * (rule 2), epoch boundaries as named furniture (rule 6), and the
  * missing-commit note for shas this clone can no longer resolve.
  */
 const evalReportView: View<EvalReport & { json?: boolean }> = (report) => {
@@ -54,7 +54,7 @@ const evalReportView: View<EvalReport & { json?: boolean }> = (report) => {
 
 export default evalReportView;
 
-/** 12's note, verbatim in shape: expiry is a lifecycle event, not corruption. */
+/** The missing-commit note: sha expiry is a lifecycle event, not corruption. */
 function missingCommitNote(missing: {
   sha: string;
   branch: string | null;

@@ -1,5 +1,5 @@
 /**
- * Tool definition for triage organization (04).
+ * Tool definition for triage organization.
  *
  * One tool, one call: the curator's entire organization arrives as a
  * single structured payload the session then walks cluster by cluster.

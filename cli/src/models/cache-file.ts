@@ -6,7 +6,7 @@ import { hash8 } from "@/helpers/hash-helper.js";
  * Current cache format version.
  *
  * 5.0 made each issue a structured critique carrying its axiom channel
- * (04-t); 4.0 renamed each entry's `judge` field to `reviewer`. Older
+ *; 4.0 renamed each entry's `judge` field to `reviewer`. Older
  * files are ignored rather than migrated — their entries lack fields
  * current readers match on, so reading one would silently miss every
  * time. Discarding them costs one re-review and cannot be got wrong.
@@ -20,7 +20,7 @@ export const CACHE_VERSION = "5.0";
  * Entries are keyed `<specHash>:<reviewerHash>`, so both dimensions of
  * verdict identity live in the key and a target's complete state is one
  * committed artifact. The reviewer hash in that key is what makes the
- * cache's invalidation behave as the epoch structure (05): a behavioral
+ * cache's invalidation behave as the epoch structure: a behavioral
  * change misses every old key and writes new ones, rolling the config
  * back re-hits the old keys at zero cost, and keys belonging to no
  * configured reviewer are prunable.

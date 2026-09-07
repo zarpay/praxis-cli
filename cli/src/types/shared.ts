@@ -13,7 +13,7 @@ export interface StoreProblem {
 }
 
 /**
- * What git can attest about a run's anchoring (05, 12). `commitSha`
+ * What git can attest about a run's anchoring. `commitSha`
  * non-null means the reviewed disk state provably equals a named,
  * reviewable commit — reconstruction-grade evidence. Null inside a repo
  * means the run was feedback on a transient state: attested by content

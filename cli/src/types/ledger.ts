@@ -1,4 +1,4 @@
-// The ledger's record shapes (05): append-only, committed, full
+// The ledger's record shapes: append-only, committed, full
 // provenance. Runs and critiques in one partition, triage decisions in
 // the other.
 
@@ -6,20 +6,20 @@ import type { ProviderUsage } from "@/types/extension-points.js";
 import type { Critique } from "@/types/review.js";
 import type { Severity } from "@/types/shared.js";
 
-/** What caused a ledger run (05). M2 writes only "manual". */
+/** What caused a ledger run. Only "manual" is written today. */
 export type LedgerTrigger = "manual" | "ci" | "watch";
 
 /**
- * What a run covered (05): "corpus" (full run) or "files" (named).
+ * What a run covered: "corpus" (full run) or "files" (named).
  * "diff" is historical — written by the withdrawn diff-units feature
  * (roadmap, 2026-09-07); readers tolerate it, nothing produces it.
  */
 export type LedgerScope = "corpus" | "diff" | "files";
 
 /**
- * Reviewer calibration state stamped on a run (06). "uncalibrated" is
+ * Reviewer calibration state stamped on a run. "uncalibrated" is
  * the absent case — no record exists for the reviewer's current hash —
- * and stays the historical member every pre-M6 record carries.
+ * and stays the historical member every earlier record carries.
  */
 export type CalibrationStatus = "uncalibrated" | "calibrated" | "stale";
 
@@ -52,10 +52,10 @@ export interface LedgerDiffFacts {
 /**
  * One run record — one per (invocation, reviewer) — as stored.
  *
- * `reviewer_hash` goes beyond 05's field list deliberately: epochs are
+ * `reviewer_hash` is recorded deliberately: epochs are
  * promised to be derivable from provenance, and only the behavioral hash
  * sees a temperature, prompt, or options change. `baseline` is always
- * false until the epoch machinery exists (02).
+ * false until the epoch machinery exists.
  */
 export interface LedgerRunRecord {
   kind: "run";
@@ -81,7 +81,7 @@ export interface LedgerRunRecord {
   critique_count: number;
   /**
    * Evaluated units per governing spec — the applicable-opportunity
-   * denominator (07, added 2026-09-03). Absent on records written
+   * denominator. Absent on records written
    * before it existed; their per-run rates suppress as insufficient
    * data rather than padding.
    */
@@ -123,9 +123,9 @@ export interface LedgerCritiqueRecord {
   axiom_version: number | null;
   /** Historical: "checklist" = born matched under the withdrawn two-channel model; current records are always null (labels live in assignment records). */
   assigned_by: "checklist" | null;
-  /** M2 writes "unknown" — never guessed (05). */
+  /** Written as "unknown" — never guessed. */
   population: "pre_spec" | "post_spec" | "unknown";
-  /** M2 writes "unknown" — never guessed (02). */
+  /** Written as "unknown" — never guessed. */
   authorship: "agent" | "human" | "unknown";
   authorship_evidence: null;
   agent_involved: null;
@@ -172,7 +172,7 @@ export interface WriteLedgerRunResult {
   path: string;
 }
 
-/** A human decision folding one critique into an axiom (04-t). */
+/** A human decision folding one critique into an axiom. */
 export interface TriageAssignmentRecord {
   kind: "assignment";
   critique_id: string;
@@ -197,7 +197,7 @@ export interface TriageDismissalRecord {
   timestamp: string;
 }
 
-/** A proposal rejected at ratification — reviewer-noise signal (04). */
+/** A proposal rejected at ratification — reviewer-noise signal. */
 export interface ProposalRejectionRecord {
   kind: "rejection";
   axiom_id: string;
@@ -205,7 +205,7 @@ export interface ProposalRejectionRecord {
   timestamp: string;
 }
 
-/** An active axiom retired (04): the id and its records stay readable forever. */
+/** An active axiom retired: the id and its records stay readable forever. */
 export interface AxiomDeprecationRecord {
   kind: "deprecation";
   axiom_id: string;
@@ -215,7 +215,7 @@ export interface AxiomDeprecationRecord {
 
 /**
  * The matcher considered a critique and found no squarely-matching
- * axiom (04): the critique is categorized as needing curation, not
+ * axiom: the critique is categorized as needing curation, not
  * merely untriaged. `considered` pins the axiom set it was judged
  * against — when the spec's active set changes, the critique re-queues
  * for triage automatically.

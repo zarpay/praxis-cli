@@ -62,7 +62,7 @@ export class Reviewer {
    * This reviewer's behavioral hash: the whole config minus `name` and
    * `apiKeyEnvVar`, plus the reviewer-facing prompt surface.
    *
-   * Changing it is an epoch change (05) — old verdicts miss, new ones
+   * Changing it is an epoch change — old verdicts miss, new ones
    * are written under the new key.
    */
   hash(): string {
@@ -95,7 +95,7 @@ export class Reviewer {
  *
  * The reviewer hash answers one question: would this reviewer produce the
  * same verdicts? It keys the cache namespace, so it is also the epoch
- * boundary (02, 05) — every input added here is a category of config
+ * boundary — every input added here is a category of config
  * edit that becomes a hard break in longitudinal data.
  *
  * The contract is exclusion-based so it survives config-shape changes:

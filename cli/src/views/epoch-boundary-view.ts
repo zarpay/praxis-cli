@@ -2,7 +2,7 @@ import type { EpochBoundary } from "@/types.js";
 import type { ReportLine, View } from "@framework/types.js";
 
 /**
- * The run-start announcement of an epoch boundary (02): a reviewer's
+ * The run-start announcement of an epoch boundary: a reviewer's
  * behavioral hash has no history in the ledger, so the numbers on
  * either side of this run are not comparable.
  *

@@ -3,7 +3,7 @@ import type { Prompt } from "@framework/types.js";
 import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
- * Ratification's traceability question (04): which spec criterion
+ * Ratification's traceability question: which spec criterion
  * grounds this proposal? The answer aids the ratifier — traceable,
  * fix-the-spec, or reviewer-invention are the three human outcomes,
  * and this assessment is evidence for that call, never the call.

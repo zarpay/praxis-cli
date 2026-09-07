@@ -40,7 +40,7 @@ interface ReviewUnitInput {
 }
 
 interface ReviewAllInput {
-  /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
+  /** Whether this run writes the ledger. Default true; CI passes false. */
   ledger?: boolean;
   /** The reviewers to run; every reviewer reviews every unit. */
   reviewers: ReviewerConfig[];
@@ -67,10 +67,10 @@ interface ReviewAllInput {
  * arrives through `onProgress` as it happens, so the orchestrator never
  * touches an output stream. A unit that cannot be reviewed at all is
  * recorded as `unverified` rather than raised or counted as a violation
- * (03): one unreachable target must not abandon a run that costs real
+ *: one unreachable target must not abandon a run that costs real
  * money, and must never masquerade as a finding.
  *
- * Each reviewer's completed pass is persisted to the ledger (05) unless
+ * Each reviewer's completed pass is persisted to the ledger unless
  * `ledger: false` — one run record per reviewer, one critique per issue.
  *
  * @throws PraxisError only when `type` matches no discovered domain

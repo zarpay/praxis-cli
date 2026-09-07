@@ -16,13 +16,13 @@ interface ResolveReportScopeInput {
 }
 
 /**
- * Scopes the ledger for one report invocation (07's three levels).
+ * Scopes the ledger for one report invocation: files, commit, or PR set.
  *
  * Filters compose: runs narrow by branch, commit set, and since-date;
  * critiques narrow to the scoped runs and then by the target glob.
  * A requested sha that no longer resolves in this clone is collected —
  * with the branch and date its recorded runs attest, when any exist —
- * so the report can render 12's missing-commit note instead of erroring:
+ * so the report can render the missing-commit note instead of erroring:
  * squash workflows orphan branch shas by policy.
  */
 const resolveReportScopeService: Service<ResolveReportScopeInput, ScopedLedger> = (

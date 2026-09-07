@@ -19,7 +19,7 @@ interface TriageClusterCard {
 }
 
 /**
- * One cluster of the curate session (04): the curator's grouping and
+ * One cluster of the curate session: the curator's grouping and
  * suggestion, with the distinct critiques as evidence (duplicates
  * counted, not repeated) — everything the human needs on screen to
  * fold, dismiss, or accept.

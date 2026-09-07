@@ -8,7 +8,7 @@ interface JoinCritiqueLabelsInput {
 }
 
 /**
- * The effective label of every critique (04, review→label): critiques
+ * The effective label of every critique: critiques
  * are born unlabeled, and labels live in triage assignment records —
  * the matcher's and a human's alike. This join is the ONE place a
  * critique's axiom identity is decided for every reader, fixing the

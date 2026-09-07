@@ -4,7 +4,7 @@ import type { ReportLine, View } from "@framework/types.js";
 import chalk from "chalk";
 
 /**
- * The debt surface (02, 07): honestly named, never charted as agent
+ * The debt surface: honestly named, never charted as agent
  * performance. Stock and paydown per axiom per reviewer, concentration
  * by directory, credit where attributable, and the re-baseline delta
  * with its boundary named.
@@ -85,7 +85,7 @@ function concentrationLines(report: DebtReport): ReportLine[] {
   ];
 }
 
-/** Who resolved what, when the runs were anchored (02). */
+/** Who resolved what, when the runs were anchored. */
 function creditLines(report: DebtReport): ReportLine[] {
   if (report.credits.length === 0) return [];
 

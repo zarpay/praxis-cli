@@ -1,5 +1,5 @@
 /**
- * Tool definition for the ratification traceability assessment (04).
+ * Tool definition for the ratification traceability assessment.
  */
 export default function traceabilityTools() {
   return [

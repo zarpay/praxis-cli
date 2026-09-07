@@ -24,7 +24,7 @@ interface RatifyAxiomOptions {
 
 /**
  * What `praxis axioms ratify <id>` does: the human gate a proposal
- * passes to become active (04).
+ * passes to become active.
  *
  * Renders the proposal with its supporting critiques, the authoring
  * gate's verdict, and the curator's traceability assessment; then the

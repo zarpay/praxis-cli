@@ -1,5 +1,5 @@
 /**
- * Tool definition for the labeling pass (04): one critique per call,
+ * Tool definition for the labeling pass: one critique per call,
  * one verdict back — the axiom id the critique is squarely an instance
  * of, or null. Structured output, no text parsing.
  */

@@ -14,7 +14,7 @@ interface TriageOutcome {
 
 /**
  * A curate session's outcome: every decision counted, the residual
- * named, and the next commands in reach (09: drill-down, not dumps).
+ * named, and the next commands in reach.
  */
 const curateSummaryView: View<TriageOutcome> = ({
   assigned,

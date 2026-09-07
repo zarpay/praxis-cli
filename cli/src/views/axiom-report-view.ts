@@ -4,7 +4,7 @@ import type { View } from "@framework/types.js";
 import chalk from "chalk";
 
 /**
- * One axiom across everything in scope (07): the standard, per-reviewer
+ * One axiom across everything in scope: the standard, per-reviewer
  * current-stock rates with population-qualified counts, and the
  * representative critiques with their ledger ids.
  */

@@ -6,7 +6,7 @@ import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
  * System prompt for the LLM reviewer.
  *
  * The validation criteria come from the spec file in the user prompt;
- * this prompt fixes the protocol and the judgment boundary (03). The
+ * this prompt fixes the protocol and the judgment boundary. The
  * out-of-scope paragraph is deliberate prompt engineering — a reviewer
  * that is never asked mechanical questions cannot answer them wrongly —
  * and the zero-findings paragraph counters completeness pressure: the

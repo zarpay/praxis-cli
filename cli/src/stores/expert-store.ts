@@ -11,7 +11,7 @@ import { ExpertFile } from "@/models/expert-file.js";
 import expertFileTemplate from "@/templates/expert-file-template.js";
 
 /**
- * The experts directory: the spec layer's source definitions (11).
+ * The experts directory: the spec layer's source definitions.
  *
  * One handle owns the listing rules — a spec file is direction and an
  * underscore-prefixed file is a template, so neither is ever an expert

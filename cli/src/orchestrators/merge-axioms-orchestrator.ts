@@ -16,7 +16,7 @@ interface MergeAxiomsOptions {
 }
 
 /**
- * What `praxis axioms merge` does (04): collapses over-split axioms
+ * What `praxis axioms merge` does: collapses over-split axioms
  * into one, with nothing rewritten and everything derived.
  *
  * The append-only join is the whole mechanism: every critique whose

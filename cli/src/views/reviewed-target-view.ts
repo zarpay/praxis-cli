@@ -5,10 +5,10 @@ import chalk from "chalk";
 
 /**
  * One named target's outcome as it lands: the badge for the worst
- * verdict, then the deduplicated finding list (08) — matched findings
+ * verdict, then the deduplicated finding list — matched findings
  * cite their axiom and count their witnesses, open-channel findings
  * carry the raw critique. The drill-down for a cited axiom is
- * `praxis axioms show <id>` (09).
+ * `praxis axioms show <id>`.
  */
 const reviewedTargetView: View<ReviewedTarget> = ({
   path,

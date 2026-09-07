@@ -30,7 +30,7 @@ interface RunEvalOptions {
   failFast?: boolean;
   /** Whether to consult the verdict cache. */
   cache?: boolean;
-  /** Emit the outcome as stable JSON on stdout (08-g, 09-af). */
+  /** Emit the outcome as stable JSON on stdout. */
   json?: boolean;
 }
 
@@ -52,14 +52,14 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
   const { root } = ctx;
   const cfg = ctx.config;
 
-  // Announce any epoch boundary before reviewing (02): warn, never block.
+  // Announce any epoch boundary before reviewing: warn, never block.
   const reviewers = selectReviewersService(cfg, { only: options.reviewer });
   const boundaries = detectEpochBoundariesService(cfg, { reviewers });
   const boundaryView = epochBoundaryView(boundaries);
 
   ctx.render(boundaryView);
 
-  // Name the run's evidence grade before spending anything (12).
+  // Name the run's evidence grade before spending anything.
   const anchoringView = runAnchoringView(gitFacts(root));
 
   ctx.render(anchoringView);
@@ -125,7 +125,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 
   ctx.render(reportView);
 
-  // A run that could not look at everything cannot claim clean (03).
+  // A run that could not look at everything cannot claim clean.
   return run.summary.errors + run.summary.unverified === 0 ? "ok" : "failed";
 };
 

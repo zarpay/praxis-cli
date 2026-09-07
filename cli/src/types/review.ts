@@ -8,7 +8,7 @@ export type CohortMode = "by_file" | "by_directory";
 /**
  * A file inlined into the review input beyond the target itself:
  * its display path and content. Exemplars and context files are both
- * this shape (03).
+ * this shape.
  */
 export interface AssistFile {
   path: string;
@@ -22,7 +22,7 @@ export interface AssistFileRecord {
 }
 
 /**
- * One active axiom as the reviewer's checklist carries it (04): the
+ * One active axiom as the reviewer's checklist carries it: the
  * ratified standard with its full teaching material, so the reviewer
  * judges against the extension, not just a label.
  */
@@ -39,7 +39,7 @@ export interface ActiveAxiom {
 /**
  * One reported deviation: the atomic unit of evidence (vocabulary).
  *
- * Born on one of the reviewer's two channels (04): matched critiques
+ * Born on one of the reviewer's two channels: matched critiques
  * carry the checklist axiom they are an instance of; open-channel
  * critiques carry null and flow onward to triage as open codes.
  */
@@ -90,7 +90,7 @@ export interface ValidationDomain {
    * Structural exclusions from the spec's `excludes:` frontmatter,
    * resolved to absolute glob patterns. Excluded files never become
    * units and never enter cohort membership — the reviewer never sees
-   * them (03: prevention beats calibration).
+   * them.
    */
   excludes: string[];
   /**
@@ -109,7 +109,7 @@ export interface ValidationDomain {
 export interface TargetVerdict extends Verdict {
   /** Absolute path of the validated document. */
   path: string;
-  /** Set when the unit could not be reviewed at all (03): never a violation. */
+  /** Set when the unit could not be reviewed at all: never a violation. */
   unverified?: true;
   /** Type label of the domain that validated it (spec directory, root-relative). */
   type: string;
@@ -144,7 +144,7 @@ export interface EvalSummary {
   >;
   /**
    * Per-reviewer breakdown. Reviewers are instruments with different error
-   * rates; their series render separately, never silently pooled (07).
+   * rates; their series render separately, never silently pooled.
    */
   byReviewer: Record<
     string,
@@ -196,7 +196,7 @@ export interface Finding {
   /** The axiom's statement (matched) or the critique text (open). */
   text: string;
   severity: Severity;
-  /** Reviewer names that flagged it; more than one = corroboration (06). */
+  /** Reviewer names that flagged it; more than one = corroboration. */
   witnesses: string[];
 }
 

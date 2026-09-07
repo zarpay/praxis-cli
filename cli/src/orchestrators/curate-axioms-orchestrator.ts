@@ -22,7 +22,7 @@ import curateClusterView from "@/views/curate-cluster-view.js";
 import curateSummaryView from "@/views/curate-summary-view.js";
 import { Prompter } from "@framework/views/prompter.js";
 
-/** Unique critiques per curator clustering call (04: cohorting). */
+/** Unique critiques per curator clustering call. */
 const COHORT_SIZE = 30;
 
 /** What one interactive curate session accumulates as it walks clusters. */
@@ -59,21 +59,21 @@ interface CurateAxiomsOptions {
 }
 
 /**
- * What `praxis axioms curate` does: the human review session (04).
+ * What `praxis axioms curate` does: the human review session.
  *
  * The division of labor is fixed: the curator organizes — clusters the
  * pending critiques per spec, suggests assignments, drafts proposals —
  * and the human decides, cluster by cluster. Clustering needs the set
  * (a category only emerges from a grouping large enough to show it),
- * but the set is bounded (owner, 2026-09-07): identical critique texts
+ * but the set is bounded: identical critique texts
  * dedup into one member with its duplicates counted, and each curator
  * call sees at most one cohort of unique critiques, with the session's
  * accepted proposals carried into later cohorts as fold targets so
  * categories consolidate instead of re-emerging per cohort. Accepted
- * drafts pass the authoring gate before anything is written (03).
+ * drafts pass the authoring gate before anything is written.
  * Every decision lands in the ledger's triage partition; `--yes`
  * accepts every suggestion and is recorded as such — an unreviewed
- * assignment is exactly as trustworthy as that sounds (04).
+ * assignment is exactly as trustworthy as that sounds.
  *
  * @throws PraxisError without a curator, or interactive without a TTY
  */
@@ -88,7 +88,7 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
 
   const state = deriveTriageStateService(cfg, {});
 
-  // Curate works ONLY the unmatched residue (04): "does this need a NEW
+  // Curate works ONLY the unmatched residue: "does this need a NEW
   // axiom" is well-posed only after triage has said no existing one fits.
   if (state.pending.length > 0) {
     ctx.logger.warn(
@@ -175,7 +175,7 @@ async function organizeAndDecide(
   const versions = new Map(store.all().axioms.map((axiom) => [axiom.id, axiom.version]));
 
   // Fold targets are ALL active axioms — an axiom is an abstraction over
-  // evidence, never a child of one spec (owner, 2026-09-07) — plus
+  // evidence, never a child of one spec — plus
   // whatever this session proposes as it goes.
   const established = store.active().map((axiom) => ({ id: axiom.id, statement: axiom.statement }));
 
@@ -397,7 +397,7 @@ function assign(
   }
 }
 
-/** An accepted draft: gate first (03), then the proposal file plus parentage. */
+/** An accepted draft: gate first, then the proposal file plus parentage. */
 async function propose(
   session: CurateSession,
   critiques: PendingCritique[],
@@ -431,7 +431,7 @@ async function propose(
     session.ctx.render([
       {
         channel: "warning",
-        text: `Gate: not appropriate — ${gate.reasoning} The cluster stays pending; mechanical standards belong in static tooling (03).`,
+        text: `Gate: not appropriate — ${gate.reasoning} The cluster stays pending; mechanical standards belong in static tooling.`,
       },
     ]);
     session.skipped += critiques.length;
@@ -474,7 +474,7 @@ async function propose(
   ]);
 }
 
-/** Groups the queue per governing spec — grounding is per-spec (04). */
+/** Groups the queue per governing spec — grounding is per-spec. */
 function groupBySpec(pending: PendingCritique[]): Map<string, PendingCritique[]> {
   const groups = new Map<string, PendingCritique[]>();
 

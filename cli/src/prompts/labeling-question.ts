@@ -3,10 +3,10 @@ import type { Prompt } from "@framework/types.js";
 import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
- * The labeling question (04, review→label): is this one critique
+ * The labeling question: is this one critique
  * squarely an instance of exactly one of its spec's active axioms?
  *
- * One critique per call, by design (owner, 2026-09-07): a batched list
+ * One critique per call, by design: a batched list
  * lets earlier answers anchor later ones and dilutes attention across
  * items, so ordering becomes a source of mislabeling. A single-critique
  * prompt has no order to bias it. The curator labels; a human can

@@ -6,7 +6,7 @@ interface DeriveEpochsInput {
 }
 
 /**
- * Epochs, derived — never stored (02): per reviewer name, the maximal
+ * Epochs, derived — never stored: per reviewer name, the maximal
  * intervals of stable behavioral hash, in first-seen order, each with
  * its named opening boundary and its epoch-opening corpus baseline.
  *

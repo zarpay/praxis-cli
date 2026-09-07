@@ -10,7 +10,7 @@ interface ShownAxiom {
  * One axiom in full: the facts a reader needs to trust it (identity,
  * lifecycle, grounding), then the statement and both examples — the
  * teaching material the fast loop deliberately leaves behind this
- * drill-down (08, 09).
+ * drill-down.
  */
 const axiomShowView: View<ShownAxiom & { json?: boolean }> = ({ axiom, json }) => {
   if (json) {

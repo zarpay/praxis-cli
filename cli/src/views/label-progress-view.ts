@@ -4,7 +4,7 @@ import type { View } from "@framework/types.js";
 import chalk from "chalk";
 
 /**
- * One labeling verdict as it lands (04): which critique, what the
+ * One labeling verdict as it lands: which critique, what the
  * matcher decided, and where the critique goes next.
  */
 const labelProgressView: View<LabelProgressEvent> = (event) => {

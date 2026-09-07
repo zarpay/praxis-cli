@@ -8,7 +8,7 @@ import { TriageSessionFile } from "@/models/triage-session-file.js";
 
 /**
  * The ledger's triage partition: `.praxis/ledger/triage/`, one
- * write-once file per session (04, 05).
+ * write-once file per session.
  *
  * Same integrity contract as runs: reads never raise, writes always do
  * — an assignment that silently vanished would resurface its critiques

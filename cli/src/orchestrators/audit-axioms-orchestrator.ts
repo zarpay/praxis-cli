@@ -13,11 +13,11 @@ interface AuditAxiomsOptions {
 
 /**
  * What `praxis axioms audit` does: the authoring gate re-assessed over
- * every active axiom (03) — tooling capability grows, and an axiom
+ * every active axiom — tooling capability grows, and an axiom
  * appropriate last year may be delegable now.
  *
  * Advisory only: the report names removal candidates; deprecating is a
- * human edit, and history stays frozen (04).
+ * human edit, and history stays frozen.
  *
  * @throws PraxisError without a curator
  */

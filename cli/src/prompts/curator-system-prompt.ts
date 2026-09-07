@@ -3,7 +3,7 @@ import type { Prompt } from "@framework/types.js";
 import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
- * System prompt for the curator: the taxonomy's librarian (04).
+ * System prompt for the curator: the taxonomy's librarian.
  *
  * The division of labor is fixed and stated to the model plainly: the
  * curator organizes — groups, suggests, drafts — and a human decides.

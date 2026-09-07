@@ -14,7 +14,7 @@ import { VerdictStore } from "@/stores/verdict-store.js";
 
 /** The targets to review, and the project they live in. */
 interface ReviewNamedInput {
-  /** Whether this run writes the ledger. Default true; CI passes false (12: verify without writing). */
+  /** Whether this run writes the ledger. Default true; CI passes false. */
   ledger?: boolean;
   /** Absolute or cwd-relative target paths. */
   targets: string[];
@@ -24,7 +24,7 @@ interface ReviewNamedInput {
   reviewer?: string;
   /** Whether to consult the verdict cache. */
   useCache?: boolean;
-  /** Called once per target with its deduplicated findings (08). */
+  /** Called once per target with its deduplicated findings. */
   onTarget?: (event: ReviewedTarget) => void;
 }
 
@@ -39,7 +39,7 @@ interface ReviewNamedResult {
 /**
  * Reviews the named targets, each against its own spec.
  *
- * What `praxis eval run <targets…>` does — the fast loop (08). Every
+ * What `praxis eval run <targets…>` does — the fast loop. Every
  * selected reviewer sees every target; a target's outcome is the worst
  * verdict across them, and its critiques collapse into a deduplicated
  * finding list: matched critiques merge on their axiom with witnesses
@@ -49,7 +49,7 @@ interface ReviewNamedResult {
  * named: pointing several targets at one spec would silently review
  * them against direction that does not govern them.
  *
- * Every fast-loop run is evidence (08): each reviewer's pass persists to
+ * Every fast-loop run is evidence: each reviewer's pass persists to
  * the ledger with `scope: "files"` unless `ledger: false`.
  *
  * @throws PraxisError when no reviewer is usable, or a target has no spec
@@ -205,7 +205,7 @@ function severityRank(verdict: Verdict): number {
 /**
  * The spec governing a named target, resolved exactly like a full run:
  * the sibling pattern first, then the paths-targeted domains — a
- * compiled expert governs from afar (11), and the fast loop must see it
+ * compiled expert governs from afar, and the fast loop must see it
  * (found live in servus, 2026-09-06).
  *
  * @throws the sibling lookup's instructive error when neither names it
