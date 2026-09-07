@@ -86,7 +86,7 @@ praxis eval run
 ```
 
 ```
-[1/4] create-review.ts
+[1/4] apply-discount.ts
 	✓ PASS
 [2/4] rank-parlors.ts
 	✓ PASS
@@ -95,6 +95,8 @@ praxis eval run
 	· Error message 'bad input' tells the consumer nothing about what
 	  was wrong or what would be accepted.
 	· Work begins before the coupon code is validated.
+[4/4] send-newsletter.ts
+	✓ PASS
 
 ==================================================
 Summary — corpus conformance (includes pre-spec debt)
@@ -103,6 +105,8 @@ Total documents: 4
 [Compliant] 3
 [Errors] 1
 ```
+
+Notice what *isn't* here: `create-review.ts` never gets a verdict — an exemplar is shown to the reviewer as a positive example, never reviewed itself — and `legacy-import.ts` is excluded outright.
 
 Each verdict is cached by a content hash covering everything the reviewer saw — the target, the spec, the exemplar. Run it again and it's four cache hits, zero API calls. Fix `redeem-coupon.ts` and only that file re-reviews:
 
@@ -123,13 +127,19 @@ praxis eval report  # rates, costs, and epochs computed over the ledger
 
 ## Where it goes from here
 
-Run reviews for a week and the same critiques start repeating — "error message tells the consumer nothing" shows up across five services. That's when you run:
+Run reviews for a week and the same critiques start repeating — "error message tells the consumer nothing" shows up across five services. That's when the axiom loop starts:
+
+```bash
+praxis axioms triage
+```
+
+A **curator** model labels each pending critique against the axioms you've already ratified, and sends the rest — the ones no existing axiom matches — to the curation queue. Early on, that's all of them. Then:
 
 ```bash
 praxis axioms curate
 ```
 
-A **curator** model clusters the pending critiques and drafts a proposal; you accept; `praxis axioms ratify` traces it to the spec and activates it. From then on the standard has a name — `AX-b951db` — `praxis axioms triage` batch-labels every recurring critique under it (the reviewer itself keeps seeing only the spec), reports cite it, and `praxis axioms show AX-b951db` teaches it with a violating and a compliant example. Standards stop being folklore. See [the evidence loop](/concepts/evidence-loop).
+The curator clusters that unmatched residue and drafts a proposal; you accept; `praxis axioms ratify` traces it to the spec and activates it. From then on the standard has a name — `AX-b951db` — future `praxis axioms triage` runs label every recurring critique under it (the reviewer itself keeps seeing only the spec), reports cite it, and `praxis axioms show AX-b951db` teaches it with a violating and a compliant example. Standards stop being folklore. See [the evidence loop](/concepts/evidence-loop).
 
 ## Optional: the spec layer
 

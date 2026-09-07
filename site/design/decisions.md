@@ -33,7 +33,7 @@ Praxis requires an explicit compile step rather than dynamically resolving refer
 
 The reasons:
 
-- **The output is reviewable.** You can read `agent-profiles/reviewer.md` and verify that it contains what you expect before it reaches a production agent.
+- **The output is reviewable.** You can read `agent-profiles/reviewer.expert.md` and verify that it contains what you expect before it reaches a production agent.
 - **The output is static.** A compiled profile doesn't have runtime dependencies. You don't need to run Praxis in your agent infrastructure.
 - **Compile-time errors are caught early.** Missing references fail at compile time, not silently at runtime.
 

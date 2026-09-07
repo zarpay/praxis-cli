@@ -15,15 +15,6 @@ Exit codes are a contract across the whole CLI: **0** success or no violations, 
 
 Exit 0: no errors. Exit 1: at least one error verdict — or any target that could not be reviewed at all (**UNVERIFIED**): a gate that could not look is not a gate, so an unreadable file or an oversized cohort fails CI rather than passing unseen.
 
-
-```yaml
-      - name: Review what the PR changed
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-```
-
-
-
 ## Strict mode
 
 ```bash

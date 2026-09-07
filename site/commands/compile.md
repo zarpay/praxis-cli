@@ -16,8 +16,9 @@ For each expert in `expertsDir`:
 2. Expands glob patterns in `constitution`, `context`, `practices`, and `refs`
 3. Reads and strips frontmatter from every referenced file
 4. Assembles a single markdown profile in section order
-5. Writes the profile to `{agentProfilesOutputDir}/{alias}.md`
-6. Passes the profile to each enabled plugin
+5. Prepends eval-targeting frontmatter — the expert's `validates:` compiles out as the spec's `paths:`, and `cohort:`, `excludes:`, and `exemplars:` pass through — so the compiled profile is itself a spec the eval layer can discover
+6. Writes the profile to `{agentProfilesOutputDir}/{alias lowercased}.expert.md`
+7. Passes the profile to each enabled plugin
 
 See [The Compiler Pipeline](/concepts/compiler-pipeline) for a full walkthrough.
 
@@ -33,7 +34,7 @@ praxis compile --alias reviewer
 
 ### `--watch`
 
-Starts a file watcher on every directory in `sources`. Any `.md` change triggers a debounced recompile of all experts.
+Starts a file watcher on every directory in `sources`. Any file change in a watched directory triggers a debounced recompile of all experts.
 
 ```bash
 praxis compile --watch
@@ -45,7 +46,9 @@ The watcher debounces rapid saves (e.g., during an autosave burst) to avoid redu
 
 ### Pure profiles
 
-Written to `{agentProfilesOutputDir}/{alias}.md`. Default: `agent-profiles/`.
+Written to `{agentProfilesOutputDir}/{alias lowercased}.expert.md`. Default: `agent-profiles/` — Scooper compiles to `agent-profiles/scooper.expert.md`.
+
+The profile opens with eval-targeting frontmatter (`paths:`, plus any `cohort:`, `excludes:`, `exemplars:` the expert declared), which makes the compiled profile a spec in its own right: point a `specFilePattern` like `"{README.md,*.expert.md}"` at it and `praxis eval run` reviews the expert's `validates:` targets against it.
 
 Set `agentProfilesOutputDir: false` in config to disable pure profile output.
 
@@ -64,10 +67,11 @@ praxis compile
 ```
 
 ```
-[OK] Compiled scooper.md
-[OK] Compiled sundae.md
-[OK] Compiled taster.md
-[INFO] Compiled 3 agent(s) (up-to-date)
+[OK] Compiled scooper.expert.md
+[OK] Compiled sundae.expert.md
+[OK] Compiled taster.expert.md
+
+Compiled 3 agent(s) (up-to-date)
 ```
 
 ```bash
@@ -75,7 +79,7 @@ praxis compile --alias scooper
 ```
 
 ```
-[OK] Compiled scooper.md
+[OK] Compiled scooper.expert.md
 ```
 
 ## See also

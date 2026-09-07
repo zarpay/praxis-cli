@@ -36,37 +36,41 @@ files are never overwritten:
 my-org/
 ├── .praxis/
 │   └── config.json              ← project configuration
+├── README.md                    ← the taxonomy's own spec
 ├── context/
+│   ├── README.md
 │   ├── constitution/
 │   │   ├── README.md            ← validation spec
 │   │   ├── identity.md          ← starter: who you are
-│   │   ├── principles.md        ← starter: what you value
-│   │   └── _template.md         ← template for new constitution docs
+│   │   └── principles.md        ← starter: what you value
 │   ├── conventions/
 │   │   ├── README.md
-│   │   ├── documentation.md     ← starter: writing conventions
-│   │   └── _template.md
+│   │   └── documentation.md     ← starter: writing conventions
 │   └── lenses/
-│       ├── README.md
-│       └── _template.md
+│       └── README.md
 ├── experts/
 │   ├── README.md
 │   ├── praxis-steward.md        ← built-in: knowledge framework steward
-│   ├── praxis-recruiter.md      ← built-in: talent and team sourcing
-│   └── _template.md
+│   └── praxis-recruiter.md      ← built-in: talent and team sourcing
 ├── practices/
 │   ├── README.md
-│   └── _template.md
+│   ├── audit-framework-health.md      ← starter practices
+│   ├── challenge-contributor-design.md
+│   ├── guide-content-placement.md
+│   └── review-content-quality.md
 ├── reference/
 │   ├── README.md
-│   └── _template.md
+│   ├── practices-index.md       ← starter reference docs
+│   └── praxis-vocabulary.md
 ├── agent-profiles/              ← compiled output (created on first compile)
 └── plugins/                     ← plugin output (created on first compile)
 ```
 
+New documents are created with `praxis add`, which writes them from templates compiled into the CLI — the scaffold ships starter content, not template files.
+
 ## Safe to re-run
 
-`praxis init` skips any file that already exists. It is safe to run on an existing project to scaffold new sections or restore accidentally deleted templates.
+`praxis init` skips any file that already exists. It is safe to run on an existing project to scaffold new sections or restore accidentally deleted starter files.
 
 ## Plugin output comes from compile, not init
 

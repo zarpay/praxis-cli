@@ -26,7 +26,7 @@ refs:
 ---
 ```
 
-The compiled profile at `agent-profiles/scooper.md` looks like:
+The compiled profile at `agent-profiles/scooper.expert.md` looks like:
 
 ```markdown
 # Role
@@ -74,7 +74,7 @@ One file per expert is a deliberate choice.
 
 ## The alias
 
-The `alias` field in an expert's frontmatter determines the output filename:
+The `alias` field in an expert's frontmatter determines the output filename — lowercased, with the `.expert.md` suffix:
 
 ```yaml
 alias: Scooper
@@ -83,10 +83,10 @@ alias: Scooper
 Compiles to:
 
 ```
-agent-profiles/scooper.md
+agent-profiles/scooper.expert.md
 ```
 
-If no `alias` is set, the expert's filename (without `.md`) is used as a fallback.
+`alias` is required — a file without one is not an expert, and a compile sweep reports it as a problem rather than inventing a fallback name.
 
 ## Pure profiles vs plugin output
 
@@ -143,7 +143,7 @@ The Claude Code agent file gets the same block. Both outputs are valid spec file
 To make `praxis eval run` discover the profile as a spec, ensure:
 
 1. The profile lands in a directory within `sources` (so spec discovery scans it)
-2. `specFilePattern` matches the output filename — Scoop Society names its dispatchable spec `experts.sme.md` and sets `"specFilePattern": "{README.md,*.sme.md}"`, accepting both hand-authored READMEs and compiled profiles
+2. `specFilePattern` matches the output filename — compiled profiles are `*.expert.md`, so a pattern like `"{README.md,*.expert.md}"` accepts both hand-authored READMEs and compiled profiles
 
 The payoff: your team runs `praxis eval run` and Scooper — assembled from every source document that defines how services should be written — reviews every service file for compliance. Update the conventions, recompile, and the standard and the agent move together.
 

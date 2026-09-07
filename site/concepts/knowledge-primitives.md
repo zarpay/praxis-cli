@@ -62,7 +62,7 @@ description: "Use this agent to review Scoop Society services for convention adh
 ...
 ```
 
-The `type` field is used by `praxis status` for categorization and by the compiler for routing. It is also what `praxis eval run` checks against the directory README spec.
+The `type` field is used by `praxis status` to categorize document counts. The compiler routes by directory — every `.md` file in `expertsDir` is treated as an expert — and `praxis eval run` reviews file content against the governing spec; neither reads `type`.
 
 ## See also
 

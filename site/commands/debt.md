@@ -17,7 +17,8 @@ Every report carries its calibration status; `--json` emits the built payload ve
 ## Example
 
 ```
-[INFO] Debt report — corpus, pre-spec debt included
+Debt report — corpus, pre-spec debt included
+
 [WARN] Calibration: uncalibrated — numbers are directional, not interpretable
 AX-2559f7 [flash] baseline 3 → current 1 · paid down 2 · appeared since baseline 0
 AX-b951db [flash] baseline 5 → current 5 · paid down 0 · appeared since baseline 0
@@ -26,8 +27,8 @@ Concentration (current stock by directory):
   src/services: 4
   src/features: 2
 
-Paydown credit:
-  Baseline Author — 2 violations resolved
+Paydown credit (authors of resolving commits):
+  Baseline Author: 2 resolved
 ```
 
 The paydown credit names the git authors whose commits touched each resolved file between the two anchored runs — credit is attributable where blame is not: cleanup is deliberate, directed work.

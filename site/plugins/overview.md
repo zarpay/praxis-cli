@@ -6,7 +6,7 @@ Plugins receive compiled agent profiles and transform or extend them for specifi
 
 After compiling an expert, Praxis:
 
-1. Writes the pure profile to `{agentProfilesOutputDir}/{alias}.md`
+1. Writes the pure profile to `{agentProfilesOutputDir}/{alias lowercased}.expert.md`
 2. Passes the profile content and expert metadata to each enabled plugin
 3. Each plugin writes its own output to its configured output directory
 
@@ -50,7 +50,7 @@ Plugin output directories are separate from `agentProfilesOutputDir`. You can ha
 
 ```
 agent-profiles/
-└── reviewer.md          ← pure profile
+└── reviewer.expert.md   ← pure profile
 
 plugins/praxis/
 └── agents/

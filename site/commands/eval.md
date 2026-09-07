@@ -65,7 +65,7 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 **Output:**
 
 ```
-[1/4] create-review.ts
+[1/4] apply-discount.ts
 	✓ PASS
 [2/4] rank-parlors.ts
 	⚠ WARN
@@ -74,6 +74,8 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 	✗ FAIL
 	· Error message 'bad input' tells the consumer nothing about what was
 	  wrong or what would be accepted.
+[4/4] send-newsletter.ts
+	✓ PASS
 
 ==================================================
 Summary — corpus conformance (includes pre-spec debt)
@@ -86,7 +88,7 @@ Total documents: 4
 
 Critiques print raw — the reviewer's own words against the spec. Labels come later: `praxis axioms triage` classifies the pending backlog under ratified axioms, and from then on reports cite the axiom's id and ratified words (drill-down at `praxis axioms show <id>`).
 
-**Exit code:** 0 if no errors, 1 if any errors (warnings do not fail).
+**Exit code:** 0 only when the run is clean — 1 when any target has errors **or is unverified** (warnings do not fail). An unverified target was never seen by a reviewer, so it cannot be allowed to pass silently.
 
 ---
 
@@ -106,7 +108,7 @@ praxis eval ci --strict
 | `--strict`      | Fail on warnings too                                               |
 
 
-**Exit code:** 0 if all pass (or no errors with `--strict` off), 1 otherwise.
+**Exit code:** 0 = clean; 1 on any error or unverified target — and, under `--strict`, on warnings too.
 
 ---
 
@@ -135,7 +137,7 @@ Shows one of five states:
 
 Use `--verbose` to include the full AI reasoning from the cached result.
 
-**Exit code:** Always 0 — this command is for inspection only.
+**Exit code:** 0 when the verdict report renders, whatever the verdict says — inspection never fails on a FAIL. It errors instead when the target does not exist or no configured reviewer has an opinion about it.
 
 ### `praxis eval prune`
 

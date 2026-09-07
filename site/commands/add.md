@@ -38,46 +38,60 @@ An existing file is never overwritten — `add` scaffolds, it does not edit.
 
 If you've configured a custom directory (e.g., `"expertsDir": "agents/experts"`), `praxis add expert` writes there instead.
 
-## Template files
+## Templates are built in
 
-The template for each type lives at `_template.md` inside the relevant directory. `praxis init` creates these templates, and `praxis add` reads from them.
+The document each type starts from is compiled into the CLI — a typed template function, not a file in your project. `praxis add` fills the title and alias from the `<name>` you pass and writes the result. There is no `_template.md` to customize; every `{token}` left in the generated file is guidance for you to replace by hand.
 
-If you customize a `_template.md`, all future `praxis add` calls for that type use your custom template.
-
-A typical expert template after `praxis init`:
+What `praxis add expert service-steward` writes:
 
 ```markdown
 ---
-title: { Expert Name }
+title: "Service Steward"
 type: expert
-alias: { required_alias }
-description: ""
+alias: "service-steward"
+
+description: "Use this agent to {LIST USECASES}. This agent should be invoked {EXPLAIN AUTO INVOCATION CRITERIA}."
 
 constitution:
   - context/constitution/*.md
-context: []
-practices: []
-refs: []
+context:
+  - context/{relevant-context-file}.md
+
+practices:
+  - practices/{verb}-{noun}.md
+
+refs:
+  - reference/{relevant-reference}.md
 ---
 
-# {Expert Name}
+# Service Steward (a.k.a **Service Steward**)
 
-Brief description of this expert.
+Concise description of what this expert does.
+
+## Identity
+
+What this expert is and why it exists.
 
 ## Scope
 
 ### Responsible For
 
-- ...
+- Thing this expert owns
 
 ### Not Responsible For
 
-- ...
+- Boundary clarification
 
 ## Authorities
 
-- **Can** ...
-- **Cannot** ...
+- **Can** approve X up to Y threshold
+- **Cannot** commit to A without approval from B
+
+## Interfaces
+
+| With | Interaction |
+|------|-------------|
+| {Other Expert} | Receives X, provides Y |
 ```
 
 ## Does not overwrite

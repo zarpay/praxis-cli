@@ -11,7 +11,7 @@ praxis status --json
 
 ## What it reports
 
-- **Situational facts** — last run, pending triage count, proposals awaiting ratification, and whether an epoch boundary is waiting for a baseline run. Always shown.
+- **Situational facts** — last run, the untriaged and awaiting-curation queue counts, proposals awaiting ratification, and whether an epoch boundary is waiting for a baseline run. Always shown.
 - **Review coverage** — pass / warn / fail / not-validated counts per reviewer, read from the committed cache. One block per reviewer, never pooled.
 - **Document counts** — only when the spec-layer compiler is in use (the configured experts directory exists).
 - **Structural issues** — found without any LLM call, compiler projects only: dangling references, orphaned practices, experts missing descriptions, experts that fail to parse, globs matching nothing.
@@ -19,22 +19,23 @@ praxis status --json
 ## Example output
 
 ```
-[INFO] Praxis Project Status
+Praxis Project Status
 
-Last run: 2026-09-03 · Pending triage: 11 · Proposals awaiting ratification: 0
+Last run: 2026-09-03
+Untriaged: 11 · Awaiting curation: 0 · Proposals: 0
 
   Experts:          3
   Practices:        3
   References:       1
   Context files:    4
 
-[INFO] Validation (reviewer: flash)
+Validation (reviewer: flash)
   [PASS] 15
   [WARN] 1
   [FAIL] 2
   [NOT VALIDATED] 0
 
-[INFO] Validation (reviewer: v32)
+Validation (reviewer: v32)
   [PASS] 14
   [WARN] 0
   [FAIL] 4
@@ -55,6 +56,7 @@ Exit 1 when any structural issue is found — the same count the closing line pr
 {
   "evalState": {
     "pending_triage": 11,
+    "awaiting_curation": 0,
     "proposals_pending": 0,
     "calibration_stale": true,
     "epoch_boundary_detected": false,

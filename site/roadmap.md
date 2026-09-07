@@ -1,10 +1,8 @@
 # Roadmap
 
-Capabilities that shipped during v2 development and were deliberately
-withdrawn (2026-09-07): the core of Praxis is **specs, evals, axioms,
-and reporting**, and advanced capabilities return only once that core
-is rock-solid. Their designs are preserved in the repo
-(`cli/praxis_v2_specs/roadmap/`).
+Praxis's core is **specs, evals, axioms, and reporting** — deliberately
+small. The capabilities below were designed, and in some cases built and
+withdrawn, and return only once that core is rock-solid.
 
 - **Diff units** — the branch as an eval unit: review both sides of a
   change, label findings introduced / resolved / inherited by

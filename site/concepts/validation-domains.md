@@ -29,11 +29,13 @@ By default the spec file is `README.md`. Change it globally with the top-level `
 { "specFilePattern": "SPEC.md" }
 ```
 
-Globs are supported, including alternation — Scoop Society accepts both hand-written READMEs and compiled SME profiles as specs:
+Globs are supported, including alternation — a pattern like this accepts both hand-written READMEs and [compiled expert profiles](/concepts/agent-profiles#profiles-as-spec-files) as specs:
 
 ```json
-{ "specFilePattern": "{README.md,*.sme.md}" }
+{ "specFilePattern": "{README.md,*.expert.md}" }
 ```
+
+(Scoop Society's own pattern is `"{README.md,*.sme.md}"` — the `*.sme.md` half matches its hand-authored `experts.sme.md` spec, not compiled output.)
 
 ## Cross-directory domains
 

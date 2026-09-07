@@ -61,10 +61,7 @@ Every bullet requires reading comprehension to decide — which is exactly what 
 
 ## Severity: must vs. should
 
-Reviewers respect the distinction between binding and advisory language:
-
-- **"must", "never", "always"** — violations come back as **FAIL** (error severity).
-- **"should", "prefer", "recommended"** — violations come back as **WARN**.
+The severity boundary the reviewer answers through is drawn in its verdict tools: a violated **core or required** criterion fails, a **non-critical deviation or unmet optional** criterion warns. Which side of that line a standard falls on is the reviewer's reading of your spec — so write the intent into the language. Binding phrasing ("must", "never", "always") reads as core; advisory phrasing ("should", "prefer", "recommended") reads as optional. The words aren't hard-coded anywhere; they work because the reviewer reads them as intent.
 
 By default errors fail a run and warnings don't; `eval ci --strict` makes warnings blocking too.
 
@@ -108,7 +105,7 @@ Because exemplars and context are part of what the reviewer sees, they join the 
 
 ## Spec file location
 
-By default the spec file is `README.md` in the directory it governs. The top-level `specFilePattern` config key changes that — a literal filename (`"SPEC.md"`) or a glob (`"*.sme.md"`, or Scoop Society's `"{README.md,*.sme.md}"`, which accepts both hand-authored READMEs and compiled profiles).
+By default the spec file is `README.md` in the directory it governs. The top-level `specFilePattern` config key changes that — a literal filename (`"SPEC.md"`) or a glob (`"{README.md,*.expert.md}"` accepts both hand-authored READMEs and compiled expert profiles; Scoop Society's `"{README.md,*.sme.md}"` adds its hand-authored `experts.sme.md` spec).
 
 ## Compiled profiles as specs
 

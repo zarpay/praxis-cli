@@ -39,7 +39,7 @@ You, first — the developer who wrote the README and watched it stop being true
 
 Your team, second: the cache and the ledger are committed, so a verdict paid for on one machine is a cache hit on every other, and the evidence of who found what, when, accumulates in git like everything else.
 
-Your agents, third: findings cite stable axiom ids an agent can look up, `--json` surfaces are stable contracts, and `praxis status --json` is a one-call situational poll. The compiled skill and slash command (via the Claude Code plugin) teach an agent the whole workflow.
+Your agents, third: findings arrive as the reviewer's own words against the spec, and once triage labels them, reports and `praxis axioms show` cite stable axiom ids an agent can look up; `--json` surfaces are stable contracts, and `praxis status --json` is a one-call situational poll. The compiled skill and slash command (via the Claude Code plugin) teach an agent the whole workflow.
 
 ## How to read the docs
 

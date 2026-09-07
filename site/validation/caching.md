@@ -37,8 +37,8 @@ Each target has exactly one cache file — its complete review state, across all
         "issues": [
           {
             "text": "Error message 'bad input' names nothing.",
-            "axiomId": "AX-b951db",
-            "axiomVersion": 1
+            "axiomId": null,
+            "axiomVersion": null
           }
         ],
         "reason": "The service violates the error-message standard."
@@ -47,6 +47,8 @@ Each target has exactly one cache file — its complete review state, across all
   }
 }
 ```
+
+Cached critiques are born raw — `axiomId` and `axiomVersion` are always `null` in the cache. Labels are triage assignment records in the ledger, joined at read time by the reports; they are never written back into the cache.
 
 The reviewer's hash is its **behavioral identity**: the whole config entry minus `name` and `apiKeyEnvVar`, plus the complete reviewer-facing prompt surface this praxis version ships. When the spec declares `exemplars:` or `context:`, the entry records the resolved files with per-file hashes — the exact inputs behind the verdict.
 

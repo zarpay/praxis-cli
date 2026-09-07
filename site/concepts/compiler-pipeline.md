@@ -59,7 +59,7 @@ Constitution blocks flow together as one continuous statement of identity; the o
 
 ## Output: the agent profile
 
-The assembled profile is written to `{agentProfilesOutputDir}/{alias}.md` — here, `agent-profiles/scooper.md`. Because this expert declares `validates:`, the profile also opens with the eval-targeting frontmatter (`paths:`, `exemplars:`, `excludes:`) that makes it a working **spec**: the compiled agent and the standard that reviews `src/services/*.ts` are the same file. See [Profiles as spec files](/concepts/agent-profiles#profiles-as-spec-files).
+The assembled profile is written to `{agentProfilesOutputDir}/{alias lowercased}.expert.md` — here, `agent-profiles/scooper.expert.md`. Because this expert declares `validates:`, the profile also opens with the eval-targeting frontmatter (`paths:`, `exemplars:`, `excludes:`) that makes it a working **spec**: the compiled agent and the standard that reviews `src/services/*.ts` are the same file. See [Profiles as spec files](/concepts/agent-profiles#profiles-as-spec-files).
 
 The output is plain markdown — no special syntax, no runtime dependency. It can be dropped into Claude Code, loaded as a system prompt via any LLM API, or read by a human who wants to know what the agent knows.
 

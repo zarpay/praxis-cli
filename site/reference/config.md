@@ -38,7 +38,7 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
 }
 ```
 
-(This is Scoop Society's shape: two reviewers, a frontier curator, and a spec pattern accepting both hand-authored READMEs and compiled `.sme.md` profiles.)
+(This is Scoop Society's shape: two reviewers, a frontier curator, and a spec pattern accepting directory READMEs plus its hand-authored `experts.sme.md` spec. Compiled profiles are named `*.expert.md` — a project that wants them discovered as specs uses `"{README.md,*.expert.md}"` instead.)
 
 ---
 
@@ -74,7 +74,7 @@ Glob patterns for files and directories to exclude from all source scans. Patter
 { "ignore": ["docs/generated/**", "**/.*.md", "backend/vendor/**"] }
 ```
 
-Ignored paths are excluded everywhere sources are scanned: document counts in `praxis status`, spec discovery in `praxis eval run`, and the status dashboard. Literal subdirectory paths and filename patterns are both supported.
+Ignored paths are never reviewed and never counted: they are excluded from review targets in `praxis eval run` and from document counts in `praxis status`. Spec discovery is unaffected — a spec file under an ignored path is still found, so ignoring a directory shields its files from review without hiding the standard itself. Literal subdirectory paths and filename patterns are both supported.
 
 ---
 
@@ -101,7 +101,7 @@ The directory where practice `.md` files live. Used by `praxis add practice` to 
 **Type:** `string | false`
 **Default:** `"./agent-profiles"`
 
-Where compiled pure agent profiles are written. Each expert compiles to `{agentProfilesOutputDir}/{alias}.md`.
+Where compiled pure agent profiles are written. Each expert compiles to `{agentProfilesOutputDir}/{alias lowercased}.expert.md`.
 
 Set to `false` to disable pure profile output entirely:
 
@@ -255,6 +255,12 @@ Glob patterns are supported:
 { "specFilePattern": "*.spec.md" }
 ```
 
+A brace pattern accepts more than one convention — this one discovers both directory READMEs and [compiled expert profiles](/concepts/agent-profiles#profiles-as-spec-files):
+
+```json
+{ "specFilePattern": "{README.md,*.expert.md}" }
+```
+
 ---
 
 ## See also
@@ -291,4 +297,4 @@ The model behind `praxis axioms triage` labeling, the `curate` session, the auth
 }
 ```
 
-Optional fields as for reviewers: `baseUrl`, `temperature`, `provider` (including `./relative` local modules), `options`. Not configured means the axiom lifecycle commands refuse with the exact block to add — there is no silent fallback to a reviewer model.
+Optional fields as for reviewers: `baseUrl`, `temperature`, `provider` (including `./relative` local modules), `options`. Not configured means `curate`, `ratify`, and `audit` refuse with the exact block to add — there is no silent fallback to a reviewer model. `axioms triage` is gentler: it warns that labeling is deferred and exits 0, so a run pipeline without a curator never breaks.
