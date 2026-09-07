@@ -33,6 +33,15 @@ Calibration cases, `calibrate run|status`, interpretability gating on reports, d
 **M7 — Feedback surfaces**
 Briefs with triangulated diagnosis, `harness suggest` + the generated drafting command, intervention tracking (08).
 
+## Withdrawn to roadmap (owner, 2026-09-07)
+
+M5 (diff units), M6 (calibration), and M7's harness surfaces shipped
+during v2 development and were withdrawn with the core simplification:
+the core is **specs, evals, axioms, reporting**, and advanced
+capabilities return only atop a rock-solid core. Their designs are
+preserved in `roadmap/`. What stayed from that era: eval run/verdict
+`--json`, the 0/1/2 exit-code contract, and help-as-API-docs.
+
 ## Removed from scope (owner, 2026-09-05 — formerly "Deferred")
 
 `mode: agentic` (03), `cohort` and `changeset` scopes beyond the shipped enum, the `watch` trigger (12), attribution conventions / the human-agent contrast (02's optional sharpening), A/B interventions (08), and multi-repo anything (README non-goal) are **not wanted and no longer tracked**. Where a record schema already carries a slot (an enum member, an `authorship: "unknown"` field), the slot keeps its shape — the ledger is append-only and committed evidence is never reshaped — but no build follows.

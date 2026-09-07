@@ -1,5 +1,12 @@
 # 08 — Harness Feedback
 
+> **Roadmap idea — withdrawn from core (owner, 2026-09-07).** This
+> capability shipped during v2 development and was deliberately removed:
+> the core is specs, evals, axioms, and reporting, and advanced
+> capabilities return only atop a rock-solid core. This document is the
+> preserved design, not a live spec.
+
+
 **Status:** Implemented (M7, 2026-09-05) — decisions dated inline
 **Depends on:** [02](./02-baselines-and-debt-paydown.md), [04](./04-axioms.md), [07](./07-metrics.md)
 

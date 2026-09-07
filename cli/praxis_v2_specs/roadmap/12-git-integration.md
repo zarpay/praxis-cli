@@ -1,5 +1,12 @@
 # 12 — Git Integration: How Diffs Become Eval Units
 
+> **Roadmap idea — withdrawn from core (owner, 2026-09-07).** This
+> capability shipped during v2 development and was deliberately removed:
+> the core is specs, evals, axioms, and reporting, and advanced
+> capabilities return only atop a rock-solid core. This document is the
+> preserved design, not a live spec.
+
+
 **Status: Draft — deliberately the simplest usable design**
 **Depends on:** [01](./01-populations-and-eval-unit.md), [05](./05-ledger.md); complements [09](./09-cli-surface.md)
 
