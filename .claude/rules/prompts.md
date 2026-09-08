@@ -17,7 +17,7 @@ by `preparePrompt(TEMPLATE)` (`helpers/prepare-prompt-helper.ts`) — the
 returned function takes the template's variables as a record of string values,
 or nothing when the template has no slots. Structure never enters a prompt's
 signature: a list renders through its own per-item prompt file
-(`labeling-critique-line`, `exemplar-block`), and the caller maps, joins, and
+(`labeling-critique-line`, `context-block`), and the caller maps, joins, and
 passes the assembled string as one variable. The exception is the `*-tools.ts`
 files, which return tool definitions (objects), not prompt strings. No prompt
 text lives anywhere else. Reviewer prompts belong to `eval`; Claude Code

@@ -74,7 +74,7 @@ src/
 That handoff between the layers is a real contract: an expert's `validates:` is
 compiled out as the spec's `paths:` (`templates/eval-targeting-template.ts` writes it,
 `services/discover-domains-service.ts` reads it), and `cohort:`/`excludes:`/
-`exemplars:` pass through under the same names. `ExpertFile` and `SpecFile` are
+`context:` pass through under the same names. `ExpertFile` and `SpecFile` are
 the two ends of it.
 
 ### The layers
@@ -168,14 +168,14 @@ The **Claude Code plugin** (`plugins/claude-code.ts`) wraps the profile with YAM
 
 ```
 Spec discovered (specFilePattern match, frontmatter read)
-  → Units resolved: paths:/cohort: expand; excludes:/exemplars: shielded from review
-  → Assist inputs resolved: exemplars: + context: files (ReviewSubject, at construction)
+  → Units resolved: paths:/cohort: expand; excludes: shielded from review
+  → Assist inputs resolved: context: files (ReviewSubject, at construction)
   → Content hash computed over the full review input: target + spec + assist (SHA256, 8-char prefix)
   → Cache checked: one file per target at .praxis/cache/validation/<target-path>.json,
       verdicts keyed <specHash>:<reviewerHash> (format 5.0)
   → On miss: one call per configured reviewer via its provider (default: OpenRouter, tool_choice: required)
   → Verdict from the tool call (pass/warn/fail + issues); cached with content_hash
-      and assist provenance (exemplar_files/context_files with per-file hashes)
+      and assist provenance (context_files with per-file hashes)
 ```
 
 Every run also appends to the ledger (RunStore/TriageStore over RunFile/TriageSessionFile records) (`.praxis/ledger/runs/<run_id>.jsonl`, 05): one run record per reviewer with git facts, cost and counts, plus one critique record per issue — full provenance, append-only, committed. `eval ci` verifies without writing; an unevaluable unit is `unverified`, never a violation. Run start detects epoch boundaries from the ledger (set-wise: a reviewer hash never seen before — warn, never block), and the first full run under a new hash is stamped `baseline: true`.
@@ -186,7 +186,7 @@ The measurement layer is pure read-side: `eval report` (three scope levels — f
 
 `praxis eval prune` is the epoch structure's other half: a behavioral change writes new cache keys and orphans the old ones, and pruning removes every entry whose reviewer hash matches no configured reviewer.
 
-Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `exemplars:` (shielded positives, inlined into the prompt), `context:` (assist-only, inlined, joins the hash).
+Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `context:` (assist-only, inlined, joins the hash). The retired `exemplars:` key parses and is ignored — positive examples live in spec prose.
 
 Key files: `services/review-target-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile, AxiomFile, PracticeFile, CacheFile), `stores/` (VerdictStore, RunStore, TriageStore, AxiomStore, ExpertStore, PracticeStore, SpecStore, DocumentStore), `services/` (discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
 
