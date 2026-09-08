@@ -165,9 +165,12 @@ assignments never reached the metrics.
 The machine-assignment question (the old L50 argument that assignment
 error corrupts rates like reviewer error): met with provenance and
 override rather than prohibition — every label says whether a machine or
-a human made it, a human can re-decide any of it at curate, and the
-matcher is instructed for precision over coverage (an unlabeled critique
-costs one curate moment; a wrong label corrupts a rate).
+a human made it, a human can re-decide any single label with
+`praxis axioms reassign <critique-id> --to <axiom>` (browse ids with
+`praxis eval critiques`; the new assignment is appended and wins at
+read time), and the matcher is instructed for precision over coverage
+(an unlabeled critique costs one curate moment; a wrong label corrupts
+a rate).
 
 ## Lifecycle rules
 

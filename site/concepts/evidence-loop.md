@@ -67,7 +67,7 @@ Error messages name what was wrong and what would be accepted instead.
 
 ## 5. The label pass closes the loop
 
-The reviewer never sees the axioms — it reads only the spec, and every critique still arrives raw; run and verdict output keep showing the reviewer's own words. But the next `praxis axioms triage` labels every recurring instance under `AX-b951db`, and the assignment is written to the ledger with its provenance (`matcher`). A matcher assignment is settled — it never re-enters a queue — and when two axioms later turn out to be one principle, `praxis axioms merge` re-labels the evidence in one move. From then on reports speak in the axiom's ratified words:
+The reviewer never sees the axioms — it reads only the spec, and every critique still arrives raw; run and verdict output keep showing the reviewer's own words. But the next `praxis axioms triage` labels every recurring instance under `AX-b951db`, and the assignment is written to the ledger with its provenance (`matcher`). A matcher assignment is settled — it never re-enters a queue — but never final: `praxis axioms reassign <critique-id> --to <axiom>` re-decides any single label by hand, and when two axioms turn out to be one principle, `praxis axioms merge` re-labels the evidence in one move. From then on reports speak in the axiom's ratified words:
 
 ```
 praxis eval report --axiom AX-b951db

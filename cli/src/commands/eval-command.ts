@@ -1,6 +1,7 @@
 import type { CommandRegistrar } from "@framework/types.js";
 
 import ciRunOrchestrator from "@/orchestrators/ci-run-orchestrator.js";
+import listCritiquesOrchestrator from "@/orchestrators/list-critiques-orchestrator.js";
 import pruneCacheOrchestrator from "@/orchestrators/prune-cache-orchestrator.js";
 import reportEvalOrchestrator from "@/orchestrators/report-eval-orchestrator.js";
 import reportVerdictsOrchestrator from "@/orchestrators/report-verdicts-orchestrator.js";
@@ -56,6 +57,26 @@ Example:
   $ praxis eval ci    # exit 0 = clean, 1 = errors or unverified`,
     )
     .action(ciRunOrchestrator);
+
+  evalCmd
+    .command("critiques [target]")
+    .description("List the ledger's critiques with their ids and lifecycle states")
+    .option("--axiom <id>", "only critiques whose effective label is this axiom")
+    .option("--state <state>", "only untriaged | unmatched | labeled | dismissed")
+    .option("--json", "machine-readable output (stable contract)")
+    .addHelpText(
+      "after",
+      `
+When to use: to browse critique ids before \`praxis axioms reassign\`,
+or to drill into any queue count. Pure read — never a reviewer call.
+States: untriaged (triage's queue), unmatched (curate's queue), labeled,
+dismissed.
+
+Examples:
+  $ praxis eval critiques src/services --state unmatched
+  $ praxis eval critiques --axiom AX-b951db`,
+    )
+    .action(listCritiquesOrchestrator);
 
   evalCmd
     .command("prune")

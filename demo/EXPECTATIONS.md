@@ -112,6 +112,8 @@ calls · **[scratch]** run in a copy.
 | Command | Expect |
 | --- | --- |
 | `axioms list` | 13 axioms, chronological; proposals counted with the ratify pointer |
+| `eval critiques [target] --state/--axiom/--json` [free] | Browsable critique cards with ids and lifecycle states; ledger-wide tallies in the heading (verified 2026-09-08) |
+| `axioms reassign <critique-id> --to <axiom>` [scratch] | Appends a human assignment that wins at read time; exit 2 on an unknown critique id or a non-active axiom (verified 2026-09-08 in scratch) |
 | `axioms show AX-b951db` | Statement, both examples, grounding, lifecycle; `--json` stable |
 | `axioms triage` [scratch, paid] | The labeling pass over **untriaged** critiques only: one curator call each (order can't bias a verdict), per-verdict progress lines; matches land as matcher assignments, no-matches as unmatched records (→ curate's queue, re-queued for triage if the axiom set changes); hallucinated ids = failed calls, stay untriaged; `--dry-run` writes nothing; no curator → warns "labeling is deferred" |
 | `axioms curate --reject "<reason>"` [scratch] | Dismisses the **unmatched** queue (untriaged critiques are named and untouched), writes a triage session file, no curator call |

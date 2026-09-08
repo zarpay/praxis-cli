@@ -155,6 +155,18 @@ Safe to run any time: entries belonging to currently configured reviewers are ne
 
 ---
 
+## praxis eval critiques
+
+The ledger's critiques as a browsable list — each with its id, its words, and where it stands: **untriaged** (triage's queue), **unmatched** (curate's queue), **labeled**, or **dismissed**. Pure read; never a reviewer call.
+
+```bash
+praxis eval critiques src/services --state unmatched
+praxis eval critiques --axiom AX-b951db
+praxis eval critiques --json
+```
+
+The ids are what [`praxis axioms reassign`](/commands/axioms#praxis-axioms-reassign-id) takes.
+
 ## The ledger
 
 Every `eval run` writes durable evidence to `.praxis/ledger/runs/<run_id>.jsonl` — one file per reviewer per invocation, committed to git like the rest of `.praxis/`. The first line is the **run record**: what ran, against which commit and branch, cache hits and misses, verdict counts, and the provider cost (tokens and dollars). Each following line is a **critique record** — one per issue found, carrying full provenance: the exact target and spec content hashes, and the reviewer's behavioral hash.

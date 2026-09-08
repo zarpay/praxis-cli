@@ -33,6 +33,7 @@ export type PraxisErrorCode =
   | "NO_TOOL_CALL"
   | "UNEXPECTED_TOOL_CALL"
   | "AXIOM_NOT_FOUND"
+  | "CRITIQUE_NOT_FOUND"
   | "MERGE_NEEDS_SOURCES"
   | "CURATOR_NOT_CONFIGURED"
   | "CURATOR_MISSING_FIELD"
@@ -66,6 +67,7 @@ export class PraxisError extends Error {
 export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErrorCode>([
   "API_KEY_NOT_SET",
   "AXIOM_NOT_FOUND",
+  "CRITIQUE_NOT_FOUND",
   "CURATOR_MISSING_FIELD",
   "MERGE_NEEDS_SOURCES",
   "CURATOR_NOT_CONFIGURED",
@@ -372,6 +374,14 @@ export const errors = {
     return new PraxisError(
       "AXIOM_NOT_FOUND",
       `No axiom "${id}" in .praxis/axioms/. Run \`praxis axioms list\` to see what exists.`,
+    );
+  },
+
+  /** No critique in the ledger carries the requested id. */
+  critiqueNotFound(id: string): PraxisError {
+    return new PraxisError(
+      "CRITIQUE_NOT_FOUND",
+      `No critique "${id}" in the ledger. Run \`praxis eval critiques\` to browse ids.`,
     );
   },
 

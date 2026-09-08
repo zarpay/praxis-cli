@@ -45,6 +45,10 @@ Shows the proposal, its supporting critiques, the gate's verdict, and the curato
 
 Use `--spec <path>` for human-authored proposals with no critique parentage.
 
+## praxis axioms reassign \<id\>
+
+`reassign <critique-id> --to <axiom>` is the per-critique human override: a matcher label that looks wrong, a dismissed critique that turns out to be real, or evidence that belongs under a different standard. The new assignment is appended and wins at read time — the prior record stays in the ledger beneath it. Browse ids with [`praxis eval critiques`](/commands/eval#praxis-eval-critiques).
+
 ## praxis axioms deprecate \<id\> · merge
 
 `deprecate <id> --reason "<why>"` retires an active axiom: the file flips to `deprecated`, the reason lands in the ledger, and history stays frozen — the id and every record under it remain readable forever.

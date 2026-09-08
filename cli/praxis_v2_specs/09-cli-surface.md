@@ -73,7 +73,7 @@ One CLI, two reading styles. The split is by **command default plus `--json`**, 
 
 - `praxis eval run [targets...] [--type] [--json]` — no targets = full run; one target = the fast loop; extended output carries axioms on matched critiques (04, 08) and epoch-boundary warnings (02)
 - `praxis eval report [<path|glob>] [--since] [--branch] [--commit <sha>] [--commits <sha...>] [--axiom] [--json]` (07; three scope levels — files/glob, commit, PR)
-- `praxis axioms triage | curate | ratify <id> | deprecate <id> | merge <ids...> | show <id> | list | audit` (03, 04)
+- `praxis axioms triage | curate | ratify <id> | reassign <id> | deprecate <id> | merge <ids...> | show <id> | list | audit` (03, 04)
 - `praxis calibrate run | status` (06)
 - `praxis debt report [--json]` (07)
 - `praxis harness suggest` (08)

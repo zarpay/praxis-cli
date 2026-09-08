@@ -6,6 +6,7 @@ import deprecateAxiomOrchestrator from "@/orchestrators/deprecate-axiom-orchestr
 import listAxiomsOrchestrator from "@/orchestrators/list-axioms-orchestrator.js";
 import mergeAxiomsOrchestrator from "@/orchestrators/merge-axioms-orchestrator.js";
 import ratifyAxiomOrchestrator from "@/orchestrators/ratify-axiom-orchestrator.js";
+import reassignCritiqueOrchestrator from "@/orchestrators/reassign-critique-orchestrator.js";
 import showAxiomOrchestrator from "@/orchestrators/show-axiom-orchestrator.js";
 import triageAxiomsOrchestrator from "@/orchestrators/triage-axioms-orchestrator.js";
 
@@ -111,6 +112,23 @@ Example:
   $ praxis axioms ratify AX-3f9a1c`,
     )
     .action(ratifyAxiomOrchestrator);
+
+  axiomsCmd
+    .command("reassign <id>")
+    .description("Re-decide one critique's label by hand: append an assignment to an active axiom")
+    .requiredOption("--to <axiom>", "the active axiom the critique belongs under")
+    .addHelpText(
+      "after",
+      `
+When to use: a matcher label looks wrong, a dismissed critique turns out
+to be real, or evidence belongs under a different standard. Works on any
+critique in any state — the new assignment is appended and wins at read
+time; nothing is rewritten. Browse ids with \`praxis eval critiques\`.
+
+Example:
+  $ praxis axioms reassign 20260907T101932101Z-c0f5baa5:6 --to AX-b951db`,
+    )
+    .action(reassignCritiqueOrchestrator);
 
   axiomsCmd
     .command("deprecate <id>")
