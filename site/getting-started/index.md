@@ -49,8 +49,6 @@ The spec is the README in the directory it governs — documentation and enforce
 ---
 paths:
   - "src/services/*.ts"
-exemplars:
-  - "src/services/create-review.ts"
 excludes:
   - "src/services/legacy-import.ts"
 ---
@@ -73,10 +71,11 @@ knows how to read it.
   responsibility, it becomes a second service.
 ```
 
-Two things to notice:
+Three things to notice:
 
-- **The frontmatter is scoping, not prose.** `paths:` targets the TypeScript files; `exemplars:` blesses `create-review.ts` as a positive example the reviewer sees (and never critiques); `excludes:` shields the legacy file entirely. Structural decisions live in frontmatter, where they are executed — never in the body, where a reviewer could fail to notice them.
+- **The frontmatter is scoping, not prose.** `paths:` targets the TypeScript files; `excludes:` shields the legacy file entirely. Structural decisions live in frontmatter, where they are executed — never in the body, where a reviewer could fail to notice them.
 - **Every standard requires reading comprehension.** There is no "the file must contain a function named `run`" here — a reviewer told the [judgment boundary](/validation/writing-specs#the-judgment-boundary) would refuse to check it anyway. Mechanical rules belong in your linter.
+- **The positive example lives in the prose.** "rating must be a whole number from 1 to 5" *is* the example, frozen with the standard it illustrates. Praxis deliberately has no way to bless a live file as an exemplar: live code drifts with its next edit, and a drifted example is worse than none. See [Writing Specs](/validation/writing-specs#positive-examples-live-in-prose).
 
 ## Run the review
 
@@ -106,9 +105,9 @@ Total documents: 4
 [Errors] 1
 ```
 
-Notice what *isn't* here: `create-review.ts` never gets a verdict — an exemplar is shown to the reviewer as a positive example, never reviewed itself — and `legacy-import.ts` is excluded outright.
+Notice what *isn't* here: `legacy-import.ts`. An exclusion in frontmatter is structural — the file never becomes a review unit, and the reviewer never sees it.
 
-Each verdict is cached by a content hash covering everything the reviewer saw — the target, the spec, the exemplar. Run it again and it's four cache hits, zero API calls. Fix `redeem-coupon.ts` and only that file re-reviews:
+Each verdict is cached by a content hash covering everything the reviewer saw — the target, the spec, and any `context:` files the spec declares. Run it again and it's four cache hits, zero API calls. Fix `redeem-coupon.ts` and only that file re-reviews:
 
 ```bash
 praxis eval run src/services/redeem-coupon.ts

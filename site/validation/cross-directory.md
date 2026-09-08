@@ -37,7 +37,7 @@ files, tests beside what they test...
 
 Here each first-layer directory under `src/features/` is evaluated as a set — the shape for relational standards ("no orphans," "one entry point per namespace") that no single file can answer. Editing any member file invalidates that directory's cached verdict. An unknown `cohort` value fails with an error listing the accepted options.
 
-`paths` and `cohort` combine with the scoping keys `excludes:`, `exemplars:`, and `context:` — see [Writing Specs — Scoping frontmatter](/validation/writing-specs#scoping-frontmatter).
+`paths` and `cohort` combine with the scoping keys `excludes:` and `context:` — see [Writing Specs — Scoping frontmatter](/validation/writing-specs#scoping-frontmatter).
 
 ## Example: a cross-team documentation standard
 

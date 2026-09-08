@@ -29,8 +29,6 @@ Scoop Society's `src/services/README.md`, in full:
 ---
 paths:
   - "src/services/*.ts"
-exemplars:
-  - "src/services/create-review.ts"
 excludes:
   - "src/services/legacy-import.ts"
 ---
@@ -82,8 +80,6 @@ paths:
   - "src/services/*.ts"
 excludes:
   - "src/services/legacy-import.ts"
-exemplars:
-  - "src/services/create-review.ts"
 context:
   - "src/domain/types.ts"
 ---
@@ -93,15 +89,30 @@ context:
 
 **`excludes:`** — files structurally out of scope. An excluded file never becomes a review unit and is never seen by the reviewer. Prefer this over writing "except for X" in the body: an exclusion in prose is an instruction a reviewer can fail to apply; an exclusion in frontmatter is a file it never receives.
 
-**`exemplars:`** — spec-blessed positive examples. Exemplar files are shielded from adverse review (they receive no verdicts) and are inlined into the prompt as labeled references for what compliance looks like. The single highest-leverage line in a spec: one real compliant file calibrates a reviewer better than any amount of description.
-
 **`context:`** — assist-only material. Context files are inlined so the reviewer sees what the standard is *about* (the domain types a service consumes, the store it calls) but are never evaluated themselves.
 
 **`cohort: by_directory`** — reviews whole directories as single units, for relational standards no single file can answer. See [Cross-Directory Review](/validation/cross-directory).
 
-Because exemplars and context are part of what the reviewer sees, they join the cached verdict's content hash: editing one invalidates the affected verdicts exactly like editing the target or the spec does.
+Because context files are part of what the reviewer sees, they join the cached verdict's content hash: editing one invalidates the affected verdicts exactly like editing the target or the spec does.
 
-`excludes:`, `exemplars:`, and `cohort:` also compile through from an expert's `validates:` targeting, the same way `paths:` does.
+`excludes:` and `cohort:` also compile through from an expert's `validates:` targeting, the same way `paths:` does.
+
+## Positive examples live in prose
+
+Earlier versions had an `exemplars:` frontmatter key that blessed live files as positive examples — shielded from review, inlined into the prompt as references for what compliance looks like. It is retired, and the reason it went is itself a lesson in spec writing: a live file held up as a blessed example drifts. Nothing stops the next edit to that file, and from then on a bad example is treated as exemplary — with no verdict to catch it, because the exemplar was shielded from review.
+
+Positive examples belong in the spec's own prose, frozen with the standard they illustrate. A short fenced example inside the spec text is the pattern:
+
+````markdown
+- **Domain failures are values, never exceptions.** A compliant
+  failure return looks like:
+
+  ```typescript
+  return { ok: false, error: "rating must be a whole number from 1 to 5" };
+  ```
+````
+
+The example changes only when the spec changes — reviewed in the same diff as the standard it calibrates. (The retired key still parses and is ignored, so old specs don't break; the files it names are simply reviewed like any other match.)
 
 ## Spec file location
 

@@ -104,7 +104,7 @@ You can disable pure profile output entirely if you only want plugin output:
 
 A compiled profile is the SME on its source material. The natural extension is to let that same file serve as the spec that validates the code it knows about — collapsing two artifacts into one. The agent you chat with _is_ the spec that runs `praxis eval run`.
 
-Add a `validates:` key to the expert's frontmatter with the glob patterns it should govern — plus `exemplars:`/`excludes:`/`cohort:` as needed, which compile through the same way:
+Add a `validates:` key to the expert's frontmatter with the glob patterns it should govern — plus `excludes:`/`cohort:` as needed, which compile through the same way:
 
 ```yaml
 ---
@@ -112,8 +112,6 @@ alias: Scooper
 description: "SME on Scoop Society's service conventions."
 validates:
   - "src/services/*.ts"
-exemplars:
-  - "src/services/create-review.ts"
 excludes:
   - "src/services/legacy-import.ts"
 ---
@@ -125,8 +123,6 @@ When compiled, the profile opens with the eval-targeting frontmatter:
 ---
 paths:
   - "src/services/*.ts"
-exemplars:
-  - "src/services/create-review.ts"
 excludes:
   - "src/services/legacy-import.ts"
 ---

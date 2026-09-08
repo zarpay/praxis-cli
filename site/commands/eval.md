@@ -206,12 +206,12 @@ Team note: the hash is content-addressed, so teammates on different praxis versi
 
 ## How a review works
 
-1. The spec file (default: `README.md`) defines the standards — plus any scoping frontmatter (`paths`, `cohort`, `excludes`, `exemplars`, `context`).
-2. Praxis sends the spec, the target, and any exemplar/context files to each configured reviewer via its provider (OpenRouter by default).
+1. The spec file (default: `README.md`) defines the standards — plus any scoping frontmatter (`paths`, `cohort`, `excludes`, `context`).
+2. Praxis sends the spec, the target, and any context files to each configured reviewer via its provider (OpenRouter by default).
 3. The reviewer answers through a required tool call — pass, warn, or fail — with specific issues.
 4. The verdict is written to the cache at `.praxis/cache/validation/`, keyed by spec and reviewer.
 
-On subsequent runs, cached verdicts are used for any target whose review input (target, spec, exemplars, context) has not changed. See [Caching](/validation/caching).
+On subsequent runs, cached verdicts are used for any target whose review input (target, spec, context) has not changed. See [Caching](/validation/caching).
 
 ## See also
 

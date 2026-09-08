@@ -9,7 +9,7 @@ Any directory within your configured `sources` that contains a spec file (defaul
 ```
 src/services/
 ├── README.md            ← the standard (paths: "src/services/*.ts")
-├── create-review.ts     ← reviewed (exemplar — shielded, shown as the positive)
+├── create-review.ts     ← reviewed
 ├── rank-parlors.ts      ← reviewed
 ├── redeem-coupon.ts     ← reviewed
 └── legacy-import.ts     ← excluded by the spec's excludes:
@@ -51,7 +51,7 @@ A file can be governed by more than one spec — a local README plus a cross-dir
 
 ## What is never a target
 
-Spec files themselves, `_`-prefixed templates, files matched by the config's `ignore` patterns, and anything in a spec's `excludes:`. Exemplars are inlined as positive references but never receive verdicts.
+Spec files themselves, `_`-prefixed templates, files matched by the config's `ignore` patterns, and anything in a spec's `excludes:`.
 
 ## See also
 

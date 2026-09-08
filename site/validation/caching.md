@@ -6,12 +6,12 @@ Every verdict is cached. Unchanged targets are never re-reviewed — only files 
 
 When `praxis eval run` reviews a target, each configured reviewer:
 
-1. Computes a content hash over the **full review input** — the target, the spec, and the spec's resolved `exemplars:` and `context:` files
+1. Computes a content hash over the **full review input** — the target, the spec, and the spec's resolved `context:` files
 2. Looks up `.praxis/cache/validation/{target-relative-path}.json`
 3. If the file holds an entry for this (spec, reviewer) pair and the hash matches — returns the cached verdict without any API call
 4. If there is no entry, or the hash doesn't match — calls the provider and writes the verdict
 
-The hash covers everything the reviewer saw. Editing the target, the spec, an exemplar, or a context file invalidates exactly the verdicts those inputs produced — and nothing else does: ratifying an axiom has no cache effect, because axioms never enter the review. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
+The hash covers everything the reviewer saw. Editing the target, the spec, or a context file invalidates exactly the verdicts those inputs produced — and nothing else does: ratifying an axiom has no cache effect, because axioms never enter the review. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
 
 ## Cache file structure
 
@@ -30,7 +30,7 @@ Each target has exactly one cache file — its complete review state, across all
       "spec_path": "src/services/README.md",
       "cached_at": "2026-09-02T14:30:45.123Z",
       "content_hash": "abcd1234",
-      "exemplar_files": [{ "path": "src/services/create-review.ts", "hash": "f1d20738" }],
+      "context_files": [{ "path": "src/domain/types.ts", "hash": "f1d20738" }],
       "result": {
         "compliant": false,
         "severity": "error",
@@ -50,7 +50,7 @@ Each target has exactly one cache file — its complete review state, across all
 
 Cached critiques are born raw — `axiomId` and `axiomVersion` are always `null` in the cache. Labels are triage assignment records in the ledger, joined at read time by the reports; they are never written back into the cache.
 
-The reviewer's hash is its **behavioral identity**: the whole config entry minus `name` and `apiKeyEnvVar`, plus the complete reviewer-facing prompt surface this praxis version ships. When the spec declares `exemplars:` or `context:`, the entry records the resolved files with per-file hashes — the exact inputs behind the verdict.
+The reviewer's hash is its **behavioral identity**: the whole config entry minus `name` and `apiKeyEnvVar`, plus the complete reviewer-facing prompt surface this praxis version ships. When the spec declares `context:`, the entry records the resolved files with per-file hashes — the exact inputs behind the verdict.
 
 ## Cache invalidation
 
@@ -58,7 +58,7 @@ The cache invalidates automatically when:
 
 - The target content changes (any member, for cohort units)
 - The spec file content changes
-- An exemplar or context file the spec declares changes
+- A context file the spec declares changes
 
 - The reviewer's behavioral settings change (model, temperature, baseUrl, provider, options) — this rolls the reviewer's [epoch](/concepts/evidence-loop) and invalidates all of its entries at once
 
