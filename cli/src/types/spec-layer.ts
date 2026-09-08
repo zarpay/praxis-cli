@@ -26,8 +26,6 @@ export interface AgentMetadata {
   cohort?: string;
   /** Glob patterns structurally excluded from review (written as excludes: in output). */
   excludes: string[];
-  /** Spec-blessed positive examples (written as exemplars: in output). */
-  exemplars: string[];
 }
 
 /** Every expert in a directory. */

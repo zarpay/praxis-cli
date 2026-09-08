@@ -225,8 +225,8 @@ describe("compileExpertsService", () => {
     });
   });
 
-  describe("exemplars frontmatter", () => {
-    it("compiles exemplars through to the pure profile frontmatter", async () => {
+  describe("exemplars frontmatter (retired)", () => {
+    it("ignores the retired exemplars key — nothing compiles through", async () => {
       const expertFile = join(expertsDir, "blesser.md");
       writeFileSync(
         expertFile,
@@ -246,8 +246,7 @@ describe("compileExpertsService", () => {
       await compileFile(expertFile);
       const profile = readFileSync(join(agentProfilesDir, "blesser.expert.md"), "utf-8");
 
-      expect(profile).toContain("exemplars:");
-      expect(profile).toContain('- "src/events/referral_event.rb"');
+      expect(profile).not.toContain("exemplars:");
     });
   });
 

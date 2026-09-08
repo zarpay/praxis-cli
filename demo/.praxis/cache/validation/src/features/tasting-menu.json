@@ -1,73 +1,20 @@
 {
   "version": "5.0",
   "verdicts": {
-    "e280f5fa:87a547f7": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "87a547f7"
-      },
-      "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T22:09:24.147Z",
-      "content_hash": "ea004542",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 1223 words."
-      },
-      "exemplar_files": [
-        {
-          "path": "src/features/awards/award-types.ts",
-          "hash": "65b8373d"
-        },
-        {
-          "path": "src/features/awards/index.ts",
-          "hash": "c2aee075"
-        },
-        {
-          "path": "src/features/awards/pick-winners.ts",
-          "hash": "70587c5f"
-        }
-      ],
-      "context_files": [
-        {
-          "path": "src/domain/types.ts",
-          "hash": "f1d20738"
-        },
-        {
-          "path": "src/store/memory-store.ts",
-          "hash": "1f6fdfe2"
-        }
-      ]
-    },
-    "e280f5fa:0ca26f36": {
+    "e280f5fa:abbf40e9": {
       "reviewer": {
         "name": "flash",
         "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ca26f36"
+        "hash": "abbf40e9"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T22:08:29.659Z",
-      "content_hash": "ea004542",
+      "cached_at": "2026-09-08T11:54:41.360Z",
+      "content_hash": "cbd707ee",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The tasting-menu feature satisfies all specification criteria. The structure is compliant: index.ts is the single entry point re-exporting the complete public API, types live in a dedicated tasting-menu-types.ts, and the logic file build-menu.ts is verb-first kebab-case with one exported run, returning Results with consumer-grade error messages. Cohesion holds: both files are reachable from index.ts (no orphans), the files compose a single capability, and the feature name describes the capability rather than its implementation."
+        "reason": "The tasting-menu feature conforms to the specification. It has exactly one entry point (index.ts) re-exporting the full public API (run as buildMenu plus the types); a dedicated tasting-menu-types.ts for types; a verb-first kebab-case logic file (build-menu.ts) that exports a single `run`, returns a Result value rather than throwing, and provides a consumer-grade error message for invalid stops input. All files are reachable from index.ts through the import graph (no orphans), the directory serves the single tasting-menu capability, and the feature name describes the capability rather than its implementation. No violations found."
       },
-      "exemplar_files": [
-        {
-          "path": "src/features/awards/award-types.ts",
-          "hash": "65b8373d"
-        },
-        {
-          "path": "src/features/awards/index.ts",
-          "hash": "c2aee075"
-        },
-        {
-          "path": "src/features/awards/pick-winners.ts",
-          "hash": "70587c5f"
-        }
-      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",
@@ -79,34 +26,45 @@
         }
       ]
     },
-    "e280f5fa:63664cce": {
+    "e280f5fa:e4deaf49": {
       "reviewer": {
         "name": "v32",
         "model": "deepseek/deepseek-v3.2",
-        "hash": "63664cce"
+        "hash": "e4deaf49"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T22:09:24.129Z",
-      "content_hash": "ea004542",
+      "cached_at": "2026-09-08T11:59:28.385Z",
+      "content_hash": "cbd707ee",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The tasting-menu feature directory satisfies all criteria defined in the specification. It has exactly one entry point (index.ts) that re-exports the entire public API, a dedicated types file (tasting-menu-types.ts), and a logic file with verb-first kebab-case naming (build-menu.ts) that follows service conventions. The feature demonstrates cohesion with no orphaned files, serves one clear capability (curated flavor tours), and uses a descriptive name that describes the capability rather than implementation."
+        "reason": "The tasting-menu feature module fully complies with the specification: it has exactly one entry point (index.ts) that re-exports the public API, types are properly separated into tasting-menu-types.ts, logic files follow verb-first kebab-case naming and service conventions, all files are reachable from the entry point, the feature focuses on one coherent capability (building tasting menus), and the feature name appropriately describes the user-facing capability."
       },
-      "exemplar_files": [
+      "context_files": [
         {
-          "path": "src/features/awards/award-types.ts",
-          "hash": "65b8373d"
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
         },
         {
-          "path": "src/features/awards/index.ts",
-          "hash": "c2aee075"
-        },
-        {
-          "path": "src/features/awards/pick-winners.ts",
-          "hash": "70587c5f"
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
         }
-      ],
+      ]
+    },
+    "e280f5fa:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-08T12:00:55.720Z",
+      "content_hash": "cbd707ee",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 883 words."
+      },
       "context_files": [
         {
           "path": "src/domain/types.ts",

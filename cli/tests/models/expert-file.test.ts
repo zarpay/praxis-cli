@@ -116,7 +116,7 @@ describe("ExpertFile", () => {
   });
 
   describe("targeting fields compiled into the spec", () => {
-    it("reads validates, cohort, excludes and exemplars", () => {
+    it("reads validates, cohort and excludes — the retired exemplars key is ignored", () => {
       const subject = expert([
         "alias: A",
         "validates:",
@@ -131,7 +131,6 @@ describe("ExpertFile", () => {
       expect(subject.validates).toEqual(["src/services/*.ts"]);
       expect(subject.cohort).toBe("by_directory");
       expect(subject.excludes).toEqual(["src/services/legacy.ts"]);
-      expect(subject.exemplars).toEqual(["src/services/good.ts"]);
     });
 
     it("returns empty lists and an undeclared cohort when absent", () => {
@@ -139,7 +138,6 @@ describe("ExpertFile", () => {
 
       expect(subject.validates).toEqual([]);
       expect(subject.excludes).toEqual([]);
-      expect(subject.exemplars).toEqual([]);
       expect(subject.cohort).toBeUndefined();
     });
 

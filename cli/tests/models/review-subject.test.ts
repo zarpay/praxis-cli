@@ -30,80 +30,82 @@ function subjectWith(frontmatter: string[], files: Record<string, string> = {}):
 }
 
 describe("assistProvenance", () => {
-  it("records each exemplar's path with an 8-char content hash", () => {
-    const subject = subjectWith(["exemplars:", '  - "src/*.ts"'], { "src/a.ts": "A" });
+  it("records each context file's path with an 8-char content hash", () => {
+    const subject = subjectWith(["context:", '  - "src/*.ts"'], { "src/a.ts": "A" });
 
-    const { exemplarFiles } = subject.assistProvenance();
+    const { contextFiles } = subject.assistProvenance();
 
-    expect(exemplarFiles).toHaveLength(1);
-    expect(exemplarFiles[0].path).toBe("src/a.ts");
-    expect(exemplarFiles[0].hash).toMatch(/^[0-9a-f]{8}$/);
+    expect(contextFiles).toHaveLength(1);
+    expect(contextFiles[0].path).toBe("src/a.ts");
+    expect(contextFiles[0].hash).toMatch(/^[0-9a-f]{8}$/);
   });
 
   it("hashes identical content to the same value regardless of path", () => {
-    const subject = subjectWith(["exemplars:", '  - "src/*.ts"'], {
+    const subject = subjectWith(["context:", '  - "src/*.ts"'], {
       "src/a.ts": "same",
       "src/b.ts": "same",
     });
 
-    const { exemplarFiles } = subject.assistProvenance();
+    const { contextFiles } = subject.assistProvenance();
 
-    expect(exemplarFiles[0].hash).toBe(exemplarFiles[1].hash);
+    expect(contextFiles[0].hash).toBe(contextFiles[1].hash);
   });
 
-  it("keeps exemplars and context in separate records", () => {
+  it("ignores the retired exemplars key", () => {
     const subject = subjectWith(
       ["exemplars:", '  - "src/good.ts"', "context:", '  - "src/store.ts"'],
       { "src/good.ts": "GOOD", "src/store.ts": "STORE" },
     );
 
-    const { exemplarFiles, contextFiles } = subject.assistProvenance();
-
-    expect(exemplarFiles.map((f) => f.path)).toEqual(["src/good.ts"]);
-    expect(contextFiles.map((f) => f.path)).toEqual(["src/store.ts"]);
+    expect(subject.assist.context.map((f) => f.path)).toEqual(["src/store.ts"]);
+    expect(subject.assistProvenance()).toEqual({
+      contextFiles: [
+        { path: "src/store.ts", hash: subject.assistProvenance().contextFiles[0].hash },
+      ],
+    });
   });
 
   it("records nothing for a spec declaring no assist keys", () => {
     const subject = subjectWith(["paths:", '  - "specs/*.md"']);
 
-    expect(subject.assistProvenance()).toEqual({ exemplarFiles: [], contextFiles: [] });
+    expect(subject.assistProvenance()).toEqual({ contextFiles: [] });
   });
 });
 
 describe("assist", () => {
-  it("resolves an exemplar glob to its file contents", () => {
-    const subject = subjectWith(["exemplars:", '  - "src/*.ts"'], {
+  it("resolves a context glob to its file contents", () => {
+    const subject = subjectWith(["context:", '  - "src/*.ts"'], {
       "src/good.ts": "export const good = 1;",
     });
 
-    expect(subject.assist.exemplars).toEqual([
+    expect(subject.assist.context).toEqual([
       { path: "src/good.ts", content: "export const good = 1;" },
     ]);
   });
 
   it("sorts resolved files so the content hash is deterministic", () => {
-    const subject = subjectWith(["exemplars:", '  - "src/*.ts"'], {
+    const subject = subjectWith(["context:", '  - "src/*.ts"'], {
       "src/c.ts": "c",
       "src/a.ts": "a",
       "src/b.ts": "b",
     });
 
-    const exemplarPaths = subject.assist.exemplars.map((f) => f.path);
+    const contextPaths = subject.assist.context.map((f) => f.path);
 
-    expect(exemplarPaths).toEqual(["src/a.ts", "src/b.ts", "src/c.ts"]);
+    expect(contextPaths).toEqual(["src/a.ts", "src/b.ts", "src/c.ts"]);
   });
 
   it("resolves a glob matching nothing to an empty list", () => {
-    const subject = subjectWith(["exemplars:", '  - "src/nope-*.ts"']);
+    const subject = subjectWith(["context:", '  - "src/nope-*.ts"']);
 
-    expect(subject.assist.exemplars).toEqual([]);
+    expect(subject.assist.context).toEqual([]);
   });
 
   it("raises when a key is declared and no root can resolve it", () => {
     const { abs, cleanup } = createValidatorTmpdir({
       sources: ["specs"],
       files: {
-        "specs/README.md": ["---", "exemplars:", '  - "src/*.ts"', "---", "", "# Spec"].join("\n"),
+        "specs/README.md": ["---", "context:", '  - "src/*.ts"', "---", "", "# Spec"].join("\n"),
         "specs/doc.md": "# Doc",
       },
     });
@@ -112,7 +114,7 @@ describe("assist", () => {
     const resolveWithoutRoot = () =>
       ReviewSubject.resolve({ targetPath: abs("specs/doc.md"), specPath: abs("specs/README.md") });
 
-    expect(resolveWithoutRoot).toThrow(/declares "exemplars" but no project root/);
+    expect(resolveWithoutRoot).toThrow(/declares "context" but no project root/);
   });
 
   it("does not raise without a root when neither key is declared", () => {
@@ -130,7 +132,7 @@ describe("assist", () => {
       specPath: abs("specs/README.md"),
     });
 
-    expect(subject.assist).toEqual({ exemplars: [], context: [] });
+    expect(subject.assist).toEqual({ context: [] });
   });
 });
 
@@ -162,23 +164,23 @@ describe("contentHash", () => {
     expect(plain.contentHash()).toBe(alsoPlain.contentHash());
   });
 
-  it("changes when an exemplar's content changes", () => {
-    const before = subjectWith(["exemplars:", '  - "src/a.ts"'], { "src/a.ts": "A" });
-    const after = subjectWith(["exemplars:", '  - "src/a.ts"'], { "src/a.ts": "EDITED" });
+  it("changes when a context file's content changes", () => {
+    const before = subjectWith(["context:", '  - "src/a.ts"'], { "src/a.ts": "A" });
+    const after = subjectWith(["context:", '  - "src/a.ts"'], { "src/a.ts": "EDITED" });
 
     expect(before.contentHash()).not.toBe(after.contentHash());
   });
 
-  it("distinguishes the same file used as exemplar versus context", () => {
-    const asExemplar = subjectWith(["exemplars:", '  - "src/a.ts"'], { "src/a.ts": "A" });
-    const asContext = subjectWith(["context:", '  - "src/a.ts"'], { "src/a.ts": "A" });
+  it("the retired exemplars key never joins the hash", () => {
+    const before = subjectWith(["exemplars:", '  - "src/a.ts"'], { "src/a.ts": "A" });
+    const after = subjectWith(["exemplars:", '  - "src/a.ts"'], { "src/a.ts": "EDITED" });
 
-    expect(asExemplar.contentHash()).not.toBe(asContext.contentHash());
+    expect(before.contentHash()).toBe(after.contentHash());
   });
 
   it("distinguishes identical content at different paths", () => {
-    const here = subjectWith(["exemplars:", '  - "src/a.ts"'], { "src/a.ts": "X" });
-    const there = subjectWith(["exemplars:", '  - "src/b.ts"'], { "src/b.ts": "X" });
+    const here = subjectWith(["context:", '  - "src/a.ts"'], { "src/a.ts": "X" });
+    const there = subjectWith(["context:", '  - "src/b.ts"'], { "src/b.ts": "X" });
 
     expect(here.contentHash()).not.toBe(there.contentHash());
   });

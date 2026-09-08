@@ -31,17 +31,15 @@ function domainFor(store: SpecStore, specPath: string, cfg: PraxisConfig): Valid
   const spec = store.read(specPath);
   const dir = parentDir(specPath);
   const excludes = spec.excludes.map((p) => joinPath(root, p));
-  const exemplars = spec.exemplars.map((p) => joinPath(root, p));
   // Exemplars are shielded from adverse review exactly like excludes;
   // they reach the reviewer only as inlined positives.
-  const ignore = [...cfg.absoluteIgnore, ...excludes, ...exemplars];
+  const ignore = [...cfg.absoluteIgnore, ...excludes];
 
   const domain: ValidationDomain = {
     dir,
     type: relativePath(root, dir) || baseName(dir),
     specPath,
     excludes,
-    exemplars,
     cohort: spec.cohort,
   };
 

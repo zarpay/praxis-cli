@@ -19,7 +19,7 @@ interface ResolveUnitsInput {
  */
 const resolveUnitsService: Service<ResolveUnitsInput, EvalUnit[]> = (cfg, { domain }) => {
   const specFilePattern = cfg.specFilePattern;
-  const shielded = [...cfg.absoluteIgnore, ...domain.excludes, ...domain.exemplars];
+  const shielded = [...cfg.absoluteIgnore, ...domain.excludes];
 
   if (domain.cohort === "by_directory") {
     return (domain.targetDirs ?? [])

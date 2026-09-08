@@ -20,7 +20,7 @@ const addCommand: CommandRegistrar = (program) => {
       `
 When to use: starting a new code-owner document. Scaffolds into the
 configured expertsDir with the frontmatter the compiler and the eval
-layer honor (validates:, excludes:, exemplars:, practices:).
+layer honor (validates:, excludes:, context:, practices:).
 
 Example:
   $ praxis add expert service-steward`,

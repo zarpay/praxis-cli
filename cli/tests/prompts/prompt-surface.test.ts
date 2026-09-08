@@ -18,10 +18,12 @@ import promptSurface from "@/prompts/prompt-surface.js";
 // Epoch history: 61132753 (v2 pre-axioms) → 0717752e (2026-09-03, the
 // two-channel reviewer: axiom checklist + open channel + the judgment-
 // boundary posture, 03/04 — the M3 epoch roll, intentional).
-// Epoch history: "0717752e" (two-channel checklist surface, M3–M7) →
+// Epoch history: "0717752e" (two-channel checklist surface) →
 // "41134ad4" (2026-09-07: review→label — the checklist leaves the
-// reviewer entirely; owner's single-channel prompt; issues untagged).
-const LOCKED_SURFACE_SHA8 = "41134ad4";
+// reviewer entirely; owner's single-channel prompt; issues untagged) →
+// "a0c2757a" (2026-09-08: exemplars retired — live code held up as a
+// blessed example drifts; the EXEMPLARS section leaves the surface).
+const LOCKED_SURFACE_SHA8 = "a0c2757a";
 
 describe("promptSurface", () => {
   it("is deterministic", () => {

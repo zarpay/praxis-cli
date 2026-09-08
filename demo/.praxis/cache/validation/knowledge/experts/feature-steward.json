@@ -1,49 +1,49 @@
 {
   "version": "5.0",
   "verdicts": {
-    "244fa7f3:87a547f7": {
+    "244fa7f3:abbf40e9": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "abbf40e9"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-08T11:52:32.702Z",
+      "content_hash": "7de401cd",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document satisfies all required criteria in the specification. Frontmatter contains `title` ('Feature Steward'), `type` ('expert'), `alias` ('Sundae'), and `description` (a one-to-two-sentence invocation description). The body opens with a level-1 heading naming the expert and its alias (`# Feature Steward (a.k.a **Sundae**)`), and states in prose what the expert is the subject-matter expert on ('The subject-matter expert on how Scoop Society features are composed'). No placeholder text (TODO/TBD/lorem ipsum) is present. Additional frontmatter keys beyond the required ones are not prohibited by the spec."
+      }
+    },
+    "244fa7f3:e4deaf49": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e4deaf49"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-08T11:58:22.626Z",
+      "content_hash": "7de401cd",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document satisfies all specification requirements: it contains the required frontmatter (title, type: expert, alias, description), opens with a level-1 heading naming the expert and its alias, states in prose what the expert is the subject-matter expert on, and contains no placeholder text."
+      }
+    },
+    "244fa7f3:e3006bd8": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "87a547f7"
+        "hash": "e3006bd8"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-07T10:10:51.574Z",
+      "cached_at": "2026-09-08T12:00:55.710Z",
       "content_hash": "7de401cd",
       "result": {
         "compliant": true,
         "issues": [],
         "reason": "Review input has 294 words."
-      }
-    },
-    "244fa7f3:0ca26f36": {
-      "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ca26f36"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-07T10:12:38.039Z",
-      "content_hash": "7de401cd",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The document satisfies the specification. Frontmatter includes all required fields (title, type: 'expert', alias, description), the body opens with a level-1 heading naming the expert and its alias ('# Feature Steward (a.k.a **Sundae**)'), and the body states in prose that the expert is the subject-matter expert on how Scoop Society features are composed. No placeholder text is present."
-      }
-    },
-    "244fa7f3:63664cce": {
-      "reviewer": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "63664cce"
-      },
-      "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-07T10:16:34.007Z",
-      "content_hash": "7de401cd",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The document fully complies with the expert specification: all required frontmatter fields are present (title, type, alias, description), the body opens with a level-1 heading naming the expert and its alias, the prose clearly states what the expert is subject-matter expert on, and no placeholder text is present."
       }
     }
   }

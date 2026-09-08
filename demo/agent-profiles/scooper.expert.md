@@ -3,8 +3,6 @@ paths:
   - "src/services/*.ts"
 excludes:
   - "src/services/legacy-import.ts"
-exemplars:
-  - "src/services/create-review.ts"
 ---
 
 # Role

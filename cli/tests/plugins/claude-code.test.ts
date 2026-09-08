@@ -12,7 +12,7 @@ import { readJsonFile } from "@tests/helpers/read-json.js";
 
 /** A complete AgentMetadata with only the fields a test cares about set. */
 function metadata(fields: Partial<AgentMetadata> & { name: string }): AgentMetadata {
-  return { description: "", validates: [], excludes: [], exemplars: [], ...fields };
+  return { description: "", validates: [], excludes: [], ...fields };
 }
 
 describe("ClaudeCodePlugin", () => {

@@ -63,8 +63,8 @@ describe("SpecFile", () => {
     });
   });
 
-  describe("excludes and exemplars", () => {
-    it("returns patterns as written, unresolved", () => {
+  describe("excludes", () => {
+    it("returns patterns as written, unresolved — the retired exemplars key is ignored", () => {
       const subject = spec([
         "excludes:",
         '  - "src/services/legacy.ts"',
@@ -73,32 +73,24 @@ describe("SpecFile", () => {
       ]);
 
       expect(subject.excludes).toEqual(["src/services/legacy.ts"]);
-      expect(subject.exemplars).toEqual(["src/services/good.ts"]);
     });
 
     it("returns empty arrays when undeclared", () => {
       const subject = spec(["paths:", '  - "src/*.ts"']);
 
       expect(subject.excludes).toEqual([]);
-      expect(subject.exemplars).toEqual([]);
     });
   });
 
-  describe("assistPatterns()", () => {
-    it("reads the exemplars key", () => {
-      const patterns = spec(["exemplars:", '  - "src/good.ts"']).assistPatterns("exemplars");
-
-      expect(patterns).toEqual(["src/good.ts"]);
-    });
-
+  describe("contextPatterns()", () => {
     it("reads the context key", () => {
-      const patterns = spec(["context:", '  - "docs/why.md"']).assistPatterns("context");
+      const patterns = spec(["context:", '  - "docs/why.md"']).contextPatterns();
 
       expect(patterns).toEqual(["docs/why.md"]);
     });
 
     it("wraps a single value in an array", () => {
-      const patterns = spec(["context: docs/why.md"]).assistPatterns("context");
+      const patterns = spec(["context: docs/why.md"]).contextPatterns();
 
       expect(patterns).toEqual(["docs/why.md"]);
     });

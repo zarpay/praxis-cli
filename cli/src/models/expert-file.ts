@@ -55,8 +55,6 @@ export class ExpertFile {
   readonly cohort: CohortMode | undefined;
   /** Patterns compiled out as the spec's `excludes:`. */
   readonly excludes: string[];
-  /** Patterns compiled out as the spec's `exemplars:`. */
-  readonly exemplars: string[];
 
   private readonly references: Record<RefKey, string[]>;
   private readonly bodyText: string;
@@ -84,7 +82,6 @@ export class ExpertFile {
     this.validates = fields.stringList("validates");
     this.cohort = fields.enumValue("cohort", COHORT_MODES);
     this.excludes = fields.stringList("excludes");
-    this.exemplars = fields.stringList("exemplars");
     this.references = {
       practices: fields.stringList("practices"),
       context: fields.stringList("context"),
@@ -132,7 +129,6 @@ export class ExpertFile {
       model: this.agentModel,
       excludes: this.excludes,
       validates: this.validates,
-      exemplars: this.exemplars,
       permissionMode: this.agentPermissionMode,
     };
   }

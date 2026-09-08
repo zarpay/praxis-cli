@@ -256,9 +256,9 @@ describe("reviewTargetService", () => {
     });
   });
 
-  describe("exemplars", () => {
-    /** A single-target project whose spec blesses one exemplar. */
-    function exemplarProject() {
+  describe("exemplars (retired)", () => {
+    /** A spec still carrying the retired key, as older projects will. */
+    function retiredKeyProject() {
       return createValidatorTmpdir({
         sources: ["docs"],
         files: {
@@ -276,7 +276,7 @@ describe("reviewTargetService", () => {
       });
     }
 
-    it("resolves spec-declared exemplars from the project root into the prompt", async () => {
+    it("never reaches the prompt: the retired key is ignored", async () => {
       const bodies: string[] = [];
       server.use(
         http.post(OPENROUTER_URL, async ({ request }) => {
@@ -284,7 +284,7 @@ describe("reviewTargetService", () => {
           return HttpResponse.json(fixtures.pass);
         }),
       );
-      const { root, abs, cleanup } = exemplarProject();
+      const { root, abs, cleanup } = retiredKeyProject();
 
       await evaluate({
         targetPath: abs("src/events/signup_event.rb"),
@@ -292,37 +292,14 @@ describe("reviewTargetService", () => {
         root,
       });
 
-      expect(bodies[0]).toContain("EXEMPLAR: src/events/referral_event.rb");
-      expect(bodies[0]).toContain("REFERRAL_EXEMPLAR_CONTENT");
+      expect(bodies[0]).not.toContain("EXEMPLAR");
+      expect(bodies[0]).not.toContain("REFERRAL_EXEMPLAR_CONTENT");
 
       cleanup();
     });
 
-    it("editing an exemplar invalidates the cached verdict", async () => {
-      useOpenRouterResponse(server, fixtures.pass);
-      const { root, abs, cleanup } = exemplarProject();
-
-      const reviewed = () =>
-        evaluate({
-          targetPath: abs("src/events/signup_event.rb"),
-          specPath: abs("docs/events.sme.md"),
-          root,
-          cache: new VerdictStore(testConfig(root)),
-        });
-
-      await reviewed();
-
-      expect((await reviewed()).cacheHit).toBe(true);
-
-      writeFileSync(abs("src/events/referral_event.rb"), "REFERRAL_EXEMPLAR_EDITED");
-
-      expect((await reviewed()).cacheHit).toBe(false);
-
-      cleanup();
-    });
-
-    it("throws when a spec declares exemplars and no project root is given", () => {
-      const { abs, cleanup } = exemplarProject();
+    it("resolves without a project root — the retired key demands nothing", () => {
+      const { abs, cleanup } = retiredKeyProject();
 
       const resolve = () =>
         ReviewSubject.resolve({
@@ -330,7 +307,7 @@ describe("reviewTargetService", () => {
           specPath: abs("docs/events.sme.md"),
         });
 
-      expect(resolve).toThrow(/project root/);
+      expect(resolve).not.toThrow();
 
       cleanup();
     });

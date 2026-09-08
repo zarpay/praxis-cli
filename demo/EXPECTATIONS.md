@@ -44,12 +44,12 @@ a bug.
 | Reviewers | `flash` (deepseek-v4-flash-0731), `v32` (deepseek-v3.2), `counter` (offline `./praxis-providers/word-count.js`) |
 | Curator | anthropic/claude-sonnet-4.5 |
 | Spec pattern | `{README.md,*.sme.md}` — hand-authored READMEs plus the hand-authored `experts.sme.md` (compiled profiles land in `agent-profiles/*.expert.md`, which is not a source dir and does not govern) |
-| Corpus units | 17 per reviewer (51 verdicts across three reviewers) — awards is exemplar-shielded |
+| Corpus units | 19 per reviewer (57 verdicts across three reviewers) |
 | Axioms | 13 total: 11 active, 2 deprecated (AX-96ff9c; AX-fac03c merged into AX-b951db 2026-09-07); ids under `.praxis/axioms/` |
 | Known real findings (corpus) | flash 2 failing, v32 2 failing, counter 0 (re-baselined at the 2026-09-07 epoch) |
 | Known violating files | `src/features/flavor-of-day/` and `src/services/rank-parlors.ts` (both reviewers) |
 | Signature merge | AX-fac03c → AX-b951db (2026-09-07): 8 critiques re-labeled by merge records; `eval report --axiom AX-b951db` counts them |
-| Exemplar / excluded / wip | `create-review.ts` exemplar · `src/features/awards/*` cohort exemplar (blessed 2026-09-08 — the awards directory is shielded from review and inlined as the features spec's positive example) · `legacy-import.ts` excluded · `_wip-refund.ts` template-skipped. Nuance: excludes shield **full runs only** — `eval run src/services/legacy-import.ts` reviews it on explicit ask (exit 0, evidence on record 2026-09-08) |
+| Excluded / wip | `legacy-import.ts` excluded · `_wip-refund.ts` template-skipped. Nuance: excludes shield **full runs only** — `eval run src/services/legacy-import.ts` reviews it on explicit ask (exit 0, evidence on record 2026-09-08). `exemplars:` is retired (2026-09-08): live code as a blessed example drifts; positive examples live in spec prose |
 | Signature axiom | AX-b951db — error messages name what was wrong and what would be accepted |
 
 ## The matrix
@@ -72,7 +72,7 @@ calls · **[scratch]** run in a copy.
 | `praxis compile` | `Compiled 3 agent(s)` — scooper, sundae, taster; profiles in `agent-profiles/`, plugin output in `plugins/praxis/` (agents + `praxis-resolve.md` + skill) |
 | `praxis compile --alias scooper` | One agent, case-insensitive alias match |
 | `praxis compile --alias nope` | Instructive `No expert found with alias` error naming the known aliases, exit 2 (usage error) |
-| Compiled `scooper.expert.md` | Opens with eval-targeting frontmatter (`paths: src/services/*.ts`, exemplars, excludes) — the profile IS a spec |
+| Compiled `scooper.expert.md` | Opens with eval-targeting frontmatter (`paths: src/services/*.ts`, excludes) — the profile IS a spec |
 | `compile --watch` [manual only] | Watches source dirs (any file change, debounced) — human-driven; not part of the scripted audit |
 | `config edit` [manual only] | Opens $VISUAL/$EDITOR — human-driven; agents read with `config show` |
 
@@ -80,7 +80,7 @@ calls · **[scratch]** run in a copy.
 
 | Command | Expect |
 | --- | --- |
-| `eval run --reviewer counter` [free] | **The canary**: all cache hits, 0 misses, `[Errors] 0` on an unchanged corpus. On a branch that changed source files, exactly those files miss (content misses, deterministic and free) — an *identity* miss is the epoch event; a *content* miss on a changed file is the cache working (nuance recorded 2026-09-05). The 2026-09-07 review→label epoch was the deliberate exception: 18 identity misses, `baseline: true` |
+| `eval run --reviewer counter` [free] | **The canary**: all cache hits, 0 misses, `[Errors] 0` on an unchanged corpus. On a branch that changed source files, exactly those files miss (content misses, deterministic and free) — an *identity* miss is the epoch event; a *content* miss on a changed file is the cache working (nuance recorded 2026-09-05). Two deliberate epochs on record: 2026-09-07 (review→label) and 2026-09-08 (exemplars retired — the EXEMPLARS section left the prompt surface; 57 identity misses, re-baselined at 19 units) |
 | `eval run` (all reviewers) [free when warm] | 54 hits; summary shows per-type and by-reviewer blocks; errors = known real findings; header reads "corpus conformance (includes pre-spec debt)" |
 | `eval run src/services/redeem-coupon.ts --reviewer v32` [paid on miss] | Fast loop: critiques print **raw** (reviewer prose against the spec — never an `[AX-…]` citation at review time; labels arrive at triage and show in reports); ledger gains a `scope: "files"` run with critiques born `axiom_id: null` |
 | `eval run knowledge/experts/service-steward.md` [free when warm] | The `*.sme.md` half of specFilePattern governs: the expert doc reviews against `experts.sme.md` |

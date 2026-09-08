@@ -11,7 +11,6 @@ import { SpecFile } from "@/models/spec-file.js";
 /** A spec's resolved assist inputs, one list per frontmatter key. */
 interface AssistInputs {
   /** Spec-blessed positive examples — shielded from adverse review. */
-  exemplars: AssistFile[];
   /** Assist-only context — informs the review, never receives a verdict. */
   context: AssistFile[];
 }
@@ -39,7 +38,7 @@ export class ReviewSubject {
   readonly specContent: string;
   /** Whether the target is one file or a pre-assembled cohort. */
   readonly kind: "file" | "cohort";
-  /** The spec's resolved assist inputs: exemplars and context files. */
+  /** The spec's resolved assist inputs: context files. */
   readonly assist: AssistInputs;
 
   private constructor(fields: {
@@ -120,55 +119,49 @@ export class ReviewSubject {
    * which keeps plain specs' hashes unchanged.
    */
   private assistInput(): string {
-    return [
-      ...this.assist.exemplars.map((file) => `EXEMPLAR ${file.path}\n${file.content}`),
-      ...this.assist.context.map((file) => `CONTEXT ${file.path}\n${file.content}`),
-    ].join("\n");
+    return this.assist.context.map((file) => `CONTEXT ${file.path}\n${file.content}`).join("\n");
   }
 
   /** Per-file provenance for the cache entry: what was inlined, and its hash. */
-  assistProvenance(): { exemplarFiles: AssistFileRecord[]; contextFiles: AssistFileRecord[] } {
+  assistProvenance(): { contextFiles: AssistFileRecord[] } {
     return {
-      exemplarFiles: records(this.assist.exemplars),
       contextFiles: records(this.assist.context),
     };
   }
 }
 
 /**
- * Resolves the spec's `exemplars:` and `context:` globs into file contents.
+ * Resolves the spec's `context:` globs into file contents.
  *
- * The assist inputs a reviewer sees beyond the target itself: exemplars
- * are spec-blessed positives, context is what the standard is about. Both
- * reach the prompt, so both join the content hash — a verdict keyed only on
- * target + spec would survive edits to inputs the reviewer actually saw.
+ * The assist input a reviewer sees beyond the target itself: context is
+ * what the standard is about. It reaches the prompt, so it joins the
+ * content hash — a verdict keyed only on target + spec would survive
+ * edits to inputs the reviewer actually saw. (The former `exemplars:`
+ * key is retired: live code held up as a blessed example drifts —
+ * nothing stops an edit to the exemplar from turning a bad example
+ * exemplary. Positive examples belong in the spec's own prose.)
  *
- * @throws PraxisError when the spec declares either key and no project root
+ * @throws PraxisError when the spec declares the key and no project root
  *   is available to resolve the root-relative globs against
  */
 function resolveAssist(specContent: string, specPath: string, root?: string): AssistInputs {
   const spec = SpecFile.fromContent(specContent, specPath);
 
   return {
-    exemplars: resolveAssistKey(spec, "exemplars", root),
-    context: resolveAssistKey(spec, "context", root),
+    context: resolveAssistKey(spec, root),
   };
 }
 
 /**
- * Resolves one assist key's globs into labeled file contents, sorted so
+ * Resolves the context globs into labeled file contents, sorted so
  * the content hash is stable across machines.
  */
-function resolveAssistKey(
-  spec: SpecFile,
-  key: "exemplars" | "context",
-  root?: string,
-): AssistFile[] {
-  const patterns = spec.assistPatterns(key);
+function resolveAssistKey(spec: SpecFile, root?: string): AssistFile[] {
+  const patterns = spec.contextPatterns();
 
   if (patterns.length === 0) return [];
 
-  if (!root) throw errors.missingProjectRoot(key, spec.path);
+  if (!root) throw errors.missingProjectRoot("context", spec.path);
 
   return fg
     .sync(patterns, { cwd: root, onlyFiles: true, absolute: true, dot: true })

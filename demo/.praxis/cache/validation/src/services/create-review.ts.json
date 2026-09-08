@@ -1,0 +1,50 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "0311531a:abbf40e9": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "abbf40e9"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T11:55:09.729Z",
+      "content_hash": "a6771057",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file conforms to the Service Conventions specification. It exports a single `run` entry point taking the `Store` first and one input object, returning `Result<Review>` from the domain types. All domain failures are returned as `{ ok: false, error }` values with no exceptions, and every error message names what was wrong and what would be accepted instead. Validation runs top-to-bottom before any store work, the service does one thing, and all I/O flows through the injected Store. The doc comment states the purpose in one sentence and enumerates all four domain failure modes (unknown parlor id; rating outside 1-5 or not a whole number; empty author; tasting notes shorter than 12 characters), matching the actual error paths."
+      }
+    },
+    "0311531a:e4deaf49": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e4deaf49"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T11:59:38.179Z",
+      "content_hash": "a6771057",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The create-review.ts file fully satisfies all criteria in the Service Conventions specification. It follows the required structure with a single exported run function, implements proper domain failure handling with clear error messages, validates input before any work, focuses on one responsibility, and includes comprehensive documentation."
+      }
+    },
+    "0311531a:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T12:00:55.722Z",
+      "content_hash": "a6771057",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 463 words."
+      }
+    }
+  }
+}

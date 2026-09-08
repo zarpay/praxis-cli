@@ -45,7 +45,6 @@ paths:
   - "backend/app/events/**/*.rb"
 excludes:
   - "backend/app/events/application_event.rb"
-exemplars: # spec-blessed positive examples
   - "backend/app/events/referral_verified_event.rb"
 cohort: by_directory # by_file (default) | by_directory — see below
 context: # optional: inlined to assist judgment; never reviewed itself
@@ -56,7 +55,7 @@ context: # optional: inlined to assist judgment; never reviewed itself
 
 **`cohort: by_directory` and `context:` are the spec's scope declarations, and the spec's alone** (rewritten 2026-09-07, review→label): the reviewer sees only the spec, so review scope can live nowhere else. Per-file judgment can never _see_ a relational violation — a spec that declares `cohort:` has its judgment run over the set; one that declares `context:` gets those files inlined — and the resulting critiques make relational standards observable, so curation can ground them. A ratified axiom carries no scope of its own (the former axiom `scope:`/`context:` keys are retired): the standard's reach is exactly the reach of the spec sentence that grounds it. No `scope:` key exists at the spec layer either — the configuration keys are self-declaring (`cohort:` present means cohort-shaped; `context:` present means inlined context).
 
-An exclusion stated in prose is an instruction the reviewer must notice and obey (observed failure: the events SME excludes `ApplicationEvent` in bold prose; the reviewer failed it with six errors while acknowledging the exclusion in its own critique text). An exclusion in frontmatter is a file the reviewer never receives. Prevention beats calibration wherever prevention is available. `exemplars` serve double duty: excluded from adverse judgment, and available as few-shot positives and calibration seed cases (06).
+An exclusion stated in prose is an instruction the reviewer must notice and obey (observed failure: the events SME excludes `ApplicationEvent` in bold prose; the reviewer failed it with six errors while acknowledging the exclusion in its own critique text). An exclusion in frontmatter is a file the reviewer never receives. Prevention beats calibration wherever prevention is available. The former `exemplars:` key is retired (owner, 2026-09-08): a live file held up as a blessed example drifts — nothing stops an edit to the exemplar from turning a bad example exemplary. Positive examples belong in the spec's own prose, frozen with the standard they illustrate; the retired key parses and is ignored.
 
 **Judgment axioms** (`mode: judgment`, the default). The LLM reviewer, for questions that need reading: quality of descriptions, richness of payloads, "is this business logic." Carries the full apparatus — provenance, caching, calibration, drift tracking. Judgment input is always holistic per the axiom's declared scope — the reviewer reads files, never bare diffs (01).
 
@@ -87,7 +86,7 @@ The gate isn't only for new axioms — `praxis axioms audit` re-assesses active 
 ## Evaluation flow
 
 1. Scoping filters the unit set (excludes out, paths applied).
-2. Judgment axioms evaluate per their declared scope; the reviewer prompt carries the axiom set, the exemplars, and the statement that mechanical criteria are out of scope.
+2. Judgment standards evaluate per the spec; the reviewer prompt carries the spec, its context files, and the statement that mechanical criteria are out of scope.
 3. Verdict assembly: severity mapping is per-axiom, structured (the events SME already does this in prose — "missing schema → error; missing example → warning").
 4. For diff-unit evaluation (01), before/after verdicts feed **verdict diffing** — attribution is computed set-difference over axiom-anchored results on `(axiom_id, location/symbol)` under shared provenance, never a reviewer task.
 5. A unit that cannot be evaluated (context overflow, unreadable file) is `unverified` for the affected axioms — never silently passed.

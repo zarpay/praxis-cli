@@ -84,7 +84,7 @@ praxis config edit
 
 Spec files match \`specFilePattern\` (default \`README.md\`; check \`.praxis/config.json\`).
 
-A spec with \`paths:\` frontmatter governs those glob patterns — files of any extension. Without \`paths:\`, it governs sibling files in its own directory. \`excludes:\` shields files from review, \`exemplars:\` are spec-blessed positives shown to the reviewer, and \`context:\` is assist-only material inlined into the prompt.
+A spec with \`paths:\` frontmatter governs those glob patterns — files of any extension. Without \`paths:\`, it governs sibling files in its own directory. \`excludes:\` shields files from review, and \`context:\` is assist-only material inlined into the prompt. Positive examples belong in the spec's own prose — a live file held up as exemplary drifts with its next edit.
 
 When a finding cites an axiom id like \`[AX-3f9c2d]\`, the standard is ratified and stable: \`praxis axioms show <id>\` explains it with a violating and a compliant example.
 

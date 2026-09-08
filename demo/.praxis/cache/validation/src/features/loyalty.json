@@ -1,73 +1,20 @@
 {
   "version": "5.0",
   "verdicts": {
-    "e280f5fa:87a547f7": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "87a547f7"
-      },
-      "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T22:09:24.145Z",
-      "content_hash": "1d484578",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 1155 words."
-      },
-      "exemplar_files": [
-        {
-          "path": "src/features/awards/award-types.ts",
-          "hash": "65b8373d"
-        },
-        {
-          "path": "src/features/awards/index.ts",
-          "hash": "c2aee075"
-        },
-        {
-          "path": "src/features/awards/pick-winners.ts",
-          "hash": "70587c5f"
-        }
-      ],
-      "context_files": [
-        {
-          "path": "src/domain/types.ts",
-          "hash": "f1d20738"
-        },
-        {
-          "path": "src/store/memory-store.ts",
-          "hash": "1f6fdfe2"
-        }
-      ]
-    },
-    "e280f5fa:0ca26f36": {
+    "e280f5fa:abbf40e9": {
       "reviewer": {
         "name": "flash",
         "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ca26f36"
+        "hash": "abbf40e9"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T22:07:55.287Z",
-      "content_hash": "1d484578",
+      "cached_at": "2026-09-08T11:54:15.692Z",
+      "content_hash": "60a083d7",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The loyalty feature conforms to the Feature Module Conventions. It has exactly one entry point (index.ts) that re-exports the entire public API (types from loyalty-types.ts, run as trackPunches from track-punches.ts); types live in the dedicated loyalty-types.ts file; the logic file track-punches.ts is verb-first kebab-case with a single exported `run`, returns Result values rather than throwing, and provides a consumer-grade error message for unknown parlor ids. Cohesion holds: both files are reachable from index.ts (no orphans), the feature serves one capability (loyalty standing tracking), and the name 'loyalty' describes the capability rather than its implementation. The structure mirrors the blessed awards exemplar."
+        "reason": "The loyalty feature conforms to all conventions. index.ts is the single entry point re-exporting the full public API (types from loyalty-types.ts, run as trackPunches from track-punches.ts). Types live in the dedicated loyalty-types.ts file. The logic file track-punches.ts is verb-first kebab-case, exports a single run, returns Result over exceptions with a consumer-grade error message for the unknown-parlor failure. Every file is reachable from index.ts (no orphans), the feature serves one capability (loyalty standing), and the name describes the capability rather than implementation."
       },
-      "exemplar_files": [
-        {
-          "path": "src/features/awards/award-types.ts",
-          "hash": "65b8373d"
-        },
-        {
-          "path": "src/features/awards/index.ts",
-          "hash": "c2aee075"
-        },
-        {
-          "path": "src/features/awards/pick-winners.ts",
-          "hash": "70587c5f"
-        }
-      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",
@@ -79,34 +26,45 @@
         }
       ]
     },
-    "e280f5fa:63664cce": {
+    "e280f5fa:e4deaf49": {
       "reviewer": {
         "name": "v32",
         "model": "deepseek/deepseek-v3.2",
-        "hash": "63664cce"
+        "hash": "e4deaf49"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T22:09:00.545Z",
-      "content_hash": "1d484578",
+      "cached_at": "2026-09-08T11:59:06.745Z",
+      "content_hash": "60a083d7",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The loyalty feature module satisfies all specification requirements: it has a single entry point index.ts that re-exports the public API, types are in a dedicated loyalty-types.ts file, the logic file uses verb-first kebab-case naming and follows service conventions, all files are connected through imports, and the feature focuses on one capability (loyalty tracking)."
+        "reason": "The 'loyalty' feature module satisfies all specification criteria: it has a proper index.ts entry point, dedicated types file, verb-first kebab-case logic file, follows service conventions with Result pattern and consumer error messages, has no orphaned files, focuses on one capability (loyalty tracking), and the feature name appropriately describes the capability."
       },
-      "exemplar_files": [
+      "context_files": [
         {
-          "path": "src/features/awards/award-types.ts",
-          "hash": "65b8373d"
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
         },
         {
-          "path": "src/features/awards/index.ts",
-          "hash": "c2aee075"
-        },
-        {
-          "path": "src/features/awards/pick-winners.ts",
-          "hash": "70587c5f"
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
         }
-      ],
+      ]
+    },
+    "e280f5fa:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-08T12:00:55.717Z",
+      "content_hash": "60a083d7",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 815 words."
+      },
       "context_files": [
         {
           "path": "src/domain/types.ts",

@@ -16,8 +16,6 @@ import { baseName, parentDir } from "@/helpers/paths-helper.js";
 import cohortSubject from "@/prompts/cohort-subject.js";
 import contextBlock from "@/prompts/context-block.js";
 import contextSection from "@/prompts/context-section.js";
-import exemplarBlock from "@/prompts/exemplar-block.js";
-import exemplarSection from "@/prompts/exemplar-section.js";
 import fileSubject from "@/prompts/file-subject.js";
 import reviewTools from "@/prompts/review-tools.js";
 import systemPrompt from "@/prompts/system-prompt.js";
@@ -151,20 +149,14 @@ function normalizeCritiques(issues: readonly (Critique | string)[]): Critique[] 
  * sections (each "" when the spec supplies none, so it vanishes).
  */
 function renderValidationQuestion(target: ReviewSubject): string {
-  const exemplarBlocks = target.assist.exemplars
-    .map((file) => exemplarBlock({ path: file.path, content: file.content }))
-    .join("\n\n");
   const contextBlocks = target.assist.context
     .map((file) => contextBlock({ path: file.path, content: file.content }))
     .join("\n\n");
-  const exemplars =
-    target.assist.exemplars.length === 0 ? "" : exemplarSection({ blocks: exemplarBlocks });
   const context =
     target.assist.context.length === 0 ? "" : contextSection({ blocks: contextBlocks });
 
   return validationQuestion({
     specContent: target.specContent,
-    exemplarSection: exemplars,
     contextSection: context,
     subject: renderSubject(target),
     targetContent: target.targetContent,

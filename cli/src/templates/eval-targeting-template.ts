@@ -26,9 +26,5 @@ export default function evalTargetingTemplate(metadata: AgentMetadata): string[]
     lines.push("excludes:", ...metadata.excludes.map((p) => `  - "${p}"`));
   }
 
-  if (metadata.exemplars.length > 0) {
-    lines.push("exemplars:", ...metadata.exemplars.map((p) => `  - "${p}"`));
-  }
-
   return lines;
 }

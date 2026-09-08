@@ -10,7 +10,7 @@ Praxis is a CLI with two complementary functions:
 
 **Knowledge compilation** — expert files in the configured `expertsDir` compile into self-contained SME agent profiles, and each enabled plugin writes its own output (this document was written by the claude-code plugin).
 
-Every run also appends evidence to the ledger: one run record per reviewer plus one critique per issue, at `.praxis/ledger/`. Recurring critiques triage into **axioms** — named, ratified standards that join the reviewer's checklist.
+Every run also appends evidence to the ledger: one run record per reviewer plus one critique per issue, at `.praxis/ledger/`. Recurring critiques are labeled into **axioms** — named, ratified standards; the reviewer itself sees only the spec (`axioms triage` labels, `axioms curate` clusters).
 
 ---
 
@@ -78,7 +78,7 @@ praxis config edit
 
 Spec files match `specFilePattern` (default `README.md`; check `.praxis/config.json`).
 
-A spec with `paths:` frontmatter governs those glob patterns — files of any extension. Without `paths:`, it governs sibling files in its own directory. `excludes:` shields files from review, `exemplars:` are spec-blessed positives shown to the reviewer, and `context:` is assist-only material inlined into the prompt.
+A spec with `paths:` frontmatter governs those glob patterns — files of any extension. Without `paths:`, it governs sibling files in its own directory. `excludes:` shields files from review, and `context:` is assist-only material inlined into the prompt. Positive examples belong in the spec's own prose — a live file held up as exemplary drifts with its next edit.
 
 When a finding cites an axiom id like `[AX-3f9c2d]`, the standard is ratified and stable: `praxis axioms show <id>` explains it with a violating and a compliant example.
 
@@ -87,6 +87,6 @@ When a finding cites an axiom id like `[AX-3f9c2d]`, the standard is ratified an
 ## Cache behaviour
 
 - Content-hash keyed: edit a file → its entry auto-invalidates on the next run
-- The hash covers everything the reviewer saw — target, spec, assist files, and the active axiom checklist — so changing any of them invalidates the verdicts they produced
+- The hash covers everything the reviewer saw — target, spec, assist files — so changing any of them invalidates the verdicts they produced
 - `--no-cache` forces re-review without editing (use sparingly, mainly to check reviewer non-determinism on borderline results)
 - Never delete `.praxis/cache/` — it accumulates valid verdicts and saves API calls

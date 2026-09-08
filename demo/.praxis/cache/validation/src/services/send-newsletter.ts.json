@@ -1,68 +1,50 @@
 {
   "version": "5.0",
   "verdicts": {
-    "0311531a:87a547f7": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "87a547f7"
-      },
-      "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-07T10:10:51.589Z",
-      "content_hash": "6cb475a4",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 663 words."
-      },
-      "exemplar_files": [
-        {
-          "path": "src/services/create-review.ts",
-          "hash": "a1beb8f5"
-        }
-      ]
-    },
-    "0311531a:0ca26f36": {
+    "0311531a:abbf40e9": {
       "reviewer": {
         "name": "flash",
         "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ca26f36"
+        "hash": "abbf40e9"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-07T10:15:13.894Z",
-      "content_hash": "6cb475a4",
+      "cached_at": "2026-09-08T11:56:14.662Z",
+      "content_hash": "f96b0e7f",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The service conforms to every convention in the specification. It exports a single entry point `run(store, input)` with the Store first and a single input object, returning a `Result<NewsletterDispatch>` from the domain types; the module name `send-newsletter.ts` is verb-first kebab-case. Domain failures are returned as values with consumer-oriented messages that state what was wrong and what would be accepted ('subject must be a non-empty line, like \\'Summer flavors!\\''). Input (subject) is validated before any work, the service does one thing, and the only I/O is through the injected Store (`store.listReviews()`). The doc comment states the purpose in one sentence and enumerates both failure modes (empty subject; no reviews on record)."
-      },
-      "exemplar_files": [
-        {
-          "path": "src/services/create-review.ts",
-          "hash": "a1beb8f5"
-        }
-      ]
+        "reason": "The service conforms to the specification: it exports a single `run` entry point taking the `Store` first and one input object, returning a `Result<T>`; failures are returned as values with consumer-oriented error messages; input is validated before any work; it does one thing; and the only I/O is through the injected Store. The doc comment states the purpose in one sentence and enumerates both domain failure modes (empty subject, no recipients)."
+      }
     },
-    "0311531a:63664cce": {
+    "0311531a:e4deaf49": {
       "reviewer": {
         "name": "v32",
         "model": "deepseek/deepseek-v3.2",
-        "hash": "63664cce"
+        "hash": "e4deaf49"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-07T10:18:27.636Z",
-      "content_hash": "6cb475a4",
+      "cached_at": "2026-09-08T12:00:09.120Z",
+      "content_hash": "f96b0e7f",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The send-newsletter.ts file fully satisfies the Service Conventions specification. It exports a single run function with the correct signature, validates input before work, returns domain failures as values with descriptive error messages, uses only the injected Store for data access, has appropriate documentation, and follows the same structural pattern as the exemplar."
+        "reason": "The send-newsletter.ts file satisfies all criteria in the Service Conventions specification: it exports a run function with the correct signature, has verb-first kebab-case naming, handles domain failures as values with descriptive error messages, validates input before work, does one thing, uses only injected Store for I/O, and includes proper documentation with purpose and failure modes."
+      }
+    },
+    "0311531a:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
       },
-      "exemplar_files": [
-        {
-          "path": "src/services/create-review.ts",
-          "hash": "a1beb8f5"
-        }
-      ]
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T12:00:55.724Z",
+      "content_hash": "f96b0e7f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 438 words."
+      }
     }
   }
 }

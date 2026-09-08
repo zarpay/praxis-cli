@@ -1,49 +1,49 @@
 {
   "version": "5.0",
   "verdicts": {
-    "dacac2eb:87a547f7": {
+    "dacac2eb:abbf40e9": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "abbf40e9"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-08T11:57:49.572Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The suite conforms to every rule in the specification. The top-level describe names the unit by its module name ('rank-parlors'), each nested describe is a 'when' clause, and each it states one observable outcome in plain language. Every it block contains exactly one expect, and compound shapes are asserted once with toMatchObject/toEqual. Tests exercise only the public API (the exported run functions and the injected Store), with no spies, mocks, or module-scope reach, and all test data is built fresh in beforeEach or within the test itself."
+      }
+    },
+    "dacac2eb:e4deaf49": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e4deaf49"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-08T12:00:52.680Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with all three rules of the specification: 1) Subject framing follows the pattern with module name and 'when' clauses, 2) Each 'it' block contains exactly one assertion, and 3) Tests exercise only the public API through the 'run' function and assert on observable state without implementation details."
+      }
+    },
+    "dacac2eb:e3006bd8": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "87a547f7"
+        "hash": "e3006bd8"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-07T10:10:51.592Z",
+      "cached_at": "2026-09-08T12:00:55.730Z",
       "content_hash": "a1734e88",
       "result": {
         "compliant": true,
         "issues": [],
         "reason": "Review input has 585 words."
-      }
-    },
-    "dacac2eb:0ca26f36": {
-      "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ca26f36"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-07T10:16:11.913Z",
-      "content_hash": "a1734e88",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The suite conforms to every convention in the specification. The top-level describe names the unit by module name ('rank-parlors'), each nested describe is a 'when' clause, and each it states a single observable outcome so describe + it reads as a sentence. Every it block contains exactly one expect, with compound shapes asserted once via toMatchObject/toEqual. Tests exercise only the public API (the exported run functions of rank-parlors and create-review), observe state through the injected in-memory Store, use no spies or mocks, and build data fresh via beforeEach setup with no cross-suite dependencies."
-      }
-    },
-    "dacac2eb:63664cce": {
-      "reviewer": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "63664cce"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-07T10:19:19.348Z",
-      "content_hash": "a1734e88",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully complies with the specification: subject framing follows the module name + 'when' clause pattern, each it block contains exactly one assertion, and tests exercise only the public API without implementation details or improper mocking."
       }
     }
   }

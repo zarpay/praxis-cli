@@ -137,14 +137,12 @@ export class VerdictStore {
     specPath,
     contentHash,
     result,
-    exemplarFiles,
     contextFiles,
   }: {
     targetPath: string;
     specPath: string;
     contentHash: string;
     result: Verdict;
-    exemplarFiles?: AssistFileRecord[];
     contextFiles?: AssistFileRecord[];
   }): void {
     if (this.readOnly) return;
@@ -162,7 +160,6 @@ export class VerdictStore {
         reason: sanitizeText(result.reason),
         issues: result.issues.map((issue) => ({ ...issue, text: sanitizeText(issue.text) })),
       },
-      ...(exemplarFiles?.length ? { exemplar_files: exemplarFiles } : {}),
       ...(contextFiles?.length ? { context_files: contextFiles } : {}),
     };
 

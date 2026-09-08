@@ -2,8 +2,6 @@
 paths:
   - "src/features/*"
 cohort: by_directory
-exemplars:
-  - "src/features/awards/*"
 context:
   - "src/domain/types.ts"
   - "src/store/memory-store.ts"

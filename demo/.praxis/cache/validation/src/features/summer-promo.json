@@ -1,73 +1,20 @@
 {
   "version": "5.0",
   "verdicts": {
-    "e280f5fa:87a547f7": {
-      "reviewer": {
-        "name": "counter",
-        "model": "none",
-        "hash": "87a547f7"
-      },
-      "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T22:09:24.146Z",
-      "content_hash": "8f973262",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Review input has 1161 words."
-      },
-      "exemplar_files": [
-        {
-          "path": "src/features/awards/award-types.ts",
-          "hash": "65b8373d"
-        },
-        {
-          "path": "src/features/awards/index.ts",
-          "hash": "c2aee075"
-        },
-        {
-          "path": "src/features/awards/pick-winners.ts",
-          "hash": "70587c5f"
-        }
-      ],
-      "context_files": [
-        {
-          "path": "src/domain/types.ts",
-          "hash": "f1d20738"
-        },
-        {
-          "path": "src/store/memory-store.ts",
-          "hash": "1f6fdfe2"
-        }
-      ]
-    },
-    "e280f5fa:0ca26f36": {
+    "e280f5fa:abbf40e9": {
       "reviewer": {
         "name": "flash",
         "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ca26f36"
+        "hash": "abbf40e9"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T22:07:59.844Z",
-      "content_hash": "8f973262",
+      "cached_at": "2026-09-08T11:54:23.428Z",
+      "content_hash": "ae35b04c",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The summer-promo feature satisfies the Feature Module Conventions. It has exactly one entry point (index.ts) that re-exports the entire public API (both types and the run function). Types live in the dedicated summer-promo-types.ts. The logic file build-banner.ts is verb-first kebab-case, exports a single `run`, returns Results over exceptions, and provides a consumer-grade error message. All files are reachable from index.ts (no orphans), the feature serves one capability, and the name describes the capability rather than its implementation."
+        "reason": "The summer-promo feature conforms to the Feature Module Conventions. Structure: exactly one entry point (index.ts) re-exports the entire public API (BuildBannerInput, SummerBanner, buildBanner); types live in the dedicated summer-promo-types.ts; the logic file build-banner.ts is verb-first kebab-case, exports a single run, returns a Result rather than throwing, and provides a consumer-grade, actionable error message. Cohesion: every file is reachable from index.ts through its import graph (no orphans), all files serve the single summer-banner capability, and the feature name 'summer-promo' describes the capability rather than its implementation."
       },
-      "exemplar_files": [
-        {
-          "path": "src/features/awards/award-types.ts",
-          "hash": "65b8373d"
-        },
-        {
-          "path": "src/features/awards/index.ts",
-          "hash": "c2aee075"
-        },
-        {
-          "path": "src/features/awards/pick-winners.ts",
-          "hash": "70587c5f"
-        }
-      ],
       "context_files": [
         {
           "path": "src/domain/types.ts",
@@ -79,34 +26,45 @@
         }
       ]
     },
-    "e280f5fa:63664cce": {
+    "e280f5fa:e4deaf49": {
       "reviewer": {
         "name": "v32",
         "model": "deepseek/deepseek-v3.2",
-        "hash": "63664cce"
+        "hash": "e4deaf49"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-07T22:09:08.733Z",
-      "content_hash": "8f973262",
+      "cached_at": "2026-09-08T11:59:17.245Z",
+      "content_hash": "ae35b04c",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The summer-promo feature module satisfies all criteria defined in the specification. It has exactly one entry point (index.ts) that re-exports the entire public API, types are in a dedicated summer-promo-types.ts file, logic files follow verb-first kebab-case naming (build-banner.ts) and service conventions with one exported 'run' function, Results over exceptions, and consumer-grade error messages. The feature demonstrates cohesion with no orphaned files (all files are reachable from index.ts), serves one clear capability (summer promotion banner building), and uses a capability-descriptive name."
+        "reason": "The summer-promo feature module fully complies with the specification. It has exactly one entry point index.ts that re-exports the public API, types are properly separated into summer-promo-types.ts, logic files follow verb-first kebab-case naming and service conventions, there are no orphaned files, and all files serve a single cohesive capability of building summer promotion banners."
       },
-      "exemplar_files": [
+      "context_files": [
         {
-          "path": "src/features/awards/award-types.ts",
-          "hash": "65b8373d"
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
         },
         {
-          "path": "src/features/awards/index.ts",
-          "hash": "c2aee075"
-        },
-        {
-          "path": "src/features/awards/pick-winners.ts",
-          "hash": "70587c5f"
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
         }
-      ],
+      ]
+    },
+    "e280f5fa:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-08T12:00:55.719Z",
+      "content_hash": "ae35b04c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 821 words."
+      },
       "context_files": [
         {
           "path": "src/domain/types.ts",

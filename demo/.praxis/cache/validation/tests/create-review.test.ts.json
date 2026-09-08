@@ -1,49 +1,49 @@
 {
   "version": "5.0",
   "verdicts": {
-    "dacac2eb:87a547f7": {
+    "dacac2eb:abbf40e9": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "abbf40e9"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-08T11:56:51.141Z",
+      "content_hash": "9d212d01",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The suite follows every rule in the specification. The top-level describe names the unit by module name ('create-review'), each nested describe is a 'when' clause naming the situation, and each `it` states one observable outcome in plain language. Every `it` block contains exactly one `expect`, and compound shapes are asserted once with `toMatchObject` rather than field-by-field. Tests exercise only the public `run` API and assert on returned values or observable state through the injected Store collaborator (explicitly allowed as functionality), with no spies, no mocking, and fresh data built in `validInput`/`beforeEach` so suites don't share state or depend on ordering."
+      }
+    },
+    "dacac2eb:e4deaf49": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e4deaf49"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-08T12:00:27.103Z",
+      "content_hash": "9d212d01",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with all specification requirements for test conventions. It demonstrates proper subject framing with descriptive names, maintains one assertion per test block, focuses on functionality rather than implementation, and follows all organizational patterns defined in the specification."
+      }
+    },
+    "dacac2eb:e3006bd8": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "87a547f7"
+        "hash": "e3006bd8"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-07T10:10:51.591Z",
+      "cached_at": "2026-09-08T12:00:55.727Z",
       "content_hash": "9d212d01",
       "result": {
         "compliant": true,
         "issues": [],
         "reason": "Review input has 681 words."
-      }
-    },
-    "dacac2eb:0ca26f36": {
-      "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ca26f36"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-07T10:15:42.579Z",
-      "content_hash": "9d212d01",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file conforms to all three conventions. The top-level describe names the unit by module name ('create-review'), nested describes use 'when' clauses, and each it states one observable outcome so describe + it reads as a sentence. Every it block contains exactly one expect, using toMatchObject for compound shapes. Tests exercise only the public run function and observable state (store.listReviews), with no spies, no mocking of the honest in-memory store, and no reaching into module scope. Test data is built fresh via validInput() inside each test, and beforeEach creates a fresh store, so suites do not depend on each other's state."
-      }
-    },
-    "dacac2eb:63664cce": {
-      "reviewer": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "63664cce"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-07T10:18:49.962Z",
-      "content_hash": "9d212d01",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully complies with the Test Conventions specification. It correctly frames subjects with module-named top-level describe and 'when' clause nested describes, maintains exactly one assertion per it block using toMatchObject for compound shapes, and exercises only public API functionality without implementation details."
       }
     }
   }

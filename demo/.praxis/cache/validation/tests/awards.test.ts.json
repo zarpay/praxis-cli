@@ -1,49 +1,49 @@
 {
   "version": "5.0",
   "verdicts": {
-    "dacac2eb:87a547f7": {
+    "dacac2eb:abbf40e9": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "abbf40e9"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-08T11:56:33.932Z",
+      "content_hash": "61183485",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The suite conforms to the Test Conventions specification. The top-level describe names the unit by its module name ('awards'), nested describes are written as 'when' clauses, and each it states one observable outcome in plain language. Every it block contains exactly one expect, with compound shapes asserted once via toMatchObject. Tests exercise only public APIs (pickWinners and the createReview service's run function), use the honest in-memory store with no spies or mocking, and build data fresh in beforeEach setup so suites do not depend on each other's state or ordering."
+      }
+    },
+    "dacac2eb:e4deaf49": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e4deaf49"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-08T12:00:24.359Z",
+      "content_hash": "61183485",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with the specification's three rules: subject framing follows the pattern of module name in top-level describe, situation in nested describe, and observable outcomes in it blocks; each it block contains exactly one expect assertion; and tests exercise the public API (pickWinners) with observable state through injected collaborators (store), avoiding implementation details."
+      }
+    },
+    "dacac2eb:e3006bd8": {
       "reviewer": {
         "name": "counter",
         "model": "none",
-        "hash": "87a547f7"
+        "hash": "e3006bd8"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-07T10:10:51.590Z",
+      "cached_at": "2026-09-08T12:00:55.726Z",
       "content_hash": "61183485",
       "result": {
         "compliant": true,
         "issues": [],
         "reason": "Review input has 539 words."
-      }
-    },
-    "dacac2eb:0ca26f36": {
-      "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "0ca26f36"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-07T10:15:27.517Z",
-      "content_hash": "61183485",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The suite conforms to all three conventions. The top-level describe names the unit by its module name ('awards'), nested describes use 'when' clauses, and each it states one observable outcome so describe + it reads as a sentence. Every it block contains exactly one expect, using toMatchObject for compound shapes. Tests exercise only the public API (pickWinners, createReview) against the honest in-memory store, with no spies, mocks, or module-scope access, and all data is built fresh in beforeEach setup so suites are independent."
-      }
-    },
-    "dacac2eb:63664cce": {
-      "reviewer": {
-        "name": "v32",
-        "model": "deepseek/deepseek-v3.2",
-        "hash": "63664cce"
-      },
-      "spec_path": "tests/README.md",
-      "cached_at": "2026-09-07T10:18:38.697Z",
-      "content_hash": "61183485",
-      "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "The test file fully complies with the specification: 1) Subject framing correctly uses module name 'awards' with 'when' clauses forming readable sentences; 2) Each 'it' block contains exactly one assertion using 'toMatchObject'; 3) Tests exercise public API functionality with honest in-memory implementations and fresh test data."
       }
     }
   }

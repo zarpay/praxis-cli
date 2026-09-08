@@ -93,12 +93,6 @@ export interface ValidationDomain {
    * them.
    */
   excludes: string[];
-  /**
-   * Spec-blessed positive examples from `exemplars:`, resolved to
-   * absolute glob patterns. Shielded from adverse review the same way
-   * excludes are; the Reviewer inlines them into the prompt as positives.
-   */
-  exemplars: string[];
   /** Explicit target files when the spec declares `paths:` (by_file). */
   targetFiles?: string[];
   /** Matched directories when the spec declares `cohort: by_directory`. */
@@ -246,7 +240,7 @@ export interface VerdictEntry {
   spec_path: string;
   cached_at: string;
   content_hash: string;
-  /** Resolved exemplar files the reviewer saw, with content hashes (present when the spec blesses any). */
+  /** Historical (retired `exemplars:` key): present on old cache entries only; never written. */
   exemplar_files?: AssistFileRecord[];
   /** Resolved context files the reviewer saw, with content hashes (present when the spec declares any). */
   context_files?: AssistFileRecord[];

@@ -19,7 +19,7 @@ const compileCommand: CommandRegistrar = (program) => {
       `
 When to use: after editing experts or practices. Each expert compiles
 to a profile opening with eval-targeting frontmatter (paths, excludes,
-exemplars) — the profile is also a spec — and enabled plugins emit
+context) — the profile is also a spec — and enabled plugins emit
 their own output (e.g. Claude Code agents). Offline; no API calls.
 
 Example:

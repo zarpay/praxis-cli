@@ -33,7 +33,6 @@ export class SpecFile {
   /** Patterns structurally excluded from review, as written. */
   readonly excludes: string[];
   /** Spec-blessed positive examples, as written. */
-  readonly exemplars: string[];
   /** Assist-only material inlined into the review, as written. */
   readonly context: string[];
 
@@ -42,7 +41,6 @@ export class SpecFile {
     this.paths = fields.stringList("paths");
     this.cohort = fields.enumValue("cohort", COHORT_MODES) ?? "by_file";
     this.excludes = fields.stringList("excludes");
-    this.exemplars = fields.stringList("exemplars");
     this.context = fields.stringList("context");
   }
 
@@ -57,13 +55,11 @@ export class SpecFile {
   }
 
   /**
-   * Patterns for one assist key — inputs that reach the reviewer as
-   * inlined material rather than as targets.
-   *
-   * @param key - `exemplars` (shielded positives) or `context`
+   * The `context:` globs — inputs that reach the reviewer as inlined
+   * material rather than as targets.
    */
-  assistPatterns(key: "exemplars" | "context"): string[] {
-    return key === "exemplars" ? this.exemplars : this.context;
+  contextPatterns(): string[] {
+    return this.context;
   }
 }
 
