@@ -8,26 +8,17 @@ interface ShowConfigResult {
   config: unknown;
 }
 
-/** Horizontal rule under the config header. */
-const DIVIDER = "─".repeat(40);
-
 /**
- * The config file `praxis config show` prints, with a header naming
- * where it came from — the raw file as written, not the normalized view
- * of it.
+ * The config file `praxis config show` prints — the raw file as
+ * written, not the normalized view of it. The heading names the file's
+ * location and goes to stderr with every other heading, so stdout stays
+ * pure JSON and pipes clean.
  */
 const configView: View<ShowConfigResult> = ({ configPath, config }) => [
+  { channel: "heading", text: `Praxis Config — ${chalk.dim(configPath)}` },
   {
     channel: "content",
-    entries: [
-      "",
-      "  " + chalk.bold("Praxis Config"),
-      "  " + DIVIDER,
-      "  " + chalk.dim(configPath),
-      "",
-      JSON.stringify(config, null, 2),
-      "",
-    ],
+    entries: [JSON.stringify(config, null, 2)],
   },
 ];
 

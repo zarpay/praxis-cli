@@ -3,6 +3,8 @@ import type { DisplayEntry, View } from "@framework/types.js";
 
 import chalk from "chalk";
 
+import { badge } from "@framework/views/badges.js";
+
 /**
  * One named target's outcome as it lands: the badge for the worst
  * verdict, then the deduplicated finding list — raw reviewer prose,
@@ -45,9 +47,9 @@ function findingLine(finding: Finding, reviewerCount: number): string {
 
 /** The colored status badge for one verdict. */
 function verdictBadge(label: string, verdict: Verdict): DisplayEntry {
-  if (verdict.compliant) return { badge: "PASS", color: "green", value: label };
+  if (verdict.compliant) return badge("PASS", "green", label);
 
-  if (verdict.severity === "warning") return { badge: "WARN", color: "yellow", value: label };
+  if (verdict.severity === "warning") return badge("WARN", "yellow", label);
 
-  return { badge: "FAIL", color: "red", value: label };
+  return badge("FAIL", "red", label);
 }
