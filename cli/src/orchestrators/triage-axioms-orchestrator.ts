@@ -40,7 +40,7 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
   if (!cfg.curator) {
     ctx.logger.warn(
       `${pending.length} critique(s) untriaged, but no curator is configured — labeling is deferred. ` +
-        "Add a curator to .praxis/config.json to label the backlog, or work it by hand with `praxis axioms curate`.",
+        "Add a curator to .praxis/config.json, then rerun `praxis axioms triage`.",
     );
 
     return "ok";

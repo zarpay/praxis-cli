@@ -77,7 +77,7 @@ interface LabelOutcome {
  *
  * The hallucination guard lives here: a returned axiom id that is not
  * among the spec's active axioms is treated as a failed call — an
- * unratified id must never enter the ledger, as an assignment or as an
+ * invented id must never enter the ledger, as an assignment or as an
  * unmatched verdict.
  */
 const labelCritiquesService: Service<LabelCritiquesInput, Promise<LabelCritiquesResult>> = async (

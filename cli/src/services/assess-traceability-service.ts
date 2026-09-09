@@ -5,7 +5,7 @@ import traceabilityQuestion from "@/prompts/traceability-question.js";
 import traceabilityTools from "@/prompts/traceability-tools.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
 
-/** One proposal to trace against its spec at ratification. */
+/** One draft to trace against its spec at acceptance. */
 interface AssessTraceabilityInput {
   /** Project-relative spec path the proposal claims to belong to. */
   specPath: string;

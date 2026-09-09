@@ -2,7 +2,9 @@ import type { ScopedLedger, Service } from "@/types.js";
 
 import picomatch from "picomatch";
 
+import { isDirectory } from "@/helpers/files-helper.js";
 import { commitDateOf, commitExists } from "@/helpers/git-helper.js";
+import { resolvePath } from "@/helpers/paths-helper.js";
 import joinCritiqueLabelsService from "@/services/join-critique-labels-service.js";
 import { RunStore } from "@/stores/run-store.js";
 
@@ -57,7 +59,12 @@ const resolveReportScopeService: Service<ResolveReportScopeInput, ScopedLedger> 
   });
 
   const runIds = new Set(runs.map((run) => run.run_id));
-  const matchesTarget = target ? picomatch(target, { dot: true }) : null;
+  // A bare directory means everything under it — nobody types the glob.
+  // Targets and ledger paths are root-relative, so the check resolves
+  // against the root, not the caller's cwd.
+  const isDirectoryTarget = target !== undefined && isDirectory(resolvePath(cfg.root, target));
+  const targetPattern = target && isDirectoryTarget ? `${target}/**` : target;
+  const matchesTarget = targetPattern ? picomatch(targetPattern, { dot: true }) : null;
 
   const critiques = joinCritiqueLabelsService(cfg, { critiques: runStore.critiques() })
     .filter((critique) => runIds.has(critique.run_id))

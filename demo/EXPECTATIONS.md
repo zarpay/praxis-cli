@@ -84,6 +84,7 @@ calls · **[scratch]** run in a copy.
 | --- | --- |
 | `eval run --reviewer counter` [free] | **The canary**: all cache hits, 0 misses, `[Errors] 0` on an unchanged corpus. On a branch that changed source files, exactly those files miss (content misses, deterministic and free) — an *identity* miss is the epoch event; a *content* miss on a changed file is the cache working (nuance recorded 2026-09-05). Two deliberate epochs on record: 2026-09-07 (review→label) and 2026-09-08 (exemplars retired — the EXEMPLARS section left the prompt surface; 57 identity misses, re-baselined at 19 units) |
 | `eval run` (all reviewers) [free when warm] | 54 hits; summary shows per-type and by-reviewer blocks; errors = known real findings; header reads "corpus conformance (includes pre-spec debt)" |
+| `eval run src/services` (a directory) | Refused, exit 2, with the glob hint — a directory has no single verdict (2026-09-10). A spec file also never reviews against itself: `eval run README.md` at the root raises the no-spec error rather than self-reviewing |
 | `eval run src/services/redeem-coupon.ts --reviewer v32` [paid on miss] | Fast loop: critiques print **raw** (reviewer prose against the spec — never an `[AX-…]` citation at review time; labels arrive at triage and show in reports); ledger gains a `scope: "files"` run with critiques born `axiom_id: null` |
 | `eval run knowledge/experts/service-steward.md` [free when warm] | The `*.sme.md` half of specFilePattern governs: the expert doc reviews against `experts.sme.md` |
 | `eval run --type tests --reviewer counter` [free] | Domain filter: only the tests domain's 6 units run (all hits when warm) |
@@ -105,7 +106,7 @@ calls · **[scratch]** run in a copy.
 | --- | --- |
 | `eval report --axiom AX-b951db` | Drill-down: statement, derivation, per-reviewer blocks, example critiques with ledger ids — includes the 8 critiques merged in from AX-fac03c |
 | `eval report --axiom AX-96ff9c` | A deprecated axiom still reports: history stays readable |
-| `eval report "src/services/*.ts"` / `--since <date>` / `--branch <name>` / `--commits <shas...>` | Scopes compose; each narrows Runs/Critiques honestly (verified 2026-09-08) |
+| `eval report "src/services/*.ts"` / `--since <date>` / `--branch <name>` / `--commits <shas...>` | Scopes compose; each narrows Runs/Critiques honestly (verified 2026-09-08). A bare directory (`eval report src/services`) reads as everything under it (2026-09-10) |
 | `eval report --commit deadbeef123` | Short missing-commit warning + indented forensics block — never an error |
 | `debt report` | Per-reviewer evidence line (baseline date · current as-evidenced date); per-axiom baseline→current, paydown, appeared; concentration by directory; paydown credit by git author or the unanchored note |
 

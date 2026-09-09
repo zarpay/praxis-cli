@@ -1,7 +1,8 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
 import type { Finding, LedgerEntry, ReviewedTarget, Service, Verdict } from "@/types.js";
 
-import { PraxisError } from "@/helpers/errors-helper.js";
+import { errors as praxisErrors, PraxisError } from "@/helpers/errors-helper.js";
+import { isDirectory } from "@/helpers/files-helper.js";
 import { relativePath, resolvePath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
@@ -69,6 +70,8 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
   let warnings = 0;
 
   for (const targetPath of targets) {
+    if (isDirectory(targetPath)) throw praxisErrors.targetIsDirectory(targetPath);
+
     const subject = ReviewSubject.resolve({
       targetPath,
       specPath: specOverride ?? governingSpecFor(cfg, specStore, targetPath),

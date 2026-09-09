@@ -22,7 +22,7 @@ interface TriageState {
    * could not label — the material for new axioms. Curate's queue.
    */
   unidentified: PendingCritique[];
-  /** Every assignment on record — ratification reads a proposal's support here. */
+  /** Every assignment on record. */
   assignments: TriageAssignmentRecord[];
   dismissed: number;
   rejectedProposals: number;

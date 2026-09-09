@@ -143,7 +143,7 @@ epochs, violation flow, costs. Pure read: never calls a reviewer.
 
 Examples:
   $ praxis eval report                  # everything in the current epoch
-  $ praxis eval report --axiom AX-b951db # one standard, drilled down
+  $ praxis eval report --axiom AX-b951db # one category, drilled down
   $ praxis eval report --branch feature/x --since v1.4.0`,
     )
     .action(reportEvalOrchestrator);

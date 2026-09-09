@@ -195,7 +195,7 @@ A target that cannot be reviewed at all — unreadable, or a cohort too large fo
 
 ## praxis eval report
 
-The read side of the ledger — never a reviewer call. Scopes compose: `eval report [path|glob]` for files, `--commit <sha>` / `--commits <shas...>` for a commit or a PR's set, `--branch`, `--since <date|ref>`, and `--axiom <id>` for the single-standard drill-down. Every invocation prints the same discipline:
+The read side of the ledger — never a reviewer call. Scopes compose: `eval report [path|glob]` for files (a bare directory reads as everything under it), `--commit <sha>` / `--commits <shas...>` for a commit or a PR's set, `--branch`, `--since <date|ref>`, and `--axiom <id>` for the single-standard drill-down. Every invocation prints the same discipline:
 
 - rates as `violations/opportunities (x%)` with the denominator always shown; cells under the small-n floor (5) render **insufficient data**, never a number. Current stock anchors to the latest *evidenced* corpus run (one with cache misses) and prints its date — an all-hit run proves nothing new and never moves the anchor
 - one reviewer, one series — never pooled; every count qualified by population (pre-spec / post-spec / unknown, derived from git birthdates against each axiom's clock)

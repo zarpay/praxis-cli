@@ -39,6 +39,7 @@ export type PraxisErrorCode =
   | "CRITIQUE_NOT_FOUND"
   | "MERGE_NEEDS_SOURCES"
   | "MERGE_SURVIVOR_NOT_ACTIVE"
+  | "TARGET_IS_DIRECTORY"
   | "CURATOR_NOT_CONFIGURED"
   | "CURATOR_MISSING_FIELD"
   | "PROVIDER_CANNOT_COMPLETE"
@@ -77,6 +78,7 @@ export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErr
   "CURATOR_MISSING_FIELD",
   "MERGE_NEEDS_SOURCES",
   "MERGE_SURVIVOR_NOT_ACTIVE",
+  "TARGET_IS_DIRECTORY",
   "CURATOR_NOT_CONFIGURED",
   "DOCUMENT_NOT_FOUND",
   "EXPERT_NOT_FOUND",
@@ -356,11 +358,27 @@ export const errors = {
     );
   },
 
+  /** A named review target is a directory, which has no single verdict. */
+  targetIsDirectory(path: string): PraxisError {
+    return new PraxisError(
+      "TARGET_IS_DIRECTORY",
+      `"${path}" is a directory. Name the files to review — a glob works: \`praxis eval run "${path}/*"\` — or run the whole corpus with \`praxis eval run\`.`,
+    );
+  },
+
   /** An interactive command was run without a terminal and without flags. */
   notATty(command: string, flags: string): PraxisError {
     return new PraxisError(
       "NOT_A_TTY",
       `${command} is interactive and stdin is not a terminal. Script it with ${flags}.`,
+    );
+  },
+
+  /** The editor command needs a terminal and has no scriptable form. */
+  editorNeedsTty(): PraxisError {
+    return new PraxisError(
+      "NOT_A_TTY",
+      "praxis config edit opens an editor and stdin is not a terminal. Edit .praxis/config.json directly.",
     );
   },
 

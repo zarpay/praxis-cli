@@ -1,0 +1,20 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "0311531a:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-09T22:59:23.370Z",
+      "content_hash": "8404473c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 344 words."
+      }
+    }
+  }
+}

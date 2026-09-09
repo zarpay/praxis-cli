@@ -163,7 +163,7 @@ async function organizeAndDecide(
 
   // Fold targets are ALL active axioms — an axiom is
   // an abstraction over evidence, never a child of one spec, and a
-  // proposal awaiting ratification already carries its remediation — plus
+  // standing category already carries its remediation — plus
   // whatever this session proposes as it goes.
   const established = store
     .all()
@@ -397,8 +397,8 @@ function assign(
 /**
  * An accepted draft activates — acceptance IS the human decision, so
  * there is no separate ratification step. The one machine check first:
- * spec traceability. A principle no spec states must not start
- * counting; the honest move is extending the spec, so an untraceable
+ * spec traceability. A category whose norm no spec states must not
+ * start counting; the honest move is extending the spec, so an untraceable
  * draft is held (nothing written) with the curator's basis shown.
  */
 async function activate(
