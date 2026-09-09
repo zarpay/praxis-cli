@@ -45,14 +45,14 @@ export class AxiomFile {
   readonly severity: Severity | null;
   /**
    * The spec passage the accepted draft derived from — provenance
-   * metadata, never identity: an axiom is a principle derived from
+   * metadata, never identity: an axiom is a category derived from
    * critiques, and this pointer may go stale as specs move. Null only
    * on legacy files from before acceptance activated directly.
    */
   readonly derivedFrom: string | null;
   /** YYYY-MM-DD; this axiom's population clock starts here. */
   readonly introduced: string;
-  /** Statement and examples, as authored. */
+  /** The statement, as authored; historical files may carry example sections. */
   readonly body: string;
 
   private constructor(fields: Frontmatter, body: string, path: string) {
@@ -66,6 +66,16 @@ export class AxiomFile {
       fields.optionalString("derived_from") ?? fields.optionalString("grounded_in") ?? null;
     this.introduced = fields.requiredDate("introduced");
     this.body = body;
+  }
+
+  /**
+   * The spec file the category derives from — `derivedFrom` without its
+   * `#section` anchor. Null when a legacy file carries no provenance.
+   */
+  derivedFromSpec(): string | null {
+    if (this.derivedFrom === null) return null;
+
+    return this.derivedFrom.split("#")[0] ?? null;
   }
 
   /** Reads and validates an axiom from already-loaded content. */

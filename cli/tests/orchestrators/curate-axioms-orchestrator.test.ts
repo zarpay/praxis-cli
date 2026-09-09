@@ -1,4 +1,5 @@
 import type { TriageRecord } from "@/types.js";
+import type { CuratorPlan } from "@tests/helpers/curator-provider.js";
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -44,7 +45,7 @@ function guideCritique(seq: number, text: string): string {
 }
 
 /** A project with three pending critiques and a scripted curator. */
-function triageProject(plan: Parameters<typeof curatorProviderModule>[0]): string {
+function triageProject(plan: CuratorPlan): string {
   const { root, cleanup } = createValidatorTmpdir({
     sources: ["docs"],
     files: {

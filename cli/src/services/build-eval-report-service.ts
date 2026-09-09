@@ -121,7 +121,7 @@ function axiomRow({
   cfg: PraxisConfig;
   birthdates: Map<string, string | null>;
 }): AxiomReportRow {
-  const spec = axiom.derivedFrom?.split("#")[0] ?? null;
+  const spec = axiom.derivedFromSpec();
 
   // Current stock: the reviewer's latest *evidenced* corpus run — a
   // one-file fast loop is feedback, not a stock measurement, and an

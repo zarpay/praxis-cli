@@ -207,46 +207,6 @@ export interface AxiomReport {
   examples: { id: string; filePath: string; reviewerName: string; text: string }[];
 }
 
-/** The suggested — never verdicted — diagnosis of one axiom's evidence. */
-export type HarnessDiagnosis =
-  "harness_gap" | "spec_problem" | "reviewer_noise" | "insufficient_data";
-
-/** One axiom's entry in the harness brief, per reviewer — never pooled. */
-export interface HarnessBriefAxiom {
-  axiom_id: string;
-  statement: string;
-  reviewer: string;
-  /** The reviewer's current behavioral hash — the epoch the evidence belongs to. */
-  epoch: string;
-  introduction_rate: RateCell;
-  debt_stock: number;
-  paydown: number;
-  /** Introduced vs resolved over the selected diffs, one line. */
-  trend: string;
-  /** 3-5 newest, linked to ledger ids. */
-  representative_critiques: { id: string; text: string }[];
-  suggested_diagnosis: HarnessDiagnosis;
-  /** Why this diagnosis — triangulation is heuristic, so it shows its work. */
-  diagnosis_reason: string;
-}
-
-/** The harness brief: evidence about which harness elements to change. */
-export interface HarnessBrief {
-  /** First and last run timestamps in scope; null when the ledger is empty. */
-  period: { from: string | null; to: string | null };
-  /** Introduced counts by population across the selected diff runs. */
-  populations: Record<PopulationQualifier, number>;
-  /** The per-reviewer calibration banner — an uninterpretable brief says so. */
-  calibration: string;
-  top_axioms: HarnessBriefAxiom[];
-  /** Dismissed + rejected over all critiques — is the reviewer drifting off-spec? */
-  residual_summary: string;
-  /** Active axioms with no evidence in scope. */
-  removal_candidates: string[];
-  /** The standing guardrails, stated on every brief. */
-  note: string;
-}
-
 /** One axiom's debt position in one reviewer's latest epoch. */
 export interface DebtRow {
   axiomId: string;

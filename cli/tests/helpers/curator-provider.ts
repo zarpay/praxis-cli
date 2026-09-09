@@ -8,11 +8,14 @@
  * `plan.traceability` — each a JSON literal baked into the module, so
  * tests script the curator per project with zero network.
  */
-export function curatorProviderModule(plan: {
+/** What the scripted curator answers per tool. */
+export interface CuratorPlan {
   organization?: unknown;
   traceability?: unknown;
   labels?: unknown;
-}): string {
+}
+
+export function curatorProviderModule(plan: CuratorPlan): string {
   return `const PLAN = ${JSON.stringify(plan)};
 
 export default function scriptedCurator() {

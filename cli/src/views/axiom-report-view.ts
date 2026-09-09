@@ -6,9 +6,9 @@ import chalk from "chalk";
 import { table } from "@framework/views/table.js";
 
 /**
- * One axiom across everything in scope: the standard, per-reviewer
- * current-stock rates with population-qualified counts, and the
- * representative critiques with their ledger ids.
+ * One axiom across everything in scope: the category's statement,
+ * per-reviewer current-stock rates with population-qualified counts,
+ * and the representative critiques with their ledger ids.
  */
 const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
   if (report.json) {
@@ -33,7 +33,7 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
       entries: [
         report.statement,
         "",
-        `derived from: ${report.derivedFrom ?? "— (not ratified)"} · introduced: ${report.introduced}`,
+        `derived from: ${report.derivedFrom ?? "—"} · introduced: ${report.introduced}`,
         "",
         ...table(
           report.rows.map((row) => [
