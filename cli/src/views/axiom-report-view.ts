@@ -25,7 +25,7 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
   return [
     {
       channel: "heading",
-      text: `${report.axiomId} v${report.version} — ${report.status} (${report.severity})`,
+      text: severityHeading(report),
     },
     { channel: "warning", text: `Calibration: ${report.calibration}` },
     {
@@ -54,6 +54,13 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
 };
 
 export default axiomReportView;
+
+/** The heading: identity and status, the severity only when a historical file carries one. */
+function severityHeading(report: AxiomReport): string {
+  const severity = report.severity === null ? "" : ` (${report.severity}, historical)`;
+
+  return `${report.axiomId} v${report.version} — ${report.status}${severity}`;
+}
 
 /** The stock's evidence date, empty when no evidenced corpus run exists. */
 function asOf(row: { asOf: string | null }): string {

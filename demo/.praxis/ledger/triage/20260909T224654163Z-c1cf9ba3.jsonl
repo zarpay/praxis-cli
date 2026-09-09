@@ -1,0 +1,4 @@
+{"kind":"assignment","critique_id":"20260904T231931131Z-9420a479:4","axiom_id":"AX-c16947","axiom_version":1,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-09T22:46:54.162Z"}
+{"kind":"assignment","critique_id":"20260904T232116357Z-24f973b7:4","axiom_id":"AX-c16947","axiom_version":1,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-09T22:46:54.162Z"}
+{"kind":"assignment","critique_id":"20260904T232219203Z-986a5893:4","axiom_id":"AX-c16947","axiom_version":1,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-09T22:46:54.162Z"}
+{"kind":"deprecation","axiom_id":"AX-5879ee","reason":"merged into AX-c16947","timestamp":"2026-09-09T22:46:54.162Z"}
