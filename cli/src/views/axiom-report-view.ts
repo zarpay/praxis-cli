@@ -3,6 +3,8 @@ import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
 
+import { table } from "@framework/views/table.js";
+
 /**
  * One axiom across everything in scope: the standard, per-reviewer
  * current-stock rates with population-qualified counts, and the
@@ -33,12 +35,18 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
         "",
         `derived from: ${report.derivedFrom ?? "— (not ratified)"} · introduced: ${report.introduced}`,
         "",
-        ...report.rows.flatMap((row) => [
-          `[${row.reviewerName}]`,
-          `  current stock: ${row.rate.display}${asOf(row)} · files ever flagged: ${row.files}`,
-          `  critiques by population: pre-spec ${row.byPopulation.pre_spec} · post-spec ${row.byPopulation.post_spec} · unknown ${row.byPopulation.unknown}`,
-          "",
-        ]),
+        ...table(
+          report.rows.map((row) => [
+            row.reviewerName,
+            `${row.rate.display}${asOf(row)}`,
+            row.files,
+            row.byPopulation.pre_spec,
+            row.byPopulation.post_spec,
+            row.byPopulation.unknown,
+          ]),
+          ["REVIEWER", "CURRENT STOCK", "FILES", "PRE-SPEC", "POST-SPEC", "UNKNOWN"],
+        ),
+        "",
         ...(examples.length > 0 ? ["Representative critiques:", "", ...examples] : []),
       ],
     },

@@ -3,6 +3,8 @@ import type { ReportLine, View } from "@framework/types.js";
 
 import chalk from "chalk";
 
+import { statLines } from "@framework/views/stats.js";
+
 /**
  * The eval report, rendered under the measurement hard rules: the calibration
  * banner first (rule 4), every rate beside its denominator (rule 3),
@@ -40,9 +42,19 @@ const evalReportView: View<EvalReport & { json?: boolean }> = (report) => {
     {
       channel: "content",
       entries: [
-        `Runs: ${report.panel.runs} · Critiques: ${report.panel.critiques} · Files touched: ${report.panel.filesTouched}`,
-        `Reviewers: ${report.panel.reviewers.join(", ") || "—"} · Specs: ${report.panel.specs.length}`,
-        `Cost: ${report.panel.costUsd === null ? "— (offline or unreported)" : `$${report.panel.costUsd.toFixed(4)}`}`,
+        ...statLines([
+          ["Runs", report.panel.runs],
+          ["Critiques", report.panel.critiques],
+          ["Files touched", report.panel.filesTouched],
+          ["Reviewers", report.panel.reviewers.join(", ") || "—"],
+          ["Specs", report.panel.specs.length],
+          [
+            "Cost",
+            report.panel.costUsd === null
+              ? "— (offline or unreported)"
+              : `$${report.panel.costUsd.toFixed(4)}`,
+          ],
+        ]),
         "",
       ],
     },

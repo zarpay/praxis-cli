@@ -1,7 +1,7 @@
 import type { EvalSummary, ReviewAllResult } from "@/types.js";
 import type { DisplayEntry, View } from "@framework/types.js";
 
-import chalk from "chalk";
+import { table } from "@framework/views/table.js";
 
 /** A completed full run, ready to report. */
 interface FinishedRun {
@@ -77,21 +77,29 @@ function summary(totals: EvalSummary): DisplayEntry[] {
     },
     "",
     "By type:",
-    ...Object.entries(totals.byType).map(
-      ([type, stats]) => `  ${type}: ${stats.compliant}/${stats.total} compliant`,
+    ...table(
+      Object.entries(totals.byType).map(([type, stats]) => [
+        type,
+        `${stats.compliant}/${stats.total} compliant`,
+      ]),
     ),
     ...(reviewerNames.length > 1
-      ? ["", "By reviewer:", ...reviewerNames.map((name) => reviewerLine(name, totals))]
+      ? [
+          "",
+          "By reviewer:",
+          ...table(
+            reviewerNames.map((name) => {
+              const stats = totals.byReviewer[name];
+
+              return [
+                name,
+                `${stats?.compliant ?? 0} pass`,
+                `${stats?.warnings ?? 0} warn`,
+                `${stats?.errors ?? 0} fail`,
+              ];
+            }),
+          ),
+        ]
       : []),
   ];
-}
-
-/** One reviewer's tally, colored per outcome. */
-function reviewerLine(name: string, totals: EvalSummary): string {
-  const stats = totals.byReviewer[name];
-  const pass = chalk.green(String(stats.compliant));
-  const warn = chalk.yellow(String(stats.warnings));
-  const fail = chalk.red(String(stats.errors));
-
-  return `  ${name}: ${pass} pass, ${warn} warn, ${fail} fail`;
 }

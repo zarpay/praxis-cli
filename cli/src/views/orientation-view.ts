@@ -3,6 +3,8 @@ import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
 
+import { table } from "@framework/views/table.js";
+
 /**
  * Bare `praxis`: the project at a glance, every line naming the
  * command that acts on it — drill-down, not dumps.
@@ -32,9 +34,11 @@ const orientationView: View<Orientation & { json?: boolean }> = (orientation) =>
         lastRunLine,
         chalk.gray(`Calibration: ${orientation.calibration}`),
         "",
-        `Axioms: ${orientation.activeAxioms} active (\`praxis axioms list\`)`,
-        `Untriaged: ${orientation.pendingTriage} (\`praxis axioms triage\`)`,
-        `Awaiting curation: ${orientation.awaitingCuration} (\`praxis axioms curate\`)`,
+        ...table([
+          ["Active axioms", orientation.activeAxioms, "`praxis axioms list`"],
+          ["Untriaged", orientation.pendingTriage, "`praxis axioms triage`"],
+          ["Awaiting curation", orientation.awaitingCuration, "`praxis axioms curate`"],
+        ]),
         ...(debtLines.length > 0 ? ["", ...debtLines] : []),
         "",
         "Reports: `praxis eval report` · `praxis debt report` · `praxis status --json`",

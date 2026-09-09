@@ -40,9 +40,10 @@ describe("debtReportView", () => {
   it("renders stock movement, concentration, and credit", () => {
     const text = reportText(debtReportView(report()));
 
-    expect(text).toContain("baseline 3 → current 2");
-    expect(text).toContain("src/services: 2");
-    expect(text).toContain("Fixer: 1 resolved");
+    expect(text).toContain("AXIOM");
+    expect(text).toMatch(/AX-aaaa11\s+flash\s+3\s+2\s+1\s+0/);
+    expect(text).toMatch(/src\/services\s+2/);
+    expect(text).toMatch(/Fixer\s+1 resolved/);
   });
 
   it("explains missing credit rather than guessing", () => {

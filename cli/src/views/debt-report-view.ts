@@ -3,6 +3,8 @@ import type { ReportLine, View } from "@framework/types.js";
 
 import chalk from "chalk";
 
+import { table } from "@framework/views/table.js";
+
 /**
  * The debt surface: honestly named, never charted as agent
  * performance. Stock and paydown per axiom per reviewer, concentration
@@ -26,12 +28,24 @@ const debtReportView: View<DebtReport & { json?: boolean }> = (report) => {
     ];
   }
 
+  const rowTable = table(
+    report.rows.map((row) => [
+      row.axiomId,
+      row.reviewerName,
+      row.baselineStock,
+      row.currentStock,
+      row.paydown,
+      row.appearedSinceBaseline,
+    ]),
+    ["AXIOM", "REVIEWER", "BASELINE", "CURRENT", "PAID DOWN", "APPEARED"],
+  );
+
   const lines: ReportLine[] = [
     { channel: "heading", text: "Debt report — corpus, pre-spec debt included" },
     { channel: "warning", text: `Calibration: ${report.calibration}` },
     {
       channel: "content",
-      entries: [...report.evidence.map(evidenceLine), "", ...report.rows.map(rowLine)],
+      entries: [...report.evidence.map(evidenceLine), "", ...rowTable],
     },
   ];
 
@@ -59,18 +73,6 @@ const debtReportView: View<DebtReport & { json?: boolean }> = (report) => {
 
 export default debtReportView;
 
-/** One axiom's stock movement, one reviewer's series — a two-line block. */
-function rowLine(row: DebtReport["rows"][number]): string {
-  const paid = chalk.green(String(row.paydown));
-  const appeared = chalk.red(String(row.appearedSinceBaseline));
-
-  return [
-    `${row.axiomId} ${chalk.gray(`[${row.reviewerName}]`)}`,
-    `  baseline ${row.baselineStock} → current ${row.currentStock} · paid down ${paid} · appeared ${appeared}`,
-    "",
-  ].join("\n");
-}
-
 /** Where the current stock lives, worst directories first. */
 function concentrationLines(report: DebtReport): ReportLine[] {
   if (report.concentration.length === 0) return [];
@@ -83,7 +85,7 @@ function concentrationLines(report: DebtReport): ReportLine[] {
       entries: [
         "",
         "Concentration (current stock by directory):",
-        ...worst.map((entry) => `  ${entry.directory}: ${entry.violations}`),
+        ...table(worst.map((entry) => [entry.directory, entry.violations])),
       ],
     },
   ];
@@ -99,7 +101,7 @@ function creditLines(report: DebtReport): ReportLine[] {
       entries: [
         "",
         "Paydown credit (authors of resolving commits):",
-        ...report.credits.map((credit) => `  ${credit.author}: ${credit.resolved} resolved`),
+        ...table(report.credits.map((credit) => [credit.author, `${credit.resolved} resolved`])),
       ],
     },
   ];
