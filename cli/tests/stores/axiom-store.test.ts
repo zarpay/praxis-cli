@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -10,13 +10,13 @@ import { seedAxiom as seedSharedAxiom } from "@tests/helpers/axiom-fixtures.js";
 import { testConfig } from "@tests/helpers/test-config.js";
 
 /** A draft as triage would accept it. */
-function draft() {
+function accepted() {
   return {
     statement: "Error messages name what would be accepted instead.",
     severity: "warning" as const,
-    scope: "file" as const,
     violatingExample: "`bad subject`",
     compliantExample: "`subject must be a non-empty string`",
+    derivedFrom: "docs/README.md#error-messages",
   };
 }
 
@@ -134,21 +134,22 @@ describe("AxiomStore", () => {
     });
   });
 
-  describe("propose", () => {
-    it("lands a valid proposed axiom under proposed/ with a minted id", () => {
-      const { id, path } = store.propose(draft());
+  describe("createActive", () => {
+    it("lands a valid active axiom with a minted id and its derivation", () => {
+      const { id, path } = store.createActive(accepted());
 
       const written = AxiomFile.fromContent(readFileSync(path, "utf8"), path);
 
       expect(id).toMatch(/^AX-[0-9a-f]{6}$/);
-      expect(path).toBe(join(root, ".praxis", "axioms", "proposed", `${id}.md`));
-      expect(written.status).toBe("proposed");
+      expect(path).toBe(join(root, ".praxis", "axioms", `${id}.md`));
+      expect(written.status).toBe("active");
       expect(written.version).toBe(1);
-      expect(written.derivedFrom).toBeNull();
+      expect(written.derivedFrom).toBe("docs/README.md#error-messages");
+      expect(written.statement()).toBe(accepted().statement);
     });
 
     it("stamps introduced with today's date — the axiom's population clock", () => {
-      const { path } = store.propose(draft());
+      const { path } = store.createActive(accepted());
 
       const written = AxiomFile.fromContent(readFileSync(path, "utf8"), path);
       const today = new Date().toISOString().slice(0, 10);
@@ -156,25 +157,11 @@ describe("AxiomStore", () => {
       expect(written.introduced).toBe(today);
     });
 
-    it("mints a distinct id per proposal — random, never sequential", () => {
-      const first = store.propose(draft());
-      const second = store.propose(draft());
+    it("mints a distinct id per acceptance — random, never sequential", () => {
+      const first = store.createActive(accepted());
+      const second = store.createActive(accepted());
 
       expect(second.id).not.toBe(first.id);
-    });
-  });
-
-  describe("ratify", () => {
-    it("activates the proposal with its grounding, preserving the body", () => {
-      const { id } = store.propose(draft());
-
-      const { path } = store.ratify(id, "docs/README.md#error-messages");
-      const ratified = AxiomFile.fromContent(readFileSync(path, "utf8"), path);
-
-      expect(ratified.status).toBe("active");
-      expect(ratified.derivedFrom).toBe("docs/README.md#error-messages");
-      expect(ratified.statement()).toBe(draft().statement);
-      expect(existsSync(join(root, ".praxis", "axioms", "proposed", `${id}.md`))).toBe(false);
     });
   });
 });

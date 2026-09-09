@@ -116,7 +116,7 @@ function evalStateLines(report: StatusReport): string[] {
 
   return [
     `Last run: ${lastRun}`,
-    `Untriaged: ${evalState.pending_triage} · Awaiting curation: ${evalState.awaiting_curation} · Proposals: ${evalState.proposals_pending}`,
+    `Untriaged: ${evalState.pending_triage} · Awaiting curation: ${evalState.awaiting_curation}`,
     ...(evalState.epoch_boundary_detected
       ? ["Epoch boundary detected — the next full run opens a new baseline."]
       : []),

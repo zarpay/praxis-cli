@@ -22,7 +22,7 @@ A week of runs produces the same complaint about five different services. Those 
 praxis axioms triage
 ```
 
-The **curator** (a dedicated model configured beside your reviewers — worth a frontier model, since it does the taxonomy's thinking) classifies each untriaged critique against **all** active axioms — an axiom abstracts a principle, never a child of one spec, so a critique from any spec can land in any axiom. A squarely-an-instance match becomes an assignment record; everything else is recorded **unmatched** and queued for curation. Early on, with no axioms ratified yet, that's every critique — triage is how raw evidence reaches the curation queue.
+The **curator** (a dedicated model configured beside your reviewers — worth a frontier model, since it does the taxonomy's thinking) classifies each untriaged critique against **all** active axioms — an axiom abstracts a principle, never a child of one spec, so a critique from any spec can land in any axiom. A squarely-an-instance match becomes an assignment record; everything else is recorded **unmatched** and queued for curation. Early on, with no axioms accepted yet, that's every critique — triage is how raw evidence reaches the curation queue.
 
 ## 3. Curate names the pattern
 
@@ -32,19 +32,11 @@ praxis axioms curate
 
 The curator clusters the unmatched residue and suggests, cluster by cluster: fold these into an existing axiom, propose a new one, or hold them because no axiom emerges yet. You decide — `[a]ccept / [s]kip`. Nothing the curator suggests takes effect without a human accepting it, and nothing here is ever dismissed: whether a critique is *true* is a different question, answered in `praxis eval review`. A held cluster simply waits for the next session.
 
-The judgment boundary is applied where the draft is written: the curator is told *if you can write the check, write the check; if you can only describe the standard, write the axiom*, so a mechanical cluster comes back held and a mixed one as its judgment half. Your acceptance is final — the draft lands exactly as you accepted it.
+The judgment boundary is applied where the draft is written: the curator is told *if you can write the check, write the check; if you can only describe the standard, write the axiom*, so a mechanical cluster comes back held and a mixed one as its judgment half.
 
-## 4. Ratification names the standard
+**Acceptance activates.** One machine check runs before anything lands: spec traceability — the curator quotes the passage the principle derives from. Traceable, and the axiom is live under a random-minted permanent id, its derivation recorded. Untraceable, and the cluster is held with the honest instruction: the spec is incomplete — extend it, then re-curate. A principle no spec states never starts counting.
 
-The accepted proposal lands in `.praxis/axioms/proposed/` with a random-minted, permanent id. It affects nothing until:
-
-```bash
-praxis axioms ratify AX-b951db
-```
-
-Ratification is spec traceability: the curator quotes the spec text the principle derives from, and you make the call. Three outcomes — traceable (ratify), real-but-untraceable (the spec is incomplete; extend it and rerun), or not the axiom (reject; the rejection is recorded and its supporting critiques return to the curate queue).
-
-Ratified, the axiom is a markdown file in `.praxis/axioms/`:
+Active, the axiom is a markdown file in `.praxis/axioms/`:
 
 ```markdown
 ---
@@ -65,9 +57,9 @@ Error messages name what was wrong and what would be accepted instead.
 `err("rating must be a whole number from 1 to 5")`
 ```
 
-## 5. The label pass closes the loop
+## 4. The label pass closes the loop
 
-The reviewer never sees the axioms — it reads only the spec, and every critique still arrives raw; run and verdict output keep showing the reviewer's own words. But the next `praxis axioms triage` labels every recurring instance under `AX-b951db`, and the assignment is written to the ledger with its provenance (`matcher`). A matcher assignment is settled — it never re-enters a queue — but never final: `praxis axioms reassign <critique-id> --to <axiom>` re-decides any single label by hand, and when two axioms turn out to be one principle, `praxis axioms merge` re-labels the evidence in one move. From then on reports speak in the axiom's ratified words:
+The reviewer never sees the axioms — it reads only the spec, and every critique still arrives raw; run and verdict output keep showing the reviewer's own words. But the next `praxis axioms triage` labels every recurring instance under `AX-b951db`, and the assignment is written to the ledger with its provenance (`matcher`). A matcher assignment is settled — it never re-enters a queue — but never final: `praxis axioms reassign <critique-id> --to <axiom>` re-decides any single label by hand, and when two axioms turn out to be one principle, `praxis axioms merge` re-labels the evidence in one move. From then on reports speak in the axiom's accepted words:
 
 ```
 praxis eval report --axiom AX-b951db
@@ -84,11 +76,11 @@ accepted instead.
   critiques by population: pre-spec 2 · post-spec 1 · unknown 0
 ```
 
-Whatever triage can't confidently label lands in the curation queue for the next human curate session — today's raw critique is tomorrow's axiom. And because axioms never enter the review, ratifying one costs nothing: no cache invalidation, no re-review — the reviewer's question changes only when the spec does.
+Whatever triage can't confidently label lands in the curation queue for the next human curate session — today's raw critique is tomorrow's axiom. And because axioms never enter the review, activating one costs nothing: no cache invalidation, no re-review — the reviewer's question changes only when the spec does.
 
 For a developer or an agent, the label is a link, not a lecture: `praxis axioms show AX-b951db` is the drill-down with both examples, and the standard reads identically every run, on every machine.
 
-## 6. Now — and only now — you can count
+## 5. Now — and only now — you can count
 
 A raw critique can't be charted: its wording varies by run and by reviewer. An axiom can. `praxis eval report` computes over the ledger (never calling a reviewer):
 
@@ -103,8 +95,8 @@ A raw critique can't be charted: its wording varies by run and by reviewer. An a
 | Actor        | Does                                                              | Never does                          |
 | ------------ | ----------------------------------------------------------------- | ----------------------------------- |
 | **Reviewer** | Reads targets against specs; every critique arrives raw           | Sees an axiom, or checks anything a linter could |
-| **Curator**  | Labels critiques at triage; clusters and drafts at curate; assesses traceability at ratify | Decides — every proposal is human-accepted, every ratification a human call |
-| **You**      | Accept, ratify, deprecate; judge critique validity in `eval review`; own the specs | Manage cache or ledger files by hand |
+| **Curator**  | Labels critiques at triage; clusters, drafts, and checks traceability at curate | Decides — every activation is a human acceptance |
+| **You**      | Accept (which activates), deprecate, merge; judge critique validity in `eval review`; own the specs | Manage cache or ledger files by hand |
 | **The ledger** | Remembers everything, append-only, in git                       | Gets edited                         |
 
 ## See also

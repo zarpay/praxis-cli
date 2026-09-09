@@ -13,6 +13,7 @@ import { errors } from "@/helpers/errors-helper.js";
 import { exists, readText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
+import assessTraceabilityService from "@/services/assess-traceability-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import organizeTriageService from "@/services/organize-triage-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
@@ -34,9 +35,9 @@ interface CurateSession {
   suggestedBy: string;
   records: TriageRecord[];
   /** Proposals accepted this session — later cohorts fold into them. */
-  proposalsThisSession: { id: string; statement: string }[];
+  activatedThisSession: { id: string; statement: string }[];
   assigned: number;
-  proposed: number;
+  activated: number;
   /** Held as evidence with no axiom yet — the curator's call, accepted; nothing written. */
   held: number;
   /** Skipped by the human — nothing decided, nothing written. */
@@ -119,9 +120,9 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
     prompter,
     suggestedBy: curator.model,
     records: [],
-    proposalsThisSession: [],
+    activatedThisSession: [],
     assigned: 0,
-    proposed: 0,
+    activated: 0,
     held: 0,
     skipped: 0,
     costUsd: null,
@@ -138,7 +139,7 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
   const pendingLeft = state.unidentified.length - session.assigned;
   const summary = curateSummaryView({
     assigned: session.assigned,
-    proposed: session.proposed,
+    activated: session.activated,
     held: session.held,
     skipped: session.skipped,
     pendingLeft,
@@ -160,13 +161,13 @@ async function organizeAndDecide(
   const store = new AxiomStore(session.cfg);
   const versions = new Map(store.all().axioms.map((axiom) => [axiom.id, axiom.version]));
 
-  // Fold targets are ALL active and standing proposed axioms — an axiom is
+  // Fold targets are ALL active axioms — an axiom is
   // an abstraction over evidence, never a child of one spec, and a
   // proposal awaiting ratification already carries its remediation — plus
   // whatever this session proposes as it goes.
   const established = store
     .all()
-    .axioms.filter((axiom) => axiom.status === "active" || axiom.status === "proposed")
+    .axioms.filter((axiom) => axiom.status === "active")
     .map((axiom) => ({ id: axiom.id, statement: axiom.statement() }));
 
   for (const [specPath, critiques] of groupBySpec(pending)) {
@@ -225,7 +226,7 @@ async function organizeCohort(
       specPath,
       specContent,
       critiques: cohort.map((entry) => entry.representative),
-      axioms: [...established, ...session.proposalsThisSession],
+      axioms: [...established, ...session.activatedThisSession],
     });
   } catch (err) {
     // A curator failure loses one cohort, never the decisions already
@@ -264,7 +265,10 @@ async function organizeCohort(
 
     session.ctx.render(clusterView);
 
-    await decideCluster(session, cluster, clusterCritiques, versions);
+    await decideCluster(session, cluster, clusterCritiques, versions, {
+      path: specPath,
+      content: specContent,
+    });
   }
 
   const clustered = new Set(organization.clusters.flatMap((cluster) => cluster.critiqueIds));
@@ -325,6 +329,7 @@ async function decideCluster(
   cluster: TriageCluster,
   critiques: PendingCritique[],
   versions: Map<string, number>,
+  spec: { path: string; content: string },
 ): Promise<void> {
   const decision = session.yes
     ? "accept"
@@ -336,15 +341,16 @@ async function decideCluster(
     return;
   }
 
-  await acceptSuggestion(session, cluster, critiques, versions);
+  await acceptSuggestion(session, cluster, critiques, versions, spec);
 }
 
-/** The curator's suggestion, accepted: assign, propose, or hold. */
+/** The curator's suggestion, accepted: assign, activate, or hold. */
 async function acceptSuggestion(
   session: CurateSession,
   cluster: TriageCluster,
   critiques: PendingCritique[],
   versions: Map<string, number>,
+  spec: { path: string; content: string },
 ): Promise<void> {
   const { suggestion } = cluster;
 
@@ -362,10 +368,10 @@ async function acceptSuggestion(
     return;
   }
 
-  propose(session, critiques, suggestion.draft);
+  await activate(session, critiques, suggestion.draft, spec);
 }
 
-/** Folds critiques into an established (or newly proposed) axiom. */
+/** Folds critiques into an established (or session-activated) axiom. */
 function assign(
   session: CurateSession,
   critiques: PendingCritique[],
@@ -388,23 +394,70 @@ function assign(
   }
 }
 
-/** An accepted draft: the proposal file plus parentage. */
-function propose(session: CurateSession, critiques: PendingCritique[], draft: AxiomDraft): void {
+/**
+ * An accepted draft activates — acceptance IS the human decision, so
+ * there is no separate ratification step. The one machine check first:
+ * spec traceability. A principle no spec states must not start
+ * counting; the honest move is extending the spec, so an untraceable
+ * draft is held (nothing written) with the curator's basis shown.
+ */
+async function activate(
+  session: CurateSession,
+  critiques: PendingCritique[],
+  draft: AxiomDraft,
+  spec: { path: string; content: string },
+): Promise<void> {
+  let traceability;
+
+  try {
+    traceability = await assessTraceabilityService(session.cfg, {
+      specPath: spec.path,
+      specContent: spec.content,
+      statement: draft.statement,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    session.ctx.render([
+      {
+        channel: "warning",
+        text: `Traceability call failed: ${message} — the cluster is held; rerun curate to retry.`,
+      },
+    ]);
+    session.held += critiques.length;
+
+    return;
+  }
+
+  addUsage(session, traceability.usage);
+
+  if (!traceability.traceable || traceability.grounding === null) {
+    session.ctx.render([
+      {
+        channel: "warning",
+        text: `Not traceable — the cluster is held. If the standard is real, extend the spec and re-curate.${traceability.quotedBasis === "" ? "" : ` Basis: ${traceability.quotedBasis}`}`,
+      },
+    ]);
+    session.held += critiques.length;
+
+    return;
+  }
+
   const store = new AxiomStore(session.cfg);
-  const { id } = store.propose({
+  const { id } = store.createActive({
     statement: draft.statement,
     severity: draft.severity,
     violatingExample: draft.violatingExample,
     compliantExample: draft.compliantExample,
+    derivedFrom: traceability.grounding,
   });
 
-  session.proposed++;
+  session.activated++;
   assign(session, critiques, id, 1);
-  session.proposalsThisSession.push({ id, statement: draft.statement });
+  session.activatedThisSession.push({ id, statement: draft.statement });
   session.ctx.render([
     {
       channel: "success",
-      text: `Proposed ${id}; ratify with \`praxis axioms ratify ${id}\`.`,
+      text: `${id} is active, derived from ${traceability.grounding}. The next \`praxis axioms triage\` labels against it.`,
     },
   ]);
 }

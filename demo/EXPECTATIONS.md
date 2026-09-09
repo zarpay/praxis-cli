@@ -23,7 +23,7 @@ a bug.
   (`cp -r demo <scratch>`), never against the real demo: `axioms triage`
   (curator spend; writes matcher assignment records), `axioms curate`
   (consumes the pending queue; curator spend unless `--reject`),
-  `axioms ratify`, `eval review --dismiss/--reinstate` (writes validity
+  `eval review --dismiss/--reinstate` (writes validity
   records).
   Exception: a milestone's own acceptance run may land triage/curate
   evidence in the real demo deliberately — say so in the commit.
@@ -113,7 +113,7 @@ calls · **[scratch]** run in a copy.
 
 | Command | Expect |
 | --- | --- |
-| `axioms list` | 13 axioms, chronological; proposals counted with the ratify pointer |
+| `axioms list` | Axioms, chronological; a leftover `proposed` file is flagged with the migration path |
 | `eval critiques [target] --state/--axiom/--json` [free] | Browsable critique cards with ids and lifecycle states; ledger-wide tallies in the heading (verified 2026-09-08) |
 | `axioms reassign <critique-id> --to <axiom>` [scratch] | Appends a human assignment that wins at read time; exit 2 on an unknown critique id or a non-active axiom (verified 2026-09-08 in scratch) |
 | `axioms show AX-b951db` | Statement, both examples, grounding, lifecycle; `--json` stable |
@@ -125,7 +125,7 @@ calls · **[scratch]** run in a copy.
 | `axioms deprecate <id> --reason` [scratch] | Status flips to deprecated, body untouched, deprecation record in the ledger; reports keep the id's history readable |
 | `axioms merge <ids...> --into <id>` [scratch] | Losers deprecate, their critiques re-label to the survivor (decision "merge"), survivor's introduced moves to the earliest among the merged; `eval report --axiom <survivor>` immediately counts the merged evidence |
 | `axioms curate --yes` [scratch, paid] | Clusters the unmatched residue (cohorts of ~30, duplicates deduped with ×N): accepted assignments (active **and** standing proposed axioms are fold targets) and proposals land as records, proposals written exactly as drafted (no post-acceptance gate since 2026-09-09; the judgment boundary is in the curator's prompt); a **held** cluster writes nothing and stays in the queue; critiques the curator left unclustered are named and held. Curate never dismisses. A rerun straight after re-offers only what was held. With anything untriaged, curate refuses to start — exit 2 naming `praxis axioms triage` (a clean triage is the precondition) |
-| `axioms ratify <id>` `--yes/--reject/--spec` [scratch, paid] | Traceability, then the human call; `--reject` records the rejection and releases the supporting critiques back to curate (message names the count); untraceable → exit 1, extend the spec. Ratification has **no cache effect**: the next run stays all-hits |
+| curate acceptance activates [scratch, paid] | Accepting a draft runs the traceability check inline: traceable → the axiom lands **active** with `derived_from` (no cache effect — the next run stays all-hits); untraceable → the cluster is held with "extend the spec". There is no separate ratify step |
 
 ### Project lifecycle [scratch]
 

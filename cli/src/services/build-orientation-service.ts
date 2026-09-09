@@ -42,7 +42,6 @@ const buildOrientationService: Service<NoInput, Orientation> = (cfg) => {
     lastRun,
     pendingTriage: state.pending.length,
     awaitingCuration: state.unidentified.length,
-    proposalsPending: axioms.filter((axiom) => axiom.status === "proposed").length,
     activeAxioms: axioms.filter((axiom) => axiom.status === "active").length,
     calibration: CALIBRATION_STATUS,
     debtLine,

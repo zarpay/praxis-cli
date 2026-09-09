@@ -132,13 +132,13 @@ Run reviews for a week and the same critiques start repeating — "error message
 praxis axioms triage
 ```
 
-A **curator** model labels each pending critique against the axioms you've already ratified, and sends the rest — the ones no existing axiom matches — to the curation queue. Early on, that's all of them. Then:
+A **curator** model labels each pending critique against your active axioms, and sends the rest — the ones no existing axiom matches — to the curation queue. Early on, that's all of them. Then:
 
 ```bash
 praxis axioms curate
 ```
 
-The curator clusters that unmatched residue and drafts a proposal; you accept; `praxis axioms ratify` traces it to the spec and activates it. From then on the standard has a name — `AX-b951db` — future `praxis axioms triage` runs label every recurring critique under it (the reviewer itself keeps seeing only the spec), reports cite it, and `praxis axioms show AX-b951db` teaches it with a violating and a compliant example. Standards stop being folklore. See [the evidence loop](/concepts/evidence-loop).
+The curator clusters that unmatched residue and drafts an axiom; you accept, the draft's principle is traced to the spec, and it's live. From then on the standard has a name — `AX-b951db` — future `praxis axioms triage` runs label every recurring critique under it (the reviewer itself keeps seeing only the spec), reports cite it, and `praxis axioms show AX-b951db` teaches it with a violating and a compliant example. Standards stop being folklore. See [the evidence loop](/concepts/evidence-loop).
 
 ## Optional: the spec layer
 

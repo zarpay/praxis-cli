@@ -31,16 +31,18 @@ interface ReviewCritiquesOptions {
  * signal — many dismissals mean the specs disagree with the humans or
  * the reviewers are drifting.
  *
- * The queue is only what no axiom has claimed: untriaged and unmatched
- * critiques. A critique labeled under an axiom is valid by definition —
- * a human or the matcher already found it an instance of a standard —
- * so it is never offered for review and `--dismiss` refuses it
- * (`axioms reassign` is the tool when it belongs elsewhere).
- * Interactive by default, one critique at a time; `--dismiss <id>
- * --reason` and `--reinstate <id> --reason` are the scripted forms.
+ * The interactive queue is what no axiom has claimed: untriaged and
+ * unmatched critiques. A labeled critique is presumed valid — someone
+ * found it an instance of a standard — but presumption is not
+ * finality: the scripted `--dismiss <id> --reason` accepts ANY
+ * critique, labeled included, and the dismissal wins at read time (the
+ * label stays in the ledger beneath it; reports recompute). Browse
+ * labeled ids with `praxis eval critiques --axiom <id>`.
+ * `--reinstate <id> --reason` lifts a dismissal — the critique returns
+ * to whatever its records beneath say: its label, or its queue.
  *
- * @throws PraxisError for an unknown or labeled id, a flag missing its
- *   reason, or interactive use without a TTY
+ * @throws PraxisError for an unknown id, a flag missing its reason, or
+ *   interactive use without a TTY
  */
 export const reviewCritiquesOrchestrator: Orchestrator<ReviewCritiquesOptions> = async (
   ctx,
@@ -121,7 +123,14 @@ function dismissOne(ctx: CommandContext, id: string, reason: string | undefined)
     );
   }
 
-  requireReviewable(cfg, id);
+  requireCritique(cfg, id);
+
+  if (new TriageStore(cfg).decisions().get(id)?.dismissed) {
+    ctx.render([{ channel: "warning", text: `${id} is already dismissed; nothing to do.` }]);
+
+    return "ok";
+  }
+
   new TriageStore(cfg).writeSession([dismissalRecord(id, reason)]);
   ctx.render([
     {
@@ -182,15 +191,6 @@ function requireCritique(cfg: PraxisConfig, id: string): void {
   const known = new RunStore(cfg).critiques().some((critique) => critique.id === id);
 
   if (!known) throw errors.critiqueNotFound(id);
-}
-
-/** @throws PraxisError when the id is unknown or already labeled under an axiom */
-function requireReviewable(cfg: PraxisConfig, id: string): void {
-  requireCritique(cfg, id);
-
-  const row = buildCritiquesReportService(cfg, {}).rows.find((entry) => entry.id === id);
-
-  if (row?.state === "labeled") throw errors.critiqueLabeled(id, row.axiomId ?? "");
 }
 
 /** One dismissal record, stamped now. */

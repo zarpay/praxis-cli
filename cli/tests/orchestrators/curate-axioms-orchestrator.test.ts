@@ -124,37 +124,67 @@ function standardPlan() {
         },
       ],
     },
+    traceability: {
+      traceable: true,
+      grounding: "docs/README.md#error-messages",
+      quoted_basis: "Error messages name what would be accepted.",
+      reasoning: "Stated verbatim.",
+    },
   };
 }
 
 describe("curateAxiomsOrchestrator", () => {
-  it("with --yes: accepts the organization — proposal written, parentage assigned, the held critique stays unmatched", async () => {
+  it("with --yes: acceptance activates — axiom live with its derivation, parentage assigned, the held critique stays unmatched", async () => {
     const root = triageProject(standardPlan());
-    const { logger, output } = createCaptureLogger();
+    const { logger } = createCaptureLogger();
 
     const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
 
     const { axioms } = new AxiomStore(testConfig(root)).all();
-    const proposal = axioms.find((axiom) => axiom.status === "proposed");
+    const activated = axioms.find((axiom) => axiom.status === "active");
     const records = triageRecords(root);
     const assignments = records.filter((record) => record.kind === "assignment");
     const dismissals = records.filter((record) => record.kind === "dismissal");
-    const stillUnmatched = deriveTriageStateService(testConfig(root), {}).unidentified;
+    const state = deriveTriageStateService(testConfig(root), {});
+    const stillUnmatched = state.unidentified;
+    const requeued = state.pending;
 
     expect(outcome).toBe("ok");
-    expect(proposal).toBeDefined();
-    expect(proposal!.statement()).toBe(
+    expect(activated).toBeDefined();
+    expect(activated!.statement()).toBe(
       "Error messages name what was wrong and what would be accepted instead.",
     );
+    expect(activated!.derivedFrom).toBe("docs/README.md#error-messages");
     expect(assignments).toHaveLength(2);
     expect(assignments[0]).toMatchObject({
-      axiom_id: proposal!.id,
+      axiom_id: activated!.id,
       assigned_by: { decision: "flag:--yes", suggested_by: "scripted" },
     });
-    // Held: valid evidence with no axiom yet — nothing written, still in curate's queue.
+    // Held: valid evidence with no axiom yet — nothing written. The
+    // session activated an axiom, so the active set changed and the held
+    // critique re-queues for triage against it.
     expect(dismissals).toHaveLength(0);
-    expect(stillUnmatched.map((critique) => critique.id)).toEqual(["r1:3"]);
-    expect(output()).toContain("Proposed");
+    expect(stillUnmatched).toHaveLength(0);
+    expect(requeued.map((critique) => critique.id)).toEqual(["r1:3"]);
+  });
+
+  it("an untraceable draft is held — extend the spec, nothing written", async () => {
+    const plan = standardPlan();
+    plan.traceability = {
+      traceable: false,
+      grounding: null as unknown as string,
+      quoted_basis: "",
+      reasoning: "No passage states it.",
+    };
+    const root = triageProject(plan);
+    const { logger } = createCaptureLogger();
+
+    const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
+
+    expect(outcome).toBe("ok");
+    expect(new AxiomStore(testConfig(root)).all().axioms).toHaveLength(0);
+    // All three critiques still await curation: the cluster held, nothing decided.
+    expect(deriveTriageStateService(testConfig(root), {}).unidentified).toHaveLength(3);
   });
 
   it("an accepted draft is written as accepted — nothing second-guesses the human's call", async () => {
@@ -166,18 +196,20 @@ describe("curateAxiomsOrchestrator", () => {
     const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
 
     const { axioms } = new AxiomStore(testConfig(root)).all();
-    const proposal = axioms.find((axiom) => axiom.status === "proposed");
+    const activated = axioms.find((axiom) => axiom.status === "active");
     const recordsAfterSession = triageRecords(root).length;
 
-    // Nothing decided twice: a rerun re-offers only the held critique and writes nothing.
-    const rerun = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
-    const recordsAfterRerun = triageRecords(root).length;
+    // Nothing decided twice: activation changed the active set, so the
+    // held critique re-queued for triage — a rerun refuses until triage
+    // has considered it against the new axiom, and writes nothing.
+    const rerun = curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
+
+    await expect(rerun).rejects.toThrow(/still untriaged/);
 
     expect(outcome).toBe("ok");
-    expect(proposal?.statement()).toBe("Every service exports a function named run.");
+    expect(activated?.statement()).toBe("Every service exports a function named run.");
     expect(recordsAfterSession).toBe(5);
-    expect(rerun).toBe("ok");
-    expect(recordsAfterRerun).toBe(recordsAfterSession);
+    expect(triageRecords(root)).toHaveLength(recordsAfterSession);
   });
 
   it("identical critique texts dedup into one cluster member, and a decision covers every duplicate", async () => {
@@ -231,7 +263,7 @@ describe("curateAxiomsOrchestrator", () => {
     expect(assignedIds).toEqual(["r1:1", "r1:2", "r1:3"]);
   });
 
-  it("a standing proposal is a fold target — the curator assigns to it, never drafts a twin", async () => {
+  it("a leftover proposed axiom is not a fold target — the suggestion demotes to held", async () => {
     const proposal = axiomContent(
       { id: "AX-ffff99", status: "proposed" },
       { statement: "Error messages name what was wrong and what would be accepted." },
@@ -272,14 +304,11 @@ describe("curateAxiomsOrchestrator", () => {
 
     expect(outcome).toBe("ok");
 
-    // The assignment landed on the standing proposal; no second proposal was minted.
-    const { axioms } = new AxiomStore(testConfig(root)).all();
-    const proposed = axioms.filter((axiom) => axiom.status === "proposed");
-    const assignments = triageRecords(root).filter((record) => record.kind === "assignment");
-
-    expect(proposed).toHaveLength(1);
-    expect(assignments).toHaveLength(1);
-    expect(assignments[0]).toMatchObject({ critique_id: "r1:1", axiom_id: "AX-ffff99" });
+    // Only active axioms label: the assignment suggestion to the
+    // retired-status file does not validate, so the cluster demotes to
+    // held — nothing written, the critique stays in curate's queue.
+    expect(triageRecords(root).filter((record) => record.kind === "assignment")).toHaveLength(0);
+    expect(deriveTriageStateService(testConfig(root), {}).unidentified).toHaveLength(1);
   });
 
   it("a critique the curator leaves out of every cluster is held and named, never lost", async () => {
@@ -290,11 +319,13 @@ describe("curateAxiomsOrchestrator", () => {
 
     const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
 
-    const stillUnmatched = deriveTriageStateService(testConfig(root), {}).unidentified;
+    const state = deriveTriageStateService(testConfig(root), {});
 
     expect(outcome).toBe("ok");
     expect(output()).toContain("left 1 critique(s) out of every cluster (r1:3)");
-    expect(stillUnmatched.map((critique) => critique.id)).toEqual(["r1:3"]);
+    // The session activated an axiom, so the left-out critique re-queues
+    // for triage against the changed active set — held, never lost.
+    expect(state.pending.map((critique) => critique.id)).toEqual(["r1:3"]);
   });
 
   it("refuses to run interactively without a TTY, naming the flags", async () => {

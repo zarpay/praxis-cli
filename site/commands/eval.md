@@ -86,7 +86,7 @@ Total documents: 4
 [Errors] 1
 ```
 
-Critiques print raw — the reviewer's own words against the spec. Labels come later: `praxis axioms triage` classifies the pending backlog under ratified axioms, and from then on reports cite the axiom's id and ratified words (drill-down at `praxis axioms show <id>`).
+Critiques print raw — the reviewer's own words against the spec. Labels come later: `praxis axioms triage` classifies the pending backlog under active axioms, and from then on reports cite the axiom's id and accepted words (drill-down at `praxis axioms show <id>`).
 
 **Exit code:** 0 only when the run is clean — 1 when any target has errors **or is unverified** (warnings do not fail). An unverified target was never seen by a reviewer, so it cannot be allowed to pass silently.
 
@@ -208,7 +208,7 @@ The read side of the ledger — never a reviewer call. Scopes compose: `eval rep
 
 ## Raw critiques, labeled later
 
-Every critique arrives raw — the reviewer sees only the spec, never the axioms (see [praxis axioms](/commands/axioms)): labels are applied afterwards by `axioms triage`, and reports then cite ratified ids and words. The reviewer is told the judgment boundary: mechanical criteria (anything a linter could decide) are out of scope and must not be reported.
+Every critique arrives raw — the reviewer sees only the spec, never the axioms (see [praxis axioms](/commands/axioms)): labels are applied afterwards by `axioms triage`, and reports then cite the axioms' stable ids and accepted words. The reviewer is told the judgment boundary: mechanical criteria (anything a linter could decide) are out of scope and must not be reported.
 
 ## Epoch boundaries
 

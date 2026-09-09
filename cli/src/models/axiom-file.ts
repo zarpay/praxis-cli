@@ -39,10 +39,10 @@ export class AxiomFile {
   /** What a violation of this axiom costs a verdict. */
   readonly severity: Severity;
   /**
-   * The spec passage ratification derived it from — provenance
+   * The spec passage the accepted draft derived from — provenance
    * metadata, never identity: an axiom is a principle derived from
-   * critiques, and this pointer may go stale as specs move. Null until
-   * ratification.
+   * critiques, and this pointer may go stale as specs move. Null only
+   * on legacy files from before acceptance activated directly.
    */
   readonly derivedFrom: string | null;
   /** YYYY-MM-DD; this axiom's population clock starts here. */

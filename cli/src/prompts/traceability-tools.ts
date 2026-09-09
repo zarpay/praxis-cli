@@ -1,5 +1,5 @@
 /**
- * Tool definition for the ratification traceability assessment.
+ * Tool definition for curate's traceability assessment at acceptance.
  */
 export default function traceabilityTools() {
   return [

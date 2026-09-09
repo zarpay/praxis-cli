@@ -36,7 +36,7 @@ during the servus adoption):
    without changing the spec — editing the spec through a side door.
 
 Consequences: the content hash covers target + spec + assists only, so
-**ratification never invalidates a verdict and never re-reviews
+**activation never invalidates a verdict and never re-reviews
 anything**; the reviewer's question changes only when the spec does.
 
 ## Format
@@ -50,7 +50,7 @@ version: 2
 status: proposed | active | deprecated
 mode: judgment # see 03
 severity: error | warning
-derived_from: backend/app/events/README.md#payload-schema # provenance, established at ratification — see below
+derived_from: backend/app/events/README.md#payload-schema # provenance, established at acceptance — see below
 introduced: 2026-08-29
 ---
 Statement of what the axiom asserts.
@@ -62,7 +62,7 @@ renamed from `grounded_in`): an axiom does not represent an exact spec
 passage — it is a principle derived from many critiques that were
 themselves consequences of the spec(s); the axiom layer is the
 bucketing/grouping layer over that evidence. The key records where the
-ratifier traced the principle at ratification time, and it may go stale
+accepting human traced the principle at acceptance time, and it may go stale
 as a spec is edited and its sections move — the axiom stays valid; the
 pointer is metadata. Never treat it as a live reference.
 
@@ -206,8 +206,14 @@ a rate).
 
 ## Lifecycle rules
 
-- The **LLM proposes; a human ratifies.** Nothing enters the taxonomy
-  without ratification against the spec's own text (traceability). The
+- The **LLM proposes; a human accepts — and acceptance activates**
+  (owner, 2026-09-09: ratify retired as a duplicate step — no axiom was
+  ever accepted without a human accepting it at curate, so the second
+  yes was ceremony). The one machine check runs at acceptance: spec
+  traceability. Traceable → active with `derived_from` recorded;
+  untraceable → the cluster holds with the honest instruction to extend
+  the spec. Nothing enters the taxonomy that the spec's own text does
+  not state. The
   judgment boundary (03) is held where the draft is written — the
   curator's drafting prompt carries the litmus tests and drafts the
   judgment half of a mixed cluster alone — and by the human who
@@ -226,7 +232,7 @@ a rate).
   in git and the ledger.
 - **Over-splitting is collapsed, never endured** (owner, 2026-09-07).
   Prevention: curate offers every active **and** standing proposed
-  axiom as a fold target (2026-09-09 — proposals awaiting ratification
+  axiom as a fold target (2026-09-09 — standing drafts
   already carry their remediation), and the drafting prompt says
   assign, never twin, when an existing axiom's fix would resolve the
   cluster.
@@ -247,7 +253,7 @@ a rate).
 ## Residual
 
 The residual is the critiques curation cannot ground — dismissed as
-noise, or rejected at ratification — reported as a rate over all
+noise, or dismissed at `eval review` — reported as a rate over all
 critiques (07): a rising residual means the reviewer drifts off-spec or
 the specs are vaguer than believed. *Pending* is different: an unlabeled
 critique no record covers yet — a queue, not a judgment.

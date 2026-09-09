@@ -4,8 +4,8 @@ import type { ReportLine, View } from "@framework/types.js";
 
 /**
  * The axiom store at a glance: one line per axiom, chronological,
- * proposals and problems counted at the end so the drill-down commands
- * are obvious.
+ * problems reported at the end. A leftover `proposed` axiom (from
+ * before acceptance activated directly) is flagged with the way out.
  *
  * With `json` set, the same state renders as the stable machine
  * contract instead — never both, never disagreeing.
@@ -33,11 +33,8 @@ const axiomListView: View<ListAxiomsResult & { json?: boolean }> = ({ axioms, pr
 
   if (proposed > 0) {
     lines.push({
-      channel: "content",
-      entries: [
-        "",
-        `${proposed} proposed of ${axioms.length} — ratify with \`praxis axioms ratify <id>\`.`,
-      ],
+      channel: "warning",
+      text: `${proposed} axiom(s) still carry the retired \`proposed\` status — curate acceptance activates directly now. Edit each file to \`status: active\` with a \`derived_from\`, or delete it and re-curate.`,
     });
   }
 

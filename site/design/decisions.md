@@ -63,9 +63,9 @@ The remaining tradeoffs — an API key, per-call cost, non-determinism at the ma
 
 Most review tooling reports and forgets. Praxis appends every run to a committed ledger — run records with commit, cost, and counts; critique records with full provenance — because the questions that matter later ("when did this start", "did that spec change help", "what did this cost") can only be answered by evidence kept at the time. The cache answers *is this compliant now*; the ledger answers *what has ever happened*. Reports (`eval report`, `debt report`) are pure reads over it: never a reviewer call, rates always with denominators, reviewers never pooled, and nothing charted across an epoch boundary.
 
-## LLM proposes, human ratifies
+## LLM proposes, human accepts
 
-Every step that shapes the taxonomy — clustering critiques, drafting axioms, assessing traceability — is done by the curator model and **decided by a human**. Nothing enters the taxonomy without ratification against the spec's own text, and every decision (including `--yes` bulk-accepts) is recorded as what it was. The reviewers' job is to see; the curator's job is to organize; naming what your team's standards *are* stays yours.
+Every step that shapes the taxonomy — clustering critiques, drafting axioms, assessing traceability — is done by the curator model and **decided by a human**. Acceptance at curate is the decision, and it activates only when the principle traces to the spec's own text; every decision (including `--yes` bulk-accepts) is recorded as what it was. The reviewers' job is to see; the curator's job is to organize; naming what your team's standards *are* stays yours.
 
 ## One output file per expert
 

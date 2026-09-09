@@ -3,10 +3,10 @@ import type { Prompt } from "@framework/types.js";
 import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
 /**
- * Ratification's traceability question: which spec criterion
- * grounds this proposal? The answer aids the ratifier — traceable,
- * fix-the-spec, or reviewer-invention are the three human outcomes,
- * and this assessment is evidence for that call, never the call.
+ * Curate's traceability question at acceptance: which spec criterion
+ * grounds this draft? Traceable activates; untraceable holds the
+ * cluster until the spec is extended — the assessment is evidence for
+ * that outcome, never the decision itself.
  */
 interface TraceabilityQuestionVariables {
   specPath: string;

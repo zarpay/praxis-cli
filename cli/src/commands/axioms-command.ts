@@ -4,7 +4,6 @@ import curateAxiomsOrchestrator from "@/orchestrators/curate-axioms-orchestrator
 import deprecateAxiomOrchestrator from "@/orchestrators/deprecate-axiom-orchestrator.js";
 import listAxiomsOrchestrator from "@/orchestrators/list-axioms-orchestrator.js";
 import mergeAxiomsOrchestrator from "@/orchestrators/merge-axioms-orchestrator.js";
-import ratifyAxiomOrchestrator from "@/orchestrators/ratify-axiom-orchestrator.js";
 import reassignCritiqueOrchestrator from "@/orchestrators/reassign-critique-orchestrator.js";
 import showAxiomOrchestrator from "@/orchestrators/show-axiom-orchestrator.js";
 import triageAxiomsOrchestrator from "@/orchestrators/triage-axioms-orchestrator.js";
@@ -14,9 +13,10 @@ import triageAxiomsOrchestrator from "@/orchestrators/triage-axioms-orchestrator
  *
  * Axioms are the named, stable standards critiques attach to.
  * `list` and `show` read the store; `triage` labels in batch; `curate`
- * and `ratify` are the deliberately interactive lifecycle verbs (LLM
- * proposes, human decides); `reassign`, `deprecate` and `merge` are the
- * taxonomy's correction verbs.
+ * is the deliberately interactive lifecycle verb — the LLM proposes, a
+ * human accepts, and acceptance activates (traceability checked
+ * inline); `reassign`, `deprecate` and `merge` are the taxonomy's
+ * correction verbs.
  */
 const axiomsCommand: CommandRegistrar = (program) => {
   const axiomsCmd = program
@@ -25,12 +25,12 @@ const axiomsCommand: CommandRegistrar = (program) => {
 
   axiomsCmd
     .command("list")
-    .description("List every axiom in .praxis/axioms/ — active, proposed, and deprecated")
+    .description("List every axiom in .praxis/axioms/ — active and deprecated")
     .option("--json", "machine-readable output (stable contract)")
     .addHelpText(
       "after",
       `
-When to use: to survey the ratified standards and pending proposals.
+When to use: to survey the standards on record.
 
 Example:
   $ praxis axioms list
@@ -77,7 +77,7 @@ Example:
   axiomsCmd
     .command("curate")
     .description(
-      "Work the unmatched residue with the curator: cluster into proposals, assign, or hold",
+      "Work the unmatched residue with the curator: cluster, activate new axioms, assign, or hold",
     )
     .option("--yes", "accept every curator suggestion without prompting (recorded as such)", false)
     .addHelpText(
@@ -86,35 +86,18 @@ Example:
 When to use: after triage has labeled everything it can — curate refuses
 to start while any critique is untriaged, because the one still in
 triage's queue may be the one that completes a pattern. Then this is the
-interactive session for the residue: cluster recurring critiques into
-proposed axioms, assign stragglers, hold what has no axiom yet.
+interactive session for the residue: cluster recurring critiques,
+accept drafts (acceptance activates — the one machine check is spec
+traceability, and an untraceable draft is held until the spec is
+extended), assign stragglers, hold what has no axiom yet.
 Every critique here is taken as valid evidence (validity is decided in
-\`praxis eval review\`); assignments and proposals are recorded in the
+\`praxis eval review\`); assignments and activations are recorded in the
 ledger, held critiques stay in the queue for the next session.
 
 Example:
   $ praxis axioms curate`,
     )
     .action(curateAxiomsOrchestrator);
-
-  axiomsCmd
-    .command("ratify <id>")
-    .description("Ratify a proposed axiom: spec traceability, then the human call")
-    .option("--yes", "ratify without prompting when traceable", false)
-    .option("--reject <reason>", "reject the proposal (recorded; its critiques return to curate)")
-    .option("--spec <path>", "spec to trace against (when no supporting critique names one)")
-    .addHelpText(
-      "after",
-      `
-When to use: a curate session drafted a proposal. Ratification demands
-spec traceability — an axiom activates only when its principle traces
-to a spec sentence. Activation has no cache effect; the next triage
-labels against it.
-
-Example:
-  $ praxis axioms ratify AX-3f9a1c`,
-    )
-    .action(ratifyAxiomOrchestrator);
 
   axiomsCmd
     .command("reassign <id>")

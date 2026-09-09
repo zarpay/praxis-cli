@@ -5,7 +5,7 @@ import { statLines } from "@framework/views/stats.js";
 /** A curate session's counted outcome. */
 interface TriageOutcome {
   assigned: number;
-  proposed: number;
+  activated: number;
   /** Critiques held as evidence with no axiom yet — the curator's call, accepted. */
   held: number;
   /** Critiques the human skipped — decided nothing. */
@@ -22,7 +22,7 @@ interface TriageOutcome {
  */
 const curateSummaryView: View<TriageOutcome> = ({
   assigned,
-  proposed,
+  activated,
   held,
   skipped,
   pendingLeft,
@@ -30,7 +30,7 @@ const curateSummaryView: View<TriageOutcome> = ({
 }) => {
   const counts: [string, string | number][] = [
     ["Assigned", assigned],
-    ["Proposed", proposed],
+    ["Activated", activated],
     ["Held (no axiom yet)", held],
     ["Skipped", skipped],
     ["Still awaiting curation", pendingLeft],
@@ -43,11 +43,8 @@ const curateSummaryView: View<TriageOutcome> = ({
       entries: [
         ...statLines(counts),
         ...(costUsd === null ? [] : ["", `Curator cost: $${costUsd.toFixed(4)}`]),
-        ...(proposed > 0
-          ? [
-              "",
-              "Proposals await ratification: `praxis axioms list`, then `praxis axioms ratify <id>`.",
-            ]
+        ...(activated > 0
+          ? ["", "Newly active axioms label from the next `praxis axioms triage` on."]
           : []),
       ],
     },

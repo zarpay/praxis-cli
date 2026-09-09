@@ -1,16 +1,16 @@
 # praxis axioms
 
-Axioms are the named, stable standards critiques attach to: a spec is prose for humans and the reviewer; axioms are the enumerable units metrics aggregate over. They are born from real critiques through triage, validated against the spec at ratification, and carry durable identity — an id (`AX-` + 6 random hex, collision-safe across contributors and branches) that is never reused or renumbered. They live as markdown in `.praxis/axioms/`, committed like everything Praxis owns.
+Axioms are the named, stable standards critiques attach to: a spec is prose for humans and the reviewer; axioms are the enumerable units metrics aggregate over. They are born from real critiques, accepted by a human at curate (where each is validated against the spec's own text), and carry durable identity — an id (`AX-` + 6 random hex, collision-safe across contributors and branches) that is never reused or renumbered. They live as markdown in `.praxis/axioms/`, committed like everything Praxis owns.
 
 ## The lifecycle
 
-**LLM proposes, human ratifies.** Reviewers produce raw critiques — the reviewer sees only the spec, never the axioms. `triage` labels recurring critiques under active axioms, so reports cite the same id and the same ratified words every time; `curate` is the interactive session that clusters the unlabeled residue into axiom candidates; `ratify` traces a proposal to the spec and activates it. Removal is deprecation — history stays frozen.
+**LLM proposes, a human accepts — and acceptance activates.** Reviewers produce raw critiques — the reviewer sees only the spec, never the axioms. `triage` labels recurring critiques under active axioms, so reports cite the same id and the same words every time; `curate` is the interactive session that clusters the unlabeled residue into drafts, and accepting a draft activates it after one machine check: the principle must trace to a spec passage. Removal is deprecation — history stays frozen.
 
-Concretely, on Scoop Society: a week of runs produces the same complaint about five services' error messages. Triage — with no active axiom that matches — sends them to the curation queue; curate clusters them; you accept the drafted proposal; ratify traces it to `src/services/README.md#behavior` and activates `AX-b951db` — *"Error messages name what was wrong and what would be accepted instead."* From then on triage labels every recurrence under the id, `axioms show AX-b951db` teaches it with both examples, and `eval report --axiom AX-b951db` charts it. The full walkthrough is [The Evidence Loop](/concepts/evidence-loop).
+Concretely, on Scoop Society: a week of runs produces the same complaint about five services' error messages. Triage — with no active axiom that matches — sends them to the curation queue; curate clusters them; you accept the drafted axiom, the traceability check pins it to `src/services/README.md#behavior`, and `AX-b951db` is live — *"Error messages name what was wrong and what would be accepted instead."* From then on triage labels every recurrence under the id, `axioms show AX-b951db` teaches it with both examples, and `eval report --axiom AX-b951db` charts it. The full walkthrough is [The Evidence Loop](/concepts/evidence-loop).
 
 ## The curator
 
-Triage labeling, the curate session, and ratification assistance run on the **curator** — a dedicated model configured beside your reviewers, worth pointing at a frontier model since it does the taxonomy's thinking:
+Triage labeling and the curate session (traceability check included) run on the **curator** — a dedicated model configured beside your reviewers, worth pointing at a frontier model since it does the taxonomy's thinking:
 
 ```json
 "curator": {
@@ -33,23 +33,13 @@ The deliberately interactive session, working **only** the unmatched residue —
 
 Curate never dismisses. Every critique here is taken as valid evidence — validity is [`praxis eval review`](/commands/eval#praxis-eval-review)'s question — so a held cluster writes nothing: its critiques stay unmatched and ride into the next session's cohort, where new critiques may complete the pattern. Critiques the curator leaves out of every cluster are named and held the same way; nothing falls through silently.
 
-The guidance on what makes a good axiom is given where the draft is written: the curator's prompt carries the judgment boundary — _if you can write the check, write the check; if you can only describe the standard, write the axiom_ — so a mechanical cluster is suggested as held and a mixed one is drafted as its judgment half alone. Your acceptance is the decision: an accepted draft lands in `.praxis/axioms/proposed/` exactly as accepted, with no effect on metrics until ratified.
+The guidance on what makes a good axiom is given where the draft is written: the curator's prompt carries the judgment boundary — _if you can write the check, write the check; if you can only describe the standard, write the axiom_ — so a mechanical cluster is suggested as held and a mixed one is drafted as its judgment half alone. **Your acceptance is the decision, and acceptance activates.** One machine check runs first: the principle must trace to a spec passage (recorded as `derived_from`). Traceable → the axiom lands active and the next triage labels against it — no cache effect, since the reviewer sees only the spec. Untraceable → the cluster is **held** with the honest instruction: extend the spec, then re-curate. A principle no spec states never starts counting.
 
-Every assignment and proposal is appended to `.praxis/ledger/triage/` with full provenance — who decided, which model suggested. Scriptable with `--yes` (accept everything; recorded as such).
-
-## praxis axioms ratify \<id\>
-
-Shows the proposal, its supporting critiques, and the curator's spec-traceability assessment, then asks for the call. Three outcomes:
-
-- **Traceable** — ratify: the axiom records its derivation (`derived_from` — provenance, not a live reference; a spec edit can move the section without invalidating the axiom) and becomes active. Ratification has no cache effect — the reviewer sees only the spec — and the next `praxis axioms triage` labels the backlog against the new rule.
-- **Real but untraceable** — the spec is incomplete: extend it, then rerun.
-- **Not the axiom** — `--reject "<reason>"` removes the proposal and records the rejection. Its supporting critiques are released: the assignments to the rejected id are void, so they return to the curate queue as evidence for a better draft.
-
-Use `--spec <path>` for human-authored proposals with no critique parentage.
+Every assignment and activation is appended to `.praxis/ledger/triage/` with full provenance — who decided, which model suggested. Scriptable with `--yes` (accept everything; recorded as such).
 
 ## praxis axioms reassign \<id\>
 
-`reassign <critique-id> --to <axiom>` is the per-critique human override: a matcher label that looks wrong, or evidence that belongs under a different standard. A dismissed critique is refused — reinstate it with `praxis eval review --reinstate` first; invalid evidence is never categorized. The new assignment is appended and wins at read time — the prior record stays in the ledger beneath it. Browse ids with [`praxis eval critiques`](/commands/eval#praxis-eval-critiques).
+`reassign <critique-id> --to <axiom>` is the per-critique human override: a matcher label that looks wrong, or evidence that belongs under a different standard. A dismissed critique is refused — reinstate it with `praxis eval review --reinstate` first; invalid evidence is never categorized. The reverse also holds: a labeled critique that turns out to be untrue is dismissed with `praxis eval review --dismiss` — the label stays in the ledger beneath the dismissal, and reports recompute. The new assignment is appended and wins at read time — the prior record stays in the ledger beneath it. Browse ids with [`praxis eval critiques`](/commands/eval#praxis-eval-critiques).
 
 ## praxis axioms deprecate \<id\> · merge
 
@@ -61,7 +51,7 @@ Prevention runs ahead of the cure: the curate session offers every active **and*
 
 ## praxis axioms list · show \<id\>
 
-`list` is the store at a glance (proposals counted, ratify command named); `show <id>` is the drill-down every finding cites — statement, both examples, derivation, lifecycle. Both take `--json`. When tooling catches up with an axiom — last year's judgment call is this year's lint rule — retire it with `deprecate`.
+`list` is the store at a glance; `show <id>` is the drill-down every finding cites — statement, both examples, derivation, lifecycle. Both take `--json`. When tooling catches up with an axiom — last year's judgment call is this year's lint rule — retire it with `deprecate`.
 
 ## See also
 

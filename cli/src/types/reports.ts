@@ -41,7 +41,6 @@ export interface StatusReport {
     pending_triage: number;
     /** Unmatched critiques — `axioms curate` works them. */
     awaiting_curation: number;
-    proposals_pending: number;
     /** Always true: calibration is a roadmap feature. */
     calibration_stale: boolean;
     epoch_boundary_detected: boolean;
@@ -64,7 +63,6 @@ export interface Orientation {
   lastRun: { at: string; reviewerName: string; anchored: boolean } | null;
   pendingTriage: number;
   awaitingCuration: number;
-  proposalsPending: number;
   activeAxioms: number;
   calibration: string;
   /** Errors at the latest corpus run, per reviewer. */

@@ -14,7 +14,7 @@ interface AssessTraceabilityInput {
 }
 
 /**
- * The ratifier's traceability aid: which spec criterion grounds
+ * Curate's traceability check at acceptance: which spec criterion grounds
  * the proposal? Evidence for the human call, never the call itself.
  *
  * Fail-safe direction: a claim of traceability without a grounding

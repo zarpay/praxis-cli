@@ -55,7 +55,7 @@ the next reader — human or agent — already knows how to read it.
   enter as inputs or are isolated in a single obvious place.
 ```
 
-Every bullet requires reading comprehension to decide — which is exactly what makes each one a candidate to become a ratified [axiom](/concepts/evidence-loop) once reviewers start flagging it.
+Every bullet requires reading comprehension to decide — which is exactly what makes each one a candidate to become an [axiom](/concepts/evidence-loop) once reviewers start flagging it.
 
 ## Severity: must vs. should
 

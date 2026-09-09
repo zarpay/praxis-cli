@@ -7,7 +7,7 @@ import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
  *
  * The division of labor is fixed and stated to the model plainly: the
  * curator organizes — groups, suggests, drafts — and a human decides.
- * Nothing the curator returns takes effect without ratification, so the
+ * Nothing the curator returns takes effect without human acceptance, so the
  * prompt optimizes for honest organization over confident conclusions.
  */
 

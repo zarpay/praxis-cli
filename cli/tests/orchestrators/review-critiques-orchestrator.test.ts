@@ -5,8 +5,10 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { reviewCritiquesOrchestrator } from "@/orchestrators/review-critiques-orchestrator.js";
-import { TriageStore } from "@/stores/triage-store.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
+import joinCritiqueLabelsService from "@/services/join-critique-labels-service.js";
+import { RunStore } from "@/stores/run-store.js";
+import { TriageStore } from "@/stores/triage-store.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
@@ -148,7 +150,7 @@ describe("reviewCritiquesOrchestrator", () => {
     await expect(dismissWithoutReason).rejects.toThrow(/--dismiss needs --reason/);
   });
 
-  it("refuses a labeled critique — an instance of a standard is valid by definition", async () => {
+  it("dismisses a labeled critique — presumed valid, never final; the label stays beneath", async () => {
     const root = reviewProject();
     new TriageStore(testConfig(root)).writeSession([
       {
@@ -161,13 +163,22 @@ describe("reviewCritiquesOrchestrator", () => {
       },
     ]);
 
-    const dismissLabeled = reviewCritiquesOrchestrator(testContext(root), {
+    const outcome = await reviewCritiquesOrchestrator(testContext(root), {
       dismiss: "r1:1",
-      reason: "x",
+      reason: "the reviewer hallucinated this",
     });
 
-    await expect(dismissLabeled).rejects.toThrow(/labeled under AX-aaaa11/);
-    expect(triageRecords(root)).toHaveLength(1);
+    expect(outcome).toBe("ok");
+
+    const records = triageRecords(root);
+    expect(records).toHaveLength(2);
+    expect(records[1]).toMatchObject({ kind: "dismissal", critique_id: "r1:1" });
+
+    // The dismissal wins at read time; the assignment stays beneath it.
+    const [labeled] = joinCritiqueLabelsService(testConfig(root), {
+      critiques: new RunStore(testConfig(root)).critiques().filter((c) => c.id === "r1:1"),
+    });
+    expect(labeled?.axiom_id).toBeNull();
   });
 
   it("refuses an unknown critique id, pointing at the listing", async () => {

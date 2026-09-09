@@ -288,7 +288,7 @@ Default `sources` are `["experts", "practices", "reference", "context"]`.
 
 ## curator
 
-The model behind `praxis axioms triage` labeling, the `curate` session, and ratification's traceability assessment — the taxonomy's librarian. One entry, reviewer-shaped minus `name`; teams typically point it at a frontier model, since assignment quality bounds every per-axiom rate:
+The model behind `praxis axioms triage` labeling and the `curate` session (its traceability check included) — the taxonomy's librarian. One entry, reviewer-shaped minus `name`; teams typically point it at a frontier model, since assignment quality bounds every per-axiom rate:
 
 ```json
 "curator": {
@@ -297,4 +297,4 @@ The model behind `praxis axioms triage` labeling, the `curate` session, and rati
 }
 ```
 
-Optional fields as for reviewers: `baseUrl`, `temperature`, `provider` (including `./relative` local modules), `options`. Not configured means `curate`, `ratify`, and `audit` refuse with the exact block to add — there is no silent fallback to a reviewer model. `axioms triage` is gentler: it warns that labeling is deferred and exits 0, so a run pipeline without a curator never breaks.
+Optional fields as for reviewers: `baseUrl`, `temperature`, `provider` (including `./relative` local modules), `options`. Not configured means `curate` refuses with the exact block to add — there is no silent fallback to a reviewer model. `axioms triage` is gentler: it warns that labeling is deferred and exits 0, so a run pipeline without a curator never breaks.
