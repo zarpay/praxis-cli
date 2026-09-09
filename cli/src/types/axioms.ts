@@ -34,24 +34,13 @@ export interface AxiomDraft {
 export type TriageSuggestion =
   | { kind: "assign"; axiomId: string }
   | { kind: "propose"; draft: AxiomDraft }
-  | { kind: "unassignable"; why: string };
+  | { kind: "hold"; why: string };
 
 /** One cluster of critiques the curator grouped, with its suggestion. */
 export interface TriageCluster {
   critiqueIds: string[];
   rationale: string;
   suggestion: TriageSuggestion;
-}
-
-/** The authoring gate's verdict on one candidate axiom. */
-export interface GateAssessment {
-  assessment: "appropriate" | "not_appropriate" | "split";
-  reasoning: string;
-  /** On split: the judgment half, redrafted as the admissible statement. */
-  judgmentHalf: string | null;
-  /** An existing axiom with the same remediation — fold there, never draft a twin. */
-  duplicateOf: string | null;
-  usage: ProviderUsage | null;
 }
 
 /** The curator's spec-traceability aid at ratification. */

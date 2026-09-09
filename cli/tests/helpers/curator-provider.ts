@@ -4,13 +4,12 @@
  * provider proves for reviewers.
  *
  * `complete()` answers by the tool it was asked for: the triage tool
- * gets `plan.organization`, the gate tool `plan.gate`, traceability
+ * gets `plan.organization`, the label tool `plan.labels`, traceability
  * `plan.traceability` — each a JSON literal baked into the module, so
  * tests script the curator per project with zero network.
  */
 export function curatorProviderModule(plan: {
   organization?: unknown;
-  gate?: unknown;
   traceability?: unknown;
   labels?: unknown;
 }): string {
@@ -26,7 +25,6 @@ export default function scriptedCurator() {
       const toolName = request.tools[0].function.name;
       let args;
       if (toolName === "triage_organization") args = PLAN.organization;
-      else if (toolName === "authoring_gate") args = PLAN.gate;
       else if (toolName === "label_critique") {
         // One critique per call: answer by the id in the prompt's critique line.
         const match = request.userPrompt.match(/^- \\[([^\\]]+)\\]/m);

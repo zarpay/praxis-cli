@@ -30,9 +30,9 @@ The **curator** (a dedicated model configured beside your reviewers — worth a 
 praxis axioms curate
 ```
 
-The curator clusters the unmatched residue and suggests, cluster by cluster: fold these into an existing axiom, propose a new one, or admit they're unassignable. You decide — `[a]ccept / [d]ismiss / [s]kip`. Nothing the curator suggests takes effect without a human accepting it.
+The curator clusters the unmatched residue and suggests, cluster by cluster: fold these into an existing axiom, propose a new one, or hold them because no axiom emerges yet. You decide — `[a]ccept / [s]kip`. Nothing the curator suggests takes effect without a human accepting it, and nothing here is ever dismissed: whether a critique is *true* is a different question, answered in `praxis eval review`. A held cluster simply waits for the next session.
 
-An accepted draft must first pass the **authoring gate**: anything a regex or linter could decide is refused. *If you can write the check, write the check; if you can only describe the standard, write the axiom.*
+The judgment boundary is applied where the draft is written: the curator is told *if you can write the check, write the check; if you can only describe the standard, write the axiom*, so a mechanical cluster comes back held and a mixed one as its judgment half. Your acceptance is final — the draft lands exactly as you accepted it.
 
 ## 4. Ratification names the standard
 
@@ -42,7 +42,7 @@ The accepted proposal lands in `.praxis/axioms/proposed/` with a random-minted, 
 praxis axioms ratify AX-b951db
 ```
 
-Ratification is spec traceability: the curator quotes the spec text the principle derives from, and you make the call. Three outcomes — traceable (ratify), real-but-untraceable (the spec is incomplete; extend it and rerun), or not intended (reject; the rejection is recorded and feeds the reviewer-noise signal).
+Ratification is spec traceability: the curator quotes the spec text the principle derives from, and you make the call. Three outcomes — traceable (ratify), real-but-untraceable (the spec is incomplete; extend it and rerun), or not the axiom (reject; the rejection is recorded and its supporting critiques return to the curate queue).
 
 Ratified, the axiom is a markdown file in `.praxis/axioms/`:
 
@@ -104,7 +104,7 @@ A raw critique can't be charted: its wording varies by run and by reviewer. An a
 | ------------ | ----------------------------------------------------------------- | ----------------------------------- |
 | **Reviewer** | Reads targets against specs; every critique arrives raw           | Sees an axiom, or checks anything a linter could |
 | **Curator**  | Labels critiques at triage; clusters and drafts at curate; assesses traceability at ratify | Decides — every proposal is human-accepted, every ratification a human call |
-| **You**      | Accept, dismiss, ratify, deprecate; own the specs                 | Manage cache or ledger files by hand |
+| **You**      | Accept, ratify, deprecate; judge critique validity in `eval review`; own the specs | Manage cache or ledger files by hand |
 | **The ledger** | Remembers everything, append-only, in git                       | Gets edited                         |
 
 ## See also

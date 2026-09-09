@@ -10,7 +10,7 @@ Concretely, on Scoop Society: a week of runs produces the same complaint about f
 
 ## The curator
 
-Triage labeling, the curate session, the authoring gate, and ratification assistance run on the **curator** — a dedicated model configured beside your reviewers, worth pointing at a frontier model since it does the taxonomy's thinking:
+Triage labeling, the curate session, and ratification assistance run on the **curator** — a dedicated model configured beside your reviewers, worth pointing at a frontier model since it does the taxonomy's thinking:
 
 ```json
 "curator": {
@@ -29,25 +29,27 @@ The labeling pass — async, non-interactive, working the **untriaged** critique
 
 ## praxis axioms curate
 
-The deliberately interactive session, working **only** the unmatched residue — critiques triage considered against the current axioms and couldn't label. Untriaged critiques are named and deferred ("does this need a NEW axiom" is well-posed only after triage says no existing one fits). The curator groups the still-pending critiques per spec — identical texts deduped into one member with its duplicates counted, at most a cohort of ~30 distinct critiques per call, with the session's accepted proposals carried into later cohorts as fold targets — and suggests folding each cluster into an established axiom, drafting a new proposal, or flagging it unassignable. You decide, cluster by cluster: `[a]ccept / [d]ismiss / [s]kip`; a decision on a deduped member applies to every duplicate behind it.
+The deliberately interactive session, working **only** the unmatched residue — critiques triage considered against the current axioms and couldn't label. It refuses to start while any critique is still untriaged (exit 2, naming `praxis axioms triage`): the one still in triage's queue may be the one that completes a pattern, so curating past it is curating on partial evidence. A clean triage is the precondition. The curator groups the still-pending critiques per spec — identical texts deduped into one member with its duplicates counted, at most a cohort of ~30 distinct critiques per call, with the session's accepted proposals carried into later cohorts as fold targets — and suggests folding each cluster into an established or standing proposed axiom, drafting a new proposal, or **holding** it — no axiom emerges yet. You decide, cluster by cluster: `[a]ccept / [s]kip`; a decision on a deduped member applies to every duplicate behind it.
 
-Accepted drafts pass the **authoring gate** first: anything a regex or linter could decide is refused — _if you can write the check, write the check; if you can only describe the standard, write the axiom._ Accepted proposals land in `.praxis/axioms/proposed/` with no effect on metrics until ratified.
+Curate never dismisses. Every critique here is taken as valid evidence — validity is [`praxis eval review`](/commands/eval#praxis-eval-review)'s question — so a held cluster writes nothing: its critiques stay unmatched and ride into the next session's cohort, where new critiques may complete the pattern. Critiques the curator leaves out of every cluster are named and held the same way; nothing falls through silently.
 
-Every decision is appended to `.praxis/ledger/triage/` with full provenance — who decided, which model suggested. Scriptable with `--yes` (accept everything; recorded as such) or `--reject "<reason>"` (dismiss the queue). Unassignable and dismissed critiques feed the **residual rate** — the signal that a reviewer is drifting off-spec.
+The guidance on what makes a good axiom is given where the draft is written: the curator's prompt carries the judgment boundary — _if you can write the check, write the check; if you can only describe the standard, write the axiom_ — so a mechanical cluster is suggested as held and a mixed one is drafted as its judgment half alone. Your acceptance is the decision: an accepted draft lands in `.praxis/axioms/proposed/` exactly as accepted, with no effect on metrics until ratified.
+
+Every assignment and proposal is appended to `.praxis/ledger/triage/` with full provenance — who decided, which model suggested. Scriptable with `--yes` (accept everything; recorded as such).
 
 ## praxis axioms ratify \<id\>
 
-Shows the proposal, its supporting critiques, the gate's verdict, and the curator's spec-traceability assessment, then asks for the call. Three outcomes:
+Shows the proposal, its supporting critiques, and the curator's spec-traceability assessment, then asks for the call. Three outcomes:
 
 - **Traceable** — ratify: the axiom records its derivation (`derived_from` — provenance, not a live reference; a spec edit can move the section without invalidating the axiom) and becomes active. Ratification has no cache effect — the reviewer sees only the spec — and the next `praxis axioms triage` labels the backlog against the new rule.
 - **Real but untraceable** — the spec is incomplete: extend it, then rerun.
-- **Not intended** — the reviewer invented it: `--reject "<reason>"` removes the proposal and records the rejection.
+- **Not the axiom** — `--reject "<reason>"` removes the proposal and records the rejection. Its supporting critiques are released: the assignments to the rejected id are void, so they return to the curate queue as evidence for a better draft.
 
 Use `--spec <path>` for human-authored proposals with no critique parentage.
 
 ## praxis axioms reassign \<id\>
 
-`reassign <critique-id> --to <axiom>` is the per-critique human override: a matcher label that looks wrong, a dismissed critique that turns out to be real, or evidence that belongs under a different standard. The new assignment is appended and wins at read time — the prior record stays in the ledger beneath it. Browse ids with [`praxis eval critiques`](/commands/eval#praxis-eval-critiques).
+`reassign <critique-id> --to <axiom>` is the per-critique human override: a matcher label that looks wrong, or evidence that belongs under a different standard. A dismissed critique is refused — reinstate it with `praxis eval review --reinstate` first; invalid evidence is never categorized. The new assignment is appended and wins at read time — the prior record stays in the ledger beneath it. Browse ids with [`praxis eval critiques`](/commands/eval#praxis-eval-critiques).
 
 ## praxis axioms deprecate \<id\> · merge
 
@@ -55,11 +57,11 @@ Use `--spec <path>` for human-authored proposals with no critique parentage.
 
 `merge <ids...> --into <id>` collapses over-split axioms — several near-twins dividing one principle's evidence into separate rates. Every critique labeled under a merged-away axiom is re-labeled to the survivor (append-only: the prior label stays in the ledger beneath the merge record), the losers deprecate with the merge named, and the survivor's population clock moves to the earliest `introduced` among the merged. Reports recompute instantly — nothing is rewritten.
 
-Prevention runs ahead of the cure: the authoring gate checks every draft against the taxonomy (active **and** proposed) and folds a same-remediation candidate into the axiom that already carries it, and `audit` flags same-remediation pairs among active axioms with the merge command ready to copy.
+Prevention runs ahead of the cure: the curate session offers every active **and** proposed axiom as a fold target, so a cluster an existing axiom already remedies is suggested as an assignment rather than drafted as a twin.
 
-## praxis axioms list · show \<id\> · audit
+## praxis axioms list · show \<id\>
 
-`list` is the store at a glance (proposals counted, ratify command named); `show <id>` is the drill-down every finding cites — statement, both examples, derivation, lifecycle; `audit` re-runs the authoring gate over active axioms, flagging removal candidates (tooling grows — an axiom appropriate last year may be a lint rule now) and same-remediation twins as merge candidates. All take `--json`.
+`list` is the store at a glance (proposals counted, ratify command named); `show <id>` is the drill-down every finding cites — statement, both examples, derivation, lifecycle. Both take `--json`. When tooling catches up with an axiom — last year's judgment call is this year's lint rule — retire it with `deprecate`.
 
 ## See also
 

@@ -16,13 +16,15 @@ interface ReassignCritiqueOptions {
 /**
  * What `praxis axioms reassign` does: a human re-decides one critique's
  * label. Appends an assignment record to the surviving axiom — the
- * newest record wins at read time, so the prior label (a matcher's, a
- * dismissal, or an older human call) stays in the ledger beneath it.
- * Works on any critique in any state; `praxis eval critiques` is where
- * the ids come from.
+ * newest record wins at read time, so the prior label (a matcher's or
+ * an older human call) stays in the ledger beneath it. Works on any
+ * critique that is evidence — a dismissed critique is refused, since a
+ * critique judged invalid is never categorized; `praxis eval review
+ * --reinstate` lifts the dismissal first. `praxis eval critiques` is
+ * where the ids come from.
  *
- * @throws PraxisError when the critique id is unknown or the axiom is
- *   not active
+ * @throws PraxisError when the critique id is unknown, the critique is
+ *   dismissed, or the axiom is not active
  */
 export const reassignCritiqueOrchestrator: Orchestrator<ReassignCritiqueOptions> = async (
   ctx,
@@ -39,6 +41,10 @@ export const reassignCritiqueOrchestrator: Orchestrator<ReassignCritiqueOptions>
   const axiom = axioms.find((entry) => entry.id === to && entry.status === "active");
 
   if (!axiom) throw errors.axiomNotFound(to);
+
+  const decision = new TriageStore(cfg).decisions().get(id);
+
+  if (decision?.dismissed) throw errors.critiqueDismissed(id);
 
   const [labeled] = joinCritiqueLabelsService(cfg, { critiques: [critique] });
   const before = labeled?.axiom_id ?? null;

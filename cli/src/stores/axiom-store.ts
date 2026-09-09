@@ -28,7 +28,7 @@ interface WriteAxiomProposalResult {
  * One handle owns the layout, the id minting, and the lifecycle moves —
  * propose lands a draft, ratify grounds and activates it. The store's
  * lifecycle events are methods here, not services; what stays outside
- * is everything that *decides* — triage, the gate, traceability — which
+ * is everything that *decides* — triage, curation, traceability — which
  * is curator and human work the orchestrators drive.
  */
 export class AxiomStore {

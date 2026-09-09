@@ -110,4 +110,66 @@ describe("joinCritiqueLabelsService", () => {
 
     expect(joined[0]).toMatchObject({ axiom_id: "AX-historical" });
   });
+
+  it("an assignment to a rejected proposal is void — the critique is unlabeled again", () => {
+    seedTriageSession("s1", [
+      {
+        kind: "assignment",
+        critique_id: "r1:1",
+        axiom_id: "AX-cccc33",
+        axiom_version: 1,
+        assigned_by: { decision: "human", suggested_by: "curator-model" },
+        timestamp: "2026-09-07T00:00:01.000Z",
+      },
+      {
+        kind: "rejection",
+        axiom_id: "AX-cccc33",
+        reason: "not the axiom",
+        timestamp: "2026-09-07T00:00:02.000Z",
+      },
+    ]);
+
+    const joined = joinCritiqueLabelsService(testConfig(root), { critiques: [critique("r1:1")] });
+
+    expect(joined[0]).toMatchObject({ axiom_id: null });
+  });
+
+  it("a dismissal stands over a later assignment until reinstated", () => {
+    seedTriageSession("s1", [
+      {
+        kind: "dismissal",
+        critique_id: "r1:1",
+        reason: "the spec permits this",
+        timestamp: "2026-09-07T00:00:01.000Z",
+      },
+      {
+        kind: "assignment",
+        critique_id: "r1:1",
+        axiom_id: "AX-aaaa11",
+        axiom_version: 1,
+        assigned_by: { decision: "matcher", suggested_by: "curator-model" },
+        timestamp: "2026-09-07T00:00:02.000Z",
+      },
+    ]);
+
+    const [dismissed] = joinCritiqueLabelsService(testConfig(root), {
+      critiques: [critique("r1:1")],
+    });
+
+    seedTriageSession("s2", [
+      {
+        kind: "reinstatement",
+        critique_id: "r1:1",
+        reason: "misread",
+        timestamp: "2026-09-07T00:00:03.000Z",
+      },
+    ]);
+
+    const [reinstated] = joinCritiqueLabelsService(testConfig(root), {
+      critiques: [critique("r1:1")],
+    });
+
+    expect(dismissed).toMatchObject({ axiom_id: null });
+    expect(reinstated).toMatchObject({ axiom_id: "AX-aaaa11" });
+  });
 });

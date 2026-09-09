@@ -33,7 +33,7 @@ export default function triageTools() {
                   },
                   suggestion: {
                     type: "string",
-                    enum: ["assign", "propose", "unassignable"],
+                    enum: ["assign", "propose", "hold"],
                   },
                   axiom_id: {
                     type: ["string", "null"],
@@ -73,10 +73,10 @@ export default function triageTools() {
                       "grounding_hint",
                     ],
                   },
-                  why_unassignable: {
+                  why_held: {
                     type: ["string", "null"],
                     description:
-                      "For unassignable: why this cluster cannot be grounded in the specification, and which reading applies — reviewer noise, or a real standard no spec states yet.",
+                      "For hold: why no axiom emerges yet — too little evidence, a spec that does not state the standard, or a mechanical standard that belongs in static tooling.",
                   },
                 },
                 required: ["critique_ids", "rationale", "suggestion"],

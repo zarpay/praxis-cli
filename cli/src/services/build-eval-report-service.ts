@@ -94,7 +94,7 @@ const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, 
     axioms: rows.sort((a, b) => a.axiomId.localeCompare(b.axiomId)),
     pendingTriage: state.pending.length,
     awaitingCuration: state.unidentified.length,
-    residual: rateCell(state.dismissed + state.rejectedProposals, critiques.length),
+    residual: rateCell(state.dismissed, critiques.length),
     epochs,
   };
 };

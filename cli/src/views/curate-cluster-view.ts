@@ -72,6 +72,6 @@ function suggestionLines(cluster: TriageCluster): string[] {
   }
 
   return [
-    `${chalk.yellow("Suggests:")} unassignable — ${suggestion.why} (feeds the residual rate)`,
+    `${chalk.yellow("Suggests:")} hold — ${suggestion.why} (stays in the queue for the next session)`,
   ];
 }

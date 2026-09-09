@@ -40,7 +40,6 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
           "",
         ]),
         ...(examples.length > 0 ? ["Representative critiques:", "", ...examples] : []),
-        "Removal candidacy: `praxis axioms audit` re-runs the authoring gate.",
       ],
     },
   ];

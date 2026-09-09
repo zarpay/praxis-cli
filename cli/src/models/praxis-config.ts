@@ -20,7 +20,7 @@ interface NormalizedConfig {
   expertsDir: string;
   practicesDir: string;
   reviewers: ReviewerConfig[];
-  /** Null until configured; triage/gate/audit refuse without it. */
+  /** Null until configured; triage/curate/ratify refuse without it. */
   curator: CuratorConfig | null;
   specFilePattern: string;
 }

@@ -55,8 +55,8 @@ export interface ReviewerConfig {
 }
 
 /**
- * The curator: the model that organizes triage, runs the authoring
- * gate, and assists ratification traceability. One entry, no name
+ * The curator: the model that labels and organizes critiques and
+ * assists ratification traceability. One entry, no name
  * — there is exactly one taxonomy librarian, and teams typically point
  * it at a frontier model. Reviewer-shaped so it rides the same provider
  * plumbing.

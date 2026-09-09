@@ -6,22 +6,24 @@ import { statLines } from "@framework/views/stats.js";
 interface TriageOutcome {
   assigned: number;
   proposed: number;
-  dismissed: number;
+  /** Critiques held as evidence with no axiom yet — the curator's call, accepted. */
+  held: number;
+  /** Critiques the human skipped — decided nothing. */
   skipped: number;
-  /** Pending critiques still waiting after the session. */
+  /** Critiques still awaiting curation after the session. */
   pendingLeft: number;
   /** Curator spend across the session, or null when nothing reported. */
   costUsd: number | null;
 }
 
 /**
- * A curate session's outcome: every decision counted, one per line, the
- * residual named, and the next command in reach.
+ * A curate session's outcome: every decision counted, one per line, what
+ * stays in the queue named, and the next command in reach.
  */
 const curateSummaryView: View<TriageOutcome> = ({
   assigned,
   proposed,
-  dismissed,
+  held,
   skipped,
   pendingLeft,
   costUsd,
@@ -29,9 +31,9 @@ const curateSummaryView: View<TriageOutcome> = ({
   const counts: [string, string | number][] = [
     ["Assigned", assigned],
     ["Proposed", proposed],
-    ["Dismissed", dismissed],
+    ["Held (no axiom yet)", held],
     ["Skipped", skipped],
-    ["Still pending", pendingLeft],
+    ["Still awaiting curation", pendingLeft],
   ];
 
   return [

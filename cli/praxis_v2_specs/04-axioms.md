@@ -87,8 +87,7 @@ reviewer.
 > one rule must never need to resolve another. A scope boundary is
 > stated in the rule's own terms ("this rule judges presence only; the
 > quality of an example that exists is outside its scope") or defers to
-> the spec — never to a sibling axiom. Applies to the curator's drafts
-> and the authoring gate alike.
+> the spec — never to a sibling axiom. Applies to the curator's drafts.
 
 ## Review → Label
 
@@ -109,8 +108,36 @@ states (owner, 2026-09-07), decided in one place
    later changes, the pinned set no longer matches and the critique
    re-queues for triage automatically — "never seen before" means
    never seen against the current taxonomy.
-3. **Identified** — an assignment record labels it (or a dismissal
-   settles it); it appears in no queue.
+3. **Identified** — an assignment record labels it; it appears in no
+   queue.
+
+**Validity is a separate question from membership** (owner,
+2026-09-09). Triage and curate decide which axiom a critique belongs
+to, and both take for granted that every critique they see is valid
+evidence. Whether a critique is *true* — the reviewer said something
+grounded, not invented or drifted, and the humans agree with the spec
+it cites — is decided by a human in `praxis eval review`, and nowhere
+else. Review offers only what no axiom has claimed — untriaged and
+unmatched critiques; a critique labeled under an axiom is valid by
+definition and is refused (owner, 2026-09-09). A dismissed critique is
+not evidence: it leaves every queue, is
+never labeled or curated, and `axioms reassign` refuses it, until a
+**reinstatement** record lifts the dismissal. The dismissal rate is the
+reviewer-trust signal — many dismissals mean the specs disagree with the
+humans, or the reviewers are performing poorly. Curate therefore never
+dismisses: a cluster with no axiom yet is **held** — nothing written,
+the critiques stay unmatched and ride into the next session's cohort,
+where new critiques may complete the pattern. Before this date curate
+wrote dismissals for "unassignable" clusters and for gate refusals;
+those were membership judgments wearing a validity record, and the
+demo's were reinstated on 2026-09-09.
+
+Every reader gets a critique's standing from one join
+(`TriageStore.decisions()`): a dismissal stands until reinstated,
+whatever assignments surround it; among assignments the newest wins; an
+assignment to a proposal that was later **rejected** is void, so the
+critiques return to the queue their unmatched verdict puts them in —
+still valid evidence, awaiting a better draft.
 
 Labels are applied as append-only records, by two verbs:
 
@@ -140,9 +167,14 @@ Labels are applied as append-only records, by two verbs:
    it lands.
 2. **`praxis axioms curate` — the human session** (the verb formerly
    named triage). Interactive work on the **unidentified** critiques —
-   never the merely untriaged, which it names and defers to triage.
-   Cluster recurring critiques into proposed axioms, dismiss noise with
-   reasons, assign stragglers by hand. Every decision is a ledger record. Clustering
+   never the merely untriaged: curate refuses to start while any
+   critique is untriaged (owner, 2026-09-09), because the critique
+   still in triage's queue may be the one that completes a pattern; a
+   clean triage is the precondition, and the error names it.
+   Cluster recurring critiques into proposed axioms, assign stragglers
+   by hand, hold what has no axiom yet (validity is never curate's
+   question — see above). Every assignment and proposal is a ledger
+   record; a hold writes nothing. Clustering
    cannot happen per-critique — a category only emerges from a grouping
    large enough to show it — but the grouping is bounded (owner,
    2026-09-07): identical critique texts dedup into one member (its
@@ -175,9 +207,13 @@ a rate).
 ## Lifecycle rules
 
 - The **LLM proposes; a human ratifies.** Nothing enters the taxonomy
-  without ratification against the spec's own text (traceability), and
-  the authoring gate (03) checks each proposal is genuinely
-  judgment-shaped — splitting mixed proposals when it is not.
+  without ratification against the spec's own text (traceability). The
+  judgment boundary (03) is held where the draft is written — the
+  curator's drafting prompt carries the litmus tests and drafts the
+  judgment half of a mixed cluster alone — and by the human who
+  accepts it; the post-acceptance authoring gate was retired
+  2026-09-09 (owner): a refused cluster left no record and recurred on
+  every curate run.
 - **Statements are immutable per version**; wording changes bump
   `version`. A version bump changes nothing about reviews (see the
   separation principle) — the next triage simply labels against the new
@@ -189,12 +225,11 @@ a rate).
   re-queues for triage. A replacement is simply a new id; lineage lives
   in git and the ledger.
 - **Over-splitting is collapsed, never endured** (owner, 2026-09-07).
-  Prevention: the authoring gate checks every draft against the
-  taxonomy on record (active + proposed) and answers `duplicate_of` —
-  a candidate with the SAME REMEDIATION as an existing axiom folds its
-  cluster there instead of landing as a twin; curate also offers
-  standing proposals as fold targets, and `axioms audit` flags
-  same-remediation pairs among active axioms as merge candidates.
+  Prevention: curate offers every active **and** standing proposed
+  axiom as a fold target (2026-09-09 — proposals awaiting ratification
+  already carry their remediation), and the drafting prompt says
+  assign, never twin, when an existing axiom's fix would resolve the
+  cluster.
   Cure: `praxis axioms merge <ids...> --into <id>` — every critique
   whose effective label is a merged-away axiom gets a re-assignment
   record to the survivor (decision "merge"; the prior label stays in

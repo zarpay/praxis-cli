@@ -288,7 +288,7 @@ Default `sources` are `["experts", "practices", "reference", "context"]`.
 
 ## curator
 
-The model behind `praxis axioms triage` labeling, the `curate` session, the authoring gate, and ratification's traceability assessment — the taxonomy's librarian. One entry, reviewer-shaped minus `name`; teams typically point it at a frontier model, since assignment quality bounds every per-axiom rate:
+The model behind `praxis axioms triage` labeling, the `curate` session, and ratification's traceability assessment — the taxonomy's librarian. One entry, reviewer-shaped minus `name`; teams typically point it at a frontier model, since assignment quality bounds every per-axiom rate:
 
 ```json
 "curator": {

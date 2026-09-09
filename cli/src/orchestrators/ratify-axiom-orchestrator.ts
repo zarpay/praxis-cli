@@ -4,7 +4,6 @@ import { errors } from "@/helpers/errors-helper.js";
 import { exists, readText, removeFile } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import assessAxiomGateService from "@/services/assess-axiom-gate-service.js";
 import assessTraceabilityService from "@/services/assess-traceability-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
@@ -26,12 +25,13 @@ interface RatifyAxiomOptions {
  * What `praxis axioms ratify <id>` does: the human gate a proposal
  * passes to become active.
  *
- * Renders the proposal with its supporting critiques, the authoring
- * gate's verdict, and the curator's traceability assessment; then the
+ * Renders the proposal with its supporting critiques and the curator's
+ * traceability assessment; then the
  * three outcomes: traceable → ratify, recording the derivation; real but
  * untraceable → instruct fixing the spec (nothing written, exit 1);
- * not intended → `--reject` removes the proposal and records the
- * rejection, feeding the reviewer-noise signal.
+ * not the axiom → `--reject` removes the proposal and records the
+ * rejection, which voids its supporting assignments so the critiques
+ * return to the curate queue as evidence for a better draft.
  *
  * @throws PraxisError without a curator, an unknown id, or no TTY
  *   without the scripting flags
@@ -52,6 +52,9 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
   if (!proposal) throw errors.axiomNotFound(id);
 
   if (reject !== undefined) {
+    const { assignments } = deriveTriageStateService(cfg, {});
+    const released = assignments.filter((assignment) => assignment.axiom_id === id).length;
+
     removeFile(proposal.path);
     new TriageStore(cfg).writeSession([
       { kind: "rejection", axiom_id: id, reason: reject, timestamp: new Date().toISOString() },
@@ -59,7 +62,7 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
     ctx.render([
       {
         channel: "success",
-        text: `Rejected ${id}: ${reject} (recorded — feeds the reviewer-noise signal).`,
+        text: `Rejected ${id}: ${reject} (recorded). Its ${released} supporting critique(s) are released — still valid evidence, back in the curate queue.`,
       },
     ]);
 
@@ -100,17 +103,6 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
     throw errors.documentNotFound(specPath);
   }
 
-  const taxonomy = axioms
-    .filter((axiom) => axiom.id !== id && axiom.status !== "deprecated")
-    .map((axiom) => ({ id: axiom.id, statement: axiom.statement() }));
-
-  const gate = await assessAxiomGateService(cfg, {
-    statement: proposal.statement(),
-    violatingExample: proposal.violatingExample(),
-    compliantExample: proposal.compliantExample(),
-    existing: taxonomy,
-  });
-
   const traceability = await assessTraceabilityService(cfg, {
     specPath,
     specContent: readText(specFile),
@@ -120,7 +112,6 @@ export const ratifyAxiomOrchestrator: Orchestrator<RatifyAxiomOptions> = async (
   const view = ratifyView({
     axiom: proposal,
     supportingCritiques: supporting.length,
-    gate,
     traceability,
   });
 

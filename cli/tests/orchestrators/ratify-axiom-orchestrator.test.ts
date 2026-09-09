@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 
 import { AxiomFile } from "@/models/axiom-file.js";
 import { ratifyAxiomOrchestrator } from "@/orchestrators/ratify-axiom-orchestrator.js";
+import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import { TriageStore } from "@/stores/triage-store.js";
 import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
@@ -78,7 +79,6 @@ function ratifyProject(plan: Parameters<typeof curatorProviderModule>[0]): strin
 /** A curator that traces the proposal to the spec's error-messages section. */
 function traceablePlan() {
   return {
-    gate: { assessment: "appropriate", reasoning: "Turns on meaning.", judgment_half: null },
     traceability: {
       traceable: true,
       grounding: "docs/README.md#error-messages",
@@ -131,18 +131,24 @@ describe("ratifyAxiomOrchestrator", () => {
     expect(output()).toContain("Not ratified");
   });
 
-  it("with --reject: the proposal is removed and the rejection recorded", async () => {
+  it("with --reject: the proposal is removed, the rejection recorded, and its critiques released", async () => {
     const root = ratifyProject(traceablePlan());
     const { logger, output } = createCaptureLogger();
 
     const outcome = await ratifyAxiomOrchestrator(testContext(root, logger), {
       id: "AX-aaaa11",
-      reject: "reviewer invention",
+      reject: "not the axiom",
     });
+
+    // The supporting assignment is void: r1:1 is evidence again, back in a queue.
+    const state = deriveTriageStateService(testConfig(root), {});
+    const queued = [...state.pending, ...state.unidentified].map((critique) => critique.id);
 
     expect(outcome).toBe("ok");
     expect(existsSync(join(root, ".praxis", "axioms", "proposed", "AX-aaaa11.md"))).toBe(false);
     expect(output()).toContain("Rejected AX-aaaa11");
+    expect(output()).toContain("1 supporting critique(s) are released");
+    expect(queued).toEqual(["r1:1"]);
   });
 
   it("throws the not-found error for an id with no proposal", async () => {

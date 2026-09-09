@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { curateAxiomsOrchestrator } from "@/orchestrators/curate-axioms-orchestrator.js";
+import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { TriageStore } from "@/stores/triage-store.js";
 import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
@@ -118,17 +119,16 @@ function standardPlan() {
         {
           critique_ids: ["r1:3"],
           rationale: "No spec passage mentions queues.",
-          suggestion: "unassignable",
-          why_unassignable: "The spec never mentions queues.",
+          suggestion: "hold",
+          why_held: "The spec never mentions queues.",
         },
       ],
     },
-    gate: { assessment: "appropriate", reasoning: "Turns on meaning.", judgment_half: null },
   };
 }
 
 describe("curateAxiomsOrchestrator", () => {
-  it("with --yes: accepts the organization — proposal written, parentage assigned, residual dismissed", async () => {
+  it("with --yes: accepts the organization — proposal written, parentage assigned, the held critique stays unmatched", async () => {
     const root = triageProject(standardPlan());
     const { logger, output } = createCaptureLogger();
 
@@ -139,6 +139,7 @@ describe("curateAxiomsOrchestrator", () => {
     const records = triageRecords(root);
     const assignments = records.filter((record) => record.kind === "assignment");
     const dismissals = records.filter((record) => record.kind === "dismissal");
+    const stillUnmatched = deriveTriageStateService(testConfig(root), {}).unidentified;
 
     expect(outcome).toBe("ok");
     expect(proposal).toBeDefined();
@@ -150,47 +151,55 @@ describe("curateAxiomsOrchestrator", () => {
       axiom_id: proposal!.id,
       assigned_by: { decision: "flag:--yes", suggested_by: "scripted" },
     });
-    expect(dismissals).toHaveLength(1);
-    expect(dismissals[0]).toMatchObject({
-      reason: "unassignable: The spec never mentions queues.",
-    });
+    // Held: valid evidence with no axiom yet — nothing written, still in curate's queue.
+    expect(dismissals).toHaveLength(0);
+    expect(stillUnmatched.map((critique) => critique.id)).toEqual(["r1:3"]);
     expect(output()).toContain("Proposed");
   });
 
-  it("the gate refuses a mechanical draft — nothing written, cluster stays pending (03)", async () => {
+  it("an accepted draft is written as accepted — nothing second-guesses the human's call", async () => {
     const plan = standardPlan();
-    plan.gate = {
-      assessment: "not_appropriate",
-      reasoning: "A regex could decide it.",
-      judgment_half: null,
-    };
+    plan.organization.clusters[0].draft!.statement = "Every service exports a function named run.";
     const root = triageProject(plan);
-    const { logger, output } = createCaptureLogger();
+    const { logger } = createCaptureLogger();
 
     const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
 
     const { axioms } = new AxiomStore(testConfig(root)).all();
+    const proposal = axioms.find((axiom) => axiom.status === "proposed");
+    const recordsAfterSession = triageRecords(root).length;
+
+    // Nothing decided twice: a rerun re-offers only the held critique and writes nothing.
+    const rerun = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
+    const recordsAfterRerun = triageRecords(root).length;
 
     expect(outcome).toBe("ok");
-    expect(axioms).toHaveLength(0);
-    expect(output()).toContain("not appropriate");
+    expect(proposal?.statement()).toBe("Every service exports a function named run.");
+    expect(recordsAfterSession).toBe(5);
+    expect(rerun).toBe("ok");
+    expect(recordsAfterRerun).toBe(recordsAfterSession);
   });
 
-  it("identical critique texts dedup into one cluster member, but every duplicate gets a record", async () => {
+  it("identical critique texts dedup into one cluster member, and a decision covers every duplicate", async () => {
+    const axiom = axiomContent(
+      { id: "AX-ffff99", derived_from: "docs/README.md#error-messages" },
+      { statement: "Error messages name what was wrong and what would be accepted." },
+    );
     const { root, cleanup } = createValidatorTmpdir({
       sources: ["docs"],
       files: {
         "docs/README.md":
           "# Spec\n\n## Error messages\n\nError messages name what would be accepted.",
         "docs/guide.md": "# Guide",
+        [".praxis/axioms/AX-ffff99.md"]: axiom,
         "curator.js": curatorProviderModule({
           organization: {
             clusters: [
               {
                 critique_ids: ["r1:1"],
                 rationale: "The same consumer-hostile message, three runs over.",
-                suggestion: "unassignable",
-                why_unassignable: "The spec never mentions it.",
+                suggestion: "assign",
+                axiom_id: "AX-ffff99",
               },
             ],
           },
@@ -209,7 +218,7 @@ describe("curateAxiomsOrchestrator", () => {
         guideCritique(3, "Error message 'bad subject' names nothing."),
       ],
     });
-    markUnmatched(root, ["r1:1", "r1:2", "r1:3"]);
+    markUnmatched(root, ["r1:1", "r1:2", "r1:3"], ["AX-ffff99@1"]);
     const { logger } = createCaptureLogger();
 
     const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
@@ -217,14 +226,14 @@ describe("curateAxiomsOrchestrator", () => {
     expect(outcome).toBe("ok");
 
     const records = triageRecords(root);
-    const dismissals = records.filter((record) => record.kind === "dismissal");
-    const dismissedIds = dismissals.map((record) => record.critique_id).sort();
-    expect(dismissedIds).toEqual(["r1:1", "r1:2", "r1:3"]);
+    const assignments = records.filter((record) => record.kind === "assignment");
+    const assignedIds = assignments.map((record) => record.critique_id).sort();
+    expect(assignedIds).toEqual(["r1:1", "r1:2", "r1:3"]);
   });
 
-  it("a draft whose remediation an existing axiom carries folds there — never a twin", async () => {
-    const axiom = axiomContent(
-      { id: "AX-ffff99", grounded_in: "docs/README.md#error-messages" },
+  it("a standing proposal is a fold target — the curator assigns to it, never drafts a twin", async () => {
+    const proposal = axiomContent(
+      { id: "AX-ffff99", status: "proposed" },
       { statement: "Error messages name what was wrong and what would be accepted." },
     );
     const { root, cleanup } = createValidatorTmpdir({
@@ -233,29 +242,17 @@ describe("curateAxiomsOrchestrator", () => {
         "docs/README.md":
           "# Spec\n\n## Error messages\n\nError messages name what would be accepted.",
         "docs/guide.md": "# Guide",
-        [".praxis/axioms/AX-ffff99.md"]: axiom,
+        [".praxis/axioms/proposed/AX-ffff99.md"]: proposal,
         "curator.js": curatorProviderModule({
           organization: {
             clusters: [
               {
                 critique_ids: ["r1:1"],
                 rationale: "Consumer-hostile error message.",
-                suggestion: "propose",
-                draft: {
-                  statement: "Errors must say what would be accepted.",
-                  severity: "warning",
-                  violating_example: "bad",
-                  compliant_example: "good",
-                  grounding_hint: "Error messages name what would be accepted.",
-                },
+                suggestion: "assign",
+                axiom_id: "AX-ffff99",
               },
             ],
-          },
-          gate: {
-            assessment: "appropriate",
-            reasoning: "Turns on meaning.",
-            judgment_half: null,
-            duplicate_of: "AX-ffff99",
           },
         }),
       },
@@ -268,36 +265,36 @@ describe("curateAxiomsOrchestrator", () => {
       hash: "aaaa1111",
       extraLines: [guideCritique(1, "Error message 'bad subject' names nothing.")],
     });
-    markUnmatched(root, ["r1:1"], ["AX-ffff99@1"]);
+    markUnmatched(root, ["r1:1"]);
     const { logger } = createCaptureLogger();
 
     const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
 
     expect(outcome).toBe("ok");
 
-    // No proposal was written; the cluster folded into the existing axiom.
-    const proposedDir = join(root, ".praxis", "axioms", "proposed");
-    expect(existsSync(proposedDir)).toBe(false);
+    // The assignment landed on the standing proposal; no second proposal was minted.
+    const { axioms } = new AxiomStore(testConfig(root)).all();
+    const proposed = axioms.filter((axiom) => axiom.status === "proposed");
+    const assignments = triageRecords(root).filter((record) => record.kind === "assignment");
 
-    const records = triageRecords(root);
-    const assignments = records.filter((record) => record.kind === "assignment");
+    expect(proposed).toHaveLength(1);
     expect(assignments).toHaveLength(1);
-    expect(assignments[0]).toMatchObject({
-      critique_id: "r1:1",
-      axiom_id: "AX-ffff99",
-    });
+    expect(assignments[0]).toMatchObject({ critique_id: "r1:1", axiom_id: "AX-ffff99" });
   });
 
-  it("with --reject: dismisses the whole queue with the reason", async () => {
-    const root = triageProject(standardPlan());
+  it("a critique the curator leaves out of every cluster is held and named, never lost", async () => {
+    const plan = standardPlan();
+    plan.organization.clusters = plan.organization.clusters.slice(0, 1);
+    const root = triageProject(plan);
+    const { logger, output } = createCaptureLogger();
 
-    const outcome = await curateAxiomsOrchestrator(testContext(root), { reject: "noisy epoch" });
+    const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
 
-    const dismissals = triageRecords(root).filter((record) => record.kind === "dismissal");
+    const stillUnmatched = deriveTriageStateService(testConfig(root), {}).unidentified;
 
     expect(outcome).toBe("ok");
-    expect(dismissals).toHaveLength(3);
-    expect(dismissals[0]).toMatchObject({ reason: "noisy epoch" });
+    expect(output()).toContain("left 1 critique(s) out of every cluster (r1:3)");
+    expect(stillUnmatched.map((critique) => critique.id)).toEqual(["r1:3"]);
   });
 
   it("refuses to run interactively without a TTY, naming the flags", async () => {
@@ -305,7 +302,32 @@ describe("curateAxiomsOrchestrator", () => {
 
     const runWithoutTty = curateAxiomsOrchestrator(testContext(root), {});
 
-    await expect(runWithoutTty).rejects.toThrow(/--yes or --reject/);
+    await expect(runWithoutTty).rejects.toThrow(/--yes/);
+  });
+
+  it("refuses to start while any critique is untriaged — a clean triage is the precondition", async () => {
+    const root = triageProject(standardPlan());
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      runId: "r2",
+      extraLines: [
+        critiqueLine({
+          runId: "r2",
+          seq: 1,
+          filePath: "docs/guide.md",
+          specPath: "docs/README.md",
+          text: "A fresh critique nobody has triaged.",
+        }),
+      ],
+    });
+
+    const curatePastTriage = curateAxiomsOrchestrator(testContext(root), { yes: true });
+
+    await expect(curatePastTriage).rejects.toThrow(
+      /1 critique\(s\) are still untriaged.*praxis axioms triage/,
+    );
+    expect(triageRecords(root).filter((record) => record.kind === "assignment")).toEqual([]);
   });
 
   it("says so when nothing is pending", async () => {

@@ -123,6 +123,41 @@ describe("deriveTriageStateService", () => {
     expect(state.pending.map((critique) => critique.id)).toEqual(["r1:2"]);
   });
 
+  it("a rejected proposal releases its critiques back to the queue", () => {
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      extraLines: [critiqueLine({ runId: "r1", seq: 1 })],
+    });
+    new TriageStore(testConfig(root)).writeSession([
+      {
+        kind: "unmatched",
+        critique_id: "r1:1",
+        considered: [],
+        suggested_by: "big/model",
+        timestamp: "2026-09-07T10:00:00.000Z",
+      },
+      {
+        kind: "assignment",
+        critique_id: "r1:1",
+        axiom_id: "AX-cccc33",
+        axiom_version: 1,
+        assigned_by: { decision: "human", suggested_by: "big/model" },
+        timestamp: "2026-09-07T10:01:00.000Z",
+      },
+      {
+        kind: "rejection",
+        axiom_id: "AX-cccc33",
+        reason: "not the axiom",
+        timestamp: "2026-09-07T10:02:00.000Z",
+      },
+    ]);
+
+    const state = deriveTriageStateService(testConfig(root), {});
+
+    expect(state.unidentified.map((critique) => critique.id)).toEqual(["r1:1"]);
+  });
+
   it("counts rejections for the residual signal", () => {
     new TriageStore(testConfig(root)).writeSession([
       {

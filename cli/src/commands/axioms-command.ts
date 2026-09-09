@@ -1,6 +1,5 @@
 import type { CommandRegistrar } from "@framework/types.js";
 
-import auditAxiomsOrchestrator from "@/orchestrators/audit-axioms-orchestrator.js";
 import curateAxiomsOrchestrator from "@/orchestrators/curate-axioms-orchestrator.js";
 import deprecateAxiomOrchestrator from "@/orchestrators/deprecate-axiom-orchestrator.js";
 import listAxiomsOrchestrator from "@/orchestrators/list-axioms-orchestrator.js";
@@ -14,9 +13,10 @@ import triageAxiomsOrchestrator from "@/orchestrators/triage-axioms-orchestrator
  * Registers the `praxis axioms` command group.
  *
  * Axioms are the named, stable standards critiques attach to.
- * `list` and `show` read the store; `triage` and `ratify` are the
- * deliberately interactive lifecycle verbs (LLM proposes, human
- * decides); `audit` re-runs the authoring gate over what is active.
+ * `list` and `show` read the store; `triage` labels in batch; `curate`
+ * and `ratify` are the deliberately interactive lifecycle verbs (LLM
+ * proposes, human decides); `reassign`, `deprecate` and `merge` are the
+ * taxonomy's correction verbs.
  */
 const axiomsCommand: CommandRegistrar = (program) => {
   const axiomsCmd = program
@@ -77,17 +77,20 @@ Example:
   axiomsCmd
     .command("curate")
     .description(
-      "Work the still-pending residue with the curator: cluster into proposals, dismiss, or assign",
+      "Work the unmatched residue with the curator: cluster into proposals, assign, or hold",
     )
     .option("--yes", "accept every curator suggestion without prompting (recorded as such)", false)
-    .option("--reject <reason>", "dismiss everything pending, with this reason")
     .addHelpText(
       "after",
       `
-When to use: after triage has labeled what it confidently can — this is
-the interactive session for the residue: cluster recurring critiques
-into proposed axioms, dismiss noise with reasons, assign stragglers.
-Every decision is recorded in the ledger.
+When to use: after triage has labeled everything it can — curate refuses
+to start while any critique is untriaged, because the one still in
+triage's queue may be the one that completes a pattern. Then this is the
+interactive session for the residue: cluster recurring critiques into
+proposed axioms, assign stragglers, hold what has no axiom yet.
+Every critique here is taken as valid evidence (validity is decided in
+\`praxis eval review\`); assignments and proposals are recorded in the
+ledger, held critiques stay in the queue for the next session.
 
 Example:
   $ praxis axioms curate`,
@@ -96,9 +99,9 @@ Example:
 
   axiomsCmd
     .command("ratify <id>")
-    .description("Ratify a proposed axiom: gate verdict, spec traceability, then the human call")
+    .description("Ratify a proposed axiom: spec traceability, then the human call")
     .option("--yes", "ratify without prompting when traceable", false)
-    .option("--reject <reason>", "reject the proposal as reviewer noise (recorded)")
+    .option("--reject <reason>", "reject the proposal (recorded; its critiques return to curate)")
     .option("--spec <path>", "spec to trace against (when no supporting critique names one)")
     .addHelpText(
       "after",
@@ -120,10 +123,11 @@ Example:
     .addHelpText(
       "after",
       `
-When to use: a matcher label looks wrong, a dismissed critique turns out
-to be real, or evidence belongs under a different standard. Works on any
-critique in any state — the new assignment is appended and wins at read
-time; nothing is rewritten. Browse ids with \`praxis eval critiques\`.
+When to use: a matcher label looks wrong, or evidence belongs under a
+different standard. The new assignment is appended and wins at read
+time; nothing is rewritten. A dismissed critique is refused — reinstate
+it with \`praxis eval review --reinstate\` first. Browse ids with
+\`praxis eval critiques\`.
 
 Example:
   $ praxis axioms reassign 20260907T101932101Z-c0f5baa5:6 --to AX-b951db`,
@@ -166,22 +170,6 @@ Example:
   $ praxis axioms merge AX-aaaaaa AX-bbbbbb --into AX-cccccc`,
     )
     .action(mergeAxiomsOrchestrator);
-
-  axiomsCmd
-    .command("audit")
-    .description("Re-run the authoring gate over active axioms; flags removal candidates")
-    .option("--json", "machine-readable output (stable contract)")
-    .addHelpText(
-      "after",
-      `
-When to use: periodically, or after spec edits — checks each active
-axiom still passes the authoring gate and flags removal candidates.
-Spends curator calls (one per active axiom).
-
-Example:
-  $ praxis axioms audit`,
-    )
-    .action(auditAxiomsOrchestrator);
 };
 
 export default axiomsCommand;

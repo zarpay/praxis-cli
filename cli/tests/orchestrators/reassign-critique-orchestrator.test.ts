@@ -5,10 +5,12 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { reassignCritiqueOrchestrator } from "@/orchestrators/reassign-critique-orchestrator.js";
+import { TriageStore } from "@/stores/triage-store.js";
 import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { testConfig } from "@tests/helpers/test-config.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 const cleanups: (() => void)[] = [];
@@ -88,6 +90,20 @@ describe("reassignCritiqueOrchestrator", () => {
       axiom_version: 1,
       assigned_by: { decision: "human", suggested_by: "manual" },
     });
+  });
+
+  it("refuses a dismissed critique — invalid evidence is never categorized", async () => {
+    const root = reassignProject();
+    new TriageStore(testConfig(root)).writeSession([
+      { kind: "dismissal", critique_id: "r1:1", reason: "the spec permits this", timestamp: "t" },
+    ]);
+
+    const reassignDismissed = reassignCritiqueOrchestrator(testContext(root), {
+      id: "r1:1",
+      to: "AX-aaaa11",
+    });
+
+    await expect(reassignDismissed).rejects.toThrow(/--reinstate r1:1/);
   });
 
   it("refuses an unknown critique id, pointing at the listing", async () => {

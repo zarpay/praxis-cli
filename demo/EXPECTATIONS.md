@@ -23,7 +23,8 @@ a bug.
   (`cp -r demo <scratch>`), never against the real demo: `axioms triage`
   (curator spend; writes matcher assignment records), `axioms curate`
   (consumes the pending queue; curator spend unless `--reject`),
-  `axioms ratify`, `axioms audit` (curator spend per active axiom).
+  `axioms ratify`, `eval review --dismiss/--reinstate` (writes validity
+  records).
   Exception: a milestone's own acceptance run may land triage/curate
   evidence in the real demo deliberately — say so in the commit.
 - `eval run` writes ledger evidence by design — commit the new run files
@@ -51,6 +52,7 @@ a bug.
 | Signature merge | AX-fac03c → AX-b951db (2026-09-07): 8 critiques re-labeled by merge records; `eval report --axiom AX-b951db` counts them |
 | Excluded / wip | `legacy-import.ts` excluded · `_wip-refund.ts` template-skipped. Nuance: excludes shield **full runs only** — `eval run src/services/legacy-import.ts` reviews it on explicit ask (exit 0, evidence on record 2026-09-08). `exemplars:` is retired (2026-09-08): live code as a blessed example drifts; positive examples live in spec prose |
 | Signature axiom | AX-b951db — error messages name what was wrong and what would be accepted |
+| Dismissals | 0 standing. The 40 curate-made dismissals (gate refusals and "unassignable" calls, 2026-09-02…09-08) were membership judgments, reinstated 2026-09-09 in one session file; those critiques are back in triage/curate. `eval review` is now the only writer of dismissals |
 
 ## The matrix
 
@@ -116,12 +118,14 @@ calls · **[scratch]** run in a copy.
 | `axioms reassign <critique-id> --to <axiom>` [scratch] | Appends a human assignment that wins at read time; exit 2 on an unknown critique id or a non-active axiom (verified 2026-09-08 in scratch) |
 | `axioms show AX-b951db` | Statement, both examples, grounding, lifecycle; `--json` stable |
 | `axioms triage` [scratch, paid] | The labeling pass over **untriaged** critiques only: one curator call each (order can't bias a verdict), per-verdict progress lines; matches land as matcher assignments, no-matches as unmatched records (→ curate's queue, re-queued for triage if the axiom set changes); hallucinated ids = failed calls, stay untriaged; `--dry-run` writes nothing; no curator → warns "labeling is deferred" |
-| `axioms curate --reject "<reason>"` [scratch] | Dismisses the **unmatched** queue (untriaged critiques are named and untouched), writes a triage session file, no curator call |
+| `eval review --dismiss <critique-id> --reason "<why>"` [scratch] | Appends a dismissal; the critique leaves every queue (`eval critiques` shows `dismissed`, tallies move), `axioms reassign` refuses it with the reinstate hint (exit 2); `--dismiss` without `--reason` exits 2 naming the fix |
+| `eval review --reinstate <critique-id> --reason "<why>"` [scratch] | Lifts a dismissal; the critique is back in the queue its records put it in; on a critique that is not dismissed: warning, nothing written, exit 1 |
+| `eval review [target]` [manual only] | Interactive validity walk over **untriaged + unmatched** critiques only (labeled ones never appear), `[d]ismiss / [n]ext / [q]uit`; non-TTY without flags exits 2 naming `--dismiss` |
+| `eval review --dismiss <labeled-id> --reason "<why>"` [scratch] | Refused, exit 2: a labeled critique is valid by definition; the error names `axioms reassign` |
 | `axioms deprecate <id> --reason` [scratch] | Status flips to deprecated, body untouched, deprecation record in the ledger; reports keep the id's history readable |
 | `axioms merge <ids...> --into <id>` [scratch] | Losers deprecate, their critiques re-label to the survivor (decision "merge"), survivor's introduced moves to the earliest among the merged; `eval report --axiom <survivor>` immediately counts the merged evidence |
-| `axioms curate --yes` [scratch, paid] | Clusters the unmatched residue (cohorts of ~30, duplicates deduped with ×N): accepted assigns/dismissals land as records, proposals pass the gate first (mechanical clusters refused, same-remediation drafts folded into the existing axiom). Untriaged critiques are named and deferred to triage. Verified 2026-09-08 at 19 critiques: 2 assigned, 1 proposed, 6 dismissed, 11 gate-skipped |
-| `axioms ratify <id>` `--yes/--reject/--spec` [scratch, paid] | Gate + duplication check + traceability, then the human call; `--reject` records reviewer noise; untraceable → exit 1, extend the spec. Ratification has **no cache effect**: the next run stays all-hits |
-| `axioms audit` [scratch, paid] | Gate re-run over active axioms; flags mechanical standards and `≈` same-remediation twins with the merge command ready (found AX-b951db ≈ AX-fac03c before their 2026-09-07 merge) |
+| `axioms curate --yes` [scratch, paid] | Clusters the unmatched residue (cohorts of ~30, duplicates deduped with ×N): accepted assignments (active **and** standing proposed axioms are fold targets) and proposals land as records, proposals written exactly as drafted (no post-acceptance gate since 2026-09-09; the judgment boundary is in the curator's prompt); a **held** cluster writes nothing and stays in the queue; critiques the curator left unclustered are named and held. Curate never dismisses. A rerun straight after re-offers only what was held. With anything untriaged, curate refuses to start — exit 2 naming `praxis axioms triage` (a clean triage is the precondition) |
+| `axioms ratify <id>` `--yes/--reject/--spec` [scratch, paid] | Traceability, then the human call; `--reject` records the rejection and releases the supporting critiques back to curate (message names the count); untraceable → exit 1, extend the spec. Ratification has **no cache effect**: the next run stays all-hits |
 
 ### Project lifecycle [scratch]
 

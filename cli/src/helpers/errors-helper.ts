@@ -10,6 +10,10 @@
 /** Machine-readable code, one per factory method on `errors`. */
 export type PraxisErrorCode =
   | "ROOT_NOT_FOUND"
+  | "CRITIQUE_DISMISSED"
+  | "CRITIQUE_LABELED"
+  | "MISSING_OPTION"
+  | "TRIAGE_INCOMPLETE"
   | "INVALID_CONFIG_JSON"
   | "UNKNOWN_PLUGIN"
   | "UNKNOWN_DOCUMENT_TYPE"
@@ -67,7 +71,10 @@ export class PraxisError extends Error {
 export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErrorCode>([
   "API_KEY_NOT_SET",
   "AXIOM_NOT_FOUND",
+  "CRITIQUE_DISMISSED",
+  "CRITIQUE_LABELED",
   "CRITIQUE_NOT_FOUND",
+  "MISSING_OPTION",
   "CURATOR_MISSING_FIELD",
   "MERGE_NEEDS_SOURCES",
   "CURATOR_NOT_CONFIGURED",
@@ -77,6 +84,7 @@ export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErr
   "INVALID_REVIEWER_CONFIG",
   "NOT_A_TTY",
   "PROVIDER_CANNOT_COMPLETE",
+  "TRIAGE_INCOMPLETE",
   "REVIEWERS_NOT_CONFIGURED",
   "ROOT_NOT_FOUND",
   "UNKNOWN_DOCUMENT_TYPE",
@@ -319,11 +327,11 @@ export const errors = {
 
   // --- Curator ---
 
-  /** Triage, the gate, and audit need a curator; none is configured. */
+  /** Triage, curate, and ratify need a curator; none is configured. */
   curatorNotConfigured(): PraxisError {
     return new PraxisError(
       "CURATOR_NOT_CONFIGURED",
-      `No curator configured. The curator organizes triage, runs the authoring gate, and assists ratification — teams typically point it at a frontier model. Add to .praxis/config.json:
+      `No curator configured. The curator labels and organizes critiques and assists ratification — teams typically point it at a frontier model. Add to .praxis/config.json:
 
   "curator": {
     "model": "<model slug>",
@@ -382,6 +390,38 @@ export const errors = {
     return new PraxisError(
       "CRITIQUE_NOT_FOUND",
       `No critique "${id}" in the ledger. Run \`praxis eval critiques\` to browse ids.`,
+    );
+  },
+
+  /** A dismissed critique is not evidence and cannot be labeled. */
+  critiqueDismissed(id: string): PraxisError {
+    return new PraxisError(
+      "CRITIQUE_DISMISSED",
+      `Critique "${id}" is dismissed — not evidence, so it cannot be assigned to an axiom. If the dismissal was wrong, reinstate it first: \`praxis eval review --reinstate ${id} --reason "<why>"\`.`,
+    );
+  },
+
+  /** A labeled critique is valid by definition — it is not up for dismissal. */
+  critiqueLabeled(id: string, axiomId: string): PraxisError {
+    return new PraxisError(
+      "CRITIQUE_LABELED",
+      `Critique "${id}" is labeled under ${axiomId} — an instance of a standard is valid by definition, so it is not up for dismissal. If it belongs under a different axiom: \`praxis axioms reassign ${id} --to <axiom>\`.`,
+    );
+  },
+
+  /** A flag that needs a companion flag was given alone. */
+  missingOption(flag: string, companion: string, example: string): PraxisError {
+    return new PraxisError(
+      "MISSING_OPTION",
+      `${flag} needs ${companion}. Example: \`${example}\`.`,
+    );
+  },
+
+  /** Curate was asked to run on a partial residue. */
+  triageIncomplete(count: number): PraxisError {
+    return new PraxisError(
+      "TRIAGE_INCOMPLETE",
+      `${count} critique(s) are still untriaged, so the curate queue is incomplete — an untriaged critique may be the one that completes a pattern. Run \`praxis axioms triage\` first, then curate.`,
     );
   },
 

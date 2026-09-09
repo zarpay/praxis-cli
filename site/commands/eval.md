@@ -165,7 +165,21 @@ praxis eval critiques --axiom AX-b951db
 praxis eval critiques --json
 ```
 
-The ids are what [`praxis axioms reassign`](/commands/axioms#praxis-axioms-reassign-id) takes.
+The ids are what [`praxis axioms reassign`](/commands/axioms#praxis-axioms-reassign-id) and `praxis eval review --dismiss` take.
+
+## praxis eval review
+
+The validity session — the one place a critique is judged **invalid**. Triage and curate decide which axiom a critique belongs to and take for granted that every critique is true; whether the reviewer actually said something grounded is a human's call, made here.
+
+```bash
+praxis eval review src/services
+praxis eval review --dismiss 20260907T101932101Z-c0f5baa5:6 --reason "the spec permits this"
+praxis eval review --reinstate 20260907T101932101Z-c0f5baa5:6 --reason "misread the spec"
+```
+
+Interactively, every **untriaged** or **unmatched** critique in scope comes up one at a time — a critique labeled under an axiom is valid by definition (a human or the matcher found it an instance of a standard), so it is never offered and `--dismiss` refuses it; `axioms reassign` is the tool when it belongs elsewhere. Each card shows where it was said, by which reviewer, the words, and where the label lifecycle has it, and you choose `[d]ismiss / [n]ext / [q]uit`. A dismissal takes a reason and is appended to the ledger. A dismissed critique is not evidence: it leaves every queue, is never labeled or curated, and `axioms reassign` refuses it, until `--reinstate` lifts the dismissal.
+
+The dismissal count over all critiques is the **reviewer-trust signal**, printed at the end of the session and on `eval report`: many dismissals mean the specs disagree with the humans, or the reviewers are drifting. Because curate never dismisses, the number means exactly that.
 
 ## The ledger
 
@@ -187,7 +201,7 @@ The read side of the ledger — never a reviewer call. Scopes compose: `eval rep
 - one reviewer, one series — never pooled; every count qualified by population (pre-spec / post-spec / unknown, derived from git birthdates against each axiom's clock)
 - epoch boundaries as named furniture; nothing trends across one
 - the calibration banner on every report (uncalibrated — numbers are directional)
-- costs, residual rate, and the pending-triage queue
+- costs, the dismissed-as-invalid rate (the reviewer-trust signal), and the two queues
 - a requested sha that no longer resolves renders the missing-commit note (squash workflows orphan branch shas by policy) — the run's attestation stays usable
 
 `--json` emits the built payload verbatim — the stable machine contract.

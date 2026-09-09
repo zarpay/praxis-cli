@@ -35,7 +35,7 @@ interface TriageWireCluster {
     compliant_example?: string;
     grounding_hint?: string;
   } | null;
-  why_unassignable?: string | null;
+  why_held?: string | null;
 }
 
 /**
@@ -43,7 +43,7 @@ interface TriageWireCluster {
  *
  * Renders the prompts, makes one completion call, and validates the
  * organization defensively: a cluster citing an unknown critique id or
- * an unknown established axiom is demoted to `unassignable` rather than
+ * an unknown established axiom is demoted to `hold` rather than
  * trusted — a curator hallucination must cost human attention, never
  * corrupt an assignment.
  */
@@ -104,7 +104,7 @@ function normalizeCluster(
   return { critiqueIds, rationale, suggestion: normalizeSuggestion(wire, knownAxioms) };
 }
 
-/** The cluster's suggestion, demoted to unassignable when malformed. */
+/** The cluster's suggestion, demoted to hold when malformed. */
 function normalizeSuggestion(wire: TriageWireCluster, knownAxioms: Set<string>): TriageSuggestion {
   if (wire.suggestion === "assign" && wire.axiom_id && knownAxioms.has(wire.axiom_id)) {
     return { kind: "assign", axiomId: wire.axiom_id };
@@ -115,8 +115,8 @@ function normalizeSuggestion(wire: TriageWireCluster, knownAxioms: Set<string>):
   }
 
   return {
-    kind: "unassignable",
-    why: wire.why_unassignable ?? "The curator's suggestion did not validate.",
+    kind: "hold",
+    why: wire.why_held ?? "The curator's suggestion did not validate.",
   };
 }
 

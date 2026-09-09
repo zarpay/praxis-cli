@@ -243,7 +243,7 @@ export interface HarnessBrief {
   top_axioms: HarnessBriefAxiom[];
   /** Dismissed + rejected over all critiques — is the reviewer drifting off-spec? */
   residual_summary: string;
-  /** Active axioms with no evidence in scope — candidates for `axioms audit`. */
+  /** Active axioms with no evidence in scope. */
   removal_candidates: string[];
   /** The standing guardrails, stated on every brief. */
   note: string;

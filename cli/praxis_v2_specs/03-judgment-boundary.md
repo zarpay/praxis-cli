@@ -1,6 +1,6 @@
 # 03 — The Judgment Boundary
 
-**Status:** Draft — position hardened from the earlier "tiered verification" draft
+**Status:** Draft — position hardened from the earlier "tiered verification" draft; authoring gate retired 2026-09-09
 **Depends on:** [vocabulary.md](./vocabulary.md), [01](./01-populations-and-eval-unit.md); couples to the axiom model (04)
 
 ## The position
@@ -18,23 +18,45 @@ The authoring aphorism:
 
 > **If you can write the check, write the check. If you can only describe the standard, write the axiom.**
 
-## The authoring gate
+## Where the boundary is held
 
-The boundary is enforced at _authoring time_, not runtime — via pre-built prompts that assess every candidate axiom's appropriateness for Praxis.
+The boundary is held at _authoring time_, not runtime — and at the
+moment of **drafting**, not after acceptance.
 
-`praxis axioms triage` (04) runs each proposed axiom through the assessment at ratification; `praxis axioms audit` runs it over already-active axioms (tooling capability grows — an axiom appropriate last year may be delegable now). The assessment returns one of:
+**The authoring gate is retired** (owner, 2026-09-09). Praxis shipped
+a curator call that assessed every accepted draft as `appropriate`,
+`not_appropriate` or `split` — at curate-accept, again at ratify, and
+over active axioms via `praxis axioms audit`. It stopped mechanical
+drafts, but at the wrong place: after a human had already accepted the
+cluster. A refused cluster left no ledger record, so its critiques
+resurfaced unchanged on every curate run — the same suggestion, the
+same refusal, forever. Guidance on what makes a good axiom belongs
+where the axiom is drafted; once a person has read the draft and
+accepted it, that acceptance is the decision, and nothing
+second-guesses it. `praxis axioms audit`, which was the gate re-run
+over active axioms, retires with it.
 
-- **`appropriate`** — deciding requires reading comprehension: quality, intent, completeness-relative-to-meaning. Stays in Praxis.
-- **`not_appropriate`** — deterministically decidable. This belongs in static tooling, not Praxis. The axiom is not admitted. What tool picks it up is not Praxis's concern.
-- **`split`** — the candidate mixes both, which is the _common_ case in real specs: "declares a `schema payload:` block with `required:`" (mechanical) and "the payload is a complete snapshot" (judgment) live in the same section of the zarpay events spec. Only the judgment half becomes the axiom.
+What holds the boundary now:
 
-Litmus tests the prompt applies:
+- **The curator's drafting prompt** carries the litmus tests below and
+  the aphorism. A cluster that is mechanical is suggested
+  `unassignable` with the reason stated; a cluster that mixes a
+  mechanical half with a judgment half is drafted as the judgment half
+  alone; a cluster an established or standing proposed axiom already
+  remedies is suggested as an assignment, never a twin.
+- **The human at curate and ratify** reads the draft with the same
+  tests in mind and accepts, dismisses, or rejects. Every one of those
+  decisions is a ledger record, so nothing recurs.
+- **Deprecation** (04) is the removal path for an active axiom that
+  tooling has caught up with: `praxis axioms deprecate <id> --reason
+  "now a lint rule"`.
 
-- Could a regex or AST query decide this with zero false positives on adversarial input? → not appropriate.
-- Would two senior engineers ever disagree on a verdict? Never → probably mechanical → not appropriate.
-- Does the criterion turn on _meaning_ — "descriptive," "complete," "justified," "belongs" — rather than _presence_? → appropriate.
+Litmus tests the drafting prompt applies:
 
-The gate is advisory in the same sense everything else is: LLM proposes, human ratifies.
+- Could a regex or AST query decide this with zero false positives on adversarial input? → mechanical, not an axiom.
+- Would two senior engineers ever disagree on a verdict? Never → probably mechanical → not an axiom.
+- Does the criterion turn on _meaning_ — "descriptive," "complete," "justified," "belongs" — rather than _presence_? → an axiom.
+- Does the candidate mix both — the _common_ case in real specs: "declares a `schema payload:` block with `required:`" (mechanical) and "the payload is a complete snapshot" (judgment) live in the same section of the zarpay events spec? → draft the judgment half alone.
 
 ## What remains inside Praxis
 
@@ -81,7 +103,7 @@ Delegated tooling's findings do **not** enter the ledger (05). The ledger is jud
 
 ## Removal — axioms that no longer earn their place
 
-The gate isn't only for new axioms — `praxis axioms audit` re-assesses active ones. An axiom that no longer needs Praxis — the standard became mechanically checkable, or stopped mattering — **is removed** (deprecated, 04). Its ledger history is frozen at removal; where the standard went is not Praxis's concern. If the standard turns out to still need judgment, it comes back as a new axiom through the normal propose/ratify path.
+An axiom that no longer needs Praxis — the standard became mechanically checkable, or stopped mattering — **is removed** (deprecated, 04): `praxis axioms deprecate <id> --reason`. Its ledger history is frozen at removal; where the standard went is not Praxis's concern. If the standard turns out to still need judgment, it comes back as a new axiom through the normal propose/ratify path. Noticing that tooling has caught up with an axiom is a human reading — the curator re-assessment that once did this (`praxis axioms audit`) retired with the gate (2026-09-09).
 
 ## Evaluation flow
 
@@ -97,4 +119,4 @@ The boundary kills the earlier aggregation story: the ledger as a single conform
 
 ## Open questions
 
-1. How often does `praxis axioms audit` run — on demand only, or bundled into another surface (e.g. flagged in eval reports when an axiom's critiques look pattern-shaped)?
+1. ~~How often does `praxis axioms audit` run — on demand only, or bundled into another surface (e.g. flagged in eval reports when an axiom's critiques look pattern-shaped)?~~ Dissolved 2026-09-09: `audit` retired with the authoring gate; removal is a human reading and `deprecate`.

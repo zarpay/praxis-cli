@@ -13,7 +13,6 @@ import { errors } from "@/helpers/errors-helper.js";
 import { exists, readText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
-import assessAxiomGateService from "@/services/assess-axiom-gate-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import organizeTriageService from "@/services/organize-triage-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
@@ -38,7 +37,9 @@ interface CurateSession {
   proposalsThisSession: { id: string; statement: string }[];
   assigned: number;
   proposed: number;
-  dismissed: number;
+  /** Held as evidence with no axiom yet — the curator's call, accepted; nothing written. */
+  held: number;
+  /** Skipped by the human — nothing decided, nothing written. */
   skipped: number;
   costUsd: number | null;
 }
@@ -54,8 +55,6 @@ interface DedupedCritique {
 interface CurateAxiomsOptions {
   /** Accept every curator suggestion without prompting. */
   yes?: boolean;
-  /** Dismiss everything pending, with this reason. */
-  reject?: string;
 }
 
 /**
@@ -69,17 +68,25 @@ interface CurateAxiomsOptions {
  * dedup into one member with its duplicates counted, and each curator
  * call sees at most one cohort of unique critiques, with the session's
  * accepted proposals carried into later cohorts as fold targets so
- * categories consolidate instead of re-emerging per cohort. Accepted
- * drafts pass the authoring gate before anything is written.
- * Every decision lands in the ledger's triage partition; `--yes`
- * accepts every suggestion and is recorded as such — an unreviewed
- * assignment is exactly as trustworthy as that sounds.
+ * categories consolidate instead of re-emerging per cohort. An accepted
+ * draft is written as it was accepted: the guidance on what makes a good
+ * axiom lives in the curator's drafting prompt, and the human's
+ * acceptance is the decision — nothing second-guesses it afterwards
+ * (owner, 2026-09-09). Curate takes every critique's validity for
+ * granted — validity is `praxis eval review`'s question — so nothing
+ * here dismisses: a cluster with no axiom yet is **held**, writing
+ * nothing, and rides into the next session's cohort. Assignments and
+ * proposals land in the ledger's triage partition; `--yes` accepts
+ * every suggestion and is recorded as such — an unreviewed assignment
+ * is exactly as trustworthy as that sounds.
  *
- * @throws PraxisError without a curator, or interactive without a TTY
+ * @throws PraxisError without a curator, while any critique is still
+ *   untriaged (triage first — a clean queue is the precondition), or
+ *   interactive without a TTY
  */
 export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async (
   ctx,
-  { yes = false, reject },
+  { yes = false },
 ) => {
   const cfg = ctx.config;
   const curator = cfg.curator;
@@ -88,14 +95,10 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
 
   const state = deriveTriageStateService(cfg, {});
 
-  // Curate works ONLY the unmatched residue: "does this need a NEW
-  // axiom" is well-posed only after triage has said no existing one fits.
-  if (state.pending.length > 0) {
-    ctx.logger.warn(
-      `${state.pending.length} critique(s) are untriaged and not part of this session — ` +
-        "`praxis axioms triage` categorizes them first.",
-    );
-  }
+  // Curate works ONLY the unmatched residue, and only when that residue
+  // is complete: an untriaged critique may be the one that completes a
+  // pattern, so curating past it is curating on partial evidence.
+  if (state.pending.length > 0) throw errors.triageIncomplete(state.pending.length);
 
   if (state.unidentified.length === 0) {
     ctx.render([{ channel: "content", entries: ["Nothing awaiting curation."] }]);
@@ -105,8 +108,8 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
 
   const prompter = new Prompter();
 
-  if (!yes && reject === undefined && !prompter.interactive) {
-    throw errors.notATty("praxis axioms curate", '--yes or --reject "<reason>"');
+  if (!yes && !prompter.interactive) {
+    throw errors.notATty("praxis axioms curate", "--yes");
   }
 
   const session: CurateSession = {
@@ -119,16 +122,12 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
     proposalsThisSession: [],
     assigned: 0,
     proposed: 0,
-    dismissed: 0,
+    held: 0,
     skipped: 0,
     costUsd: null,
   };
 
-  if (reject === undefined) {
-    await organizeAndDecide(session, state.unidentified);
-  } else {
-    dismissAll(session, state.unidentified, reject);
-  }
+  await organizeAndDecide(session, state.unidentified);
 
   prompter.close();
 
@@ -136,11 +135,11 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
     new TriageStore(cfg).writeSession(session.records);
   }
 
-  const pendingLeft = state.unidentified.length - session.assigned - session.dismissed;
+  const pendingLeft = state.unidentified.length - session.assigned;
   const summary = curateSummaryView({
     assigned: session.assigned,
     proposed: session.proposed,
-    dismissed: session.dismissed,
+    held: session.held,
     skipped: session.skipped,
     pendingLeft,
     costUsd: session.costUsd,
@@ -153,19 +152,6 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
 
 export default prepareOrchestrator(curateAxiomsOrchestrator);
 
-/** The whole queue dismissed with one reason — the `--reject` path. */
-function dismissAll(session: CurateSession, pending: PendingCritique[], reason: string): void {
-  for (const critique of pending) {
-    session.records.push({
-      kind: "dismissal",
-      critique_id: critique.id,
-      reason,
-      timestamp: new Date().toISOString(),
-    });
-    session.dismissed++;
-  }
-}
-
 /** The session proper: per spec, dedup, cohort, organize, then decide. */
 async function organizeAndDecide(
   session: CurateSession,
@@ -174,10 +160,14 @@ async function organizeAndDecide(
   const store = new AxiomStore(session.cfg);
   const versions = new Map(store.all().axioms.map((axiom) => [axiom.id, axiom.version]));
 
-  // Fold targets are ALL active axioms — an axiom is an abstraction over
-  // evidence, never a child of one spec — plus
+  // Fold targets are ALL active and standing proposed axioms — an axiom is
+  // an abstraction over evidence, never a child of one spec, and a
+  // proposal awaiting ratification already carries its remediation — plus
   // whatever this session proposes as it goes.
-  const established = store.active().map((axiom) => ({ id: axiom.id, statement: axiom.statement }));
+  const established = store
+    .all()
+    .axioms.filter((axiom) => axiom.status === "active" || axiom.status === "proposed")
+    .map((axiom) => ({ id: axiom.id, statement: axiom.statement() }));
 
   for (const [specPath, critiques] of groupBySpec(pending)) {
     const specFile = joinPath(session.cfg.root, specPath);
@@ -276,6 +266,29 @@ async function organizeCohort(
 
     await decideCluster(session, cluster, clusterCritiques, versions);
   }
+
+  const clustered = new Set(organization.clusters.flatMap((cluster) => cluster.critiqueIds));
+  const unclustered = cohort.filter((entry) => !clustered.has(entry.representative.id));
+
+  if (unclustered.length > 0) holdUnclustered(session, unclustered);
+}
+
+/**
+ * Critiques the curator left out of every cluster: nothing falls
+ * through silently — they are named, counted as held, and stay in the
+ * queue for the next session.
+ */
+function holdUnclustered(session: CurateSession, unclustered: DedupedCritique[]): void {
+  const members = unclustered.flatMap((entry) => entry.members);
+  const ids = unclustered.map((entry) => entry.representative.id).join(", ");
+
+  session.held += members.length;
+  session.ctx.render([
+    {
+      channel: "warning",
+      text: `The curator left ${members.length} critique(s) out of every cluster (${ids}) — held; they stay in the queue for the next session.`,
+    },
+  ]);
 }
 
 /** Identical critique texts folded into one member with its duplicates. */
@@ -315,7 +328,7 @@ async function decideCluster(
 ): Promise<void> {
   const decision = session.yes
     ? "accept"
-    : await session.prompter.choose("[a]ccept / [d]ismiss / [s]kip", ["accept", "dismiss", "skip"]);
+    : await session.prompter.choose("[a]ccept / [s]kip", ["accept", "skip"]);
 
   if (decision === "skip") {
     session.skipped += critiques.length;
@@ -323,26 +336,10 @@ async function decideCluster(
     return;
   }
 
-  if (decision === "dismiss") {
-    const reason = await session.prompter.ask("Reason for dismissal:");
-
-    for (const critique of critiques) {
-      session.records.push({
-        kind: "dismissal",
-        critique_id: critique.id,
-        reason: reason === "" ? "dismissed at triage" : reason,
-        timestamp: new Date().toISOString(),
-      });
-      session.dismissed++;
-    }
-
-    return;
-  }
-
   await acceptSuggestion(session, cluster, critiques, versions);
 }
 
-/** The curator's suggestion, accepted: assign, propose (gated), or dismiss. */
+/** The curator's suggestion, accepted: assign, propose, or hold. */
 async function acceptSuggestion(
   session: CurateSession,
   cluster: TriageCluster,
@@ -357,21 +354,15 @@ async function acceptSuggestion(
     return;
   }
 
-  if (suggestion.kind === "unassignable") {
-    for (const critique of critiques) {
-      session.records.push({
-        kind: "dismissal",
-        critique_id: critique.id,
-        reason: `unassignable: ${suggestion.why}`,
-        timestamp: new Date().toISOString(),
-      });
-      session.dismissed++;
-    }
+  if (suggestion.kind === "hold") {
+    // Valid evidence, no axiom yet: nothing written, so the critiques
+    // stay unmatched and join the next session's cohort.
+    session.held += critiques.length;
 
     return;
   }
 
-  await propose(session, critiques, suggestion.draft);
+  propose(session, critiques, suggestion.draft);
 }
 
 /** Folds critiques into an established (or newly proposed) axiom. */
@@ -397,67 +388,11 @@ function assign(
   }
 }
 
-/** An accepted draft: gate first, then the proposal file plus parentage. */
-async function propose(
-  session: CurateSession,
-  critiques: PendingCritique[],
-  draft: AxiomDraft,
-): Promise<void> {
-  let gate;
-
-  try {
-    gate = await assessAxiomGateService(session.cfg, {
-      statement: draft.statement,
-      violatingExample: draft.violatingExample,
-      compliantExample: draft.compliantExample,
-      existing: existingTaxonomy(session),
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    session.ctx.render([
-      {
-        channel: "warning",
-        text: `Gate call failed: ${message} — the cluster stays pending; rerun triage to retry.`,
-      },
-    ]);
-    session.skipped += critiques.length;
-
-    return;
-  }
-
-  addUsage(session, gate.usage);
-
-  if (gate.assessment === "not_appropriate") {
-    session.ctx.render([
-      {
-        channel: "warning",
-        text: `Gate: not appropriate — ${gate.reasoning} The cluster stays pending; mechanical standards belong in static tooling.`,
-      },
-    ]);
-    session.skipped += critiques.length;
-
-    return;
-  }
-
-  if (gate.duplicateOf !== null) {
-    // The taxonomy already carries this remediation: fold, never twin.
-    const version = versionOf(session, gate.duplicateOf);
-    assign(session, critiques, gate.duplicateOf, version);
-    session.ctx.render([
-      {
-        channel: "success",
-        text: `Gate: same remediation as ${gate.duplicateOf} — folded the cluster there instead of drafting a twin.`,
-      },
-    ]);
-
-    return;
-  }
-
-  const statement =
-    gate.assessment === "split" && gate.judgmentHalf ? gate.judgmentHalf : draft.statement;
+/** An accepted draft: the proposal file plus parentage. */
+function propose(session: CurateSession, critiques: PendingCritique[], draft: AxiomDraft): void {
   const store = new AxiomStore(session.cfg);
   const { id } = store.propose({
-    statement,
+    statement: draft.statement,
     severity: draft.severity,
     violatingExample: draft.violatingExample,
     compliantExample: draft.compliantExample,
@@ -465,11 +400,11 @@ async function propose(
 
   session.proposed++;
   assign(session, critiques, id, 1);
-  session.proposalsThisSession.push({ id, statement });
+  session.proposalsThisSession.push({ id, statement: draft.statement });
   session.ctx.render([
     {
       channel: "success",
-      text: `Proposed ${id} (${gate.assessment}); ratify with \`praxis axioms ratify ${id}\`.`,
+      text: `Proposed ${id}; ratify with \`praxis axioms ratify ${id}\`.`,
     },
   ]);
 }
@@ -494,22 +429,4 @@ function addUsage(session: CurateSession, usage: ProviderUsage | null): void {
   if (cost === null || cost === undefined) return;
 
   session.costUsd = (session.costUsd ?? 0) + cost;
-}
-
-/** The taxonomy the gate checks duplication against: active + proposed + this session's. */
-function existingTaxonomy(session: CurateSession): { id: string; statement: string }[] {
-  const store = new AxiomStore(session.cfg);
-  const onRecord = store
-    .all()
-    .axioms.filter((axiom) => axiom.status === "active" || axiom.status === "proposed")
-    .map((axiom) => ({ id: axiom.id, statement: axiom.statement() }));
-
-  return [...onRecord, ...session.proposalsThisSession];
-}
-
-/** An axiom's current version, defaulting to 1 for fresh proposals. */
-function versionOf(session: CurateSession, axiomId: string): number {
-  const { axioms } = new AxiomStore(session.cfg).all();
-
-  return axioms.find((axiom) => axiom.id === axiomId)?.version ?? 1;
 }

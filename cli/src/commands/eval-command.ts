@@ -5,6 +5,7 @@ import listCritiquesOrchestrator from "@/orchestrators/list-critiques-orchestrat
 import pruneCacheOrchestrator from "@/orchestrators/prune-cache-orchestrator.js";
 import reportEvalOrchestrator from "@/orchestrators/report-eval-orchestrator.js";
 import reportVerdictsOrchestrator from "@/orchestrators/report-verdicts-orchestrator.js";
+import reviewCritiquesOrchestrator from "@/orchestrators/review-critiques-orchestrator.js";
 import runEvalOrchestrator from "@/orchestrators/run-eval-orchestrator.js";
 
 /**
@@ -77,6 +78,33 @@ Examples:
   $ praxis eval critiques --axiom AX-b951db`,
     )
     .action(listCritiquesOrchestrator);
+
+  evalCmd
+    .command("review [target]")
+    .description(
+      "Judge the validity of unlabeled critiques one at a time; dismiss the invalid (recorded)",
+    )
+    .option("--dismiss <critique-id>", "scripted: dismiss this critique (with --reason)")
+    .option("--reinstate <critique-id>", "scripted: lift this critique's dismissal (with --reason)")
+    .option("--reason <why>", "why — recorded with the decision")
+    .addHelpText(
+      "after",
+      `
+When to use: the reviewer said something untrue, ungrounded, or the
+humans disagree with the spec it cites. Only untriaged and unmatched
+critiques come up — a critique labeled under an axiom is valid by
+definition and is refused. This is the one place a critique is judged
+invalid: a dismissed critique leaves every queue and is never labeled or
+curated until reinstated. The dismissal rate is the reviewer-trust
+signal — many dismissals mean the specs disagree with the humans, or
+the reviewers are drifting.
+
+Examples:
+  $ praxis eval review src/services
+  $ praxis eval review --dismiss 20260907T101932101Z-c0f5baa5:6 --reason "the spec permits this"
+  $ praxis eval review --reinstate 20260907T101932101Z-c0f5baa5:6 --reason "misread the spec"`,
+    )
+    .action(reviewCritiquesOrchestrator);
 
   evalCmd
     .command("prune")

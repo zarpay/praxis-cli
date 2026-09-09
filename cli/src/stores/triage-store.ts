@@ -1,5 +1,5 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type { TriageRecord, WriteLedgerRunResult } from "@/types.js";
+import type { CritiqueDecision, TriageRecord, WriteLedgerRunResult } from "@/types.js";
 
 import { exists, listFilesRecursive, readText, writeText } from "@/helpers/files-helper.js";
 import { sortableId } from "@/helpers/id-helper.js";
@@ -34,6 +34,34 @@ export class TriageStore {
   }
 
   /**
+   * Every critique's standing decision, joined from the records in
+   * append order — the one place a critique's triage state is read, so
+   * every reader (queues, labels, listings, reports) agrees.
+   *
+   * The join's rules: a dismissal stands until a reinstatement lifts it,
+   * whatever assignments surround it — a dismissed critique is not
+   * evidence and is never labeled; among assignments the newest wins;
+   * an assignment to a proposal that was later rejected is void, so its
+   * critique falls back to its unmatched verdict and the curate queue.
+   */
+  decisions(): Map<string, CritiqueDecision> {
+    const records = this.records();
+    const rejectedAxioms = new Set(
+      records.filter((record) => record.kind === "rejection").map((record) => record.axiom_id),
+    );
+    const decisions = new Map<string, CritiqueDecision>();
+
+    for (const record of records) {
+      if (!("critique_id" in record)) continue;
+
+      const decision = decisions.get(record.critique_id) ?? emptyDecision();
+      decisions.set(record.critique_id, applyRecord(decision, record, rejectedAxioms));
+    }
+
+    return decisions;
+  }
+
+  /**
    * Lands one session's decisions as its own file.
    *
    * @throws on write failure
@@ -46,4 +74,26 @@ export class TriageStore {
 
     return { runId: sessionId, path };
   }
+}
+
+/** A critique no record has touched yet. */
+function emptyDecision(): CritiqueDecision {
+  return { dismissed: false, assignment: null, unmatched: null };
+}
+
+/** One record folded into a critique's standing decision. */
+function applyRecord(
+  decision: CritiqueDecision,
+  record: Exclude<TriageRecord, { kind: "rejection" | "deprecation" }>,
+  rejectedAxioms: Set<string>,
+): CritiqueDecision {
+  if (record.kind === "dismissal") return { ...decision, dismissed: true };
+
+  if (record.kind === "reinstatement") return { ...decision, dismissed: false };
+
+  if (record.kind === "unmatched") return { ...decision, unmatched: record };
+
+  if (rejectedAxioms.has(record.axiom_id)) return decision;
+
+  return { ...decision, assignment: record };
 }
