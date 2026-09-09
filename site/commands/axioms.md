@@ -45,7 +45,7 @@ Every assignment and activation is appended to `.praxis/ledger/triage/` with ful
 
 `deprecate <id> --reason "<why>"` retires an active axiom: the file flips to `deprecated`, the reason lands in the ledger, and history stays frozen — the id and every record under it remain readable forever.
 
-`merge <ids...> --into <id>` collapses over-split axioms — several near-twins dividing one category's evidence into separate rates. Every critique labeled under a merged-away axiom is re-labeled to the survivor (append-only: the prior label stays in the ledger beneath the merge record), the losers deprecate with the merge named, and the survivor's population clock moves to the earliest `introduced` among the merged. Reports recompute instantly — nothing is rewritten.
+`merge <ids...> --into <id>` collapses over-split axioms — several near-twins dividing one category's evidence into separate rates. Every critique labeled under a merged-away axiom is re-labeled to the survivor (append-only: the prior label stays in the ledger beneath the merge record), the losers deprecate with the merge named, and the survivor's population clock moves to the earliest `introduced` among the merged. Reports recompute instantly — nothing is rewritten. A source may already be deprecated — a retirement that predates the merge left its evidence stranded under the dead id, and folding that history is exactly this command's job; only the survivor must be active.
 
 Prevention runs ahead of the cure: the curate session offers every active axiom — the session's own activations included — as a fold target, so a cluster an existing category already names is suggested as an assignment rather than drafted as a twin.
 

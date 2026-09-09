@@ -1,6 +1,6 @@
 import type { TriageRecord } from "@/types.js";
 
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -129,7 +129,7 @@ describe("mergeAxiomsOrchestrator", () => {
     await expect(selfMerge).rejects.toThrow(/Nothing to merge/);
   });
 
-  it("refuses when a named axiom is not active", async () => {
+  it("refuses when a named axiom does not exist", async () => {
     const root = overSplitProject();
     const { logger } = createCaptureLogger();
 
@@ -139,5 +139,47 @@ describe("mergeAxiomsOrchestrator", () => {
     });
 
     await expect(mergeUnknown).rejects.toThrow(/No axiom "AX-000000"/);
+  });
+
+  it("folds an already-deprecated axiom's evidence — a pre-merge-era deprecation", async () => {
+    const root = overSplitProject();
+    const cfg = testConfig(root);
+    const { logger } = createCaptureLogger();
+
+    const deprecated = axiomContent(
+      { id: "AX-bbbb22", status: "deprecated", introduced: "2026-09-01" },
+      { statement: "Documentation opening sentences teach." },
+    );
+    writeFileSync(join(root, ".praxis", "axioms", "AX-bbbb22.md"), deprecated);
+
+    const outcome = await mergeAxiomsOrchestrator(testContext(root, logger), {
+      ids: ["AX-bbbb22"],
+      into: "AX-aaaa11",
+    });
+
+    expect(outcome).toBe("ok");
+
+    const critiques = new RunStore(cfg).critiques();
+    const labeled = joinCritiqueLabelsService(cfg, { critiques });
+    const stranded = labeled.find((critique) => critique.id === "r1:2");
+    expect(stranded?.axiom_id).toBe("AX-aaaa11");
+  });
+
+  it("refuses a survivor that is not active", async () => {
+    const root = overSplitProject();
+    const { logger } = createCaptureLogger();
+
+    const deprecated = axiomContent(
+      { id: "AX-cccc33", status: "deprecated", introduced: "2026-09-02" },
+      { statement: "Documentation examples teach." },
+    );
+    writeFileSync(join(root, ".praxis", "axioms", "AX-cccc33.md"), deprecated);
+
+    const mergeIntoRetired = mergeAxiomsOrchestrator(testContext(root, logger), {
+      ids: ["AX-bbbb22"],
+      into: "AX-cccc33",
+    });
+
+    await expect(mergeIntoRetired).rejects.toThrow(/not active/);
   });
 });

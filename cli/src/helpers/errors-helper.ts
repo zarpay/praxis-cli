@@ -38,6 +38,7 @@ export type PraxisErrorCode =
   | "AXIOM_NOT_FOUND"
   | "CRITIQUE_NOT_FOUND"
   | "MERGE_NEEDS_SOURCES"
+  | "MERGE_SURVIVOR_NOT_ACTIVE"
   | "CURATOR_NOT_CONFIGURED"
   | "CURATOR_MISSING_FIELD"
   | "PROVIDER_CANNOT_COMPLETE"
@@ -75,6 +76,7 @@ export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErr
   "MISSING_OPTION",
   "CURATOR_MISSING_FIELD",
   "MERGE_NEEDS_SOURCES",
+  "MERGE_SURVIVOR_NOT_ACTIVE",
   "CURATOR_NOT_CONFIGURED",
   "DOCUMENT_NOT_FOUND",
   "EXPERT_NOT_FOUND",
@@ -419,7 +421,15 @@ export const errors = {
   mergeNeedsSources(into: string): PraxisError {
     return new PraxisError(
       "MERGE_NEEDS_SOURCES",
-      `Nothing to merge into "${into}": name at least one other active axiom, e.g. \`praxis axioms merge AX-aaaaaa AX-bbbbbb --into ${into}\`.`,
+      `Nothing to merge into "${into}": name at least one other axiom, e.g. \`praxis axioms merge AX-aaaaaa AX-bbbbbb --into ${into}\`.`,
+    );
+  },
+
+  /** The merge survivor must be an active axiom. */
+  mergeSurvivorNotActive(id: string): PraxisError {
+    return new PraxisError(
+      "MERGE_SURVIVOR_NOT_ACTIVE",
+      `"${id}" is not active: evidence can only merge into an active axiom. Pick an active survivor with \`praxis axioms list\`.`,
     );
   },
 };
