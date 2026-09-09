@@ -29,7 +29,7 @@ export type View<Data> = (data: Data) => ReportLine[];
   reusable, not to make files smaller.
 - **Components are the smaller parts views compose**, and they live in the
   framework's kit (`@framework/views/`): `badge`, `badgeBlock`, `verdictTally`,
-  `statLines`, `table`. They return entries and strings — ingredients, not
+  `statLines`, `table`, `rule`. They return entries and strings — ingredients, not
   reports. An app-level helper used by exactly one view stays private in that
   view.
 - Streamed output is a view per event: `onProgress: (event) =>

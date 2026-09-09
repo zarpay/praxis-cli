@@ -2,6 +2,9 @@ import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
 
+import { rule } from "@framework/views/rule.js";
+import { statLines } from "@framework/views/stats.js";
+
 /** Where one critique stands in the review→label lifecycle. */
 type CritiqueState = "untriaged" | "unmatched" | "labeled" | "dismissed";
 
@@ -25,8 +28,8 @@ interface CritiquesListing {
   json?: boolean;
 }
 
-/** Width of the label column, so every block's fields line up. */
-const LABEL_WIDTH = 10;
+/** Width of the rule separating critique blocks. */
+const RULE_WIDTH = 72;
 
 /**
  * The critique listing: one block per critique, separated by a rule —
@@ -66,22 +69,19 @@ export default critiquesView;
 /** One critique's block: a rule, its fields aligned, its words, its standing — default text throughout. */
 function critiqueBlock(row: CritiqueRow): string[] {
   return [
-    "─".repeat(72),
-    field("critique", chalk.bold(row.id)),
-    field("when", row.timestamp.replace("T", " ").slice(0, 19)),
-    field("run", row.runId),
-    field("file", row.filePath),
-    field("reviewer", `${row.reviewerName} · ${row.severity}`),
+    rule("─", RULE_WIDTH),
+    ...statLines([
+      ["critique", chalk.bold(row.id)],
+      ["when", row.timestamp.replace("T", " ").slice(0, 19)],
+      ["run", row.runId],
+      ["file", row.filePath],
+      ["reviewer", `${row.reviewerName} · ${row.severity}`],
+    ]),
     "",
-    field("feedback", row.text),
+    ...statLines([["feedback", row.text]]),
     "",
-    field("standing", stateLine(row)),
+    ...statLines([["standing", stateLine(row)]]),
   ];
-}
-
-/** A labeled field: the label padded to the column, then the value — no dimming anywhere. */
-function field(label: string, value: string): string {
-  return `${label.padEnd(LABEL_WIDTH)}${value}`;
 }
 
 /** The state, colored by what it asks of the human. */

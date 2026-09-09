@@ -1,7 +1,11 @@
 import type { CacheFileData, VerdictReportStatus, VerdictReport } from "@/types.js";
-import type { DisplayEntry, View } from "@framework/types.js";
+import type { BadgeEntry, DisplayEntry, View } from "@framework/types.js";
 
 import chalk from "chalk";
+
+import { badgeBlock } from "@framework/views/badges.js";
+import { rule } from "@framework/views/rule.js";
+import { statLines } from "@framework/views/stats.js";
 
 /** Every reviewer's cached report on one target. */
 interface ReviewerReports {
@@ -58,22 +62,31 @@ function reportEntries(report: VerdictReport, verbose: boolean): DisplayEntry[] 
   const issues = cacheData?.result.issues ?? [];
   const showIssues = cacheData && !cacheData.result.compliant && issues.length > 0;
 
+  const documentFacts: [string, string | number][] = [
+    ["Document", report.targetPath],
+    ...(cacheData
+      ? ([
+          ["Spec", cacheData.document.spec_path],
+          ["Validated", formatDate(cacheData.cached_at)],
+        ] as [string, string | number][])
+      : []),
+  ];
+
   return [
     "",
     { header: "Validation Report", width: DIVIDER_WIDTH },
     "",
-    `  Document:  ${report.targetPath}`,
-    cacheData && `  Spec:      ${cacheData.document.spec_path}`,
-    cacheData && `  Validated: ${formatDate(cacheData.cached_at)}`,
+    ...statLines(documentFacts),
     "",
-    `  Status:    ${statusBadge(report.status)}`,
+    ...statusBadge(report.status),
     ...(report.isStale && cacheData
       ? [
           "",
           { text: "  ! Document has changed since last validation", color: "yellow" as const },
           { text: "    Run `praxis eval run <target>` to re-validate", color: "yellow" as const },
           "",
-          `  Last result: ${lastResultSummary(cacheData.result)}`,
+          "  Last result:",
+          ...lastResultBadge(cacheData.result),
         ]
       : []),
     ...(showIssues
@@ -86,40 +99,37 @@ function reportEntries(report: VerdictReport, verbose: boolean): DisplayEntry[] 
       ? ["", { header: "AI Reasoning:", char: "-", width: DIVIDER_WIDTH }, cacheData.result.reason]
       : []),
     "",
-    "=".repeat(DIVIDER_WIDTH),
+    rule("=", DIVIDER_WIDTH),
   ];
 }
 
-/** The status line's colored badge, with its one-line meaning. */
-function statusBadge(status: VerdictReportStatus): string {
+/** The status badge line, with its one-line meaning. */
+function statusBadge(status: VerdictReportStatus): BadgeEntry[] {
   switch (status) {
     case "pass":
-      return chalk.green("[PASS]") + " Document is compliant";
+      return badgeBlock([["PASS", "green", "Document is compliant"]]);
     case "warn":
-      return chalk.yellow("[WARN]") + " Document has warnings";
+      return badgeBlock([["WARN", "yellow", "Document has warnings"]]);
     case "fail":
-      return chalk.red("[FAIL]") + " Document has errors";
+      return badgeBlock([["FAIL", "red", "Document has errors"]]);
     case "stale":
-      return chalk.yellow("[STALE]") + " Cached result is outdated";
+      return badgeBlock([["STALE", "yellow", "Cached result is outdated"]]);
     case "not_validated":
-      return chalk.gray("[NOT VALIDATED]") + " No cached result found";
+      return badgeBlock([["NOT VALIDATED", "gray", "No cached result found"]]);
   }
 }
 
-/** Summarizes a cached verdict as `[STATUS] (n issues)` for the staleness block. */
-function lastResultSummary(result: CacheFileData["result"]): string {
+/** The stale block's summary of the outdated verdict: its badge and issue count. */
+function lastResultBadge(result: CacheFileData["result"]): BadgeEntry[] {
   const count = result.issues.length;
   const noun = count === 1 ? "issue" : "issues";
-  const suffix = count > 0 ? ` (${count} ${noun})` : "";
+  const value = count > 0 ? `${count} ${noun}` : "no issues";
 
-  return `[${statusLabel(result)}]${suffix}`;
-}
+  if (result.compliant) return badgeBlock([["PASS", "green", value]]);
 
-/** Maps a cached verdict to its PASS/WARN/FAIL label. */
-function statusLabel(result: CacheFileData["result"]): string {
-  if (result.compliant) return "PASS";
+  if (result.severity === "warning") return badgeBlock([["WARN", "yellow", value]]);
 
-  return result.severity === "warning" ? "WARN" : "FAIL";
+  return badgeBlock([["FAIL", "red", value]]);
 }
 
 /** A locale date for the report; the raw ISO string when unparsable. */
