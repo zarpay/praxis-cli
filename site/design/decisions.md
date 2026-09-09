@@ -55,7 +55,7 @@ The tradeoff is that the README must serve two audiences — human readers and t
 
 Praxis uses LLM reviewers, not a schema validator. Schema validators can check field presence and type; they cannot check whether an error message would help the consumer who hit it, whether a service really does one thing, or whether an ADR's "Consequences" section is genuinely thoughtful.
 
-The boundary is enforced in both directions. Reviewers are explicitly told that mechanical criteria — anything a linter, regex, or type check could decide — are out of scope and must not be reported, *even where the spec states them*. A reviewer that is never asked mechanical questions cannot answer them wrongly, which removes the surface hallucinations grow on; and a team is never tempted to pay LLM prices for what a regex does free. The same rule gates the axiom taxonomy: a proposal a linter could enforce is refused at authoring. *If you can write the check, write the check.*
+The boundary is enforced in both directions. Reviewers are explicitly told that mechanical criteria — anything a linter, regex, or type check could decide — are out of scope and must not be reported, *even where the spec states them*. A reviewer that is never asked mechanical questions cannot answer them wrongly, which removes the surface hallucinations grow on; and a team is never tempted to pay LLM prices for what a regex does free. The same rule gates the axiom taxonomy: a draft a linter could enforce comes back held, never accepted. *If you can write the check, write the check.*
 
 The remaining tradeoffs — an API key, per-call cost, non-determinism at the margin — are handled structurally: the content-hash cache makes unchanged targets free, multiple reviewers make disagreement visible instead of hidden, and every report carries its calibration status rather than pretending the instrument is precise.
 
@@ -65,7 +65,7 @@ Most review tooling reports and forgets. Praxis appends every run to a committed
 
 ## LLM proposes, human accepts
 
-Every step that shapes the taxonomy — clustering critiques, drafting axioms, assessing traceability — is done by the curator model and **decided by a human**. Acceptance at curate is the decision, and it activates only when the principle traces to the spec's own text; every decision (including `--yes` bulk-accepts) is recorded as what it was. The reviewers' job is to see; the curator's job is to organize; naming what your team's standards *are* stays yours.
+Every step that shapes the taxonomy — clustering critiques, drafting axioms, assessing traceability — is done by the curator model and **decided by a human**. Acceptance at curate is the decision, and it activates only when the category's norm traces to the spec's own text; every decision (including `--yes` bulk-accepts) is recorded as what it was. The reviewers' job is to see; the curator's job is to organize; naming what your team's standards *are* stays yours.
 
 ## One output file per expert
 

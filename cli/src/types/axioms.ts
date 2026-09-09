@@ -4,7 +4,7 @@
 import type { AxiomFile } from "@/models/axiom-file.js";
 import type { ProviderUsage } from "@/types/extension-points.js";
 import type { PendingCritique } from "@/types/ledger.js";
-import type { Severity, StoreProblem } from "@/types/shared.js";
+import type { StoreProblem } from "@/types/shared.js";
 
 /** An axiom's lifecycle state: proposed until ratified, never deleted. */
 export type AxiomStatus = "proposed" | "active" | "deprecated";
@@ -20,13 +20,11 @@ export interface ListAxiomsResult {
   problems: StoreProblem[];
 }
 
-/** A draft axiom the curator proposes from a critique cluster. */
+/** A draft category the curator proposes from a critique cluster. */
 export interface AxiomDraft {
+  /** Names the recurring issue — never restates the spec's rule. */
   statement: string;
-  severity: Severity;
-  violatingExample: string;
-  compliantExample: string;
-  /** The spec passage the curator grounds the draft in — ratification's aid. */
+  /** The spec passage the curator grounds the draft in — traceability's aid. */
   groundingHint: string;
 }
 

@@ -61,13 +61,10 @@ function suggestionLines(cluster: TriageCluster): string[] {
     const { draft } = suggestion;
 
     return [
-      `${chalk.cyan("Suggests:")} propose a new axiom (severity: ${draft.severity})`,
+      `${chalk.cyan("Suggests:")} a new issue category`,
       "",
       `  ${chalk.bold(draft.statement)}`,
-      "",
-      `  Violating:  ${draft.violatingExample}`,
-      `  Compliant:  ${draft.compliantExample}`,
-      draft.groundingHint === "" ? "" : `  Grounded in: ${chalk.gray(draft.groundingHint)}`,
+      draft.groundingHint === "" ? "" : `  Derives from: ${chalk.gray(draft.groundingHint)}`,
     ].filter(Boolean);
   }
 

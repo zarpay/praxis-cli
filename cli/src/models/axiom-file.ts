@@ -14,14 +14,19 @@ const MODES: readonly AxiomMode[] = ["judgment", "agentic"];
 const SEVERITIES: readonly Severity[] = ["error", "warning"];
 
 /**
- * One axiom: a single, discrete, named standard.
+ * One axiom: a named, stable **category of recurring critique** — the
+ * bucket evidence accumulates under. The norm lives in the spec the
+ * axiom derives from; the axiom names the failure mode that keeps
+ * recurring, so it can be counted, drilled into, and decided as a unit.
  *
  * The identity rules are the actual spec: an id is random-minted, never
  * reused and never renumbered; clarifying wording bumps `version`;
- * changing what counts as a violation is a new id. Every field is read
+ * changing what the category covers is a new id. Every field is read
  * and validated in the constructor, so an AxiomFile that exists is a
- * valid axiom. The retired `grounded_in` key parses as `derived_from`;
- * a retired `supersedes` key is ignored.
+ * valid axiom. Retired keys are tolerated: `grounded_in` parses as
+ * `derived_from`; `supersedes` is ignored; `severity` and the example
+ * sections are historical (categories carry neither — critiques carry
+ * their own severities, and the ledger holds the real examples).
  *
  * @throws PraxisError when any declared field is malformed
  */
@@ -36,8 +41,8 @@ export class AxiomFile {
   readonly status: AxiomStatus;
   /** How the axiom is evaluated; `judgment` unless explicitly opted out. */
   readonly mode: AxiomMode;
-  /** What a violation of this axiom costs a verdict. */
-  readonly severity: Severity;
+  /** Historical: prescriptive-era axioms carried one; categories do not. */
+  readonly severity: Severity | null;
   /**
    * The spec passage the accepted draft derived from — provenance
    * metadata, never identity: an axiom is a principle derived from
@@ -56,7 +61,7 @@ export class AxiomFile {
     this.version = fields.requiredInt("version");
     this.status = fields.enumValue("status", STATUSES) ?? raiseMissing("status", path);
     this.mode = fields.enumValue("mode", MODES) ?? "judgment";
-    this.severity = fields.enumValue("severity", SEVERITIES) ?? raiseMissing("severity", path);
+    this.severity = fields.enumValue("severity", SEVERITIES) ?? null;
     this.derivedFrom =
       fields.optionalString("derived_from") ?? fields.optionalString("grounded_in") ?? null;
     this.introduced = fields.requiredDate("introduced");

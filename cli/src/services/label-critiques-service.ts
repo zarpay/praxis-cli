@@ -198,10 +198,8 @@ async function labelBatch(
 ): Promise<LabelOutcome[]> {
   const { axioms, critiques, onOutcome } = input;
   const axiomBlocks = axioms
-    .map((axiom) =>
-      labelingAxiomBlock({ id: axiom.id, severity: axiom.severity, body: axiom.body.trim() }),
-    )
-    .join("\n\n");
+    .map((axiom) => labelingAxiomBlock({ id: axiom.id, statement: axiom.statement }))
+    .join("\n");
   const versions = new Map(axioms.map((axiom) => [axiom.id, axiom.version]));
 
   const outcomes: LabelOutcome[] = new Array<LabelOutcome>(critiques.length);

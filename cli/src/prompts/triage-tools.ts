@@ -42,36 +42,20 @@ export default function triageTools() {
                   },
                   draft: {
                     type: ["object", "null"],
-                    description: "For propose: the drafted axiom. Otherwise null.",
+                    description: "For propose: the drafted category. Otherwise null.",
                     properties: {
                       statement: {
                         type: "string",
                         description:
-                          "One to three sentences asserting the standard — judgment, not mechanics, at the altitude of one remediation: one fix resolves every violation of it.",
+                          "One to two sentences NAMING the observed recurring issue, neutrally — never a restated rule, never a prescription. The altitude is one convention the team decides as a unit.",
                       },
-                      severity: { type: "string", enum: ["error", "warning"] },
-                      scope: {
-                        type: "string",
-                        enum: ["file", "file+context"],
-                        description:
-                          "What a reviewer must read to decide it. file unless the critiques clearly need declared context.",
-                      },
-                      violating_example: { type: "string" },
-                      compliant_example: { type: "string" },
                       grounding_hint: {
                         type: "string",
                         description:
-                          "The specification passage that grounds this standard, quoted verbatim.",
+                          "The specification passage that grounds caring about this issue, quoted verbatim.",
                       },
                     },
-                    required: [
-                      "statement",
-                      "severity",
-                      "scope",
-                      "violating_example",
-                      "compliant_example",
-                      "grounding_hint",
-                    ],
+                    required: ["statement", "grounding_hint"],
                   },
                   why_held: {
                     type: ["string", "null"],

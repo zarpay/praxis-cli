@@ -7,11 +7,31 @@ two-channel model. Depends on: [vocabulary.md](./vocabulary.md),
 ## Why axioms exist
 
 Critiques are prose; prose cannot be counted. An axiom is the enumerable
-unit: a named, versioned standard that recurring critiques aggregate
-under, so a report can say "this standard, violated this often, in these
-places" instead of paraphrasing reviewer prose. The non-negotiable
-property is **identity stability**: the same standard keeps the same id
-forever, or every rate computed under it is fiction.
+unit: a named, versioned **category of recurring critique**, so a report
+can say "this issue, recurring this often, in these places" instead of
+paraphrasing reviewer prose. The non-negotiable property is **identity
+stability**: the same category keeps the same id forever, or every rate
+computed under it is fiction.
+
+**An axiom is a bucket, never a rule** (owner, 2026-09-09). The norm —
+what the code should do — lives in the spec, and only there; the axiom
+names the recurring issue the reviewers keep finding against it.
+"A feature directory must contain a dedicated types file named
+`<feature>-types.ts`…" is a spec passage wearing an axiom id: it
+restates the rule, competes with the spec as a second source of truth,
+and proliferates one axiom per spec bullet. "Issues with conventions
+around placement of type definitions" is a category: it says *here is an
+issue our specs would prefer not to exist*, its rate is a prevalence
+signal, and the spec passage `derived_from` points at remains the sole
+statement of the rule. The test for a statement: it **names the observed
+issue**; it never prescribes, and a reader could not follow it as an
+instruction.
+
+**Altitude**: one category covers **one convention a team decides as a
+unit**. If two critiques would be settled by different team decisions,
+they are two categories; if one decision settles both, splitting them
+splinters the count. The mega-bucket ("documentation issues") fails the
+same test from the other side — no single decision settles it.
 
 ## The separation principle
 
@@ -47,15 +67,25 @@ Markdown + frontmatter in `.praxis/axioms/`, versioned in git.
 ---
 id: AX-3f9c2d # stable; never reused, never renumbered; random-minted (see note)
 version: 2
-status: proposed | active | deprecated
+status: active | deprecated
 mode: judgment # see 03
-severity: error | warning
 derived_from: backend/app/events/README.md#payload-schema # provenance, established at acceptance — see below
 introduced: 2026-08-29
 ---
-Statement of what the axiom asserts.
-A violating example. A compliant example.
+Statement naming the recurring issue.
 ```
+
+That is the whole file (owner, 2026-09-09): frontmatter plus the
+statement. **`severity` is retired** — a category of issue has no
+severity of its own; how much a given instance matters is the spec's
+and the reader's call, and the old key ranked buckets as if they were
+rules. **Example sections are retired** — the experiment of 2026-09-08
+showed curated examples in axiom bodies moved no labeling decision, and
+a category's real examples are its labeled critiques, live in the
+ledger: `praxis axioms show` surfaces them, `praxis eval critiques
+--axiom <id>` browses them all. Historical files carrying `severity:`
+or example sections parse fine (severity reads back marked historical);
+new files never get them.
 
 **`derived_from` is provenance, never identity** (owner, 2026-09-07,
 renamed from `grounded_in`): an axiom does not represent an exact spec
@@ -231,11 +261,10 @@ a rate).
   re-queues for triage. A replacement is simply a new id; lineage lives
   in git and the ledger.
 - **Over-splitting is collapsed, never endured** (owner, 2026-09-07).
-  Prevention: curate offers every active **and** standing proposed
-  axiom as a fold target (2026-09-09 — standing drafts
-  already carry their remediation), and the drafting prompt says
-  assign, never twin, when an existing axiom's fix would resolve the
-  cluster.
+  Prevention: curate offers every active axiom — the session's own
+  activations included — as a fold target, and the drafting prompt says
+  assign, never twin, when an existing category already names the
+  cluster's issue.
   Cure: `praxis axioms merge <ids...> --into <id>` — every critique
   whose effective label is a merged-away axiom gets a re-assignment
   record to the survivor (decision "merge"; the prior label stays in

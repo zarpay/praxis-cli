@@ -99,16 +99,15 @@ describe("AxiomStore", () => {
   describe("active", () => {
     const SPEC = "docs/README.md";
 
-    it("selects every active axiom, with its teaching material", () => {
+    it("selects every active axiom as a category line", () => {
       seedAxiom("AX-aaaa11", { derivedFrom: `${SPEC}#payloads` });
 
       const checklist = store.active();
 
       expect(checklist).toHaveLength(1);
-      expect(checklist[0]).toMatchObject({
+      expect(checklist[0]).toEqual({
         id: "AX-aaaa11",
         version: 2,
-        severity: "warning",
         statement: "Statement of AX-aaaa11.",
       });
     });

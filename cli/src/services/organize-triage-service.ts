@@ -3,7 +3,6 @@ import type {
   OrganizeTriageInput,
   ProviderUsage,
   Service,
-  Severity,
   TriageCluster,
   TriageSuggestion,
 } from "@/types.js";
@@ -30,9 +29,6 @@ interface TriageWireCluster {
   axiom_id?: string | null;
   draft?: {
     statement?: string;
-    severity?: string;
-    violating_example?: string;
-    compliant_example?: string;
     grounding_hint?: string;
   } | null;
   why_held?: string | null;
@@ -122,13 +118,8 @@ function normalizeSuggestion(wire: TriageWireCluster, knownAxioms: Set<string>):
 
 /** A wire draft with safe defaults for anything the model left thin. */
 function normalizeDraft(draft: NonNullable<TriageWireCluster["draft"]>): AxiomDraft {
-  const severity: Severity = draft.severity === "warning" ? "warning" : "error";
-
   return {
     statement: draft.statement ?? "",
-    severity,
-    violatingExample: draft.violating_example ?? "(no example drafted)",
-    compliantExample: draft.compliant_example ?? "(no example drafted)",
     groundingHint: draft.grounding_hint ?? "",
   };
 }

@@ -13,10 +13,16 @@ const VALUE_COLUMN = 20;
  * re-spacing every neighbour by hand.
  *
  * A label longer than the column still renders — it just pushes its
- * own value out, rather than truncating.
+ * own value out, rather than truncating, and always keeps at least one
+ * space before the value.
  *
  * @param rows - `[label, value]` pairs, rendered in order
  */
 export function statLines(rows: [string, string | number][]): string[] {
-  return rows.map(([label, value]) => `${INDENT}${`${label}:`.padEnd(VALUE_COLUMN)}${value}`);
+  return rows.map(([label, value]) => {
+    const padded = `${label}:`.padEnd(VALUE_COLUMN);
+    const separator = padded.endsWith(" ") ? "" : " ";
+
+    return `${INDENT}${padded}${separator}${value}`;
+  });
 }

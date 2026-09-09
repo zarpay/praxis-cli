@@ -445,9 +445,6 @@ async function activate(
   const store = new AxiomStore(session.cfg);
   const { id } = store.createActive({
     statement: draft.statement,
-    severity: draft.severity,
-    violatingExample: draft.violatingExample,
-    compliantExample: draft.compliantExample,
     derivedFrom: traceability.grounding,
   });
 

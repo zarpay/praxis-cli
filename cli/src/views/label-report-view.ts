@@ -52,10 +52,7 @@ const labelReportView: View<LabelReportData> = (data) => {
       : []),
     ...(costLine(data.usage) ? ["", costLine(data.usage)] : []),
     ...(data.sentToCurate + data.skippedNoAxioms > 0
-      ? [
-          "",
-          "Next: `praxis axioms curate` works the unmatched critiques — cluster, dismiss, assign.",
-        ]
+      ? ["", "Next: `praxis axioms curate` works the unmatched critiques — cluster, assign, hold."]
       : []),
   ];
 

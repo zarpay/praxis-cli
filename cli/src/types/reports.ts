@@ -147,7 +147,7 @@ export interface ScopedLedger {
 export interface AxiomReportRow {
   axiomId: string;
   statement: string;
-  severity: Severity;
+  severity: Severity | null;
   reviewerName: string;
   /** Violations over applicable opportunities, floor-aware. */
   rate: RateCell;
@@ -198,7 +198,7 @@ export interface AxiomReport {
   calibration: string;
   statement: string;
   status: AxiomStatus;
-  severity: Severity;
+  severity: Severity | null;
   derivedFrom: string | null;
   introduced: string;
   version: number;

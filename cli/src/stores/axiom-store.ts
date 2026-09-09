@@ -1,5 +1,5 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type { ActiveAxiom, ListAxiomsResult, Severity, StoreProblem } from "@/types.js";
+import type { ActiveAxiom, ListAxiomsResult, StoreProblem } from "@/types.js";
 
 import { randomBytes } from "node:crypto";
 
@@ -84,9 +84,7 @@ export class AxiomStore {
       .map((axiom) => ({
         id: axiom.id,
         version: axiom.version,
-        severity: axiom.severity,
         statement: axiom.statement(),
-        body: axiom.body,
       }));
   }
 
@@ -98,25 +96,16 @@ export class AxiomStore {
    * here, and the caller has already verified the principle traces to
    * a spec passage.
    */
-  createActive(draft: {
-    statement: string;
-    severity: Severity;
-    violatingExample: string;
-    compliantExample: string;
-    derivedFrom: string;
-  }): WriteAxiomProposalResult {
+  createActive(draft: { statement: string; derivedFrom: string }): WriteAxiomProposalResult {
     const id = this.mintId();
 
     const document = axiomFileTemplate({
       id,
       status: "active",
       mode: "judgment",
-      severity: draft.severity,
       introduced: new Date().toISOString().slice(0, 10),
       derivedFrom: draft.derivedFrom,
       statement: draft.statement,
-      violatingExample: draft.violatingExample,
-      compliantExample: draft.compliantExample,
     });
 
     const path = joinPath(this.axiomsDir, `${id}.md`);

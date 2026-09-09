@@ -1,58 +1,40 @@
-import type { AxiomMode, AxiomStatus, Severity } from "@/types.js";
+import type { AxiomMode, AxiomStatus } from "@/types.js";
 
-/** The fields the proposal template renders into an axiom file. */
+/** The fields the acceptance template renders into an axiom file. */
 interface AxiomTemplateVars {
   id: string;
   status: AxiomStatus;
   mode: AxiomMode;
-  severity: Severity;
   /** YYYY-MM-DD; per-axiom population clocks start here. */
   introduced: string;
-  /** The spec passage ratification derived it from; null until then. */
-  derivedFrom: string | null;
+  /** The spec passage the accepted category derived from. */
+  derivedFrom: string;
   statement: string;
-  violatingExample: string;
-  compliantExample: string;
 }
 
 /**
- * The document a triage-accepted draft becomes: one axiom file, ready
- * for `.praxis/axioms/proposed/`.
- *
- * `derived_from` is written only once ratification establishes it — an
- * absent key and a null are the same claim, and absence keeps proposal
- * files honest about what has not happened yet.
+ * The document a curate-accepted category becomes: frontmatter plus the
+ * statement naming the recurring issue — nothing else. The norm lives
+ * in the spec `derived_from` points at, and the category's real
+ * examples live in the ledger as its labeled critiques.
  */
 export default function axiomFileTemplate({
   id,
   status,
   mode,
-  severity,
   introduced,
   derivedFrom,
   statement,
-  violatingExample,
-  compliantExample,
 }: AxiomTemplateVars): string {
-  const derivation = derivedFrom === null ? "" : `derived_from: ${derivedFrom}\n`;
-
   return `---
 id: ${id}
 version: 1
 status: ${status}
 mode: ${mode}
-severity: ${severity}
-${derivation}introduced: ${introduced}
+derived_from: ${derivedFrom}
+introduced: ${introduced}
 ---
 
 ${statement}
-
-## Violating example
-
-${violatingExample}
-
-## Compliant example
-
-${compliantExample}
 `;
 }

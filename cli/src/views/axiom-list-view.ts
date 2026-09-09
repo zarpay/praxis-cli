@@ -33,7 +33,7 @@ const axiomListView: View<ListAxiomsResult & { json?: boolean }> = ({ axioms, pr
     axiom.id,
     `v${axiom.version}`,
     axiom.status,
-    axiom.severity,
+    axiom.severity ?? "—",
     axiom.introduced,
   ]);
   const identityLines = table(identityRows, ["ID", "VER", "STATUS", "SEVERITY", "INTRODUCED"]);

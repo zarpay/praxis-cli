@@ -2,20 +2,13 @@ import type { Prompt } from "@framework/types.js";
 
 import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
 
-/**
- * One active axiom as the labeling question presents it: id and
- * severity headed, statement and examples beneath (`body` is the
- * axiom's body, trimmed by the caller).
- */
+/** One issue category as the labeling question lists it. */
 interface LabelingAxiomBlockVariables {
   id: string;
-  severity: string;
-  body: string;
+  statement: string;
 }
 
-const TEMPLATE = `### {id} (severity: {severity})
-
-{body}`;
+const TEMPLATE = `- {id}: {statement}`;
 
 const labelingAxiomBlock: Prompt<LabelingAxiomBlockVariables> = preparePrompt(TEMPLATE);
 
