@@ -65,7 +65,9 @@ const auditExpertsService: Service<AuditExpertsInput, Promise<ExpertAudit>> = as
     let parsed: ExpertFile;
 
     try {
-      parsed = ExpertFile.fromContent(readText(expertFile), expertFile);
+      const content = readText(expertFile);
+
+      parsed = ExpertFile.fromContent(content, expertFile);
     } catch (err) {
       audit.invalidExperts.push({
         expert,

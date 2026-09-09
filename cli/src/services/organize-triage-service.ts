@@ -1,6 +1,6 @@
 import type {
   AxiomDraft,
-  OrganizeTriageInput,
+  PendingCritique,
   ProviderUsage,
   Service,
   TriageCluster,
@@ -14,6 +14,16 @@ import triageCritiqueLine from "@/prompts/triage-critique-line.js";
 import triageQuestion from "@/prompts/triage-question.js";
 import triageTools from "@/prompts/triage-tools.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
+
+/** One spec's pending critiques, ready for the curator to organize. */
+interface OrganizeTriageInput {
+  /** Project-relative spec path, as the critiques record it. */
+  specPath: string;
+  specContent: string;
+  critiques: PendingCritique[];
+  /** Established axioms the critiques may fold into: id + statement. */
+  axioms: { id: string; statement: string }[];
+}
 
 /** The curator's organization of one spec's pending critiques. */
 interface TriageOrganization {

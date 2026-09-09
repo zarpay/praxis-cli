@@ -9,8 +9,8 @@ import { joinPath } from "@/helpers/paths-helper.js";
 import { AxiomFile } from "@/models/axiom-file.js";
 import axiomFileTemplate from "@/templates/axiom-file-template.js";
 
-/** Where the proposal landed. */
-interface WriteAxiomProposalResult {
+/** Which axiom file a write landed on. */
+interface AxiomWriteResult {
   id: string;
   path: string;
 }
@@ -55,7 +55,9 @@ export class AxiomStore {
       const path = joinPath(this.axiomsDir, file);
 
       try {
-        axioms.push(AxiomFile.fromContent(readText(path), path));
+        const content = readText(path);
+
+        axioms.push(AxiomFile.fromContent(content, path));
       } catch (err) {
         problems.push({ path, message: err instanceof Error ? err.message : String(err) });
       }
@@ -96,7 +98,7 @@ export class AxiomStore {
    * here, and the caller has already verified the principle traces to
    * a spec passage.
    */
-  createActive(draft: { statement: string; derivedFrom: string }): WriteAxiomProposalResult {
+  createActive(draft: { statement: string; derivedFrom: string }): AxiomWriteResult {
     const id = this.mintId();
 
     const document = axiomFileTemplate({
@@ -124,12 +126,16 @@ export class AxiomStore {
    * @throws PraxisError when no active axiom file carries the id, or
    *   the amended document would not validate
    */
-  deprecate(id: string): WriteAxiomProposalResult {
+  deprecate(id: string): AxiomWriteResult {
     const path = joinPath(this.axiomsDir, `${id}.md`);
 
     if (!exists(path)) throw errors.axiomNotFound(id);
 
     const current = readText(path);
+    const axiom = AxiomFile.fromContent(current, path);
+
+    if (axiom.status !== "active") throw errors.axiomNotActive(id);
+
     const retired = current.replace(/^status: active$/m, "status: deprecated");
 
     // Refuse to write anything the model would reject.
@@ -149,7 +155,7 @@ export class AxiomStore {
    * @throws PraxisError when no axiom file carries the id, or the
    *   amended document would not validate
    */
-  amendIntroduced(id: string, introduced: string): WriteAxiomProposalResult {
+  amendIntroduced(id: string, introduced: string): AxiomWriteResult {
     const path = joinPath(this.axiomsDir, `${id}.md`);
 
     if (!exists(path)) throw errors.axiomNotFound(id);

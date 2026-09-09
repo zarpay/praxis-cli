@@ -1,5 +1,4 @@
 import type {
-  ChatCompletionUsage,
   ProviderCompletion,
   ProviderRequest,
   ProviderResult,
@@ -18,6 +17,14 @@ interface ToolCall {
 }
 
 /** The chat-completion response fields the OpenRouter provider reads. */
+/** The usage block OpenAI-compatible chat completions may return. */
+interface ChatCompletionUsage {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  /** OpenRouter usage accounting's cost in USD. */
+  cost?: number;
+}
+
 interface ChatCompletionResponse {
   choices: {
     message: { role: string; content: string | null; tool_calls?: ToolCall[] };

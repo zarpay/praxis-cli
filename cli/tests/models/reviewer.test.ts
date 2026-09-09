@@ -1,3 +1,5 @@
+import type { ReviewerConfig } from "@/types.js";
+
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
@@ -7,7 +9,11 @@ import {
 } from "@/models/praxis-config.js";
 import { Reviewer } from "@/models/reviewer.js";
 
-const CONFIG = { name: "flash", model: "some/model", apiKeyEnvVar: "REVIEWER_TEST_KEY" };
+const CONFIG: ReviewerConfig = {
+  name: "flash",
+  model: "some/model",
+  apiKeyEnvVar: "REVIEWER_TEST_KEY",
+};
 
 afterEach(() => {
   delete process.env["REVIEWER_TEST_KEY"];
@@ -24,72 +30,86 @@ describe("Reviewer", () => {
   });
 
   describe("hash", () => {
+    /** The hash every variant is compared against. */
+    function defaultHash(): string {
+      const reviewer = Reviewer.fromConfig(CONFIG);
+
+      return reviewer.hash();
+    }
+
+    /** The hash of CONFIG with one field overridden. */
+    function hashWith(overrides: Partial<ReviewerConfig>): string {
+      const reviewer = Reviewer.fromConfig({ ...CONFIG, ...overrides });
+
+      return reviewer.hash();
+    }
+
     it("is stable for equal configuration", () => {
-      expect(Reviewer.fromConfig(CONFIG).hash()).toBe(Reviewer.fromConfig(CONFIG).hash());
+      expect(defaultHash()).toBe(defaultHash());
     });
 
     it("ignores the name — renaming a reviewer keeps its verdicts", () => {
-      const renamed = Reviewer.fromConfig({ ...CONFIG, name: "renamed" });
+      const renamedHash = hashWith({ name: "renamed" });
 
-      expect(renamed.hash()).toBe(Reviewer.fromConfig(CONFIG).hash());
+      expect(renamedHash).toBe(defaultHash());
     });
 
     it("ignores the API key variable — where the key lives is not behavior", () => {
-      const moved = Reviewer.fromConfig({ ...CONFIG, apiKeyEnvVar: "ELSEWHERE" });
+      const movedKeyHash = hashWith({ apiKeyEnvVar: "ELSEWHERE" });
 
-      expect(moved.hash()).toBe(Reviewer.fromConfig(CONFIG).hash());
+      expect(movedKeyHash).toBe(defaultHash());
     });
 
     it("changes when the model changes — a behavioral epoch", () => {
-      const swapped = Reviewer.fromConfig({ ...CONFIG, model: "other/model" });
+      const swappedModelHash = hashWith({ model: "other/model" });
 
-      expect(swapped.hash()).not.toBe(Reviewer.fromConfig(CONFIG).hash());
+      expect(swappedModelHash).not.toBe(defaultHash());
     });
 
     it("hashes an omitted setting and its explicit default identically", () => {
-      const explicit = Reviewer.fromConfig({
-        ...CONFIG,
+      const explicitDefaultsHash = hashWith({
         baseUrl: DEFAULT_REVIEWER_BASE_URL,
         temperature: DEFAULT_REVIEWER_TEMPERATURE,
         provider: DEFAULT_REVIEWER_PROVIDER,
         options: {},
       });
 
-      expect(explicit.hash()).toBe(Reviewer.fromConfig(CONFIG).hash());
+      expect(explicitDefaultsHash).toBe(defaultHash());
     });
 
     it("is an 8-character hex string", () => {
-      expect(Reviewer.fromConfig(CONFIG).hash()).toMatch(/^[a-f0-9]{8}$/);
+      expect(defaultHash()).toMatch(/^[a-f0-9]{8}$/);
     });
 
     it("changes when the baseUrl changes", () => {
-      const moved = Reviewer.fromConfig({ ...CONFIG, baseUrl: "https://inference.internal/v1" });
+      const movedUrlHash = hashWith({ baseUrl: "https://inference.internal/v1" });
 
-      expect(moved.hash()).not.toBe(Reviewer.fromConfig(CONFIG).hash());
+      expect(movedUrlHash).not.toBe(defaultHash());
     });
 
     it("changes when the temperature changes", () => {
-      const hotter = Reviewer.fromConfig({ ...CONFIG, temperature: 0.7 });
+      const hotterHash = hashWith({ temperature: 0.7 });
 
-      expect(hotter.hash()).not.toBe(Reviewer.fromConfig(CONFIG).hash());
+      expect(hotterHash).not.toBe(defaultHash());
     });
 
     it("changes when the provider changes", () => {
-      const custom = Reviewer.fromConfig({ ...CONFIG, provider: "./praxis-providers/echo.js" });
+      const customProviderHash = hashWith({ provider: "./praxis-providers/echo.js" });
 
-      expect(custom.hash()).not.toBe(Reviewer.fromConfig(CONFIG).hash());
+      expect(customProviderHash).not.toBe(defaultHash());
     });
 
     it("changes when provider options change", () => {
-      const tuned = Reviewer.fromConfig({ ...CONFIG, options: { region: "us-east-1" } });
+      const tunedHash = hashWith({ options: { region: "us-east-1" } });
 
-      expect(tuned.hash()).not.toBe(Reviewer.fromConfig(CONFIG).hash());
+      expect(tunedHash).not.toBe(defaultHash());
     });
 
     it("includes future unknown fields — new settings are behavioral by default", () => {
       const futureConfig = { ...CONFIG, maxTokens: 4096 } as unknown as typeof CONFIG;
+      const futureHash = Reviewer.fromConfig(futureConfig).hash();
 
-      expect(Reviewer.fromConfig(futureConfig).hash()).not.toBe(Reviewer.fromConfig(CONFIG).hash());
+      expect(futureHash).not.toBe(defaultHash());
     });
   });
 

@@ -1,9 +1,20 @@
-import type { Service, TraceabilityAssessment } from "@/types.js";
+import type { ProviderUsage, Service } from "@/types.js";
 
 import curatorSystemPrompt from "@/prompts/curator-system-prompt.js";
 import traceabilityQuestion from "@/prompts/traceability-question.js";
 import traceabilityTools from "@/prompts/traceability-tools.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
+
+/** The curator's spec-traceability verdict at acceptance. */
+interface TraceabilityAssessment {
+  traceable: boolean;
+  /** `<spec path>#<section>` when traceable. */
+  grounding: string | null;
+  /** The spec passage that grounds the axiom, quoted verbatim. */
+  quotedBasis: string;
+  reasoning: string;
+  usage: ProviderUsage | null;
+}
 
 /** One draft to trace against its spec at acceptance. */
 interface AssessTraceabilityInput {

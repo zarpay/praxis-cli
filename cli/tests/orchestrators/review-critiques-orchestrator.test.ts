@@ -13,6 +13,7 @@ import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
 import { testConfig } from "@tests/helpers/test-config.js";
+import { assignmentRecord, dismissalRecord } from "@tests/helpers/triage-records.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 const cleanups: (() => void)[] = [];
@@ -110,7 +111,7 @@ describe("reviewCritiquesOrchestrator", () => {
     // Seeded under an id that sorts before anything minted now: the join
     // reads sessions in id order, and a same-millisecond mint would tie.
     seedEarlierSession(root, [
-      { kind: "dismissal", critique_id: "r1:2", reason: "noise", timestamp: "t" },
+      dismissalRecord({ critique_id: "r1:2", reason: "noise", timestamp: "t" }),
     ]);
     const { logger } = createCaptureLogger();
 
@@ -153,14 +154,7 @@ describe("reviewCritiquesOrchestrator", () => {
   it("dismisses a labeled critique — presumed valid, never final; the label stays beneath", async () => {
     const root = reviewProject();
     new TriageStore(testConfig(root)).writeSession([
-      {
-        kind: "assignment",
-        critique_id: "r1:1",
-        axiom_id: "AX-aaaa11",
-        axiom_version: 1,
-        assigned_by: { decision: "matcher", suggested_by: "m" },
-        timestamp: "t",
-      },
+      assignmentRecord({ assigned_by: { decision: "matcher", suggested_by: "m" }, timestamp: "t" }),
     ]);
 
     const outcome = await reviewCritiquesOrchestrator(testContext(root), {
@@ -175,9 +169,9 @@ describe("reviewCritiquesOrchestrator", () => {
     expect(records[1]).toMatchObject({ kind: "dismissal", critique_id: "r1:1" });
 
     // The dismissal wins at read time; the assignment stays beneath it.
-    const [labeled] = joinCritiqueLabelsService(testConfig(root), {
-      critiques: new RunStore(testConfig(root)).critiques().filter((c) => c.id === "r1:1"),
-    });
+    const runStore = new RunStore(testConfig(root));
+    const dismissed = runStore.critiques().filter((c) => c.id === "r1:1");
+    const [labeled] = joinCritiqueLabelsService(testConfig(root), { critiques: dismissed });
     expect(labeled?.axiom_id).toBeNull();
   });
 

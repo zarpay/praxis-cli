@@ -36,8 +36,10 @@ describe("CacheFile", () => {
 
     it("recomputes an entry's key from its stored fields", () => {
       const stored = entry(FLASH, "src/README.md");
+      const storedKey = CacheFile.keyOf(stored);
+      const derivedKey = CacheFile.keyFor("src/README.md", FLASH.hash);
 
-      expect(CacheFile.keyOf(stored)).toBe(CacheFile.keyFor("src/README.md", FLASH.hash));
+      expect(storedKey).toBe(derivedKey);
     });
   });
 

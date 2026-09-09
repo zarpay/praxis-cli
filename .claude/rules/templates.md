@@ -12,8 +12,9 @@ creates, the skill and command documents the Claude Code plugin installs — has
 body here and nowhere else.
 
 - **Named `{noun}-template.ts`**, default-exporting the filename in camelCase:
-  `expert-file-template.ts` exports `expertFileTemplate`. Its parameter type lives
-  in `src/types.ts`, because `templates/` is a leaf that imports nothing else.
+  `expert-file-template.ts` exports `expertFileTemplate`. Its parameter type is
+  declared in the template's own module, unexported (`.claude/rules/types.md`);
+  `templates/` stays a leaf that imports nothing but type-only siblings.
 - **The parameters are exactly what the CLI substitutes, and no more.** The expert
   template has eleven `{token}`s and two parameters: `{expert_name}` and
   `{required_alias}` are filled by `praxis add`, while `{manager_email}`,

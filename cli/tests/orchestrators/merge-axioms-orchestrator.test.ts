@@ -14,6 +14,7 @@ import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
 import { testConfig } from "@tests/helpers/test-config.js";
+import { assignmentRecord } from "@tests/helpers/triage-records.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 const cleanups: (() => void)[] = [];
@@ -71,14 +72,9 @@ function overSplitProject(): string {
     ["r1:1", "AX-aaaa11"],
     ["r1:2", "AX-bbbb22"],
     ["r1:3", "AX-cccc33"],
-  ].map(([critiqueId, axiomId]) => ({
-    kind: "assignment",
-    critique_id: critiqueId ?? "",
-    axiom_id: axiomId ?? "",
-    axiom_version: 1,
-    assigned_by: { decision: "human", suggested_by: "big/model" },
-    timestamp: "2026-09-05T10:00:00.000Z",
-  }));
+  ].map(([critiqueId, axiomId]) =>
+    assignmentRecord({ critique_id: critiqueId ?? "", axiom_id: axiomId ?? "" }),
+  );
   new TriageStore(testConfig(root)).writeSession(assignments);
 
   return root;

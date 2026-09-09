@@ -10,6 +10,12 @@ import deriveTriageStateService from "@/services/derive-triage-state-service.js"
 import { TriageStore } from "@/stores/triage-store.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
 import { testConfig } from "@tests/helpers/test-config.js";
+import {
+  assignmentRecord,
+  dismissalRecord,
+  rejectionRecord,
+  unmatchedRecord,
+} from "@tests/helpers/triage-records.js";
 
 describe("deriveTriageStateService", () => {
   let root: string;
@@ -66,20 +72,8 @@ describe("deriveTriageStateService", () => {
     });
 
     const records: TriageRecord[] = [
-      {
-        kind: "assignment",
-        critique_id: "r1:1",
-        axiom_id: "AX-aaaa11",
-        axiom_version: 1,
-        assigned_by: { decision: "human", suggested_by: "big/model" },
-        timestamp: "2026-09-03T10:00:00.000Z",
-      },
-      {
-        kind: "dismissal",
-        critique_id: "r1:2",
-        reason: "unassignable: off-spec",
-        timestamp: "2026-09-03T10:00:00.000Z",
-      },
+      assignmentRecord(),
+      dismissalRecord({ critique_id: "r1:2", reason: "unassignable: off-spec" }),
     ];
     new TriageStore(testConfig(root)).writeSession(records);
 
@@ -101,20 +95,8 @@ describe("deriveTriageStateService", () => {
     // r1:1 was considered against the current (empty) active set; r1:2
     // against a set that no longer exists — it goes back to triage.
     new TriageStore(testConfig(root)).writeSession([
-      {
-        kind: "unmatched",
-        critique_id: "r1:1",
-        considered: [],
-        suggested_by: "big/model",
-        timestamp: "2026-09-07T10:00:00.000Z",
-      },
-      {
-        kind: "unmatched",
-        critique_id: "r1:2",
-        considered: ["AX-gone00@1"],
-        suggested_by: "big/model",
-        timestamp: "2026-09-07T10:00:00.000Z",
-      },
+      unmatchedRecord({ considered: [] }),
+      unmatchedRecord({ critique_id: "r1:2", considered: ["AX-gone00@1"] }),
     ]);
 
     const state = deriveTriageStateService(testConfig(root), {});
@@ -130,27 +112,9 @@ describe("deriveTriageStateService", () => {
       extraLines: [critiqueLine({ runId: "r1", seq: 1 })],
     });
     new TriageStore(testConfig(root)).writeSession([
-      {
-        kind: "unmatched",
-        critique_id: "r1:1",
-        considered: [],
-        suggested_by: "big/model",
-        timestamp: "2026-09-07T10:00:00.000Z",
-      },
-      {
-        kind: "assignment",
-        critique_id: "r1:1",
-        axiom_id: "AX-cccc33",
-        axiom_version: 1,
-        assigned_by: { decision: "human", suggested_by: "big/model" },
-        timestamp: "2026-09-07T10:01:00.000Z",
-      },
-      {
-        kind: "rejection",
-        axiom_id: "AX-cccc33",
-        reason: "not the axiom",
-        timestamp: "2026-09-07T10:02:00.000Z",
-      },
+      unmatchedRecord({ considered: [] }),
+      assignmentRecord({ axiom_id: "AX-cccc33" }),
+      rejectionRecord({ axiom_id: "AX-cccc33", reason: "not the axiom" }),
     ]);
 
     const state = deriveTriageStateService(testConfig(root), {});
@@ -160,12 +124,7 @@ describe("deriveTriageStateService", () => {
 
   it("counts rejections for the residual signal", () => {
     new TriageStore(testConfig(root)).writeSession([
-      {
-        kind: "rejection",
-        axiom_id: "AX-bbbb22",
-        reason: "reviewer invention",
-        timestamp: "2026-09-03T10:00:00.000Z",
-      },
+      rejectionRecord({ axiom_id: "AX-bbbb22", reason: "reviewer invention" }),
     ]);
 
     expect(deriveTriageStateService(testConfig(root), {}).rejectedProposals).toBe(1);

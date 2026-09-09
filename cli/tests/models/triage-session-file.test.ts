@@ -3,13 +3,12 @@ import type { TriageRecord } from "@/types.js";
 import { describe, expect, it } from "vitest";
 
 import { TriageSessionFile } from "@/models/triage-session-file.js";
+import { dismissalRecord } from "@tests/helpers/triage-records.js";
 
-const DISMISSAL: TriageRecord = {
-  kind: "dismissal",
-  critique_id: "r1:1",
+const DISMISSAL: TriageRecord = dismissalRecord({
   reason: "off-spec",
   timestamp: "2026-09-04T10:00:00.000Z",
-};
+});
 
 describe("TriageSessionFile", () => {
   it("round-trips records through serialize and fromContent", () => {

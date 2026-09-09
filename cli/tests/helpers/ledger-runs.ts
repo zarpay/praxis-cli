@@ -1,3 +1,5 @@
+import type { LedgerCritiqueRecord, LedgerRunRecord } from "@/types.js";
+
 import { randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -95,4 +97,73 @@ export function critiqueLine(fields: {
     axiom_version: fields.axiomVersion ?? null,
     flow: fields.flow ?? null,
   });
+}
+
+/**
+ * One full in-memory critique record, for services that take
+ * `LedgerCritiqueRecord[]` directly instead of reading run files.
+ * Defaults mirror `critiqueLine`'s: an unlabeled "flash" critique.
+ */
+export function critiqueRecord(
+  overrides: Partial<LedgerCritiqueRecord> = {},
+): LedgerCritiqueRecord {
+  return {
+    kind: "critique",
+    id: "r1:1",
+    run_id: "r1",
+    timestamp: "2026-09-02T10:00:00.000Z",
+    file_path: "src/a.ts",
+    spec_path: "src/README.md",
+    target_content_hash: "aaaa1111",
+    spec_content_hash: "bbbb2222",
+    reviewer_name: "flash",
+    reviewer_model: "m",
+    reviewer_hash: "aaaa1111",
+    severity: "error",
+    text: "Critique r1:1",
+    mode: "judgment",
+    axiom_id: null,
+    axiom_version: null,
+    assigned_by: null,
+    population: "unknown",
+    authorship: "unknown",
+    authorship_evidence: null,
+    agent_involved: null,
+    pre_review: null,
+    ...overrides,
+  };
+}
+
+/**
+ * One full in-memory run record, for services that take
+ * `LedgerRunRecord[]` directly. Defaults are a cold corpus run by
+ * "flash" with empty counts.
+ */
+export function runRecord(overrides: Partial<LedgerRunRecord> = {}): LedgerRunRecord {
+  return {
+    kind: "run",
+    run_id: "r1",
+    timestamp: "2026-09-02T10:00:00.000Z",
+    commit_sha: null,
+    branch: null,
+    trigger: "manual",
+    scope: "corpus",
+    files_evaluated: 0,
+    reviewer_name: "flash",
+    reviewer_model: "some/model",
+    reviewer_hash: "aaaa1111",
+    prompt_tokens: null,
+    completion_tokens: null,
+    cost_usd: null,
+    cache_hits: 0,
+    cache_misses: 0,
+    pass_count: 0,
+    warn_count: 0,
+    fail_count: 0,
+    unverified_count: 0,
+    critique_count: 0,
+    calibration_status_at_run: "uncalibrated",
+    baseline: false,
+    ...overrides,
+  };
 }

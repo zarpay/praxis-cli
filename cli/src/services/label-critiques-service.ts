@@ -39,6 +39,8 @@ interface CritiqueLabel {
 /** What the labeling pass did (or would do, under dryRun). */
 interface LabelCritiquesResult {
   labels: CritiqueLabel[];
+  /** Labels per axiom, sorted by id — the summary's tally block. */
+  labeledByAxiom: { axiomId: string; count: number }[];
   /** Critiques the matcher considered and could not label — curate's queue now. */
   sentToCurate: number;
   /** Critiques whose spec has no active axioms — trivially unmatched, sent to curate without a call. */
@@ -170,6 +172,7 @@ const labelCritiquesService: Service<LabelCritiquesInput, Promise<LabelCritiques
 
   return {
     labels,
+    labeledByAxiom: tallyByAxiom(labels),
     sentToCurate,
     skippedNoAxioms,
     failed,
@@ -177,6 +180,19 @@ const labelCritiquesService: Service<LabelCritiquesInput, Promise<LabelCritiques
     sessionPath,
   };
 };
+
+/** Labels counted per axiom, sorted by id. */
+function tallyByAxiom(labels: CritiqueLabel[]): { axiomId: string; count: number }[] {
+  const byAxiom = new Map<string, number>();
+
+  for (const label of labels) {
+    byAxiom.set(label.axiomId, (byAxiom.get(label.axiomId) ?? 0) + 1);
+  }
+
+  return [...byAxiom.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([axiomId, count]) => ({ axiomId, count }));
+}
 
 export default labelCritiquesService;
 

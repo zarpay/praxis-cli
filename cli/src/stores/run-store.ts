@@ -38,7 +38,11 @@ export class RunStore {
    */
   runs(): LedgerRunRecord[] {
     return this.files()
-      .map((path) => RunFile.fromContent(readText(path)))
+      .map((path) => {
+        const content = readText(path);
+
+        return RunFile.fromContent(content);
+      })
       .filter((file): file is RunFile => file !== null)
       .map((file) => file.run);
   }
@@ -46,7 +50,11 @@ export class RunStore {
   /** Every critique record, across all run files, sorted by id. */
   critiques(): LedgerCritiqueRecord[] {
     const critiques = this.files()
-      .map((path) => RunFile.fromContent(readText(path)))
+      .map((path) => {
+        const content = readText(path);
+
+        return RunFile.fromContent(content);
+      })
       .filter((file): file is RunFile => file !== null)
       .flatMap((file) => file.critiques());
 

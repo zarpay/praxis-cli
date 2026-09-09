@@ -30,7 +30,8 @@ describe("RunFile", () => {
 
   it("serializes records to the write-once shape, one line each", () => {
     const serialized = RunFile.serialize([{ kind: "run", run_id: "r1" } as never]);
+    const lineWithoutName = RUN_LINE.replace(',"reviewer_name":"flash"', "") + "\n";
 
-    expect(serialized).toBe(RUN_LINE.replace(',"reviewer_name":"flash"', "") + "\n");
+    expect(serialized).toBe(lineWithoutName);
   });
 });

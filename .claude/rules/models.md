@@ -23,7 +23,10 @@ frontmatter keys are spelled.
   statics were removed 2026-09-04 for exactly this. No network, no writing, no
   coordinating other work; resolving a path against a project root is a
   caller's job. (`ReviewSubject.resolve` remains the one sanctioned reader —
-  it assembles the whole review input; splitting it is an open question.)
+  it assembles the whole review input; splitting it is an open question. The
+  two bootstrap models are the other exceptions: `PraxisConfig` reads its own
+  config file and `Paths` walks up to find the project root — both exist
+  before any store can.)
 - Callers that sweep a directory catch per file and report, so one malformed
   document never takes down a batch.
 - **Every file here declares a class.** A module of loose functions over a

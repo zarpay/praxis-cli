@@ -1,5 +1,5 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type { CritiqueDecision, TriageRecord, WriteLedgerRunResult } from "@/types.js";
+import type { CritiqueDecision, TriageRecord } from "@/types.js";
 
 import { exists, listFilesRecursive, readText, writeText } from "@/helpers/files-helper.js";
 import { sortableId } from "@/helpers/id-helper.js";
@@ -29,7 +29,11 @@ export class TriageStore {
 
     return listFilesRecursive(this.triageDir)
       .filter((file) => file.endsWith(".jsonl"))
-      .map((file) => TriageSessionFile.fromContent(readText(joinPath(this.triageDir, file))))
+      .map((file) => {
+        const content = readText(joinPath(this.triageDir, file));
+
+        return TriageSessionFile.fromContent(content);
+      })
       .flatMap((file) => file.records());
   }
 
@@ -64,15 +68,35 @@ export class TriageStore {
   /**
    * Lands one session's decisions as its own file.
    *
+   * Append order IS filename order — the join's "newest wins" reads
+   * files sorted — so the minted id must sort after every session
+   * already on disk. Two sessions in the same millisecond would
+   * otherwise order by their random tail, and a coin flip must never
+   * decide which record stands.
+   *
    * @throws on write failure
    */
-  writeSession(records: TriageRecord[]): WriteLedgerRunResult {
-    const sessionId = sortableId();
+  writeSession(records: TriageRecord[]): { sessionId: string; path: string } {
+    const latest = this.latestSessionFile();
+
+    let sessionId = sortableId();
+
+    while (`${sessionId}.jsonl` <= latest) sessionId = sortableId();
+
     const path = joinPath(this.triageDir, `${sessionId}.jsonl`);
 
     writeText(path, TriageSessionFile.serialize(records));
 
-    return { runId: sessionId, path };
+    return { sessionId, path };
+  }
+
+  /** The last session filename on disk, or "" when none exist. */
+  private latestSessionFile(): string {
+    if (!exists(this.triageDir)) return "";
+
+    const sessions = listFilesRecursive(this.triageDir).filter((file) => file.endsWith(".jsonl"));
+
+    return sessions[sessions.length - 1] ?? "";
   }
 }
 

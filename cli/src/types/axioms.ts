@@ -2,11 +2,9 @@
 // the curator's assessments.
 
 import type { AxiomFile } from "@/models/axiom-file.js";
-import type { ProviderUsage } from "@/types/extension-points.js";
-import type { PendingCritique } from "@/types/ledger.js";
 import type { StoreProblem } from "@/types/shared.js";
 
-/** An axiom's lifecycle state: proposed until ratified, never deleted. */
+/** An axiom's lifecycle state — never deleted. `proposed` is historical: acceptance activates directly. */
 export type AxiomStatus = "proposed" | "active" | "deprecated";
 
 /** How the axiom is evaluated; `agentic` is schema-only until built. */
@@ -39,27 +37,6 @@ export interface TriageCluster {
   critiqueIds: string[];
   rationale: string;
   suggestion: TriageSuggestion;
-}
-
-/** The curator's spec-traceability aid at ratification. */
-export interface TraceabilityAssessment {
-  traceable: boolean;
-  /** `<spec path>#<section>` when traceable. */
-  grounding: string | null;
-  /** The spec passage that grounds the axiom, quoted verbatim. */
-  quotedBasis: string;
-  reasoning: string;
-  usage: ProviderUsage | null;
-}
-
-/** One spec's pending critiques, ready for the curator to organize. */
-export interface OrganizeTriageInput {
-  /** Project-relative spec path, as the critiques record it. */
-  specPath: string;
-  specContent: string;
-  critiques: PendingCritique[];
-  /** Established axioms the critiques may fold into: id + statement. */
-  axioms: { id: string; statement: string }[];
 }
 
 /** One critique's labeling outcome, streamed as the pass runs. */

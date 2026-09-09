@@ -70,7 +70,9 @@ export class SpecStore {
    * @throws PraxisError when the frontmatter is malformed
    */
   read(specPath: string): SpecFileType {
-    return SpecFile.fromContent(readText(specPath), specPath, this.root);
+    const content = readText(specPath);
+
+    return SpecFile.fromContent(content, specPath, this.root);
   }
 
   /** Every spec file under the source directories, absolute paths. */

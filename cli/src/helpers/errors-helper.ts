@@ -40,6 +40,7 @@ export type PraxisErrorCode =
   | "MERGE_NEEDS_SOURCES"
   | "MERGE_SURVIVOR_NOT_ACTIVE"
   | "TARGET_IS_DIRECTORY"
+  | "AXIOM_NOT_ACTIVE"
   | "CURATOR_NOT_CONFIGURED"
   | "CURATOR_MISSING_FIELD"
   | "PROVIDER_CANNOT_COMPLETE"
@@ -79,6 +80,7 @@ export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErr
   "MERGE_NEEDS_SOURCES",
   "MERGE_SURVIVOR_NOT_ACTIVE",
   "TARGET_IS_DIRECTORY",
+  "AXIOM_NOT_ACTIVE",
   "CURATOR_NOT_CONFIGURED",
   "DOCUMENT_NOT_FOUND",
   "EXPERT_NOT_FOUND",
@@ -355,6 +357,14 @@ export const errors = {
     return new PraxisError(
       "PROVIDER_CANNOT_COMPLETE",
       `Provider "${providerName}" does not implement complete(), which curator work requires. Use the openrouter provider, or add complete() to the custom provider.`,
+    );
+  },
+
+  /** The axiom exists but is not active, and the verb needs an active one. */
+  axiomNotActive(id: string): PraxisError {
+    return new PraxisError(
+      "AXIOM_NOT_ACTIVE",
+      `"${id}" is not an active axiom — it is already deprecated. Its records stay readable; \`praxis axioms list\` shows every status.`,
     );
   },
 

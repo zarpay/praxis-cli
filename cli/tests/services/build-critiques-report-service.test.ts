@@ -7,6 +7,11 @@ import { TriageStore } from "@/stores/triage-store.js";
 import { axiomContent } from "@tests/helpers/axiom-fixtures.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
 import { testConfig } from "@tests/helpers/test-config.js";
+import {
+  assignmentRecord,
+  dismissalRecord,
+  unmatchedRecord,
+} from "@tests/helpers/triage-records.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 const cleanups: (() => void)[] = [];
@@ -47,34 +52,10 @@ function statesProject(): string {
   });
 
   const records: TriageRecord[] = [
-    {
-      kind: "assignment",
-      critique_id: "r1:1",
-      axiom_id: "AX-aaaa11",
-      axiom_version: 1,
-      assigned_by: { decision: "matcher", suggested_by: "scripted" },
-      timestamp: "2026-09-07T10:00:00.000Z",
-    },
-    {
-      kind: "dismissal",
-      critique_id: "r1:2",
-      reason: "noise",
-      timestamp: "2026-09-07T10:00:00.000Z",
-    },
-    {
-      kind: "unmatched",
-      critique_id: "r1:3",
-      considered: ["AX-aaaa11@1"],
-      suggested_by: "scripted",
-      timestamp: "2026-09-07T10:00:00.000Z",
-    },
-    {
-      kind: "unmatched",
-      critique_id: "r1:4",
-      considered: ["AX-gone00@1"],
-      suggested_by: "scripted",
-      timestamp: "2026-09-07T10:00:00.000Z",
-    },
+    assignmentRecord({ assigned_by: { decision: "matcher", suggested_by: "scripted" } }),
+    dismissalRecord({ critique_id: "r1:2", reason: "noise" }),
+    unmatchedRecord({ critique_id: "r1:3", suggested_by: "scripted" }),
+    unmatchedRecord({ critique_id: "r1:4", considered: ["AX-gone00@1"], suggested_by: "scripted" }),
   ];
   new TriageStore(testConfig(root)).writeSession(records);
 

@@ -52,7 +52,9 @@ describe("detectEpochBoundariesService", () => {
     expect(boundaries).toHaveLength(1);
     expect(boundaries[0].reviewerName).toBe("flash");
     expect(boundaries[0].previousHash).toBe("00000000");
-    expect(boundaries[0].currentHash).toBe(currentHash(FLASH));
+    const flashHash = currentHash(FLASH);
+
+    expect(boundaries[0].currentHash).toBe(flashHash);
   });
 
   it("stays silent when known hashes interleave — contributors are not boundaries", () => {

@@ -65,7 +65,10 @@ describe("DocumentStore", () => {
     });
 
     it("sweeps nothing from a missing source — unused taxonomy is normal", () => {
-      expect(new DocumentStore(testConfig(root, { sources: ["nope"] })).files()).toEqual([]);
+      const store = new DocumentStore(testConfig(root, { sources: ["nope"] }));
+      const files = store.files();
+
+      expect(files).toEqual([]);
     });
   });
 

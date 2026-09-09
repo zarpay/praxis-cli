@@ -12,8 +12,8 @@ agent-facing its prose — that is the distinction `praxis-skill.ts` sitting in
 `spec/prompts/` used to blur.
 
 One LLM- or agent-facing prompt per file, as that file's default-export
-`Prompt` (`@framework/types`): a `const TEMPLATE` with `{name}` slots wrapped
-by `preparePrompt(TEMPLATE)` (`helpers/prepare-prompt-helper.ts`) — the
+`Prompt` (`@framework/types`): a `const TEMPLATE` with `{name}` slots (`const TEXT`
+when the prompt has no slots) wrapped by `preparePrompt(...)` (`helpers/prepare-prompt-helper.ts`) — the
 returned function takes the template's variables as a record of string values,
 or nothing when the template has no slots. Structure never enters a prompt's
 signature: a list renders through its own per-item prompt file

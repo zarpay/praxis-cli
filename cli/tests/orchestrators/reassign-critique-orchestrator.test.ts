@@ -11,6 +11,7 @@ import { createCaptureLogger } from "@tests/helpers/capture-logger.js";
 import { testContext } from "@tests/helpers/command-context.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
 import { testConfig } from "@tests/helpers/test-config.js";
+import { dismissalRecord } from "@tests/helpers/triage-records.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 const cleanups: (() => void)[] = [];
@@ -95,7 +96,7 @@ describe("reassignCritiqueOrchestrator", () => {
   it("refuses a dismissed critique — invalid evidence is never categorized", async () => {
     const root = reassignProject();
     new TriageStore(testConfig(root)).writeSession([
-      { kind: "dismissal", critique_id: "r1:1", reason: "the spec permits this", timestamp: "t" },
+      dismissalRecord({ reason: "the spec permits this", timestamp: "t" }),
     ]);
 
     const reassignDismissed = reassignCritiqueOrchestrator(testContext(root), {

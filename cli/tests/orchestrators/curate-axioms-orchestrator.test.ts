@@ -15,6 +15,7 @@ import { testContext } from "@tests/helpers/command-context.js";
 import { curatorProviderModule } from "@tests/helpers/curator-provider.js";
 import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
 import { testConfig } from "@tests/helpers/test-config.js";
+import { unmatchedRecord } from "@tests/helpers/triage-records.js";
 import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
 
 vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
@@ -74,15 +75,11 @@ function triageProject(plan: CuratorPlan): string {
 
 /** Triage's verdict on record: these critiques matched no active axiom. */
 function markUnmatched(root: string, critiqueIds: string[], considered: string[] = []): void {
-  new TriageStore(testConfig(root)).writeSession(
-    critiqueIds.map((critiqueId) => ({
-      kind: "unmatched" as const,
-      critique_id: critiqueId,
-      considered,
-      suggested_by: "scripted",
-      timestamp: "2026-09-07T10:00:00.000Z",
-    })),
+  const unmatched = critiqueIds.map((critiqueId) =>
+    unmatchedRecord({ critique_id: critiqueId, considered, suggested_by: "scripted" }),
   );
+
+  new TriageStore(testConfig(root)).writeSession(unmatched);
 }
 
 /** The records a session appended, across all session files. */
@@ -183,7 +180,11 @@ describe("curateAxiomsOrchestrator", () => {
     const outcome = await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
 
     expect(outcome).toBe("ok");
-    expect(new AxiomStore(testConfig(root)).all().axioms).toHaveLength(0);
+
+    const store = new AxiomStore(testConfig(root));
+    const { axioms } = store.all();
+
+    expect(axioms).toHaveLength(0);
     // All three critiques still await curation: the cluster held, nothing decided.
     expect(deriveTriageStateService(testConfig(root), {}).unidentified).toHaveLength(3);
   });
