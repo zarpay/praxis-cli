@@ -32,6 +32,18 @@ export type View<Data> = (data: Data) => ReportLine[];
   `statLines`, `table`, `rule`. They return entries and strings — ingredients, not
   reports. An app-level helper used by exactly one view stays private in that
   view.
+- **Using the kit is mandatory, not stylistic** (owner, 2026-09-10:
+  "everything should"). A view never hand-rolls what a component
+  provides: no `padEnd`/`padStart` alignment (that is `statLines` or
+  `table`), no `"─".repeat(...)` dividers (that is `rule`, or the
+  `{ header }` entry when titled), no `{ badge, color, value }` object
+  literals or inline `chalk.green("[PASS]")` strings (that is `badge`/
+  `badgeBlock` — hand-built literals are how the indents drifted).
+  When the kit lacks the ingredient, add it to the kit with a mirrored
+  test — `rule` earned its place exactly this way — rather than
+  hand-rolling at the call site. The one sanctioned exception: a
+  colored `[LABEL]` *inside a sentence* (verdict-reports' `Status:`
+  line), which a whole-line badge entry cannot express.
 - Streamed output is a view per event: `onProgress: (event) =>
 ctx.render(runProgressView(event))`.
 - Tests assert on the returned `ReportLine[]` (via `@tests/helpers/report-text`),
