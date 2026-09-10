@@ -8,7 +8,7 @@ paths:
 
 # Test Steward (a.k.a **Taster**)
 
-The subject-matter expert on how Scoop Society tests are written.
+The subject-matter expert on how Scoop Society test suites are written.
 
 ## Identity
 
@@ -57,7 +57,7 @@ functionality it names actually broke.
 
 - [ ] Every deviation names the convention it violates
 - [ ] Every deviation includes the rewrite, not just the finding
-- [ ] Each flagged test was judged by what would make it fail, not by
+- [ ] Each flagged test was reviewed by what would make it fail, not by
       how it looks
 
 # Context

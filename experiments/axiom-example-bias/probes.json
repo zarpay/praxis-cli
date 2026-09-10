@@ -1,0 +1,101 @@
+{
+  "comment": "Matched-pair probes. kind 'true-far' = violates the axiom's principle in code unlike its example (truth: the axiom). kind 'false-near' = echoes the example's surface but violates nothing the axiom asserts (truth: null).",
+  "probes": [
+    {
+      "seq": 1,
+      "axiom": "AX-b951db",
+      "kind": "true-far",
+      "truth": "AX-b951db",
+      "filePath": "src/services/import-parlors.ts",
+      "text": "When the CSV import hits a duplicate row, the service responds to the API consumer with status 422 and body {} — the consumer gets no indication of which row collided or what uniqueness rule would have been satisfied."
+    },
+    {
+      "seq": 2,
+      "axiom": "AX-b951db",
+      "kind": "true-far",
+      "truth": "AX-b951db",
+      "filePath": "src/services/rank-parlors.ts",
+      "text": "The pagination resolver rejects malformed cursors with { code: 'E_CURSOR' } — an opaque code that tells the API consumer nothing about what a valid cursor looks like or how to obtain one."
+    },
+    {
+      "seq": 3,
+      "axiom": "AX-b951db",
+      "kind": "false-near",
+      "truth": null,
+      "filePath": "src/services/send-newsletter.ts",
+      "text": "The debug log prints 'bad subject' each time newsletter dispatch retries — operator-facing log lines here should include the retry count and backoff delay."
+    },
+    {
+      "seq": 4,
+      "axiom": "AX-b951db",
+      "kind": "false-near",
+      "truth": null,
+      "filePath": "src/services/create-review.ts",
+      "text": "The message 'rating must be a whole number from 1 to 5' differs in tone from the marketing copy on the pricing page — product wants friendlier phrasing across the app."
+    },
+    {
+      "seq": 5,
+      "axiom": "AX-2559f7",
+      "kind": "true-far",
+      "truth": "AX-2559f7",
+      "filePath": "src/services/archive-parlor.ts",
+      "text": "A caller of archiveParlor cannot discover from its header that a parlor with active subscriptions is refused — that failure surfaces only as a thrown string deep in the body, so callers must read the implementation to handle it."
+    },
+    {
+      "seq": 6,
+      "axiom": "AX-2559f7",
+      "kind": "true-far",
+      "truth": "AX-2559f7",
+      "filePath": "src/services/send-newsletter.ts",
+      "text": "The header comment says only 'sends the weekly digest' — a caller wiring this into the scheduler has no way to know it can refuse on an empty recipient list or on a rate-limit window without reading the body."
+    },
+    {
+      "seq": 7,
+      "axiom": "AX-2559f7",
+      "kind": "false-near",
+      "truth": null,
+      "filePath": "src/services/redeem-coupon.ts",
+      "text": "The doc comment enumerating failure modes runs past 15 lines, pushing the function signature below the fold in most editors — consider a tighter layout."
+    },
+    {
+      "seq": 8,
+      "axiom": "AX-2559f7",
+      "kind": "false-near",
+      "truth": null,
+      "filePath": "src/services/apply-discount.ts",
+      "text": "The doc comment lists failure modes as prose sentences while the other services use bulleted 'Fails if:' lists — the formatting is inconsistent across the directory."
+    },
+    {
+      "seq": 9,
+      "axiom": "AX-9a7dd5",
+      "kind": "true-far",
+      "truth": "AX-9a7dd5",
+      "filePath": "tests/loyalty.test.ts",
+      "text": "Reading describe('loyalty') → it('happy') in the runner output, a reviewer cannot reconstruct which observable outcome distinguishes success from failure."
+    },
+    {
+      "seq": 10,
+      "axiom": "AX-9a7dd5",
+      "kind": "true-far",
+      "truth": "AX-9a7dd5",
+      "filePath": "tests/awards.test.ts",
+      "text": "The assertion group is titled '✓ ok path' — combined with its parent block 'rankParlors', the runner output names no behavior a reader could verify against the spec."
+    },
+    {
+      "seq": 11,
+      "axiom": "AX-9a7dd5",
+      "kind": "false-near",
+      "truth": null,
+      "filePath": "tests/newsletter.test.ts",
+      "text": "The it block 'returns true for a valid subject' re-seeds the store inline although the surrounding beforeEach already seeds identical parlors — the redundant setup slows the suite."
+    },
+    {
+      "seq": 12,
+      "axiom": "AX-9a7dd5",
+      "kind": "false-near",
+      "truth": null,
+      "filePath": "tests/discounts.test.ts",
+      "text": "The it description 'returns the winner list sorted by score' is accurate, but the block asserts on the private comparator helper instead of the returned list itself."
+    }
+  ]
+}

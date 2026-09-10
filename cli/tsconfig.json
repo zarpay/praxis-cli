@@ -16,9 +16,10 @@
     "sourceMap": true,
     "paths": {
       "@/*": ["./src/*"],
+      "@framework/*": ["./packages/framework/src/*"],
       "@tests/*": ["./tests/*"]
     }
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
+  "include": ["src/**/*.ts", "tests/**/*.ts", "packages/**/*.ts", "scripts/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

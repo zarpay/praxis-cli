@@ -1,87 +1,98 @@
 # Caching
 
-Every validation result is cached locally. Unchanged documents are never re-validated — only documents whose content or spec has changed since the last run hit the API.
+Every verdict is cached. Unchanged targets are never re-reviewed — only files whose review input has changed since the last run cost an API call.
 
 ## How the cache works
 
-When `praxis eval run` validates a document, it:
+When `praxis eval run` reviews a target, each configured reviewer:
 
-1. Computes a content hash: `SHA256(documentContent + specContent)`, first 8 characters
-2. Looks up `.praxis/cache/validation/{doc-relative-path}.json`
-3. If a cache entry exists for this (document, spec) pair and the hash matches — returns the cached result without any API call
-4. If there is no entry, or the hash doesn't match — calls the API and writes the result to cache
+1. Computes a content hash over the **full review input** — the target, the spec, and the spec's resolved `context:` files
+2. Looks up `.praxis/cache/validation/{target-relative-path}.json`
+3. If the file holds an entry for this (spec, reviewer) pair and the hash matches — returns the cached verdict without any API call
+4. If there is no entry, or the hash doesn't match — calls the provider and writes the verdict
 
-The hash covers both the document and the spec. If either one changes, the cached result is automatically invalidated and the document is re-validated on the next run.
+The hash covers everything the reviewer saw. Editing the target, the spec, or a context file invalidates exactly the verdicts those inputs produced — and nothing else does: activating an axiom has no cache effect, because axioms never enter the review. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
 
 ## Cache file structure
 
-Each document has a single cache file at `.praxis/cache/validation/{source-dir}/{docname}.json`.
-
-The file contains a `validations` map keyed by an 8-char hash of the spec's relative path. This allows a document that is validated by multiple specs to store all results independently in one file:
+Each target has exactly one cache file — its complete review state, across all specs and all reviewers, in one committed artifact. Entries are keyed `<specHash>:<reviewerHash>`:
 
 ```json
 {
-  "version": "2.0",
-  "validations": {
-    "a1b2c3d4": {
-      "spec_path": "experts/README.md",
-      "cached_at": "2025-05-27T14:30:45.123Z",
+  "version": "5.0",
+  "verdicts": {
+    "a1b2c3d4:f83a92f1": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "f83a92f1"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-02T14:30:45.123Z",
       "content_hash": "abcd1234",
+      "context_files": [{ "path": "src/domain/types.ts", "hash": "f1d20738" }],
       "result": {
-        "compliant": true,
-        "issues": [],
-        "reason": "Yes — the document meets all requirements."
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "Error message 'bad input' names nothing.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The service violates the error-message standard."
       }
     }
   }
 }
 ```
 
+Cached critiques are born raw — `axiomId` and `axiomVersion` are always `null` in the cache. Labels are triage assignment records in the ledger, joined at read time by the reports; they are never written back into the cache.
+
+The reviewer's hash is its **behavioral identity**: the whole config entry minus `name` and `apiKeyEnvVar`, plus the complete reviewer-facing prompt surface this praxis version ships. When the spec declares `context:`, the entry records the resolved files with per-file hashes — the exact inputs behind the verdict.
+
 ## Cache invalidation
 
 The cache invalidates automatically when:
 
-- The document content changes
+- The target content changes (any member, for cohort units)
 - The spec file content changes
+- A context file the spec declares changes
 
-There is no manual cache management needed in normal use.
+- The reviewer's behavioral settings change (model, temperature, baseUrl, provider, options) — this rolls the reviewer's [epoch](/concepts/evidence-loop) and invalidates all of its entries at once
+
+Renaming a reviewer does *not* invalidate anything: the name is excluded from the hash, so identity follows behavior, not the label. Rolling a config change back re-hits the old entries at zero cost. There is no manual cache management in normal use — `praxis eval prune` exists only to drop entries no configured reviewer can ever hit again.
 
 ## Disabling the cache
 
-Pass `--no-cache` to any `validate` subcommand to skip cache reads and writes:
+Pass `--no-cache` to skip cache reads and writes:
 
 ```bash
 praxis eval run --no-cache
-praxis eval run experts/my-expert.md --no-cache
+praxis eval run src/services/redeem-coupon.ts --no-cache
 ```
 
-This is useful when you want to force re-validation for debugging or after a significant spec rewrite.
+Useful for checking reviewer non-determinism on a borderline result.
 
 ## Cache hit reporting
 
-When running with a cache enabled, `praxis eval run` reports cache statistics at the end:
+Every cached run ends with the tally, and the run record in the ledger carries the same numbers:
 
 ```
-[CACHE] Hits: 9, Misses: 3
+[CACHE] Hits: 17, Misses: 1
 ```
 
-This tells you how many documents were served from cache vs. how many required an API call.
+## Reading a stale entry
 
-## Reading stale cache
+`praxis eval verdict <path>` reads the cache without requiring a hash match, so you can inspect a target's last known verdict even after editing it. A changed target reports **STALE** rather than **NOT VALIDATED**.
 
-`praxis eval verdict` reads the cache without requiring a content hash match. This lets you inspect a document's last known validation status even if the document has changed since then. A changed document is reported as **STALE** rather than **NOT VALIDATED**.
+## Commit the cache
 
-## Committing the cache
-
-The cache lives at `.praxis/cache/validation/`. Whether to commit it depends on your workflow:
-
-- **Commit it** if you want CI to get cache hits on unchanged documents and only pay for changed ones.
-- **Ignore it** if you prefer every CI run to be a full re-validation.
-
-If you commit the cache, add it to a gitignore pattern if you want build artifacts excluded, or track it explicitly. There is no wrong answer.
+`.praxis/` is committed — the ledger requires it, and the cache pays for itself the moment a second machine is involved: a verdict paid for on your laptop is a cache hit in CI and on every teammate's clone. Cache files are deterministic per content, so merges are rare and trivial.
 
 ## See also
 
-- [praxis eval run](/commands/eval)
-- [Validation Domains](/concepts/validation-domains)
+- [praxis eval](/commands/eval)
+- [The Evidence Loop](/concepts/evidence-loop)
 - [CI Integration](/validation/ci)

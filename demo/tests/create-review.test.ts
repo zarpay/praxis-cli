@@ -36,6 +36,15 @@ describe("create-review", () => {
       expect(store.listReviews("p1")).toHaveLength(1);
     });
 
+    it("returns the review with its assigned identity and timestamp", () => {
+      const result = run(store, validInput());
+
+      expect(result).toMatchObject({
+        ok: true,
+        value: { id: expect.stringMatching(/^r/), createdAt: expect.any(String) },
+      });
+    });
+
     it("trims whitespace from the author name", () => {
       const result = run(store, { ...validInput(), author: "  Sebastian  " });
 

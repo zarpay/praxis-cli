@@ -1,0 +1,86 @@
+# 08 — Harness Feedback
+
+> **Roadmap idea — withdrawn from core (owner, 2026-09-07).** This
+> capability shipped during v2 development and was deliberately removed:
+> the core is specs, evals, axioms, and reporting, and advanced
+> capabilities return only atop a rock-solid core. This document is the
+> preserved design, not a live spec.
+
+
+**Status:** Implemented (M7, 2026-09-05) — decisions dated inline
+**Depends on:** [02](./02-baselines-and-debt-paydown.md), [04](./04-axioms.md), [07](./07-metrics.md)
+
+## The loop, and where Praxis stops
+
+The point of the whole system: evidence about _which harness elements to change_ — skills, rules, CLAUDE.md content, tool docs — so future generations improve. Decision taken during planning:
+
+**Praxis emits a brief. A coding agent drafts the change. A human ratifies the PR.**
+
+Praxis does not edit the harness, and does not embed a second LLM loop of its own (a loop that would itself need evaluating — the recursion has to stop somewhere, and it stops here). The drafting happens via a generated slash command, following the exact mechanism the Claude Code plugin already uses for `/praxis-resolve`: `praxis harness suggest` produces the brief; `/praxis-harness` (generated into the plugin's commands, alongside the existing ones in `ensureCommands()`) instructs the coding agent to read it, propose harness edits, and open a reviewable PR.
+
+## The fast loop: live feedback to the agent
+
+Distinct from the brief (the slow loop, below): when validation runs during live coding — the agent just produced a diff, the reviewer critiques it — the violations feed straight back to the agent for correction. What does the agent see?
+
+**Both forms, chosen by match state — which the two-channel reviewer (04) already decides:**
+
+- **Matched (checklist channel):** the critique was born attached to an established axiom → return **the axiom** — stable ID, ratified statement, violating and compliant examples, spec grounding. The agent gets the same phrasing for the same violation every time, with teaching material attached, instead of reviewer prose that varies run to run.
+- **Unmatched (open channel):** no established axiom covers it → return **the raw critique**. It is still actionable prose, and it flows onward to triage (04) like any open code — today's raw critique is tomorrow's axiom.
+
+**The boundary (decided 2026-09-03): axioms label and phrase feedback on finished work; they are never injected into generation.** The agent works from critiques of what it just produced; the taxonomy exists so the _human_ sees quantitative, categorized evaluation — which axiom keeps firing — and edits the right part of the harness. If Praxis fed the axiom set to the agent directly, introduction rates would measure "did the agent read the checklist" instead of "does the harness carry the standard," and the eval's evidence about the harness would be gone. The perfect end state: axioms evolve into the distilled representation of the specs, every consistently-captured critique points at a specific harness edit, and the counts fall because the harness improved.
+
+No new matching machinery is required: the channel a critique arrived through _is_ the match decision. The fast loop also writes to the ledger like any run — live corrections are still evidence.
+
+**Multiple reviewers (06) do not multiply the feedback list.** Matched critiques collapse to their axiom regardless of how many reviewers flagged it — one finding, corroboration noted — because the axiom ID is the dedup key and it already exists. Unmatched raw critiques have no shared identity to dedupe on yet, so each reviewer's flows through the open channel as-is; overlap among them is discovered at triage, where they land under one proposed axiom. The coding agent works a finding list, not a reviewer-by-reviewer transcript.
+
+Delivery is the CLI (09): the coding agent or a harness hook runs `praxis eval run <target> --json` and the output is the feedback. No tool wrapper, no skill packaging — which is what keeps the fast loop harness-agnostic.
+
+## The brief
+
+Structured output (JSON + rendered markdown) built from ledger + metrics:
+
+```
+period, populations covered, calibration status (uninterpretable briefs say so)
+top_axioms: [
+  axiom_id, epoch,
+  introduction_rate, paydown_rate, debt_stock,      # 02 — the evidence
+  contrast?,                                        # optional: only under attribution conventions
+  trend, representative_critiques (3-5, linked to ledger ids),
+  suggested_diagnosis: harness_gap | spec_problem | reviewer_noise | insufficient_data
+  implicated_harness_elements?                      # best-effort mapping, see below
+]
+residual_summary                                    # reviewer drifting off-spec? (04)
+removal_candidates                                  # axioms that may no longer need Praxis (03): pattern-shaped critiques
+```
+
+The diagnosis is _suggested_, not verdicted — without a reliable control arm (02), spec-vs-harness discrimination is triangulated and the final call is human:
+
+- Introduction rate high and flat across many diffs within the epoch, while other axioms decline, and resolution flow exists (violations get fixed when pointed out) → `harness_gap` — the standard is followable but the harness doesn't carry it into generation. The brief's main product.
+- High debt density + high introduction rate + paydown attempts failing re-validation, or high reviewer variance on the axiom (06 — an unanswerable question is a spec defect) → `spec_problem` — route to spec owner, not harness.
+- Critiques unassignable / self-refuting → `reviewer_noise` — route to calibration (06).
+- Below small-n floor → `insufficient_data` — say so, recommend nothing.
+- Where attribution conventions exist, the human/agent contrast enters as _additional evidence_ for the first two — never as the mechanism.
+
+**Expectation to state plainly: the loop will point at the spec and the reviewer as often as at the agent** — in the observed zarpay data, the correct first brief would be mostly `spec_problem`/`reviewer_noise`. That is the system working, not failing: a feedback loop that can only ever conclude "tune the agent" is the vibes-based reviewer this design exists to replace.
+
+## Closing the loop: did the change work?
+
+A ratified harness PR is an _intervention_, and interventions are what the drift machinery already measures:
+
+- The brief-driven PR records which axioms it targets — **as a commit trailer, `Praxis-Intervention: AX-…, AX-…`** (decided 2026-09-05: trailers survive squash merges and travel with the repo; PR metadata does not). `interventionsFor` scans them read-only and the axiom drill-down annotates the boundaries.
+- Subsequent eval reports annotate those axioms' trend lines at the intervention boundary (07, rule 6 — same mechanism as reviewer changes).
+- "Axiom AX-0011 agent rate before/after the skill change" is the honest claim this system can make: drift detection around a known intervention — not global attribution.
+
+## Guardrails
+
+- Briefs never auto-apply; recommendations for `spec_problem` go to spec owners as spec-change suggestions, subject to the same human ratification.
+- A brief that recommends softening a spec must carry the coverage/conformance pairing (07, rule 1) — softening to improve a number is the Goodhart move the pairing exists to expose.
+- Frequency: on demand and per-period, not per-run. Reacting to single-run noise is how thrash starts; the small-n floors (02) apply to briefs doubly.
+
+Implementation notes (2026-09-05): the brief is `praxis harness suggest [--since] [--branch] [--json]` — a pure read over the ledger and the metrics services, one entry per (axiom, reviewer) from the flow rows ranked by what fires in generation, capped at five (depth belongs to the drill-downs). Each diagnosis carries a `diagnosis_reason` showing the triangulation it applied; `contrast` is omitted while attribution stays deferred. `implicated_harness_elements` is not yet emitted — the manual registry (open question 1) has no home until a real project demands one; the generated /praxis-harness command does the mapping by reading the harness instead.
+
+## Open questions
+
+1. Mapping axioms → harness elements: manual registry (`this skill owns events conventions`), or inferred from harness file content? Manual first; inference is a nice-to-have. *(2026-09-05: still open — the brief omits the field, and /praxis-harness maps by reading the harness.)*
+2. Should interventions be formally A/B-able (harness variant per branch/worktree, 02 open question 3)? Powerful, heavy; defer until single-arm before/after proves insufficient. *(2026-09-05: stays deferred.)*
+3. Does the brief include human-population findings for human consumption (the symmetric loop from 02)? The data supports it; the product question is whether anyone wants a linter for their colleagues. *(2026-09-05: stays open — populations render as totals, never as a per-human surface.)*

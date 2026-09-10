@@ -1,0 +1,9 @@
+{"kind":"assignment","critique_id":"20260902T212125548Z-a7dc04f9:4","axiom_id":"AX-b951db","axiom_version":2,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-07T21:29:22.723Z"}
+{"kind":"assignment","critique_id":"20260902T224022098Z-0b724b4b:3","axiom_id":"AX-b951db","axiom_version":2,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-07T21:29:22.723Z"}
+{"kind":"assignment","critique_id":"20260903T124553384Z-e9d54922:3","axiom_id":"AX-b951db","axiom_version":2,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-07T21:29:22.723Z"}
+{"kind":"assignment","critique_id":"20260903T124711641Z-a3965c8c:3","axiom_id":"AX-b951db","axiom_version":2,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-07T21:29:22.723Z"}
+{"kind":"assignment","critique_id":"20260903T124711641Z-a3965c8c:6","axiom_id":"AX-b951db","axiom_version":2,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-07T21:29:22.723Z"}
+{"kind":"assignment","critique_id":"20260903T125843049Z-604ab027:2","axiom_id":"AX-b951db","axiom_version":2,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-07T21:29:22.723Z"}
+{"kind":"assignment","critique_id":"20260903T125955537Z-2e803da5:2","axiom_id":"AX-b951db","axiom_version":2,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-07T21:29:22.723Z"}
+{"kind":"assignment","critique_id":"20260907T101625725Z-72d2adeb:1","axiom_id":"AX-b951db","axiom_version":2,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-07T21:29:22.723Z"}
+{"kind":"deprecation","axiom_id":"AX-fac03c","reason":"merged into AX-b951db","timestamp":"2026-09-07T21:29:22.723Z"}

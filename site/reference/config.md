@@ -18,13 +18,27 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
       "claudeCodePluginName": "praxis"
     }
   ],
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast",
-    "specFilePattern": "README.md"
-  }
+  "reviewers": [
+    {
+      "name": "flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    },
+    {
+      "name": "v32",
+      "model": "deepseek/deepseek-v3.2",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    }
+  ],
+  "curator": {
+    "model": "anthropic/claude-sonnet-4.5",
+    "apiKeyEnvVar": "OPENROUTER_API_KEY"
+  },
+  "specFilePattern": "{README.md,*.sme.md}"
 }
 ```
+
+(This is Scoop Society's shape: two reviewers, a frontier curator, and a spec pattern accepting directory READMEs plus its hand-authored `experts.sme.md` spec. Compiled profiles are named `*.expert.md` — a project that wants them discovered as specs uses `"{README.md,*.expert.md}"` instead.)
 
 ---
 
@@ -36,11 +50,12 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
 Directories that Praxis treats as knowledge sources. All paths are relative to the project root.
 
 Sources are used for:
+
 - **Validation discovery** — each directory in `sources` is scanned for spec files
 - **Watch mode** — `praxis compile --watch` watches every source directory
 - **Status** — `praxis status` scans sources to count documents
 
-Any directory within sources that contains a spec file (default: `README.md`) becomes a [validation domain](/concepts/validation-domains).
+Any directory within sources that contains a spec file (default: `README.md`) becomes a [review domain](/concepts/validation-domains).
 
 ```json
 { "sources": ["agents/experts", "agents/practices", "knowledge/reference"] }
@@ -59,7 +74,7 @@ Glob patterns for files and directories to exclude from all source scans. Patter
 { "ignore": ["docs/generated/**", "**/.*.md", "backend/vendor/**"] }
 ```
 
-Ignored paths are excluded everywhere sources are scanned: document counts in `praxis status`, spec discovery in `praxis eval run`, and the status dashboard. Literal subdirectory paths and filename patterns are both supported.
+Ignored paths are never reviewed and never counted: they are excluded from review targets in `praxis eval run` and from document counts in `praxis status`. Spec discovery is unaffected — a spec file under an ignored path is still found, so ignoring a directory shields its files from review without hiding the standard itself. Literal subdirectory paths and filename patterns are both supported.
 
 ---
 
@@ -86,7 +101,7 @@ The directory where practice `.md` files live. Used by `praxis add practice` to 
 **Type:** `string | false`
 **Default:** `"./agent-profiles"`
 
-Where compiled pure agent profiles are written. Each expert compiles to `{agentProfilesOutputDir}/{alias}.md`.
+Where compiled pure agent profiles are written. Each expert compiles to `{agentProfilesOutputDir}/{alias lowercased}.expert.md`.
 
 Set to `false` to disable pure profile output entirely:
 
@@ -117,62 +132,113 @@ Uses all defaults for that plugin.
 
 ```json
 {
-  "plugins": [{
-    "name": "claude-code",
-    "outputDir": "./plugins/my-agents",
-    "claudeCodePluginName": "my-org"
-  }]
+  "plugins": [
+    {
+      "name": "claude-code",
+      "outputDir": "./plugins/my-agents",
+      "claudeCodePluginName": "my-org"
+    }
+  ]
 }
 ```
 
 ### Claude Code plugin options
 
-| Property | Type | Default | Description |
-| --- | --- | --- | --- |
-| `name` | `string` | — | Must be `"claude-code"` |
-| `outputDir` | `string` | `"./plugins/praxis"` | Full path to plugin output directory, resolved against project root |
-| `claudeCodePluginName` | `string` | `"praxis"` | The `name` field in `plugin.json` and the slash command namespace |
+| Property               | Type     | Default              | Description                                                         |
+| ---------------------- | -------- | -------------------- | ------------------------------------------------------------------- |
+| `name`                 | `string` | —                    | Must be `"claude-code"`                                             |
+| `outputDir`            | `string` | `"./plugins/praxis"` | Full path to plugin output directory, resolved against project root |
+| `claudeCodePluginName` | `string` | `"praxis"`           | The `name` field in `plugin.json` and the slash command namespace   |
 
 ---
 
-## `validation`
+## `reviewers`
 
-**Type:** `object`
-**Default:** Set by scaffold; no code fallback
+**Type:** `array`
+**Default:** `[]` (evaluation requires at least one)
 
-Configuration for AI-powered document validation via [OpenRouter](https://openrouter.ai).
+The reviewers — named inference backends that evaluate targets against specs. **Every configured reviewer evaluates every target**, and every report shows results per reviewer, never pooled. Run a single reviewer with `praxis eval run --reviewer <name>`.
 
 ```json
 {
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast",
-    "specFilePattern": "README.md"
-  }
+  "reviewers": [
+    {
+      "name": "flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    },
+    {
+      "name": "local",
+      "model": "org-model",
+      "baseUrl": "https://inference.internal/v1",
+      "apiKeyEnvVar": "INTERNAL_KEY"
+    }
+  ]
 }
 ```
 
-### `validation.apiKeyEnvVar`
+### Per-reviewer fields
 
-**Type:** `string`
-**Required**
+| Field          | Required | Description                                                                                        |
+| -------------- | -------- | -------------------------------------------------------------------------------------------------- |
+| `name`         | yes      | Unique label identifying the reviewer's verdicts in results and reports                            |
+| `model`        | yes      | Model identifier the backend understands (e.g. an [OpenRouter slug](https://openrouter.ai/models)) |
+| `apiKeyEnvVar` | yes      | Environment variable holding the backend's API key                                                 |
+| `baseUrl`      | no       | OpenAI-compatible endpoint base; defaults to OpenRouter                                            |
+| `temperature`  | no       | Sampling temperature for reviews; defaults to `0`                                                  |
 
-The name of the environment variable containing your OpenRouter API key. Praxis reads the key at runtime from `process.env[apiKeyEnvVar]`.
+Each target's cache file holds every reviewer's verdicts, keyed by a hash of the reviewer's _behavioral_ settings — the whole entry minus `name` and `apiKeyEnvVar`, plus the complete reviewer-facing prompt surface. Renaming a reviewer or rotating a key keeps its cached verdicts; changing the model, endpoint, temperature, provider, or options invalidates them (and rolls the reviewer's epoch).
 
-### `validation.model`
+### Providers
 
-**Type:** `string`
-**Required**
+Each reviewer runs through a **provider** — the backend that executes the review and returns a normalized verdict plus usage (tokens and, where reported, cost). `provider` defaults to `"openrouter"`, which speaks to OpenRouter or any OpenAI-compatible endpoint (`baseUrl`). A reviewer can instead point at a local ESM module, resolved from the project root:
 
-The [OpenRouter model identifier](https://openrouter.ai/models) to use for validation. Example values:
+```json
+{
+  "reviewers": [
+    {
+      "name": "flash",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    },
+    {
+      "name": "internal",
+      "model": "org-model",
+      "apiKeyEnvVar": "INTERNAL_KEY",
+      "provider": "./praxis-providers/internal.js",
+      "options": { "region": "us-east-1" }
+    }
+  ]
+}
+```
 
-| Model | Notes |
-| --- | --- |
-| `x-ai/grok-4.1-fast` | Default; fast and cost-efficient |
-| `anthropic/claude-sonnet-4-5` | Higher quality, higher cost |
-| `google/gemini-flash-1.5` | Alternative fast option |
+```js
+// praxis-providers/internal.js — default export is a factory
+export default function internalProvider() {
+  return {
+    name: "internal",
+    async review(request) {
+      // request: systemPrompt, userPrompt, tools, model, temperature,
+      //          baseUrl, apiKey (resolved), options
+      // call anything; return the normalized contract:
+      return {
+        verdict: { compliant: true, issues: [], reason: "..." },
+        usage: { promptTokens: 812, completionTokens: 41, costUsd: null },
+      };
+    },
+  };
+}
+```
 
-### `validation.specFilePattern`
+A provider may also implement `complete(request)` — the raw structured-output call the [curator](#curator) uses. Only providers that implement it can back the curator.
+
+`options` is passed to the provider verbatim. For the built-in OpenRouter provider it is spread into the request body first, so it can add backend fields (routing, reasoning settings) but never overrides `model`, `temperature`, or the tool-calling protocol. Both `provider` and `options` are part of the reviewer's behavioral identity: changing them re-reviews that reviewer's targets. A local provider module is code your project runs — treat it with the same trust as an npm script.
+
+::: warning Breaking change in v2
+The v1 `validation` section is removed. Configure `reviewers` instead, and move `specFilePattern` to the top level.
+:::
+
+## `specFilePattern`
 
 **Type:** `string`
 **Default:** `"README.md"`
@@ -189,30 +255,46 @@ Glob patterns are supported:
 { "specFilePattern": "*.spec.md" }
 ```
 
+A brace pattern accepts more than one convention — this one discovers both directory READMEs and [compiled expert profiles](/concepts/agent-profiles#profiles-as-spec-files):
+
+```json
+{ "specFilePattern": "{README.md,*.expert.md}" }
+```
+
 ---
 
 ## See also
 
 - [praxis init](/commands/init)
-- [Validation Domains](/concepts/validation-domains)
+- [Review Domains](/concepts/validation-domains)
 - [Claude Code Plugin](/plugins/claude-code)
 
-## Compatibility with pre-1.4 projects
+## Breaking changes from 1.x
 
-Everything a 1.3.x project wrote keeps working — the old spellings are
-accepted and normalized, no migration required:
+v2 drops every 1.x compatibility spelling — nothing is aliased or
+normalized:
 
-| Legacy (still accepted) | Current |
-| --- | --- |
-| `rolesDir` config key | `expertsDir` |
-| `responsibilitiesDir` config key | `practicesDir` |
-| `type: role` frontmatter | `type: expert` |
-| `type: responsibility` frontmatter | `type: practice` |
-| `responsibilities:` list in an expert file | `practices:` |
-| `praxis validate document\|all\|ci\|report` | `praxis eval run\|ci\|verdict` |
-| `praxis add role\|responsibility` | `praxis add expert\|practice` |
+| Removed                                           | Use instead                                                        |
+| ------------------------------------------------- | ------------------------------------------------------------------ |
+| `rolesDir` / `responsibilitiesDir` config keys    | `expertsDir` / `practicesDir`                                      |
+| `type: role` / `type: responsibility` frontmatter | `type: expert` / `type: practice`                                  |
+| `responsibilities:` list in an expert file        | `practices:`                                                       |
+| `validation:` config section                      | `reviewers:` + top-level `specFilePattern`                         |
+| `constitution: true`                              | an explicit glob, e.g. `constitution: "context/constitution/*.md"` |
+| `praxis validate document\|all\|ci\|report`       | `praxis eval run\|ci\|verdict`                                     |
+| `praxis add role\|responsibility`                 | `praxis add expert\|practice`                                      |
 
-When both spellings are present (e.g. `expertsDir` and `rolesDir`), the
-current one wins. Default `sources` also include the legacy `roles` and
-`responsibilities` directory names, so unconfigured pre-1.4 projects
-keep being scanned.
+Default `sources` are `["experts", "practices", "reference", "context"]`.
+
+## curator
+
+The model behind `praxis axioms triage` labeling and the `curate` session (its traceability check included) — the taxonomy's librarian. One entry, reviewer-shaped minus `name`; teams typically point it at a frontier model, since assignment quality bounds every per-axiom rate:
+
+```json
+"curator": {
+  "model": "<model slug>",
+  "apiKeyEnvVar": "OPENROUTER_API_KEY"
+}
+```
+
+Optional fields as for reviewers: `baseUrl`, `temperature`, `provider` (including `./relative` local modules), `options`. Not configured means `curate` refuses with the exact block to add — there is no silent fallback to a reviewer model. `axioms triage` is gentler: it warns that labeling is deferred and exits 0, so a run pipeline without a curator never breaks.

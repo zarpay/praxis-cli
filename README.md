@@ -1,6 +1,6 @@
 # Praxis
 
-Praxis is a **conceptual linter and knowledge compiler**: write specs that define what valid looks like for any set of files, judge them with an LLM, and compile your team's knowledge into subject-matter-expert agent profiles.
+Praxis is a **conceptual linter and knowledge compiler**: write specs that define what valid looks like for any set of files, review them with an LLM, and compile your team's knowledge into subject-matter-expert agent profiles.
 
 This repository is organized as three top-level projects:
 

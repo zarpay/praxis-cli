@@ -1,6 +1,8 @@
 ---
 paths:
   - "src/services/*.ts"
+excludes:
+  - "src/services/legacy-import.ts"
 ---
 
 # Service Conventions

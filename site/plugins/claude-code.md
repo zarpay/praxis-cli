@@ -14,15 +14,17 @@ Or with custom options:
 
 ```json
 {
-  "plugins": [{
-    "name": "claude-code",
-    "outputDir": "./plugins/my-agents",
-    "claudeCodePluginName": "my-org"
-  }]
+  "plugins": [
+    {
+      "name": "claude-code",
+      "outputDir": "./plugins/my-agents",
+      "claudeCodePluginName": "my-org"
+    }
+  ]
 }
 ```
 
-Run `praxis init` after adding the plugin to scaffold the plugin directory structure.
+The plugin's directories and manifest are written by the first `praxis compile` after enabling it.
 
 ## What it generates
 
@@ -30,16 +32,17 @@ For each compiled expert, the plugin writes an agent file at `{outputDir}/agents
 
 ```yaml
 ---
-name: Code Reviewer
-description: "Reviews pull requests against team conventions and coding standards."
+name: scooper
+description: "Use this agent to review Scoop Society services for convention adherence, or for advice when writing a new service."
 tools: Read, Glob, Grep
-model: opus
-permissionMode: plan
+model: sonnet
 ---
+# Role
 
-# Code Reviewer
+# Service Steward (a.k.a **Scooper**)
 
-Reviews pull requests with an eye for correctness and alignment with team conventions.
+The subject-matter expert on how Scoop Society services are written
+and reviewed.
 
 ...full profile content...
 ```
@@ -50,30 +53,30 @@ The YAML frontmatter is what Claude Code reads to register the agent. The markdo
 
 The plugin reads optional fields from your expert frontmatter to populate the Claude Code agent frontmatter:
 
-| Expert frontmatter | Claude Code output | Example |
-| --- | --- | --- |
-| `description` | `description` | `"Reviews pull requests..."` |
-| `agent_tools` | `tools` | `Read, Glob, Grep` |
-| `agent_model` | `model` | `opus`, `sonnet` |
-| `agent_permission_mode` | `permissionMode` | `plan`, `bypassPermissions` |
+| Expert frontmatter      | Claude Code output | Example                      |
+| ----------------------- | ------------------ | ---------------------------- |
+| `description`           | `description`      | `"Reviews pull requests..."` |
+| `agent_tools`           | `tools`            | `Read, Glob, Grep`           |
+| `agent_model`           | `model`            | `opus`, `sonnet`             |
+| `agent_permission_mode` | `permissionMode`   | `plan`, `bypassPermissions`  |
 
 Example expert frontmatter:
 
 ```yaml
 ---
-title: Linear Manager
-alias: linear-manager
-description: "Use this agent to manage Linear projects and issues."
+title: Service Steward
+alias: Scooper
+description: "Use this agent to review Scoop Society services for convention adherence."
 agent_tools: Read, Glob, Grep
-agent_model: opus
-agent_permission_mode: plan
+agent_model: sonnet
 
-constitution:
-  - context/constitution/*.md
+constitution: "knowledge/context/constitution/*.md"
 practices:
-  - practices/manage-linear-resources.md
+  - knowledge/practices/review-service-quality.md
 ---
 ```
+
+An expert with no `description` compiles a readable profile but no agent frontmatter — the profile is documentation, not a dispatchable agent, and the compile says so with a warning.
 
 ## The `plugin.json` manifest
 
@@ -89,28 +92,25 @@ The `name` field is controlled by `claudeCodePluginName` (default: `"praxis"`). 
 
 If `plugin.json` already exists, the plugin only updates the `name` field — other fields you have customized are preserved.
 
-## The `/validate` slash command
+## The `/praxis-resolve` slash command and the skill
 
-The plugin generates a `/validate` slash command at `{outputDir}/commands/eval.md`. This lets Claude Code users eval runs one at a time without an OpenRouter API key — Claude Code uses its own LLM to check the document against the README spec in the same directory.
+The plugin writes two agent-facing artifacts alongside the compiled agents:
 
-```
-/praxis:validate experts/my-expert.md
-```
-
-The slash command name is derived from `claudeCodePluginName`:
+- **`commands/praxis-resolve.md`** — a `/praxis-resolve` slash command: a disciplined resolve loop (discover the full scope, fix one finding, verify with `praxis eval run <path>`, repeat) that an agent works through until the project is compliant.
+- **`skills/praxis/SKILL.md`** — the praxis skill: the CLI reference an agent loads so it knows the commands, the cache, the specs, and the ledger without being taught them every session.
 
 ```
-/{claudeCodePluginName}:validate
+/praxis-resolve src/services --no-warns
 ```
 
-This is useful for teams with Claude Code licenses who don't want to distribute OpenRouter keys. Developers can validate before pushing; CI can run the full `praxis eval run` suite independently.
+Resolving still runs `praxis eval run` under the hood, so the reviewer verdicts an agent acts on are the same ones CI will check. (`claudeCodePluginName` namespaces the plugin itself; the command file is always `praxis-resolve.md`.)
 
 ## Plugin configuration options
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `outputDir` | `string` | `"./plugins/praxis"` | Full output directory path, resolved against project root |
-| `claudeCodePluginName` | `string` | `"praxis"` | The `name` field in `plugin.json` and the slash command namespace |
+| Option                 | Type     | Default              | Description                                                       |
+| ---------------------- | -------- | -------------------- | ----------------------------------------------------------------- |
+| `outputDir`            | `string` | `"./plugins/praxis"` | Full output directory path, resolved against project root         |
+| `claudeCodePluginName` | `string` | `"praxis"`           | The `name` field in `plugin.json` and the slash command namespace |
 
 ## See also
 

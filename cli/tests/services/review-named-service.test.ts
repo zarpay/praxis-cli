@@ -1,0 +1,303 @@
+import type { LedgerRecord, ReviewedTarget } from "@/types.js";
+
+import { HttpResponse, http } from "msw";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+
+import { PraxisConfig } from "@/models/praxis-config.js";
+import reviewNamedService from "@/services/review-named-service.js";
+import {
+  OPENROUTER_URL,
+  createOpenRouterServer,
+  useOpenRouterResponse,
+  validationToolCallResponse,
+} from "@tests/helpers/openrouter-msw.js";
+import { createValidatorTmpdir } from "@tests/helpers/validator-tmpdir.js";
+
+const server = createOpenRouterServer();
+
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: "error" });
+  process.env["OPENROUTER_API_KEY"] = "test-key";
+});
+
+afterAll(() => {
+  server.close();
+  delete process.env["OPENROUTER_API_KEY"];
+});
+
+const cleanups: (() => void)[] = [];
+
+afterEach(() => {
+  server.resetHandlers();
+  while (cleanups.length) cleanups.pop()?.();
+  delete process.env["MISSING_KEY_VAR"];
+});
+
+/** Every review in the test comes back with the given verdict. */
+function useVerdict(
+  tool: "validation_pass" | "validation_warn" | "validation_fail",
+  args: { reason: string; issues?: (string | { axiom: string | null; text: string })[] } = {
+    reason: "Because.",
+    issues: ["An issue"],
+  },
+): void {
+  useOpenRouterResponse(server, validationToolCallResponse(tool, args));
+}
+
+const KEYED = { name: "flash", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" };
+
+describe("reviewNamedService", () => {
+  /** A project with one keyed reviewer and two documents to review. */
+  function reviewingProject(): {
+    root: string;
+    cfg: PraxisConfig;
+    abs: (rel: string) => string;
+  } {
+    const { root, abs, cleanup } = createValidatorTmpdir({
+      sources: ["specs"],
+      files: {
+        "specs/README.md": "# Spec\n\nDocuments must have a title.",
+        "specs/doc.md": "# Doc",
+        "specs/other.md": "# Other",
+      },
+      reviewers: [KEYED],
+    });
+    cleanups.push(cleanup);
+
+    return { root, cfg: new PraxisConfig(root), abs };
+  }
+
+  it("resolves a paths-targeted spec when no sibling matches — profiles govern from afar (11)", async () => {
+    useVerdict("validation_pass", { reason: "fine" });
+    const { root, cfg } = (() => {
+      const { root, cleanup } = createValidatorTmpdir({
+        sources: ["lib", "profiles"],
+        files: {
+          "profiles/core.expert.md": '---\npaths:\n  - "lib/*.rb"\n---\n\n# Core rules',
+          "lib/base.rb": "class Base; end",
+        },
+        reviewers: [KEYED],
+        specFilePattern: "{README.md,*.expert.md}",
+      });
+      cleanups.push(cleanup);
+
+      return { root, cfg: new PraxisConfig(root) };
+    })();
+
+    const result = await reviewNamedService(cfg, {
+      targets: [join(root, "lib", "base.rb")],
+      ledger: false,
+    });
+
+    expect(result.errors).toBe(0);
+  });
+
+  it("refuses a directory target with the glob hint", async () => {
+    const { cfg, abs } = reviewingProject();
+
+    const review = reviewNamedService(cfg, { targets: [abs("specs")], ledger: false });
+
+    await expect(review).rejects.toThrow(/is a directory/);
+  });
+
+  it("still raises the instructive error when nothing governs the target", async () => {
+    const { cfg, abs } = reviewingProject();
+    const orphan = abs("specs/../orphan.md");
+
+    const review = reviewNamedService(cfg, { targets: [orphan], ledger: false });
+
+    await expect(review).rejects.toThrow("write one there");
+  });
+
+  it("counts an error verdict for a named target", async () => {
+    useVerdict("validation_fail");
+    const { cfg, abs } = reviewingProject();
+
+    const result = await reviewNamedService(cfg, {
+      targets: [abs("specs/doc.md")],
+      useCache: false,
+    });
+
+    expect(result).toEqual({ errors: 1, warnings: 0 });
+  });
+
+  it("counts a warning separately from an error", async () => {
+    useVerdict("validation_warn");
+    const { cfg, abs } = reviewingProject();
+
+    const result = await reviewNamedService(cfg, {
+      targets: [abs("specs/doc.md")],
+      useCache: false,
+    });
+
+    expect(result).toEqual({ errors: 0, warnings: 1 });
+  });
+
+  it("reviews every named target, not just the first", async () => {
+    useVerdict("validation_fail");
+    const { cfg, abs } = reviewingProject();
+
+    const result = await reviewNamedService(cfg, {
+      targets: [abs("specs/doc.md"), abs("specs/other.md")],
+      useCache: false,
+    });
+
+    expect(result.errors).toBe(2);
+  });
+
+  it("counts nothing for a compliant target", async () => {
+    useVerdict("validation_pass");
+    const { cfg, abs } = reviewingProject();
+
+    const result = await reviewNamedService(cfg, {
+      targets: [abs("specs/doc.md")],
+      useCache: false,
+    });
+
+    expect(result).toEqual({ errors: 0, warnings: 0 });
+  });
+
+  it("takes the worst verdict when reviewers disagree about one target", async () => {
+    server.use(
+      http.post(OPENROUTER_URL, async ({ request }) => {
+        const body = (await request.json()) as { model: string };
+
+        return HttpResponse.json(
+          body.model === "strict-model"
+            ? validationToolCallResponse("validation_fail", { reason: "No.", issues: ["Bad"] })
+            : validationToolCallResponse("validation_pass", { reason: "Fine." }),
+        );
+      }),
+    );
+    const { root, abs, cleanup } = createValidatorTmpdir({
+      sources: ["specs"],
+      files: { "specs/README.md": "# Spec", "specs/doc.md": "# Doc" },
+      reviewers: [
+        KEYED,
+        { name: "strict", model: "strict-model", apiKeyEnvVar: KEYED.apiKeyEnvVar },
+      ],
+    });
+    cleanups.push(cleanup);
+
+    const result = await reviewNamedService(new PraxisConfig(root), {
+      targets: [abs("specs/doc.md")],
+      useCache: false,
+    });
+
+    // One reviewer passed and one failed: the target is an error, not a pass.
+    expect(result).toEqual({ errors: 1, warnings: 0 });
+  });
+
+  it("reports each target's findings as it lands", async () => {
+    useVerdict("validation_fail", { reason: "no", issues: ["Bad thing"] });
+    const { cfg, abs } = reviewingProject();
+    const seen: { path: string; findingTexts: string[] }[] = [];
+
+    await reviewNamedService(cfg, {
+      targets: [abs("specs/doc.md"), abs("specs/other.md")],
+      useCache: false,
+      onTarget: ({ path, findings }) =>
+        seen.push({ path, findingTexts: findings.map((finding) => finding.text) }),
+    });
+
+    expect(seen).toHaveLength(2);
+    expect(seen[0].findingTexts).toEqual(["Bad thing"]);
+  });
+
+  /** Parsed records of every run file, sorted by filename. */
+  function ledgerRuns(root: string): LedgerRecord[][] {
+    const dir = join(root, ".praxis", "ledger", "runs");
+
+    if (!existsSync(dir)) return [];
+
+    return readdirSync(dir)
+      .sort()
+      .map((file) =>
+        readFileSync(join(dir, file), "utf8")
+          .trimEnd()
+          .split("\n")
+          .map((line) => JSON.parse(line) as LedgerRecord),
+      );
+  }
+
+  describe("critiques are born raw (04, review→label)", () => {
+    it("a provider-cited axiom id is discarded — labels belong to triage, never review", async () => {
+      useVerdict("validation_fail", {
+        reason: "no",
+        issues: [{ axiom: "AX-aaaa11", text: "Title is vague." }],
+      });
+      const { cfg, abs } = reviewingProject();
+      const targets: ReviewedTarget[] = [];
+
+      await reviewNamedService(cfg, {
+        targets: [abs("specs/doc.md")],
+        useCache: false,
+        onTarget: (event) => targets.push(event),
+      });
+
+      const finding = targets[0].findings[0];
+      const critiqueRecords = ledgerRuns(cfg.root)
+        .flat()
+        .filter((record) => record.kind === "critique");
+
+      expect(finding).toMatchObject({ axiomId: null, text: "Title is vague." });
+      expect(critiqueRecords[0]).toMatchObject({
+        axiom_id: null,
+        axiom_version: null,
+        assigned_by: null,
+      });
+    });
+
+    it("two reviewers writing the same sentence corroborate one finding", async () => {
+      useVerdict("validation_fail", { reason: "no", issues: ["Title is vague."] });
+      const { root, abs, cleanup } = createValidatorTmpdir({
+        sources: ["specs"],
+        files: { "specs/README.md": "# Spec", "specs/doc.md": "# Doc" },
+        reviewers: [KEYED, { name: "second", model: "m2", apiKeyEnvVar: KEYED.apiKeyEnvVar }],
+      });
+      cleanups.push(cleanup);
+      const targets: ReviewedTarget[] = [];
+
+      await reviewNamedService(new PraxisConfig(root), {
+        targets: [abs("specs/doc.md")],
+        useCache: false,
+        ledger: false,
+        onTarget: (event) => targets.push(event),
+      });
+
+      expect(targets[0].findings).toHaveLength(1);
+      expect(targets[0].findings[0].witnesses).toEqual(["flash", "second"]);
+    });
+  });
+
+  describe("the ledger", () => {
+    it("persists each reviewer's pass with scope files — fast-loop runs are evidence", async () => {
+      useVerdict("validation_fail");
+      const { cfg, abs } = reviewingProject();
+
+      await reviewNamedService(cfg, { targets: [abs("specs/doc.md")], useCache: false });
+
+      const runs = ledgerRuns(cfg.root);
+
+      expect(runs).toHaveLength(1);
+      expect(runs[0][0]).toMatchObject({ kind: "run", scope: "files", trigger: "manual" });
+      expect(runs[0].slice(1).every((record) => record.kind === "critique")).toBe(true);
+      expect(runs[0].length).toBeGreaterThan(1);
+    });
+
+    it("writes nothing when ledger is false", async () => {
+      useVerdict("validation_pass");
+      const { cfg, abs } = reviewingProject();
+
+      await reviewNamedService(cfg, {
+        targets: [abs("specs/doc.md")],
+        useCache: false,
+        ledger: false,
+      });
+
+      expect(ledgerRuns(cfg.root)).toEqual([]);
+    });
+  });
+});

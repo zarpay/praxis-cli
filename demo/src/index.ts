@@ -3,6 +3,8 @@ import { createServer } from "node:http";
 import { createMemoryStore } from "./store/memory-store.js";
 import * as createReview from "./services/create-review.js";
 import * as rankParlors from "./services/rank-parlors.js";
+import * as awards from "./features/awards/index.js";
+import * as tastingMenu from "./features/tasting-menu/index.js";
 
 /**
  * Scoop Society's HTTP surface: a deliberately tiny JSON API.
@@ -25,6 +27,18 @@ const server = createServer((req, res) => {
     return;
   }
 
+  if (req.method === "GET" && req.url === "/tasting-menu") {
+    const result = tastingMenu.buildMenu(store, { stops: 3 });
+    send(result.ok ? 200 : 422, result);
+    return;
+  }
+
+  if (req.method === "GET" && req.url === "/awards") {
+    const result = awards.pickWinners(store, { minReviews: 0 });
+    send(result.ok ? 200 : 422, result);
+    return;
+  }
+
   if (req.method === "POST" && req.url === "/reviews") {
     let raw = "";
     req.on("data", (chunk: Buffer) => (raw += String(chunk)));
@@ -39,7 +53,7 @@ const server = createServer((req, res) => {
     return;
   }
 
-  send(404, { ok: false, error: "no such route — try GET /parlors or POST /reviews" });
+  send(404, { ok: false, error: "no such route — try GET /parlors, /tasting-menu, /awards, or POST /reviews" });
 });
 
 server.listen(3100, () => {

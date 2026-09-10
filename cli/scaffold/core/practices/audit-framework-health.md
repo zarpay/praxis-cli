@@ -1,8 +1,6 @@
 ---
 title: Audit Framework Health
 type: practice
-owner: stewart
-schedule: weekly
 ---
 
 # Audit Framework Health

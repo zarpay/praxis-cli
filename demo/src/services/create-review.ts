@@ -29,15 +29,12 @@ export function run(store: Store, input: CreateReviewInput): Result<Review> {
     return { ok: false, error: "tastingNotes must describe the visit in at least 12 characters" };
   }
 
-  const review: Review = {
-    id: `r${Date.now().toString(36)}`,
+  const review = store.addReview({
     parlorId: input.parlorId,
     author: input.author.trim(),
     rating: input.rating,
     tastingNotes: input.tastingNotes.trim(),
-    createdAt: new Date().toISOString(),
-  };
-  store.addReview(review);
+  });
 
   return { ok: true, value: review };
 }

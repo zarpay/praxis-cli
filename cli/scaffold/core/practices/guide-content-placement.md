@@ -1,8 +1,6 @@
 ---
 title: Guide Content Placement
 type: practice
-owner: stewart
-schedule: triggered
 ---
 
 # Guide Content Placement

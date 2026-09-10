@@ -1,7 +1,6 @@
 ---
 title: Praxis Steward
 type: expert
-manager: your-email@example.com
 alias: Stewart
 description: "Use this agent to navigate the Praxis framework, determine where content belongs, and ensure framework health. This agent should be invoked when adding or modifying Praxis content, when needing placement guidance (adding files to Praxis), or when maintaining framework quality."
 

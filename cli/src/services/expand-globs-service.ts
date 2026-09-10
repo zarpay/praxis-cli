@@ -1,0 +1,68 @@
+import type { Service } from "@/types.js";
+
+import fg from "fast-glob";
+
+import { hasGlobChars, matchesFilename } from "@/helpers/files-helper.js";
+import { baseName } from "@/helpers/paths-helper.js";
+
+/** The glob patterns to resolve. */
+interface ExpandGlobsInput {
+  /** Patterns to expand, in the order the author declared them. */
+  patterns: string[];
+}
+
+/** What one declared pattern turned out to match. */
+interface GlobExpansion {
+  /** The pattern as the author wrote it. */
+  pattern: string;
+  /** Whether it is a glob; a plain path matches only itself. */
+  isGlob: boolean;
+  /** Project-relative paths matched, sorted. */
+  matches: string[];
+}
+
+/**
+ * Resolves an expert's declared patterns to the files they match.
+ *
+ * A pattern with no wildcards is a plain path and matches only itself,
+ * so an author can name one file or a set with the same key. Templates
+ * and spec files are never matched: they are inputs to the compiler,
+ * never content it inlines.
+ *
+ * Results come back per pattern rather than flattened, because both
+ * callers need to know *which* pattern matched nothing — a glob that
+ * hits nothing is a typo worth reporting, while a plain path that
+ * matches nothing is a dangling reference. Flattening would throw away
+ * the only thing that tells them apart.
+ *
+ * @returns One entry per input pattern, in declaration order
+ */
+const expandGlobsService: Service<ExpandGlobsInput, Promise<GlobExpansion[]>> = (
+  cfg,
+  { patterns },
+) => {
+  return Promise.all(
+    patterns.map(async (pattern) => {
+      if (!hasGlobChars(pattern)) {
+        return { pattern, isGlob: false, matches: [pattern] };
+      }
+
+      const matched = await fg(pattern, { cwd: cfg.root, onlyFiles: true });
+
+      return {
+        pattern,
+        isGlob: true,
+        matches: matched.filter((match) => !isExcluded(match, cfg.specFilePattern)).sort(),
+      };
+    }),
+  );
+};
+
+export default expandGlobsService;
+
+/** Whether a matched path is a template or a spec, never inlined content. */
+function isExcluded(filePath: string, specFilePattern: string): boolean {
+  const name = baseName(filePath);
+
+  return name === "_template.md" || matchesFilename(name, specFilePattern);
+}

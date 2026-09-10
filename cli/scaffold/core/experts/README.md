@@ -47,7 +47,6 @@ All paths in frontmatter are relative to the project root (the directory contain
 ---
 title: "{expert_name}"
 type: expert
-manager: "{manager_email}"
 alias: "{required_alias}"
 
 description: "Use this agent to {LIST USECASES}. This agent should be invoked {EXPLAIN AUTO INVOCATION CRITERIA}."

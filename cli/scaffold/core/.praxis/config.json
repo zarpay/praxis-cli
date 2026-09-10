@@ -1,11 +1,19 @@
 {
-  "sources": ["experts", "practices", "reference", "context"],
+  "sources": [
+    "experts",
+    "practices",
+    "reference",
+    "context"
+  ],
   "expertsDir": "experts",
   "practicesDir": "practices",
   "agentProfilesOutputDir": "./agent-profiles",
   "plugins": [],
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast"
-  }
+  "reviewers": [
+    {
+      "name": "default",
+      "model": "x-ai/grok-4.1-fast",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    }
+  ]
 }

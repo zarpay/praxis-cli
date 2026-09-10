@@ -1,4 +1,4 @@
-import type { Parlor, Review } from "../domain/types.js";
+import type { Parlor, Review, ReviewDraft } from "../domain/types.js";
 
 /**
  * In-memory persistence for the demo.
@@ -11,7 +11,8 @@ export interface Store {
   getParlor(id: string): Parlor | undefined;
   listParlors(): Parlor[];
   listReviews(parlorId?: string): Review[];
-  addReview(review: Review): void;
+  /** Persists a draft, assigning identity and timestamp — the one place time enters. */
+  addReview(draft: ReviewDraft): Review;
 }
 
 /** Creates a Store seeded with a few parlors so the API has data on boot. */
@@ -28,8 +29,14 @@ export function createMemoryStore(): Store {
     listParlors: () => [...parlors.values()],
     listReviews: (parlorId) =>
       parlorId ? reviews.filter((r) => r.parlorId === parlorId) : [...reviews],
-    addReview: (review) => {
+    addReview: (draft) => {
+      const review: Review = {
+        ...draft,
+        id: `r${Date.now().toString(36)}`,
+        createdAt: new Date().toISOString(),
+      };
       reviews.push(review);
+      return review;
     },
   };
 }

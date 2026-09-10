@@ -54,10 +54,7 @@ export function createCompilerTmpdir(): {
       practicesDir: "content/practices",
       agentProfilesOutputDir: "./agent-profiles",
       plugins: ["claude-code"],
-      validation: {
-        apiKeyEnvVar: "OPENROUTER_API_KEY",
-        model: "x-ai/grok-4.1-fast",
-      },
+      reviewers: [{ name: "test", model: "test-model", apiKeyEnvVar: "OPENROUTER_API_KEY" }],
     }),
   );
 

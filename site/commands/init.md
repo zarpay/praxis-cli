@@ -6,67 +6,109 @@ Scaffolds a new Praxis project in the target directory.
 
 ```bash
 praxis init [directory]
+praxis init [directory] --spec-layer
 ```
 
 If `directory` is omitted, scaffolding happens in the current working directory.
 
 ## What it creates
 
+By default, init scaffolds only the eval layer — the `.praxis/` tree:
+
+```
+my-org/
+└── .praxis/
+    └── config.json              ← reviewers, sources, specFilePattern
+```
+
+Your specs are your existing files (READMEs and the like); point the
+config's `sources` at the directories they live in and run
+`praxis eval run`. Nothing else is written to your repo.
+
+## `--spec-layer`
+
+Pass `--spec-layer` to also scaffold the knowledge-authoring taxonomy
+the compiler works with (experts, practices, constitution, reference).
+It is safe to run later on an existing eval-layer project — existing
+files are never overwritten:
+
 ```
 my-org/
 ├── .praxis/
 │   └── config.json              ← project configuration
+├── README.md                    ← the taxonomy's own spec
 ├── context/
+│   ├── README.md
 │   ├── constitution/
 │   │   ├── README.md            ← validation spec
 │   │   ├── identity.md          ← starter: who you are
-│   │   ├── principles.md        ← starter: what you value
-│   │   └── _template.md         ← template for new constitution docs
+│   │   └── principles.md        ← starter: what you value
 │   ├── conventions/
 │   │   ├── README.md
-│   │   ├── documentation.md     ← starter: writing conventions
-│   │   └── _template.md
+│   │   └── documentation.md     ← starter: writing conventions
 │   └── lenses/
-│       ├── README.md
-│       └── _template.md
+│       └── README.md
 ├── experts/
 │   ├── README.md
 │   ├── praxis-steward.md        ← built-in: knowledge framework steward
-│   ├── praxis-recruiter.md      ← built-in: talent and team sourcing
-│   └── _template.md
+│   └── praxis-recruiter.md      ← built-in: talent and team sourcing
 ├── practices/
 │   ├── README.md
-│   └── _template.md
+│   ├── audit-framework-health.md      ← starter practices
+│   ├── challenge-contributor-design.md
+│   ├── guide-content-placement.md
+│   └── review-content-quality.md
 ├── reference/
 │   ├── README.md
-│   └── _template.md
+│   ├── practices-index.md       ← starter reference docs
+│   └── praxis-vocabulary.md
 ├── agent-profiles/              ← compiled output (created on first compile)
 └── plugins/                     ← plugin output (created on first compile)
 ```
 
+New documents are created with `praxis add`, which writes them from templates compiled into the CLI — the scaffold ships starter content, not template files.
+
 ## Safe to re-run
 
-`praxis init` skips any file that already exists. It is safe to run on an existing project to scaffold new sections or restore accidentally deleted templates.
+`praxis init` skips any file that already exists. It is safe to run on an existing project to scaffold new sections or restore accidentally deleted starter files.
 
-## Claude Code plugin scaffolding
+## Plugin output comes from compile, not init
 
-If the `claude-code` plugin is listed in `.praxis/config.json` at init time, Praxis also scaffolds the plugin directory structure:
+Plugin directories are written by the first `praxis compile` with the plugin enabled — never by init. With the `claude-code` plugin configured, compile produces:
 
 ```
 plugins/
 └── praxis/
-    ├── agents/                  ← compiled agent files land here
+    ├── agents/                  ← compiled agent files
     ├── .claude-plugin/
     │   └── plugin.json
-    └── commands/
-        └── validate.md          ← /praxis:validate slash command
+    ├── commands/
+    │   └── praxis-resolve.md    ← /praxis-resolve slash command
+    └── skills/
+        └── praxis/SKILL.md      ← the agent-facing CLI reference
 ```
-
-Re-running `praxis init` after adding the plugin to config will scaffold these directories without touching your existing agent files.
 
 ## Default config
 
-The generated `.praxis/config.json`:
+The eval-layer `.praxis/config.json` (default init):
+
+```json
+{
+  "sources": [],
+  "specFilePattern": "README.md",
+  "reviewers": [
+    {
+      "name": "default",
+      "model": "x-ai/grok-4.1-fast",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    }
+  ]
+}
+```
+
+Point `sources` at the directories your specs live in — Scoop Society uses `["knowledge", "src", "tests"]` — and rename or multiply the reviewers as you see fit.
+
+With `--spec-layer`, the config also wires the authoring taxonomy:
 
 ```json
 {
@@ -75,10 +117,13 @@ The generated `.praxis/config.json`:
   "practicesDir": "practices",
   "agentProfilesOutputDir": "./agent-profiles",
   "plugins": [],
-  "validation": {
-    "apiKeyEnvVar": "OPENROUTER_API_KEY",
-    "model": "x-ai/grok-4.1-fast"
-  }
+  "reviewers": [
+    {
+      "name": "default",
+      "model": "x-ai/grok-4.1-fast",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    }
+  ]
 }
 ```
 

@@ -6,7 +6,7 @@ Plugins receive compiled agent profiles and transform or extend them for specifi
 
 After compiling an expert, Praxis:
 
-1. Writes the pure profile to `{agentProfilesOutputDir}/{alias}.md`
+1. Writes the pure profile to `{agentProfilesOutputDir}/{alias lowercased}.expert.md`
 2. Passes the profile content and expert metadata to each enabled plugin
 3. Each plugin writes its own output to its configured output directory
 
@@ -26,19 +26,21 @@ Or use the object form with per-plugin options:
 
 ```json
 {
-  "plugins": [{
-    "name": "claude-code",
-    "outputDir": "./plugins/my-agents",
-    "claudeCodePluginName": "my-org"
-  }]
+  "plugins": [
+    {
+      "name": "claude-code",
+      "outputDir": "./plugins/my-agents",
+      "claudeCodePluginName": "my-org"
+    }
+  ]
 }
 ```
 
 ## Available plugins
 
-| Plugin | Description |
-| --- | --- |
-| `claude-code` | Generates Claude Code agent files with YAML frontmatter, manages `plugin.json`, and creates a `/validate` slash command |
+| Plugin        | Description                                                                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `claude-code` | Generates Claude Code agent files with YAML frontmatter, manages `plugin.json`, and writes the `/praxis-resolve` command and praxis skill |
 
 ## Plugin output directories
 
@@ -48,7 +50,7 @@ Plugin output directories are separate from `agentProfilesOutputDir`. You can ha
 
 ```
 agent-profiles/
-└── reviewer.md          ← pure profile
+└── reviewer.expert.md   ← pure profile
 
 plugins/praxis/
 └── agents/

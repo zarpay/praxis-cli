@@ -1,0 +1,11 @@
+{
+  "sources": [],
+  "specFilePattern": "README.md",
+  "reviewers": [
+    {
+      "name": "default",
+      "model": "x-ai/grok-4.1-fast",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+    }
+  ]
+}

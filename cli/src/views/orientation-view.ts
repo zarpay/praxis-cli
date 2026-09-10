@@ -1,0 +1,50 @@
+import type { Orientation } from "@/types.js";
+import type { View } from "@framework/types.js";
+
+import chalk from "chalk";
+
+import { table } from "@framework/views/table.js";
+
+/**
+ * Bare `praxis`: the project at a glance, every line naming the
+ * command that acts on it — drill-down, not dumps.
+ */
+const orientationView: View<Orientation & { json?: boolean }> = (orientation) => {
+  if (orientation.json) {
+    const { json: _json, ...payload } = orientation;
+
+    return [{ channel: "content", entries: [JSON.stringify(payload, null, 2)] }];
+  }
+
+  const lastRunLine =
+    orientation.lastRun === null
+      ? "Last run: never — `praxis eval run` reviews everything and opens the ledger"
+      : `Last run: ${orientation.lastRun.at.slice(0, 10)} by ${orientation.lastRun.reviewerName}${orientation.lastRun.anchored ? "" : " (unanchored — feedback, not measurement)"}`;
+
+  const debtLines = (orientation.debtLine ?? []).map(
+    (entry) =>
+      `  ${entry.reviewerName}: ${entry.errors} failing at last full run — \`praxis debt report\``,
+  );
+
+  return [
+    { channel: "heading", text: "Praxis" },
+    {
+      channel: "content",
+      entries: [
+        lastRunLine,
+        chalk.gray(`Calibration: ${orientation.calibration}`),
+        "",
+        ...table([
+          ["Active axioms", orientation.activeAxioms, "`praxis axioms list`"],
+          ["Untriaged", orientation.pendingTriage, "`praxis axioms triage`"],
+          ["Awaiting curation", orientation.awaitingCuration, "`praxis axioms curate`"],
+        ]),
+        ...(debtLines.length > 0 ? ["", ...debtLines] : []),
+        "",
+        "Reports: `praxis eval report` · `praxis debt report` · `praxis status --json`",
+      ],
+    },
+  ];
+};
+
+export default orientationView;

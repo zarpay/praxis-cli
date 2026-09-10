@@ -1,5 +1,14 @@
+import type { ReviewerConfig } from "@/types.js";
+
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
+
+/** A baseline reviewer for tests that need one and don't care which. */
+export const TEST_REVIEWER: ReviewerConfig = {
+  name: "test",
+  model: "test-model",
+  apiKeyEnvVar: "OPENROUTER_API_KEY",
+};
 
 /** The concrete server type setupServer() returns (msw's exported alias has drifted across versions). */
 type OpenRouterServer = ReturnType<typeof setupServer>;
@@ -12,15 +21,26 @@ export type ValidationToolName = "validation_pass" | "validation_warn" | "valida
 
 /**
  * Builds an OpenRouter chat-completion response body containing a single
- * validation tool call, matching the shape Judge parses.
+ * validation tool call, matching the shape the provider parses.
  *
  * @param toolName - Which validation tool the "model" called
  * @param args - The tool arguments (reason, and issues for warn/fail)
+ * @param usage - Optional usage block (prompt_tokens/completion_tokens/cost)
  */
 export function validationToolCallResponse(
   toolName: ValidationToolName,
-  args: { reason: string; issues?: string[] },
+  args: { reason: string; issues?: (string | { axiom: string | null; text: string })[] },
+  usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number },
 ): object {
+  // The two-channel wire shape is {axiom, text}; a bare string is a
+  // test convenience for an open-channel critique.
+  const wireArgs = {
+    reason: args.reason,
+    ...(args.issues
+      ? { issues: args.issues.map((i) => (typeof i === "string" ? { axiom: null, text: i } : i)) }
+      : {}),
+  };
+
   return {
     choices: [
       {
@@ -31,12 +51,13 @@ export function validationToolCallResponse(
             {
               id: `call_${toolName}`,
               type: "function",
-              function: { name: toolName, arguments: JSON.stringify(args) },
+              function: { name: toolName, arguments: JSON.stringify(wireArgs) },
             },
           ],
         },
       },
     ],
+    ...(usage && { usage }),
   };
 }
 

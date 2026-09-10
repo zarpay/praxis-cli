@@ -1,0 +1,29 @@
+import type { Orchestrator } from "@/types.js";
+
+import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
+import buildDebtReportService from "@/services/build-debt-report-service.js";
+import debtReportView from "@/views/debt-report-view.js";
+
+/** Options for `praxis debt report`. */
+interface DebtReportOptions {
+  json?: boolean;
+}
+
+/**
+ * What `praxis debt report` does: render the P1 surface — baseline
+ * stock, corpus paydown, concentration, re-baseline deltas. Reads
+ * the ledger only; never a reviewer call, never a write.
+ */
+export const reportDebtOrchestrator: Orchestrator<DebtReportOptions> = async (
+  ctx,
+  { json = false },
+) => {
+  const report = buildDebtReportService(ctx.config, {});
+  const view = debtReportView({ ...report, json });
+
+  ctx.render(view);
+
+  return "ok";
+};
+
+export default prepareOrchestrator(reportDebtOrchestrator);

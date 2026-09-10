@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-09-10
+
+v2 rebuilds Praxis around one conviction: **the standards that matter are the ones no linter can check, and the only honest way to enforce them is to measure**. The spec is your README — documentation and enforcement in one file, so they cannot drift apart — and named LLM reviewers read it the way a colleague would, holding every governed file to it. A reviewer is an instrument, and instruments have error: teams run several, results are reported per reviewer and never pooled, every verdict is cached by a content hash over exactly what the reviewer saw, and every run appends to a committed, append-only ledger. The reviewer sees only the spec — nothing else ever enters the review — so a verdict means one thing: this file, against this standard, as written.
+
+From that evidence a taxonomy grows instead of being decreed. Recurring critiques are labeled into **axioms — named, stable categories of recurring critique, never rules**: the norm stays in the spec, the axiom names the issue reviewers keep finding against it, and its rate reads as prevalence. The machine proposes and a human accepts; acceptance requires the category's norm to trace to the spec's own text, so nothing counts that the spec does not state. Reports then refuse to flatter: rates always carry denominators, small samples say "insufficient data" instead of a number, measurement-identity changes open named epochs nothing trends across, and code older than its standard is pre-spec debt — a backlog to burn down, never evidence against anyone.
+
+**v2 is a breaking release**: the v1 `validation:` config section and the deprecated v1 command/config aliases are removed, and pre-v2 caches re-review once. Full documentation, including migration notes in the config reference, at **[zarpay.github.io/praxis-cli](https://zarpay.github.io/praxis-cli/)**.
+
 ## [1.4.0] - 2026-08-30
 
 ### Added

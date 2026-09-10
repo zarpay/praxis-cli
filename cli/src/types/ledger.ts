@@ -1,0 +1,283 @@
+// The ledger's record shapes: append-only, committed, full
+// provenance. Runs and critiques in one partition, triage decisions in
+// the other.
+
+import type { ProviderUsage } from "@/types/extension-points.js";
+import type { Critique } from "@/types/review.js";
+import type { Severity } from "@/types/shared.js";
+
+/** What caused a ledger run. Only "manual" is written today. */
+export type LedgerTrigger = "manual" | "ci" | "watch";
+
+/**
+ * What a run covered: "corpus" (full run) or "files" (named).
+ * "diff" is historical — written by the withdrawn diff-units feature
+ * (roadmap, 2026-09-07); readers tolerate it, nothing produces it.
+ */
+export type LedgerScope = "corpus" | "diff" | "files";
+
+/**
+ * Reviewer calibration state stamped on a run. "uncalibrated" is
+ * the absent case — no record exists for the reviewer's current hash —
+ * and stays the historical member every earlier record carries.
+ */
+export type CalibrationStatus = "uncalibrated" | "calibrated" | "stale";
+
+/**
+ * Historical (withdrawn diff-units feature, roadmap 2026-09-07):
+ * verdict-diff classification. Never written by current code; kept so
+ * committed records stay typed.
+ */
+export type LedgerFlow = "introduced" | "inherited" | "resolved";
+
+/** Historical (withdrawn diff-units feature, roadmap 2026-09-07). */
+export interface LedgerDiffFacts {
+  /** The ref the base was resolved from (e.g. "origin/main"). */
+  base_ref: string;
+  /** The merge-base sha the before side was read at. */
+  base_sha: string;
+  /** The sha whose tree the after side was read at (git show, not disk). */
+  head_sha: string;
+  /** Files the range changed, before coverage filtering. */
+  changed_files: number;
+  /** Changed files a spec governs — the reviewed subset. */
+  covered: number;
+  uncovered_count: number;
+  /** Project-relative paths no spec governs — the invisible work. */
+  uncovered_paths: string[];
+  /** Resolved events this run recorded (flow: "resolved" records). */
+  resolved_count: number;
+}
+
+/**
+ * One run record — one per (invocation, reviewer) — as stored.
+ *
+ * `reviewer_hash` is recorded deliberately: epochs are
+ * promised to be derivable from provenance, and only the behavioral hash
+ * sees a temperature, prompt, or options change. `baseline` is always
+ * false until the epoch machinery exists.
+ */
+export interface LedgerRunRecord {
+  kind: "run";
+  run_id: string;
+  timestamp: string;
+  commit_sha: string | null;
+  branch: string | null;
+  trigger: LedgerTrigger;
+  scope: LedgerScope;
+  files_evaluated: number;
+  reviewer_name: string;
+  reviewer_model: string;
+  reviewer_hash: string;
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  cost_usd: number | null;
+  cache_hits: number;
+  cache_misses: number;
+  pass_count: number;
+  warn_count: number;
+  fail_count: number;
+  unverified_count: number;
+  critique_count: number;
+  /**
+   * Evaluated units per governing spec — the applicable-opportunity
+   * denominator. Absent on records written
+   * before it existed; their per-run rates suppress as insufficient
+   * data rather than padding.
+   */
+  spec_units?: Record<string, number>;
+  /** Historical: present on withdrawn scope-"diff" runs only. */
+  diff?: LedgerDiffFacts;
+  calibration_status_at_run: CalibrationStatus;
+  baseline: boolean;
+}
+
+/**
+ * One critique record — one per issue — as stored.
+ *
+ * Fields no M2 run can know are typed literal `null`, so populating one
+ * later is a visible type change, not a quiet drift. The enums a future
+ * reader must understand (`population`, `authorship`, `flow`) carry their
+ * full unions now, because old records outlive new code.
+ */
+export interface LedgerCritiqueRecord {
+  kind: "critique";
+  /** `${run_id}:${seq}`, 1-based in write order. */
+  id: string;
+  run_id: string;
+  timestamp: string;
+  /** Project-relative. */
+  file_path: string;
+  /** Project-relative. */
+  spec_path: string;
+  target_content_hash: string;
+  spec_content_hash: string;
+  reviewer_name: string;
+  reviewer_model: string;
+  reviewer_hash: string;
+  severity: Severity;
+  text: string;
+  mode: "judgment";
+  /** The checklist axiom the critique was born under; null = open channel. */
+  axiom_id: string | null;
+  axiom_version: number | null;
+  /** Historical: "checklist" = born matched under the withdrawn two-channel model; current records are always null (labels live in assignment records). */
+  assigned_by: "checklist" | null;
+  /** Written as "unknown" — never guessed. */
+  population: "pre_spec" | "post_spec" | "unknown";
+  /** Written as "unknown" — never guessed. */
+  authorship: "agent" | "human" | "unknown";
+  authorship_evidence: null;
+  agent_involved: null;
+  pre_review: null;
+  /** Historical (withdrawn diff feature): flow label; null on all current records. */
+  flow?: LedgerFlow | null;
+  /** Historical (withdrawn diff feature). */
+  before_run_id?: string | null;
+  /** Historical (withdrawn diff feature). */
+  resolved_by?: string | null;
+}
+
+/** Any line of a run file. */
+export type LedgerRecord = LedgerRunRecord | LedgerCritiqueRecord;
+
+/** What one review produced beyond its verdict — null when nothing was reviewed. */
+export interface LedgerEvidence {
+  /** Provider usage, or null on a cache hit. */
+  usage: ProviderUsage | null;
+  /** Absolute path of the spec the unit was reviewed against. */
+  specPath: string;
+  targetContentHash: string;
+  specContentHash: string;
+}
+
+/** One reviewed unit as the ledger sees it. */
+export interface LedgerEntry {
+  /** The structural slice of a verdict the ledger reads. */
+  verdict: {
+    path: string;
+    compliant: boolean;
+    issues: Critique[];
+    severity?: Severity;
+    unverified?: true;
+  };
+  cacheHit: boolean;
+  /** Null ⇒ the unit went unverified ⇒ it fans out no critiques. */
+  evidence: LedgerEvidence | null;
+}
+
+/** Where a run landed. */
+export interface WriteLedgerRunResult {
+  runId: string;
+  path: string;
+}
+
+/** A human decision folding one critique into an axiom. */
+export interface TriageAssignmentRecord {
+  kind: "assignment";
+  critique_id: string;
+  axiom_id: string;
+  axiom_version: number;
+  /** Both halves of the provenance: who decided, who suggested. */
+  /**
+   * Both halves of the provenance: who decided, who suggested. "merge"
+   * marks a re-assignment written by `axioms merge` — the critique's
+   * prior assignment to a merged-away axiom remains beneath it in the
+   * ledger.
+   */
+  assigned_by: { decision: "human" | "flag:--yes" | "matcher" | "merge"; suggested_by: string };
+  timestamp: string;
+}
+
+/**
+ * A human judgment that the critique itself is invalid — the reviewer
+ * invented it, drifted, or the humans disagree with the spec it cites.
+ * Validity is decided in `praxis eval review`, never in curate: a
+ * dismissed critique is not evidence, so it is never labeled and never
+ * curated, until a reinstatement record lifts the dismissal. The
+ * dismissal rate is the reviewer-trust signal.
+ */
+export interface TriageDismissalRecord {
+  kind: "dismissal";
+  critique_id: string;
+  reason: string;
+  timestamp: string;
+}
+
+/** A dismissed critique reinstated as evidence: the dismissal no longer stands. */
+export interface CritiqueReinstatementRecord {
+  kind: "reinstatement";
+  critique_id: string;
+  reason: string;
+  timestamp: string;
+}
+
+/**
+ * A proposal rejected at ratification. Its supporting assignments are
+ * void from then on: the critiques return to the curate queue, still
+ * valid evidence awaiting an axiom.
+ */
+export interface ProposalRejectionRecord {
+  kind: "rejection";
+  axiom_id: string;
+  reason: string;
+  timestamp: string;
+}
+
+/** An active axiom retired: the id and its records stay readable forever. */
+export interface AxiomDeprecationRecord {
+  kind: "deprecation";
+  axiom_id: string;
+  reason: string;
+  timestamp: string;
+}
+
+/**
+ * The matcher considered a critique and found no squarely-matching
+ * axiom: the critique is categorized as needing curation, not
+ * merely untriaged. `considered` pins the axiom set it was judged
+ * against — when the spec's active set changes, the critique re-queues
+ * for triage automatically.
+ */
+export interface TriageUnmatchedRecord {
+  kind: "unmatched";
+  critique_id: string;
+  /** The axiom set judged against, as sorted `id@version` entries. */
+  considered: string[];
+  suggested_by: string;
+  timestamp: string;
+}
+
+/** Everything a triage session appends. */
+export type TriageRecord =
+  | TriageAssignmentRecord
+  | TriageDismissalRecord
+  | CritiqueReinstatementRecord
+  | ProposalRejectionRecord
+  | AxiomDeprecationRecord
+  | TriageUnmatchedRecord;
+
+/**
+ * Where one critique's triage records leave it, joined at read time by
+ * `TriageStore.decisions()` — the one place every reader gets it from.
+ */
+export interface CritiqueDecision {
+  /** A dismissal stands: the critique is not evidence — no label, no queue. */
+  dismissed: boolean;
+  /** The newest standing assignment; null when unlabeled or its axiom was rejected. */
+  assignment: TriageAssignmentRecord | null;
+  /** The newest unmatched verdict, for the curate-queue check. */
+  unmatched: TriageUnmatchedRecord | null;
+}
+
+/** One unassigned open-channel critique, as triage works it. */
+export interface PendingCritique {
+  id: string;
+  runId: string;
+  /** Project-relative, as the ledger records them. */
+  filePath: string;
+  specPath: string;
+  severity: Severity;
+  text: string;
+  reviewerName: string;
+}

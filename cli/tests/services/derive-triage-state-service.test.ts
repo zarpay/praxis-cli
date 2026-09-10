@@ -1,0 +1,132 @@
+import type { TriageRecord } from "@/types.js";
+
+import { randomUUID } from "node:crypto";
+import { mkdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+
+import deriveTriageStateService from "@/services/derive-triage-state-service.js";
+import { TriageStore } from "@/stores/triage-store.js";
+import { critiqueLine, seedLedgerRun } from "@tests/helpers/ledger-runs.js";
+import { testConfig } from "@tests/helpers/test-config.js";
+import {
+  assignmentRecord,
+  dismissalRecord,
+  rejectionRecord,
+  unmatchedRecord,
+} from "@tests/helpers/triage-records.js";
+
+describe("deriveTriageStateService", () => {
+  let root: string;
+
+  beforeEach(() => {
+    root = join(tmpdir(), `praxis-triage-state-test-${randomUUID()}`);
+    mkdirSync(root, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  it("derives an empty queue from an empty ledger", () => {
+    expect(deriveTriageStateService(testConfig(root), {})).toEqual({
+      pending: [],
+      unidentified: [],
+      assignments: [],
+      dismissed: 0,
+      rejectedProposals: 0,
+    });
+  });
+
+  it("pends open-channel critiques; checklist-born ones were never pending", () => {
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      extraLines: [
+        critiqueLine({ runId: "r1", seq: 1 }),
+        critiqueLine({ runId: "r1", seq: 2, axiomId: "AX-aaaa11" }),
+      ],
+    });
+
+    const { pending } = deriveTriageStateService(testConfig(root), {});
+    const ids = pending.map((critique) => critique.id);
+
+    expect(ids).toEqual(["r1:1"]);
+    expect(pending[0]).toMatchObject({
+      filePath: "src/a.ts",
+      specPath: "src/README.md",
+      reviewerName: "flash",
+    });
+  });
+
+  it("settles critiques that assignment or dismissal records cover", () => {
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      extraLines: [
+        critiqueLine({ runId: "r1", seq: 1 }),
+        critiqueLine({ runId: "r1", seq: 2 }),
+        critiqueLine({ runId: "r1", seq: 3 }),
+      ],
+    });
+
+    const records: TriageRecord[] = [
+      assignmentRecord(),
+      dismissalRecord({ critique_id: "r1:2", reason: "unassignable: off-spec" }),
+    ];
+    new TriageStore(testConfig(root)).writeSession(records);
+
+    const state = deriveTriageStateService(testConfig(root), {});
+    const ids = state.pending.map((critique) => critique.id);
+
+    expect(ids).toEqual(["r1:3"]);
+    expect(state.assignments).toHaveLength(1);
+    expect(state.dismissed).toBe(1);
+  });
+
+  it("an unmatched record moves a critique to the curate queue; a stale set re-queues it for triage", () => {
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      extraLines: [critiqueLine({ runId: "r1", seq: 1 }), critiqueLine({ runId: "r1", seq: 2 })],
+    });
+
+    // r1:1 was considered against the current (empty) active set; r1:2
+    // against a set that no longer exists — it goes back to triage.
+    new TriageStore(testConfig(root)).writeSession([
+      unmatchedRecord({ considered: [] }),
+      unmatchedRecord({ critique_id: "r1:2", considered: ["AX-gone00@1"] }),
+    ]);
+
+    const state = deriveTriageStateService(testConfig(root), {});
+
+    expect(state.unidentified.map((critique) => critique.id)).toEqual(["r1:1"]);
+    expect(state.pending.map((critique) => critique.id)).toEqual(["r1:2"]);
+  });
+
+  it("a rejected proposal releases its critiques back to the queue", () => {
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      extraLines: [critiqueLine({ runId: "r1", seq: 1 })],
+    });
+    new TriageStore(testConfig(root)).writeSession([
+      unmatchedRecord({ considered: [] }),
+      assignmentRecord({ axiom_id: "AX-cccc33" }),
+      rejectionRecord({ axiom_id: "AX-cccc33", reason: "not the axiom" }),
+    ]);
+
+    const state = deriveTriageStateService(testConfig(root), {});
+
+    expect(state.unidentified.map((critique) => critique.id)).toEqual(["r1:1"]);
+  });
+
+  it("counts rejections for the residual signal", () => {
+    new TriageStore(testConfig(root)).writeSession([
+      rejectionRecord({ axiom_id: "AX-bbbb22", reason: "reviewer invention" }),
+    ]);
+
+    expect(deriveTriageStateService(testConfig(root), {}).rejectedProposals).toBe(1);
+  });
+});

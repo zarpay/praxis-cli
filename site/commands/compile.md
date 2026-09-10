@@ -16,8 +16,9 @@ For each expert in `expertsDir`:
 2. Expands glob patterns in `constitution`, `context`, `practices`, and `refs`
 3. Reads and strips frontmatter from every referenced file
 4. Assembles a single markdown profile in section order
-5. Writes the profile to `{agentProfilesOutputDir}/{alias}.md`
-6. Passes the profile to each enabled plugin
+5. Prepends eval-targeting frontmatter — the expert's `validates:` compiles out as the spec's `paths:`, and `cohort:` and `excludes:` pass through — so the compiled profile is itself a spec the eval layer can discover
+6. Writes the profile to `{agentProfilesOutputDir}/{alias lowercased}.expert.md`
+7. Passes the profile to each enabled plugin
 
 See [The Compiler Pipeline](/concepts/compiler-pipeline) for a full walkthrough.
 
@@ -33,7 +34,7 @@ praxis compile --alias reviewer
 
 ### `--watch`
 
-Starts a file watcher on every directory in `sources`. Any `.md` change triggers a debounced recompile of all experts.
+Starts a file watcher on every directory in `sources`. Any file change in a watched directory triggers a debounced recompile of all experts.
 
 ```bash
 praxis compile --watch
@@ -45,7 +46,9 @@ The watcher debounces rapid saves (e.g., during an autosave burst) to avoid redu
 
 ### Pure profiles
 
-Written to `{agentProfilesOutputDir}/{alias}.md`. Default: `agent-profiles/`.
+Written to `{agentProfilesOutputDir}/{alias lowercased}.expert.md`. Default: `agent-profiles/` — Scooper compiles to `agent-profiles/scooper.expert.md`.
+
+The profile opens with eval-targeting frontmatter (`paths:`, plus any `cohort:`, `excludes:` the expert declared), which makes the compiled profile a spec in its own right: point a `specFilePattern` like `"{README.md,*.expert.md}"` at it and `praxis eval run` reviews the expert's `validates:` targets against it.
 
 Set `agentProfilesOutputDir: false` in config to disable pure profile output.
 
@@ -53,12 +56,9 @@ Set `agentProfilesOutputDir: false` in config to disable pure profile output.
 
 Each enabled plugin receives the compiled profile content and writes its own output. The Claude Code plugin writes to `{outputDir}/agents/{alias}.md`.
 
-## Errors
+## Warnings and failures
 
-The compiler exits with a non-zero code and a helpful message if:
-- A referenced file or glob matches nothing
-- An expert is missing required frontmatter fields
-- A file cannot be read
+One malformed expert never abandons the batch: it is reported and skipped, and every other expert still compiles. Reference problems come back as warnings — a glob matching nothing, a declared file that doesn't exist — because a typo'd reference shouldn't cost you the rest of the profile, but you still have to hear about it.
 
 ## Example output
 
@@ -67,15 +67,19 @@ praxis compile
 ```
 
 ```
-Compiling reviewer...
-  ✓ agent-profiles/reviewer.md
-  ✓ plugins/praxis/agents/reviewer.md
+[OK] Compiled scooper.expert.md
+[OK] Compiled sundae.expert.md
+[OK] Compiled taster.expert.md
 
-Compiling support-agent...
-  ✓ agent-profiles/support-agent.md
-  ✓ plugins/praxis/agents/support-agent.md
+Compiled 3 agent(s) (up-to-date)
+```
 
-Done. 2 experts compiled.
+```bash
+praxis compile --alias scooper
+```
+
+```
+[OK] Compiled scooper.expert.md
 ```
 
 ## See also

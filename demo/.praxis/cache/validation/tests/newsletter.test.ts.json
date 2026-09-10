@@ -1,0 +1,50 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "dacac2eb:abbf40e9": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "abbf40e9"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-08T11:57:07.796Z",
+      "content_hash": "0f402b1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The suite conforms to all three conventions. The top-level describe names the module ('send-newsletter'), nested describes use 'when' clauses, and each it states one observable outcome so describe + it reads as a sentence. Every it block contains exactly one expect, with compound shapes asserted once via toEqual/toMatchObject. Tests exercise only the public run API and observable store state (createMemoryStore is an honest in-memory collaborator, no spies or module-scope reaching), and each test builds its store fresh, so no suite depends on another's state or ordering."
+      }
+    },
+    "dacac2eb:e4deaf49": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e4deaf49"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-08T12:00:49.737Z",
+      "content_hash": "0f402b1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file fully complies with all specification requirements: proper subject framing with module name and 'when' clauses, one assertion per test block using compound assertions where appropriate, and testing only public API functionality with fresh test data and honest implementations."
+      }
+    },
+    "dacac2eb:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-08T12:00:55.729Z",
+      "content_hash": "0f402b1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 502 words."
+      }
+    }
+  }
+}
