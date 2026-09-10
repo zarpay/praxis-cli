@@ -70,7 +70,7 @@ describe("reviewAllService", () => {
       });
       const reviewerNames = [...new Set(run.verdicts.map((r) => r.reviewer))];
 
-      expect(reviewerNames).toEqual(cfg.reviewers.map((j) => j.name));
+      expect(reviewerNames).toEqual(["test"]);
     });
 
     it("reviews with only the reviewers it is given", async () => {
@@ -82,7 +82,7 @@ describe("reviewAllService", () => {
       });
       const reviewerNames = [...new Set(run.verdicts.map((r) => r.reviewer))];
 
-      expect(reviewerNames).toEqual(only.map((j) => j.name));
+      expect(reviewerNames).toEqual(["test"]);
     });
   });
 

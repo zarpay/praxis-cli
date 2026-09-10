@@ -69,10 +69,10 @@ describe("AxiomFile", () => {
     expect(readBadId).toThrow(/an id like AX-3f9c2d/);
   });
 
-  it("rejects a missing severity", () => {
-    const readNoSeverity = () => AxiomFile.fromContent(axiomContent({ severity: null }), "a.md");
+  it("tolerates a missing severity — categories carry none", () => {
+    const axiom = AxiomFile.fromContent(axiomContent({ severity: null }), "a.md");
 
-    expect(readNoSeverity).toThrow(/severity/);
+    expect(axiom.severity).toBeNull();
   });
 
   it("rejects a status outside the lifecycle", () => {

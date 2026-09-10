@@ -1,4 +1,3 @@
-import type { ChatCompletionUsage } from "@/types.js";
 import type { ReviewerConfig } from "@/types.js";
 
 import { http, HttpResponse } from "msw";
@@ -31,7 +30,7 @@ export type ValidationToolName = "validation_pass" | "validation_warn" | "valida
 export function validationToolCallResponse(
   toolName: ValidationToolName,
   args: { reason: string; issues?: (string | { axiom: string | null; text: string })[] },
-  usage?: ChatCompletionUsage,
+  usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number },
 ): object {
   // The two-channel wire shape is {axiom, text}; a bare string is a
   // test convenience for an open-channel critique.

@@ -1,0 +1,7 @@
+{"kind": "rejection", "axiom_id": "AX-316fe6", "reason": "mechanical: describe-name-equals-module is regex-checkable; belongs in lint (duplicate of AX-36f502)", "timestamp": "2026-09-09T21:22:56.000Z"}
+{"kind": "rejection", "axiom_id": "AX-36f502", "reason": "mechanical: describe-name-equals-module is regex-checkable; belongs in lint", "timestamp": "2026-09-09T21:22:56.000Z"}
+{"kind": "rejection", "axiom_id": "AX-70e5a8", "reason": "mechanical: export shape, name, and return type are AST-checkable; belongs in lint", "timestamp": "2026-09-09T21:22:56.000Z"}
+{"kind": "rejection", "axiom_id": "AX-a3e5a8", "reason": "mechanical: file-presence check; belongs in static tooling", "timestamp": "2026-09-09T21:22:56.000Z"}
+{"kind": "rejection", "axiom_id": "AX-cec79d", "reason": "mechanical: import-graph reachability is a pure AST query; belongs in static tooling", "timestamp": "2026-09-09T21:22:56.000Z"}
+{"kind": "rejection", "axiom_id": "AX-d4a2fc", "reason": "mechanical: exactly-one-index.ts and import-path checks are static tooling", "timestamp": "2026-09-09T21:22:56.000Z"}
+{"kind": "rejection", "axiom_id": "AX-ed98ff", "reason": "untraceable: no spec states completeness-of-responsibility \u2014 extend src/services/README.md, then re-curate", "timestamp": "2026-09-09T21:22:56.000Z"}

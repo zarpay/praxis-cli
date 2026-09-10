@@ -3,6 +3,7 @@ import type { EpochBoundary } from "@/types.js";
 import { describe, expect, it } from "vitest";
 
 import epochBoundaryView from "@/views/epoch-boundary-view.js";
+import { reportText } from "@tests/helpers/report-text.js";
 
 /** A boundary whose fields tests override one at a time. */
 function boundary(overrides: Partial<EpochBoundary> = {}): EpochBoundary {
@@ -50,10 +51,10 @@ describe("epochBoundaryView", () => {
 
     const lines = epochBoundaryView(boundaries);
     const recommendation = lines[lines.length - 1];
-    const rendered = JSON.stringify(recommendation);
+    const recommendationText = reportText([recommendation]);
 
     expect(lines).toHaveLength(5);
     expect(recommendation.channel).toBe("content");
-    expect(rendered).toContain("praxis eval run");
+    expect(recommendationText).toContain("praxis eval run");
   });
 });

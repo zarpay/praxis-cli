@@ -5,33 +5,35 @@ import { statLines } from "@framework/views/stats.js";
 /** A curate session's counted outcome. */
 interface TriageOutcome {
   assigned: number;
-  proposed: number;
-  dismissed: number;
+  activated: number;
+  /** Critiques held as evidence with no axiom yet — the curator's call, accepted. */
+  held: number;
+  /** Critiques the human skipped — decided nothing. */
   skipped: number;
-  /** Pending critiques still waiting after the session. */
+  /** Critiques still awaiting curation after the session. */
   pendingLeft: number;
   /** Curator spend across the session, or null when nothing reported. */
   costUsd: number | null;
 }
 
 /**
- * A curate session's outcome: every decision counted, one per line, the
- * residual named, and the next command in reach.
+ * A curate session's outcome: every decision counted, one per line, what
+ * stays in the queue named, and the next command in reach.
  */
 const curateSummaryView: View<TriageOutcome> = ({
   assigned,
-  proposed,
-  dismissed,
+  activated,
+  held,
   skipped,
   pendingLeft,
   costUsd,
 }) => {
   const counts: [string, string | number][] = [
     ["Assigned", assigned],
-    ["Proposed", proposed],
-    ["Dismissed", dismissed],
+    ["Activated", activated],
+    ["Held (no axiom yet)", held],
     ["Skipped", skipped],
-    ["Still pending", pendingLeft],
+    ["Still awaiting curation", pendingLeft],
   ];
 
   return [
@@ -41,11 +43,8 @@ const curateSummaryView: View<TriageOutcome> = ({
       entries: [
         ...statLines(counts),
         ...(costUsd === null ? [] : ["", `Curator cost: $${costUsd.toFixed(4)}`]),
-        ...(proposed > 0
-          ? [
-              "",
-              "Proposals await ratification: `praxis axioms list`, then `praxis axioms ratify <id>`.",
-            ]
+        ...(activated > 0
+          ? ["", "Newly active axioms label from the next `praxis axioms triage` on."]
           : []),
       ],
     },

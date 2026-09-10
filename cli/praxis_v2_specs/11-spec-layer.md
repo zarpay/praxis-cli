@@ -52,4 +52,4 @@ None of these retirements removes capability. Teams using the compiler keep ever
 ## Open questions
 
 1. Does the spec layer stay in the `praxis` binary or become a separable concern (`praxis compile` as the only spec-layer command surface)? Current lean: same binary, separate command namespace — one tool, two layers, per 09's single-surface principle.
-2. Where does spec _quality_ tooling belong (e.g., the axiom authoring gate from 03 advising whether direction is reviewable)? It reads like spec-layer tooling but its verdicts guard the eval layer's integrity. Likely: eval layer owns the gate, spec layer calls it.
+2. ~~Where does spec _quality_ tooling belong (e.g., the axiom authoring gate from 03 advising whether direction is reviewable)? It reads like spec-layer tooling but its verdicts guard the eval layer's integrity. Likely: eval layer owns the gate, spec layer calls it.~~ Moot 2026-09-09: the authoring gate was retired (03); the judgment boundary is held in the curator's drafting prompt, which is eval-layer.

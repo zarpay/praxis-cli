@@ -34,7 +34,7 @@ praxis eval run src/services/redeem-coupon.ts --no-cache
 | `--verbose`         | Print the full AI reasoning after the result                    |
 | `--no-cache`        | Skip the cache and always call the API                          |
 
-**Exit code:** 0 unless a target has errors (warnings pass).
+**Exit code:** 0 unless a target has errors (warnings pass). A directory is refused with the glob hint (exit 2) — name files or a glob (`praxis eval run "src/services/*"`), or run the whole corpus with a bare `praxis eval run`.
 
 ---
 
@@ -86,7 +86,7 @@ Total documents: 4
 [Errors] 1
 ```
 
-Critiques print raw — the reviewer's own words against the spec. Labels come later: `praxis axioms triage` classifies the pending backlog under ratified axioms, and from then on reports cite the axiom's id and ratified words (drill-down at `praxis axioms show <id>`).
+Critiques print raw — the reviewer's own words against the spec. Labels come later: `praxis axioms triage` classifies the pending backlog under active axioms, and from then on reports cite the axiom's id and accepted words (drill-down at `praxis axioms show <id>`).
 
 **Exit code:** 0 only when the run is clean — 1 when any target has errors **or is unverified** (warnings do not fail). An unverified target was never seen by a reviewer, so it cannot be allowed to pass silently.
 
@@ -165,7 +165,21 @@ praxis eval critiques --axiom AX-b951db
 praxis eval critiques --json
 ```
 
-The ids are what [`praxis axioms reassign`](/commands/axioms#praxis-axioms-reassign-id) takes.
+The ids are what [`praxis axioms reassign`](/commands/axioms#praxis-axioms-reassign-id) and `praxis eval review --dismiss` take.
+
+## praxis eval review
+
+The validity session — the one place a critique is judged **invalid**. Triage and curate decide which axiom a critique belongs to and take for granted that every critique is true; whether the reviewer actually said something grounded is a human's call, made here.
+
+```bash
+praxis eval review src/services
+praxis eval review --dismiss 20260907T101932101Z-c0f5baa5:6 --reason "the spec permits this"
+praxis eval review --reinstate 20260907T101932101Z-c0f5baa5:6 --reason "misread the spec"
+```
+
+Interactively, every **untriaged** or **unmatched** critique in scope comes up one at a time — a critique labeled under an axiom is valid by definition (a human or the matcher found it an instance of a standard), so it is never offered and `--dismiss` refuses it; `axioms reassign` is the tool when it belongs elsewhere. Each card shows where it was said, by which reviewer, the words, and where the label lifecycle has it, and you choose `[d]ismiss / [n]ext / [q]uit`. A dismissal takes a reason and is appended to the ledger. A dismissed critique is not evidence: it leaves every queue, is never labeled or curated, and `axioms reassign` refuses it, until `--reinstate` lifts the dismissal.
+
+The dismissal count over all critiques is the **reviewer-trust signal**, printed at the end of the session and on `eval report`: many dismissals mean the specs disagree with the humans, or the reviewers are drifting. Because curate never dismisses, the number means exactly that.
 
 ## The ledger
 
@@ -181,20 +195,20 @@ A target that cannot be reviewed at all — unreadable, or a cohort too large fo
 
 ## praxis eval report
 
-The read side of the ledger — never a reviewer call. Scopes compose: `eval report [path|glob]` for files, `--commit <sha>` / `--commits <shas...>` for a commit or a PR's set, `--branch`, `--since <date|ref>`, and `--axiom <id>` for the single-standard drill-down. Every invocation prints the same discipline:
+The read side of the ledger — never a reviewer call. Scopes compose: `eval report [path|glob]` for files (a bare directory reads as everything under it), `--commit <sha>` / `--commits <shas...>` for a commit or a PR's set, `--branch`, `--since <date|ref>`, and `--axiom <id>` for the single-category drill-down. Every invocation prints the same discipline:
 
 - rates as `violations/opportunities (x%)` with the denominator always shown; cells under the small-n floor (5) render **insufficient data**, never a number. Current stock anchors to the latest *evidenced* corpus run (one with cache misses) and prints its date — an all-hit run proves nothing new and never moves the anchor
 - one reviewer, one series — never pooled; every count qualified by population (pre-spec / post-spec / unknown, derived from git birthdates against each axiom's clock)
 - epoch boundaries as named furniture; nothing trends across one
 - the calibration banner on every report (uncalibrated — numbers are directional)
-- costs, residual rate, and the pending-triage queue
+- costs, the dismissed-as-invalid rate (the reviewer-trust signal), and the two queues
 - a requested sha that no longer resolves renders the missing-commit note (squash workflows orphan branch shas by policy) — the run's attestation stays usable
 
 `--json` emits the built payload verbatim — the stable machine contract.
 
 ## Raw critiques, labeled later
 
-Every critique arrives raw — the reviewer sees only the spec, never the axioms (see [praxis axioms](/commands/axioms)): labels are applied afterwards by `axioms triage`, and reports then cite ratified ids and words. The reviewer is told the judgment boundary: mechanical criteria (anything a linter could decide) are out of scope and must not be reported.
+Every critique arrives raw — the reviewer sees only the spec, never the axioms (see [praxis axioms](/commands/axioms)): labels are applied afterwards by `axioms triage`, and reports then cite the axioms' stable ids and accepted words. The reviewer is told the judgment boundary: mechanical criteria (anything a linter could decide) are out of scope and must not be reported.
 
 ## Epoch boundaries
 

@@ -1,7 +1,8 @@
 import type { EvalSummary, ReviewAllResult } from "@/types.js";
 import type { DisplayEntry, View } from "@framework/types.js";
 
-import chalk from "chalk";
+import { badge } from "@framework/views/badges.js";
+import { table } from "@framework/views/table.js";
 
 /** A completed full run, ready to report. */
 interface FinishedRun {
@@ -20,22 +21,14 @@ interface FinishedRun {
  */
 const runReportView: View<FinishedRun> = ({ run, cached }) => [
   ...(run.stoppedEarly
-    ? [
-        content({
-          badge: "STOPPED",
-          color: "yellow",
-          value: "Review stopped early due to --fail-fast",
-        }),
-      ]
+    ? [content(badge("STOPPED", "yellow", "Review stopped early due to --fail-fast"))]
     : []),
   { channel: "content", entries: summary(run.summary) },
   ...(cached
     ? [
-        content({
-          badge: "CACHE",
-          color: "blue",
-          value: `Hits: ${run.cacheStats.hits}, Misses: ${run.cacheStats.misses}`,
-        }),
+        content(
+          badge("CACHE", "blue", `Hits: ${run.cacheStats.hits}, Misses: ${run.cacheStats.misses}`),
+        ),
       ]
     : []),
 ];
@@ -62,36 +55,38 @@ function summary(totals: EvalSummary): DisplayEntry[] {
     "",
     { header: "Summary — corpus conformance (includes pre-spec debt)" },
     `Total documents: ${totals.total}`,
-    { badge: "Compliant", color: "green", value: totals.compliant },
-    { badge: "Warnings", color: "yellow", value: totals.warnings },
-    { badge: "Errors", color: "red", value: totals.errors },
-    totals.unverified > 0 && {
-      badge: "Unverified",
-      color: "gray",
-      value: `${totals.unverified} (could not be reviewed)`,
-    },
-    totals.notValidated > 0 && {
-      badge: "Not Validated",
-      color: "gray",
-      value: `${totals.notValidated} (no spec found)`,
-    },
+    badge("Compliant", "green", totals.compliant),
+    badge("Warnings", "yellow", totals.warnings),
+    badge("Errors", "red", totals.errors),
+    totals.unverified > 0 &&
+      badge("Unverified", "gray", `${totals.unverified} (could not be reviewed)`),
+    totals.notValidated > 0 &&
+      badge("Not Validated", "gray", `${totals.notValidated} (no spec found)`),
     "",
     "By type:",
-    ...Object.entries(totals.byType).map(
-      ([type, stats]) => `  ${type}: ${stats.compliant}/${stats.total} compliant`,
+    ...table(
+      Object.entries(totals.byType).map(([type, stats]) => [
+        type,
+        `${stats.compliant}/${stats.total} compliant`,
+      ]),
     ),
     ...(reviewerNames.length > 1
-      ? ["", "By reviewer:", ...reviewerNames.map((name) => reviewerLine(name, totals))]
+      ? [
+          "",
+          "By reviewer:",
+          ...table(
+            reviewerNames.map((name) => {
+              const stats = totals.byReviewer[name];
+
+              return [
+                name,
+                `${stats?.compliant ?? 0} pass`,
+                `${stats?.warnings ?? 0} warn`,
+                `${stats?.errors ?? 0} fail`,
+              ];
+            }),
+          ),
+        ]
       : []),
   ];
-}
-
-/** One reviewer's tally, colored per outcome. */
-function reviewerLine(name: string, totals: EvalSummary): string {
-  const stats = totals.byReviewer[name];
-  const pass = chalk.green(String(stats.compliant));
-  const warn = chalk.yellow(String(stats.warnings));
-  const fail = chalk.red(String(stats.errors));
-
-  return `  ${name}: ${pass} pass, ${warn} warn, ${fail} fail`;
 }

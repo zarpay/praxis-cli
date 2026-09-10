@@ -51,7 +51,8 @@ const compileExpertService: Service<CompileExpertInput, Promise<CompileExpertRes
   cfg,
   { expertFile, plugins },
 ) => {
-  const expert = ExpertFile.fromContent(readText(expertFile), expertFile);
+  const expertContent = readText(expertFile);
+  const expert = ExpertFile.fromContent(expertContent, expertFile);
 
   const [responsibilities, constitution, context, reference] = await Promise.all([
     inline(cfg, expert.refs("practices"), "Referenced file not found"),
@@ -122,7 +123,9 @@ async function inline(
         continue;
       }
 
-      bodies.push(MarkdownFile.fromContent(readText(fullPath), fullPath).body);
+      const content = readText(fullPath);
+
+      bodies.push(MarkdownFile.fromContent(content, fullPath).body);
     }
   }
 

@@ -7,11 +7,31 @@ two-channel model. Depends on: [vocabulary.md](./vocabulary.md),
 ## Why axioms exist
 
 Critiques are prose; prose cannot be counted. An axiom is the enumerable
-unit: a named, versioned standard that recurring critiques aggregate
-under, so a report can say "this standard, violated this often, in these
-places" instead of paraphrasing reviewer prose. The non-negotiable
-property is **identity stability**: the same standard keeps the same id
-forever, or every rate computed under it is fiction.
+unit: a named, versioned **category of recurring critique**, so a report
+can say "this issue, recurring this often, in these places" instead of
+paraphrasing reviewer prose. The non-negotiable property is **identity
+stability**: the same category keeps the same id forever, or every rate
+computed under it is fiction.
+
+**An axiom is a bucket, never a rule** (owner, 2026-09-09). The norm —
+what the code should do — lives in the spec, and only there; the axiom
+names the recurring issue the reviewers keep finding against it.
+"A feature directory must contain a dedicated types file named
+`<feature>-types.ts`…" is a spec passage wearing an axiom id: it
+restates the rule, competes with the spec as a second source of truth,
+and proliferates one axiom per spec bullet. "Issues with conventions
+around placement of type definitions" is a category: it says *here is an
+issue our specs would prefer not to exist*, its rate is a prevalence
+signal, and the spec passage `derived_from` points at remains the sole
+statement of the rule. The test for a statement: it **names the observed
+issue**; it never prescribes, and a reader could not follow it as an
+instruction.
+
+**Altitude**: one category covers **one convention a team decides as a
+unit**. If two critiques would be settled by different team decisions,
+they are two categories; if one decision settles both, splitting them
+splinters the count. The mega-bucket ("documentation issues") fails the
+same test from the other side — no single decision settles it.
 
 ## The separation principle
 
@@ -36,7 +56,7 @@ during the servus adoption):
    without changing the spec — editing the spec through a side door.
 
 Consequences: the content hash covers target + spec + assists only, so
-**ratification never invalidates a verdict and never re-reviews
+**activation never invalidates a verdict and never re-reviews
 anything**; the reviewer's question changes only when the spec does.
 
 ## Format
@@ -47,22 +67,32 @@ Markdown + frontmatter in `.praxis/axioms/`, versioned in git.
 ---
 id: AX-3f9c2d # stable; never reused, never renumbered; random-minted (see note)
 version: 2
-status: proposed | active | deprecated
+status: active | deprecated
 mode: judgment # see 03
-severity: error | warning
-derived_from: backend/app/events/README.md#payload-schema # provenance, established at ratification — see below
+derived_from: backend/app/events/README.md#payload-schema # provenance, established at acceptance — see below
 introduced: 2026-08-29
 ---
-Statement of what the axiom asserts.
-A violating example. A compliant example.
+Statement naming the recurring issue.
 ```
+
+That is the whole file (owner, 2026-09-09): frontmatter plus the
+statement. **`severity` is retired** — a category of issue has no
+severity of its own; how much a given instance matters is the spec's
+and the reader's call, and the old key ranked buckets as if they were
+rules. **Example sections are retired** — the experiment of 2026-09-08
+showed curated examples in axiom bodies moved no labeling decision, and
+a category's real examples are its labeled critiques, live in the
+ledger: `praxis axioms show` surfaces them, `praxis eval critiques
+--axiom <id>` browses them all. Historical files carrying `severity:`
+or example sections parse fine (severity reads back marked historical);
+new files never get them.
 
 **`derived_from` is provenance, never identity** (owner, 2026-09-07,
 renamed from `grounded_in`): an axiom does not represent an exact spec
 passage — it is a principle derived from many critiques that were
 themselves consequences of the spec(s); the axiom layer is the
 bucketing/grouping layer over that evidence. The key records where the
-ratifier traced the principle at ratification time, and it may go stale
+accepting human traced the principle at acceptance time, and it may go stale
 as a spec is edited and its sections move — the axiom stays valid; the
 pointer is metadata. Never treat it as a live reference.
 
@@ -87,8 +117,7 @@ reviewer.
 > one rule must never need to resolve another. A scope boundary is
 > stated in the rule's own terms ("this rule judges presence only; the
 > quality of an example that exists is outside its scope") or defers to
-> the spec — never to a sibling axiom. Applies to the curator's drafts
-> and the authoring gate alike.
+> the spec — never to a sibling axiom. Applies to the curator's drafts.
 
 ## Review → Label
 
@@ -109,8 +138,36 @@ states (owner, 2026-09-07), decided in one place
    later changes, the pinned set no longer matches and the critique
    re-queues for triage automatically — "never seen before" means
    never seen against the current taxonomy.
-3. **Identified** — an assignment record labels it (or a dismissal
-   settles it); it appears in no queue.
+3. **Identified** — an assignment record labels it; it appears in no
+   queue.
+
+**Validity is a separate question from membership** (owner,
+2026-09-09). Triage and curate decide which axiom a critique belongs
+to, and both take for granted that every critique they see is valid
+evidence. Whether a critique is *true* — the reviewer said something
+grounded, not invented or drifted, and the humans agree with the spec
+it cites — is decided by a human in `praxis eval review`, and nowhere
+else. Review offers only what no axiom has claimed — untriaged and
+unmatched critiques; a critique labeled under an axiom is valid by
+definition and is refused (owner, 2026-09-09). A dismissed critique is
+not evidence: it leaves every queue, is
+never labeled or curated, and `axioms reassign` refuses it, until a
+**reinstatement** record lifts the dismissal. The dismissal rate is the
+reviewer-trust signal — many dismissals mean the specs disagree with the
+humans, or the reviewers are performing poorly. Curate therefore never
+dismisses: a cluster with no axiom yet is **held** — nothing written,
+the critiques stay unmatched and ride into the next session's cohort,
+where new critiques may complete the pattern. Before this date curate
+wrote dismissals for "unassignable" clusters and for gate refusals;
+those were membership judgments wearing a validity record, and the
+demo's were reinstated on 2026-09-09.
+
+Every reader gets a critique's standing from one join
+(`TriageStore.decisions()`): a dismissal stands until reinstated,
+whatever assignments surround it; among assignments the newest wins; an
+assignment to a proposal that was later **rejected** is void, so the
+critiques return to the queue their unmatched verdict puts them in —
+still valid evidence, awaiting a better draft.
 
 Labels are applied as append-only records, by two verbs:
 
@@ -140,9 +197,14 @@ Labels are applied as append-only records, by two verbs:
    it lands.
 2. **`praxis axioms curate` — the human session** (the verb formerly
    named triage). Interactive work on the **unidentified** critiques —
-   never the merely untriaged, which it names and defers to triage.
-   Cluster recurring critiques into proposed axioms, dismiss noise with
-   reasons, assign stragglers by hand. Every decision is a ledger record. Clustering
+   never the merely untriaged: curate refuses to start while any
+   critique is untriaged (owner, 2026-09-09), because the critique
+   still in triage's queue may be the one that completes a pattern; a
+   clean triage is the precondition, and the error names it.
+   Cluster recurring critiques into proposed axioms, assign stragglers
+   by hand, hold what has no axiom yet (validity is never curate's
+   question — see above). Every assignment and proposal is a ledger
+   record; a hold writes nothing. Clustering
    cannot happen per-critique — a category only emerges from a grouping
    large enough to show it — but the grouping is bounded (owner,
    2026-09-07): identical critique texts dedup into one member (its
@@ -174,10 +236,20 @@ a rate).
 
 ## Lifecycle rules
 
-- The **LLM proposes; a human ratifies.** Nothing enters the taxonomy
-  without ratification against the spec's own text (traceability), and
-  the authoring gate (03) checks each proposal is genuinely
-  judgment-shaped — splitting mixed proposals when it is not.
+- The **LLM proposes; a human accepts — and acceptance activates**
+  (owner, 2026-09-09: ratify retired as a duplicate step — no axiom was
+  ever accepted without a human accepting it at curate, so the second
+  yes was ceremony). The one machine check runs at acceptance: spec
+  traceability. Traceable → active with `derived_from` recorded;
+  untraceable → the cluster holds with the honest instruction to extend
+  the spec. Nothing enters the taxonomy that the spec's own text does
+  not state. The
+  judgment boundary (03) is held where the draft is written — the
+  curator's drafting prompt carries the litmus tests and drafts the
+  judgment half of a mixed cluster alone — and by the human who
+  accepts it; the post-acceptance authoring gate was retired
+  2026-09-09 (owner): a refused cluster left no record and recurred on
+  every curate run.
 - **Statements are immutable per version**; wording changes bump
   `version`. A version bump changes nothing about reviews (see the
   separation principle) — the next triage simply labels against the new
@@ -189,12 +261,10 @@ a rate).
   re-queues for triage. A replacement is simply a new id; lineage lives
   in git and the ledger.
 - **Over-splitting is collapsed, never endured** (owner, 2026-09-07).
-  Prevention: the authoring gate checks every draft against the
-  taxonomy on record (active + proposed) and answers `duplicate_of` —
-  a candidate with the SAME REMEDIATION as an existing axiom folds its
-  cluster there instead of landing as a twin; curate also offers
-  standing proposals as fold targets, and `axioms audit` flags
-  same-remediation pairs among active axioms as merge candidates.
+  Prevention: curate offers every active axiom — the session's own
+  activations included — as a fold target, and the drafting prompt says
+  assign, never twin, when an existing category already names the
+  cluster's issue.
   Cure: `praxis axioms merge <ids...> --into <id>` — every critique
   whose effective label is a merged-away axiom gets a re-assignment
   record to the survivor (decision "merge"; the prior label stays in
@@ -212,7 +282,7 @@ a rate).
 ## Residual
 
 The residual is the critiques curation cannot ground — dismissed as
-noise, or rejected at ratification — reported as a rate over all
+noise, or dismissed at `eval review` — reported as a rate over all
 critiques (07): a rising residual means the reviewer drifts off-spec or
 the specs are vaguer than believed. *Pending* is different: an unlabeled
 critique no record covers yet — a queue, not a judgment.

@@ -2,10 +2,15 @@ import type { AxiomFile } from "@/models/axiom-file.js";
 import type { ListAxiomsResult } from "@/types.js";
 import type { ReportLine, View } from "@framework/types.js";
 
+import chalk from "chalk";
+
+import { table } from "@framework/views/table.js";
+
 /**
- * The axiom store at a glance: one line per axiom, chronological,
- * proposals and problems counted at the end so the drill-down commands
- * are obvious.
+ * The axiom store at a glance: an aligned identity table with each
+ * axiom's statement beneath its row, chronological, problems reported
+ * at the end. A leftover `proposed` axiom (from
+ * before acceptance activated directly) is flagged with the way out.
  *
  * With `json` set, the same state renders as the stable machine
  * contract instead — never both, never disagreeing.
@@ -24,20 +29,33 @@ const axiomListView: View<ListAxiomsResult & { json?: boolean }> = ({ axioms, pr
     ];
   }
 
+  const identityRows = axioms.map((axiom) => [
+    axiom.id,
+    `v${axiom.version}`,
+    axiom.status,
+    axiom.severity ?? "—",
+    axiom.introduced,
+  ]);
+  const identityLines = table(identityRows, ["ID", "VER", "STATUS", "SEVERITY", "INTRODUCED"]);
+  const header = identityLines.slice(0, 2);
+  const rows = identityLines.slice(2);
+  const entries = axioms.flatMap((axiom, index) => [
+    rows[index] ?? "",
+    `    ${chalk.dim(axiom.statement().replace(/\s+/g, " "))}`,
+    "",
+  ]);
+
   const lines: ReportLine[] = [
     { channel: "heading", text: `Axioms (${axioms.length})` },
-    { channel: "content", entries: axioms.map(listLine) },
+    { channel: "content", entries: [...header, ...entries] },
   ];
 
   const proposed = axioms.filter((axiom) => axiom.status === "proposed").length;
 
   if (proposed > 0) {
     lines.push({
-      channel: "content",
-      entries: [
-        "",
-        `${proposed} proposed of ${axioms.length} — ratify with \`praxis axioms ratify <id>\`.`,
-      ],
+      channel: "warning",
+      text: `${proposed} axiom(s) still carry the retired \`proposed\` status — curate acceptance activates directly now. Edit each file to \`status: active\` with a \`derived_from\`, or delete it and re-curate.`,
     });
   }
 
@@ -50,24 +68,6 @@ const axiomListView: View<ListAxiomsResult & { json?: boolean }> = ({ axioms, pr
 
   return lines;
 };
-
-/** One axiom's line: identity, state, cost, and what it asserts. */
-function listLine(axiom: AxiomFile): string {
-  const facts = [
-    axiom.id,
-    `v${axiom.version}`,
-    axiom.status.padEnd(10),
-    axiom.severity.padEnd(7),
-    axiom.introduced,
-  ].join("  ");
-
-  return `${facts}  ${firstLine(axiom.statement())}`;
-}
-
-/** A statement's first line, so the list stays one line per axiom. */
-function firstLine(statement: string): string {
-  return statement.split("\n", 1)[0];
-}
 
 /** The stable JSON shape for one axiom (schema changes are breaking). */
 function axiomJson(axiom: AxiomFile): Record<string, unknown> {

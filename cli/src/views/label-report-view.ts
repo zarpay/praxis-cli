@@ -6,6 +6,8 @@ import { statLines } from "@framework/views/stats.js";
 /** What the labeling pass reports. */
 interface LabelReportData {
   labels: { critiqueId: string; axiomId: string }[];
+  /** Labels per axiom, sorted by id — computed by the service. */
+  labeledByAxiom: { axiomId: string; count: number }[];
   /** Critiques the matcher considered and could not label — curate's queue now. */
   sentToCurate: number;
   skippedNoAxioms: number;
@@ -21,12 +23,6 @@ interface LabelReportData {
  * tally as its own block, and what to do next.
  */
 const labelReportView: View<LabelReportData> = (data) => {
-  const byAxiom = new Map<string, number>();
-
-  for (const label of data.labels) {
-    byAxiom.set(label.axiomId, (byAxiom.get(label.axiomId) ?? 0) + 1);
-  }
-
   const counts: [string, string | number][] = [
     ["Labeled", data.labels.length],
     ["Sent to curate", data.sentToCurate + data.skippedNoAxioms],
@@ -34,9 +30,9 @@ const labelReportView: View<LabelReportData> = (data) => {
 
   if (data.failed > 0) counts.push(["Failed", data.failed]);
 
-  const axiomLines = [...byAxiom.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([axiomId, count]) => `  ${axiomId}  ${count} critique(s)`);
+  const axiomLines = data.labeledByAxiom.map(
+    (tally) => `  ${tally.axiomId}  ${tally.count} critique(s)`,
+  );
 
   const entries: DisplayEntry[] = [
     ...statLines(counts),
@@ -52,10 +48,7 @@ const labelReportView: View<LabelReportData> = (data) => {
       : []),
     ...(costLine(data.usage) ? ["", costLine(data.usage)] : []),
     ...(data.sentToCurate + data.skippedNoAxioms > 0
-      ? [
-          "",
-          "Next: `praxis axioms curate` works the unmatched critiques — cluster, dismiss, assign.",
-        ]
+      ? ["", "Next: `praxis axioms curate` works the unmatched critiques — cluster, assign, hold."]
       : []),
   ];
 

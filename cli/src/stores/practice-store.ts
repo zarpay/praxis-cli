@@ -90,7 +90,9 @@ export class PracticeStore {
 
     for (const path of this.files()) {
       try {
-        practices.push(PracticeFile.fromContent(readText(path), path));
+        const content = readText(path);
+
+        practices.push(PracticeFile.fromContent(content, path));
       } catch (err) {
         problems.push({ path, message: err instanceof Error ? err.message : String(err) });
       }

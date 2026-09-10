@@ -51,6 +51,27 @@ describe("SpecStore", () => {
 
       expect(locate).toThrow("No SPEC.md found");
     });
+
+    it("never lets a spec govern itself — exact filename", () => {
+      mkdirSync(join(root, "docs"), { recursive: true });
+      writeFileSync(join(root, "docs", "SPEC.md"), "# Spec");
+
+      const store = new SpecStore(testConfig(root, { specFilePattern: "SPEC.md" }));
+      const locate = () => store.governingPath(join(root, "docs", "SPEC.md"));
+
+      expect(locate).toThrow("No SPEC.md found");
+    });
+
+    it("skips the target itself when the glob would match it", () => {
+      mkdirSync(join(root, "docs"), { recursive: true });
+      writeFileSync(join(root, "docs", "README.roles.md"), "# Roles Spec");
+      writeFileSync(join(root, "docs", "README.tools.md"), "# Tools Spec");
+
+      const store = new SpecStore(testConfig(root, { specFilePattern: "README.*.md" }));
+      const governing = store.governingPath(join(root, "docs", "README.roles.md"));
+
+      expect(governing).toBe(join(root, "docs", "README.tools.md"));
+    });
   });
 
   describe("read", () => {

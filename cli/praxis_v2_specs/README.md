@@ -51,7 +51,7 @@ Two loops share the machinery: the **fast loop** — violations feed straight ba
 | [vocabulary.md](./vocabulary.md)                                       | Precise definitions everything else depends on                                             | Draft                     |
 | [01-populations-and-eval-unit.md](./01-populations-and-eval-unit.md)   | Three populations of code; the diff as eval unit; violation flow                           | Draft                     |
 | [02-baselines-and-debt-paydown.md](./02-baselines-and-debt-paydown.md) | Debt baselines, paydown, epochs and hard breaks; authorship demoted to optional sharpening | Draft — rewritten         |
-| [03-judgment-boundary.md](./03-judgment-boundary.md)                   | Don't use Praxis for what static linting can do; the authoring gate                        | Draft — position hardened |
+| [03-judgment-boundary.md](./03-judgment-boundary.md)                   | Don't use Praxis for what static linting can do; the boundary held at drafting time        | Draft — position hardened |
 | [04-axioms.md](./04-axioms.md)                                         | Axiom identity and lifecycle; grounded triage of critiques into axioms                     | Early draft               |
 | [05-ledger.md](./05-ledger.md)                                         | Append-only critique store; provenance; why the cache can't be it                          | Early draft               |
 | [06-calibration.md](./06-calibration.md)                               | Measuring the reviewer; drift protocol; interpretability gating; multiple reviewers        | Early draft               |
@@ -79,7 +79,7 @@ Every document below is bound by these. If a design violates one, the design cha
 
 **Prevent reviewer error structurally where it can be prevented.** An exclusion stated in prose is an instruction the reviewer must notice and obey. An exclusion stated in frontmatter is a file the reviewer never sees. Calibration exists for genuine judgment disagreement, not for failures the data model can design away.
 
-**Don't use Praxis for what static linting can accomplish.** If you can write the check, write the check; if you can only describe the standard, write the axiom. The boundary is enforced at authoring time (the axiom gate), keeps the reviewer-error surface minimal, and keeps the metrics about violations that actually accumulate — judgment violations merge; linter violations don't.
+**Don't use Praxis for what static linting can accomplish.** If you can write the check, write the check; if you can only describe the standard, write the axiom. The boundary is held at drafting time (the curator's prompt and the human who accepts), keeps the reviewer-error surface minimal, and keeps the metrics about violations that actually accumulate — judgment violations merge; linter violations don't.
 
 **The reviewer's context contains exactly what the axiom is about.** Less is myopia (axioms that need cross-file context don't get it); more is contamination (batch-mates normalize each other's violations) and cache destruction. Aggregation is never a cost optimization — it is reserved for genuinely cohort-shaped standards; prompt caching of the spec prefix is the legitimate route to the savings.
 

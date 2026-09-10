@@ -41,7 +41,6 @@ export interface StatusReport {
     pending_triage: number;
     /** Unmatched critiques — `axioms curate` works them. */
     awaiting_curation: number;
-    proposals_pending: number;
     /** Always true: calibration is a roadmap feature. */
     calibration_stale: boolean;
     epoch_boundary_detected: boolean;
@@ -64,7 +63,6 @@ export interface Orientation {
   lastRun: { at: string; reviewerName: string; anchored: boolean } | null;
   pendingTriage: number;
   awaitingCuration: number;
-  proposalsPending: number;
   activeAxioms: number;
   calibration: string;
   /** Errors at the latest corpus run, per reviewer. */
@@ -149,7 +147,7 @@ export interface ScopedLedger {
 export interface AxiomReportRow {
   axiomId: string;
   statement: string;
-  severity: Severity;
+  severity: Severity | null;
   reviewerName: string;
   /** Violations over applicable opportunities, floor-aware. */
   rate: RateCell;
@@ -200,53 +198,13 @@ export interface AxiomReport {
   calibration: string;
   statement: string;
   status: AxiomStatus;
-  severity: Severity;
+  severity: Severity | null;
   derivedFrom: string | null;
   introduced: string;
   version: number;
   rows: AxiomReportRow[];
   /** Representative critiques, newest first, capped. */
   examples: { id: string; filePath: string; reviewerName: string; text: string }[];
-}
-
-/** The suggested — never verdicted — diagnosis of one axiom's evidence. */
-export type HarnessDiagnosis =
-  "harness_gap" | "spec_problem" | "reviewer_noise" | "insufficient_data";
-
-/** One axiom's entry in the harness brief, per reviewer — never pooled. */
-export interface HarnessBriefAxiom {
-  axiom_id: string;
-  statement: string;
-  reviewer: string;
-  /** The reviewer's current behavioral hash — the epoch the evidence belongs to. */
-  epoch: string;
-  introduction_rate: RateCell;
-  debt_stock: number;
-  paydown: number;
-  /** Introduced vs resolved over the selected diffs, one line. */
-  trend: string;
-  /** 3-5 newest, linked to ledger ids. */
-  representative_critiques: { id: string; text: string }[];
-  suggested_diagnosis: HarnessDiagnosis;
-  /** Why this diagnosis — triangulation is heuristic, so it shows its work. */
-  diagnosis_reason: string;
-}
-
-/** The harness brief: evidence about which harness elements to change. */
-export interface HarnessBrief {
-  /** First and last run timestamps in scope; null when the ledger is empty. */
-  period: { from: string | null; to: string | null };
-  /** Introduced counts by population across the selected diff runs. */
-  populations: Record<PopulationQualifier, number>;
-  /** The per-reviewer calibration banner — an uninterpretable brief says so. */
-  calibration: string;
-  top_axioms: HarnessBriefAxiom[];
-  /** Dismissed + rejected over all critiques — is the reviewer drifting off-spec? */
-  residual_summary: string;
-  /** Active axioms with no evidence in scope — candidates for `axioms audit`. */
-  removal_candidates: string[];
-  /** The standing guardrails, stated on every brief. */
-  note: string;
 }
 
 /** One axiom's debt position in one reviewer's latest epoch. */

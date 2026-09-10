@@ -51,8 +51,8 @@ described none of them — it is `RunFile`/`TriageSessionFile` (models),
   patterns honored) live once, in the store.
 - **The shared verb vocabulary.** Operations that mean the same thing are
   named the same across every store; a new store conforms by default, and
-  only genuinely distinctive operations (`governingPath`, `propose`,
-  `ratify`, `orphans`, `countsByType`) earn custom names:
+  only genuinely distinctive operations (`governingPath`, `createActive`,
+  `deprecate`, `orphans`, `countsByType`) earn custom names:
 
   | Shape                | Meaning                                                       |
   | -------------------- | ------------------------------------------------------------- |

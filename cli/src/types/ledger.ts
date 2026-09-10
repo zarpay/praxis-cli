@@ -189,7 +189,14 @@ export interface TriageAssignmentRecord {
   timestamp: string;
 }
 
-/** A human decision that a critique is not evidence worth keeping. */
+/**
+ * A human judgment that the critique itself is invalid — the reviewer
+ * invented it, drifted, or the humans disagree with the spec it cites.
+ * Validity is decided in `praxis eval review`, never in curate: a
+ * dismissed critique is not evidence, so it is never labeled and never
+ * curated, until a reinstatement record lifts the dismissal. The
+ * dismissal rate is the reviewer-trust signal.
+ */
 export interface TriageDismissalRecord {
   kind: "dismissal";
   critique_id: string;
@@ -197,7 +204,19 @@ export interface TriageDismissalRecord {
   timestamp: string;
 }
 
-/** A proposal rejected at ratification — reviewer-noise signal. */
+/** A dismissed critique reinstated as evidence: the dismissal no longer stands. */
+export interface CritiqueReinstatementRecord {
+  kind: "reinstatement";
+  critique_id: string;
+  reason: string;
+  timestamp: string;
+}
+
+/**
+ * A proposal rejected at ratification. Its supporting assignments are
+ * void from then on: the critiques return to the curate queue, still
+ * valid evidence awaiting an axiom.
+ */
 export interface ProposalRejectionRecord {
   kind: "rejection";
   axiom_id: string;
@@ -233,9 +252,23 @@ export interface TriageUnmatchedRecord {
 export type TriageRecord =
   | TriageAssignmentRecord
   | TriageDismissalRecord
+  | CritiqueReinstatementRecord
   | ProposalRejectionRecord
   | AxiomDeprecationRecord
   | TriageUnmatchedRecord;
+
+/**
+ * Where one critique's triage records leave it, joined at read time by
+ * `TriageStore.decisions()` — the one place every reader gets it from.
+ */
+export interface CritiqueDecision {
+  /** A dismissal stands: the critique is not evidence — no label, no queue. */
+  dismissed: boolean;
+  /** The newest standing assignment; null when unlabeled or its axiom was rejected. */
+  assignment: TriageAssignmentRecord | null;
+  /** The newest unmatched verdict, for the curate-queue check. */
+  unmatched: TriageUnmatchedRecord | null;
+}
 
 /** One unassigned open-channel critique, as triage works it. */
 export interface PendingCritique {

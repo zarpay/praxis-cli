@@ -31,13 +31,13 @@ describe("axiomListView", () => {
     expect(text).toContain("Statement of AX-aaaa11.");
   });
 
-  it("counts proposals and names the ratify command", () => {
+  it("flags leftover proposed axioms with the migration path", () => {
     const axioms = [axiom("AX-aaaa11"), axiom("AX-bbbb22", { status: "proposed" })];
 
     const text = reportText(axiomListView({ axioms, problems: [] }));
 
-    expect(text).toContain("1 proposed of 2");
-    expect(text).toContain("praxis axioms ratify");
+    expect(text).toContain("retired `proposed` status");
+    expect(text).toContain("status: active");
   });
 
   it("surfaces unreadable files as warnings", () => {

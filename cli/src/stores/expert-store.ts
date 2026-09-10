@@ -51,7 +51,9 @@ export class ExpertStore {
 
     for (const path of this.files()) {
       try {
-        experts.push(ExpertFile.fromContent(readText(path), path));
+        const content = readText(path);
+
+        experts.push(ExpertFile.fromContent(content, path));
       } catch (err) {
         problems.push({ path, message: err instanceof Error ? err.message : String(err) });
       }

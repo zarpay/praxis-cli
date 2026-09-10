@@ -1,22 +1,16 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type { ActiveAxiom, ListAxiomsResult, Severity, StoreProblem } from "@/types.js";
+import type { ActiveAxiom, ListAxiomsResult, StoreProblem } from "@/types.js";
 
 import { randomBytes } from "node:crypto";
 
 import { errors } from "@/helpers/errors-helper.js";
-import {
-  exists,
-  listFilesRecursive,
-  readText,
-  removeFile,
-  writeText,
-} from "@/helpers/files-helper.js";
+import { exists, listFilesRecursive, readText, writeText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { AxiomFile } from "@/models/axiom-file.js";
 import axiomFileTemplate from "@/templates/axiom-file-template.js";
 
-/** Where the proposal landed. */
-interface WriteAxiomProposalResult {
+/** Which axiom file a write landed on. */
+interface AxiomWriteResult {
   id: string;
   path: string;
 }
@@ -26,9 +20,9 @@ interface WriteAxiomProposalResult {
  * subdirectory.
  *
  * One handle owns the layout, the id minting, and the lifecycle moves —
- * propose lands a draft, ratify grounds and activates it. The store's
+ * createActive lands a curate-accepted axiom. The store's
  * lifecycle events are methods here, not services; what stays outside
- * is everything that *decides* — triage, the gate, traceability — which
+ * is everything that *decides* — triage, curation, traceability — which
  * is curator and human work the orchestrators drive.
  */
 export class AxiomStore {
@@ -61,7 +55,9 @@ export class AxiomStore {
       const path = joinPath(this.axiomsDir, file);
 
       try {
-        axioms.push(AxiomFile.fromContent(readText(path), path));
+        const content = readText(path);
+
+        axioms.push(AxiomFile.fromContent(content, path));
       } catch (err) {
         problems.push({ path, message: err instanceof Error ? err.message : String(err) });
       }
@@ -90,72 +86,35 @@ export class AxiomStore {
       .map((axiom) => ({
         id: axiom.id,
         version: axiom.version,
-        severity: axiom.severity,
         statement: axiom.statement(),
-        body: axiom.body,
       }));
   }
 
   /**
-   * Lands one triage-accepted draft in `proposed/`: a freshly
-   * minted id, `status: proposed`, no derivation — ratification
-   * establishes that, and `status: active` is a human decision this
-   * store never makes on its own.
+   * Lands one curate-accepted draft as an **active** axiom: a freshly
+   * minted id, `status: active`, the traceability-established
+   * derivation recorded. Acceptance at curate is the human decision —
+   * there is no separate ratification step — so activation happens
+   * here, and the caller has already verified the principle traces to
+   * a spec passage.
    */
-  propose(draft: {
-    statement: string;
-    severity: Severity;
-    violatingExample: string;
-    compliantExample: string;
-  }): WriteAxiomProposalResult {
+  createActive(draft: { statement: string; derivedFrom: string }): AxiomWriteResult {
     const id = this.mintId();
 
     const document = axiomFileTemplate({
       id,
-      status: "proposed",
+      status: "active",
       mode: "judgment",
-      severity: draft.severity,
       introduced: new Date().toISOString().slice(0, 10),
-      derivedFrom: null,
+      derivedFrom: draft.derivedFrom,
       statement: draft.statement,
-      violatingExample: draft.violatingExample,
-      compliantExample: draft.compliantExample,
     });
 
-    const path = joinPath(this.proposedDir, `${id}.md`);
+    const path = joinPath(this.axiomsDir, `${id}.md`);
 
     writeText(path, document);
 
     return { id, path };
-  }
-
-  /**
-   * Ratification's store move: the proposal becomes active and
-   * records its derivation, leaving `proposed/`.
-   *
-   * The body is preserved byte-for-byte — a human may have edited the
-   * proposal file, and ratifying must never rewrite what a human
-   * authored. Only two frontmatter facts change, and the result is
-   * validated through the model before anything lands on disk.
-   *
-   * @throws PraxisError when the moved document would not validate
-   */
-  ratify(id: string, derivedFrom: string): WriteAxiomProposalResult {
-    const proposedPath = joinPath(this.proposedDir, `${id}.md`);
-    const activePath = joinPath(this.axiomsDir, `${id}.md`);
-
-    const proposal = readText(proposedPath);
-    const ratified = proposal
-      .replace(/^status: proposed$/m, "status: active")
-      .replace(/^introduced:/m, `derived_from: ${derivedFrom}\nintroduced:`);
-
-    // Refuse to write anything the model would reject.
-    AxiomFile.fromContent(ratified, activePath);
-
-    writeText(activePath, ratified);
-    removeFile(proposedPath);
-
-    return { id, path: activePath };
   }
 
   /**
@@ -167,12 +126,16 @@ export class AxiomStore {
    * @throws PraxisError when no active axiom file carries the id, or
    *   the amended document would not validate
    */
-  deprecate(id: string): WriteAxiomProposalResult {
+  deprecate(id: string): AxiomWriteResult {
     const path = joinPath(this.axiomsDir, `${id}.md`);
 
     if (!exists(path)) throw errors.axiomNotFound(id);
 
     const current = readText(path);
+    const axiom = AxiomFile.fromContent(current, path);
+
+    if (axiom.status !== "active") throw errors.axiomNotActive(id);
+
     const retired = current.replace(/^status: active$/m, "status: deprecated");
 
     // Refuse to write anything the model would reject.
@@ -192,7 +155,7 @@ export class AxiomStore {
    * @throws PraxisError when no axiom file carries the id, or the
    *   amended document would not validate
    */
-  amendIntroduced(id: string, introduced: string): WriteAxiomProposalResult {
+  amendIntroduced(id: string, introduced: string): AxiomWriteResult {
     const path = joinPath(this.axiomsDir, `${id}.md`);
 
     if (!exists(path)) throw errors.axiomNotFound(id);

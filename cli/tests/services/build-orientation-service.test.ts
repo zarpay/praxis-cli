@@ -27,7 +27,6 @@ describe("buildOrientationService", () => {
     expect(orientation).toMatchObject({
       lastRun: null,
       pendingTriage: 0,
-      proposalsPending: 0,
       activeAxioms: 0,
       debtLine: null,
     });
@@ -63,7 +62,6 @@ describe("buildOrientationService", () => {
     const orientation = buildOrientationService(testConfig(root), {});
 
     expect(orientation.activeAxioms).toBe(1);
-    expect(orientation.proposalsPending).toBe(1);
     expect(orientation.debtLine).toEqual([{ reviewerName: "flash", errors: 3 }]);
   });
 });

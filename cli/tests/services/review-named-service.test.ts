@@ -94,6 +94,14 @@ describe("reviewNamedService", () => {
     expect(result.errors).toBe(0);
   });
 
+  it("refuses a directory target with the glob hint", async () => {
+    const { cfg, abs } = reviewingProject();
+
+    const review = reviewNamedService(cfg, { targets: [abs("specs")], ledger: false });
+
+    await expect(review).rejects.toThrow(/is a directory/);
+  });
+
   it("still raises the instructive error when nothing governs the target", async () => {
     const { cfg, abs } = reviewingProject();
     const orphan = abs("specs/../orphan.md");

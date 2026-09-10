@@ -10,6 +10,9 @@
 /** Machine-readable code, one per factory method on `errors`. */
 export type PraxisErrorCode =
   | "ROOT_NOT_FOUND"
+  | "CRITIQUE_DISMISSED"
+  | "MISSING_OPTION"
+  | "TRIAGE_INCOMPLETE"
   | "INVALID_CONFIG_JSON"
   | "UNKNOWN_PLUGIN"
   | "UNKNOWN_DOCUMENT_TYPE"
@@ -35,6 +38,9 @@ export type PraxisErrorCode =
   | "AXIOM_NOT_FOUND"
   | "CRITIQUE_NOT_FOUND"
   | "MERGE_NEEDS_SOURCES"
+  | "MERGE_SURVIVOR_NOT_ACTIVE"
+  | "TARGET_IS_DIRECTORY"
+  | "AXIOM_NOT_ACTIVE"
   | "CURATOR_NOT_CONFIGURED"
   | "CURATOR_MISSING_FIELD"
   | "PROVIDER_CANNOT_COMPLETE"
@@ -67,9 +73,14 @@ export class PraxisError extends Error {
 export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErrorCode>([
   "API_KEY_NOT_SET",
   "AXIOM_NOT_FOUND",
+  "CRITIQUE_DISMISSED",
   "CRITIQUE_NOT_FOUND",
+  "MISSING_OPTION",
   "CURATOR_MISSING_FIELD",
   "MERGE_NEEDS_SOURCES",
+  "MERGE_SURVIVOR_NOT_ACTIVE",
+  "TARGET_IS_DIRECTORY",
+  "AXIOM_NOT_ACTIVE",
   "CURATOR_NOT_CONFIGURED",
   "DOCUMENT_NOT_FOUND",
   "EXPERT_NOT_FOUND",
@@ -77,6 +88,7 @@ export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErr
   "INVALID_REVIEWER_CONFIG",
   "NOT_A_TTY",
   "PROVIDER_CANNOT_COMPLETE",
+  "TRIAGE_INCOMPLETE",
   "REVIEWERS_NOT_CONFIGURED",
   "ROOT_NOT_FOUND",
   "UNKNOWN_DOCUMENT_TYPE",
@@ -319,11 +331,11 @@ export const errors = {
 
   // --- Curator ---
 
-  /** Triage, the gate, and audit need a curator; none is configured. */
+  /** Triage and curate need a curator; none is configured. */
   curatorNotConfigured(): PraxisError {
     return new PraxisError(
       "CURATOR_NOT_CONFIGURED",
-      `No curator configured. The curator organizes triage, runs the authoring gate, and assists ratification — teams typically point it at a frontier model. Add to .praxis/config.json:
+      `No curator configured. The curator labels and organizes critiques and checks spec traceability — teams typically point it at a frontier model. Add to .praxis/config.json:
 
   "curator": {
     "model": "<model slug>",
@@ -348,11 +360,35 @@ export const errors = {
     );
   },
 
+  /** The axiom exists but is not active, and the verb needs an active one. */
+  axiomNotActive(id: string): PraxisError {
+    return new PraxisError(
+      "AXIOM_NOT_ACTIVE",
+      `"${id}" is not an active axiom — it is already deprecated. Its records stay readable; \`praxis axioms list\` shows every status.`,
+    );
+  },
+
+  /** A named review target is a directory, which has no single verdict. */
+  targetIsDirectory(path: string): PraxisError {
+    return new PraxisError(
+      "TARGET_IS_DIRECTORY",
+      `"${path}" is a directory. Name the files to review — a glob works: \`praxis eval run "${path}/*"\` — or run the whole corpus with \`praxis eval run\`.`,
+    );
+  },
+
   /** An interactive command was run without a terminal and without flags. */
   notATty(command: string, flags: string): PraxisError {
     return new PraxisError(
       "NOT_A_TTY",
       `${command} is interactive and stdin is not a terminal. Script it with ${flags}.`,
+    );
+  },
+
+  /** The editor command needs a terminal and has no scriptable form. */
+  editorNeedsTty(): PraxisError {
+    return new PraxisError(
+      "NOT_A_TTY",
+      "praxis config edit opens an editor and stdin is not a terminal. Edit .praxis/config.json directly.",
     );
   },
 
@@ -385,11 +421,43 @@ export const errors = {
     );
   },
 
+  /** A dismissed critique is not evidence and cannot be labeled. */
+  critiqueDismissed(id: string): PraxisError {
+    return new PraxisError(
+      "CRITIQUE_DISMISSED",
+      `Critique "${id}" is dismissed — not evidence, so it cannot be assigned to an axiom. If the dismissal was wrong, reinstate it first: \`praxis eval review --reinstate ${id} --reason "<why>"\`.`,
+    );
+  },
+
+  /** A flag that needs a companion flag was given alone. */
+  missingOption(flag: string, companion: string, example: string): PraxisError {
+    return new PraxisError(
+      "MISSING_OPTION",
+      `${flag} needs ${companion}. Example: \`${example}\`.`,
+    );
+  },
+
+  /** Curate was asked to run on a partial residue. */
+  triageIncomplete(count: number): PraxisError {
+    return new PraxisError(
+      "TRIAGE_INCOMPLETE",
+      `${count} critique(s) are still untriaged, so the curate queue is incomplete — an untriaged critique may be the one that completes a pattern. Run \`praxis axioms triage\` first, then curate.`,
+    );
+  },
+
   /** A merge that names no source axioms besides the survivor. */
   mergeNeedsSources(into: string): PraxisError {
     return new PraxisError(
       "MERGE_NEEDS_SOURCES",
-      `Nothing to merge into "${into}": name at least one other active axiom, e.g. \`praxis axioms merge AX-aaaaaa AX-bbbbbb --into ${into}\`.`,
+      `Nothing to merge into "${into}": name at least one other axiom, e.g. \`praxis axioms merge AX-aaaaaa AX-bbbbbb --into ${into}\`.`,
+    );
+  },
+
+  /** The merge survivor must be an active axiom. */
+  mergeSurvivorNotActive(id: string): PraxisError {
+    return new PraxisError(
+      "MERGE_SURVIVOR_NOT_ACTIVE",
+      `"${id}" is not active: evidence can only merge into an active axiom. Pick an active survivor with \`praxis axioms list\`.`,
     );
   },
 };

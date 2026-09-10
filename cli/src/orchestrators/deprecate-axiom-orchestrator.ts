@@ -27,9 +27,11 @@ export const deprecateAxiomOrchestrator: Orchestrator<DeprecateAxiomOptions> = a
   const cfg = ctx.config;
   const store = new AxiomStore(cfg);
   const { axioms } = store.all();
-  const axiom = axioms.find((candidate) => candidate.id === id && candidate.status === "active");
+  const axiom = axioms.find((candidate) => candidate.id === id);
 
   if (!axiom) throw errors.axiomNotFound(id);
+
+  if (axiom.status !== "active") throw errors.axiomNotActive(id);
 
   store.deprecate(id);
   new TriageStore(cfg).writeSession([

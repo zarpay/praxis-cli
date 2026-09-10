@@ -102,7 +102,11 @@ Summary — corpus conformance (includes pre-spec debt)
 ==================================================
 Total documents: 4
 [Compliant] 3
+[Warnings] 0
 [Errors] 1
+
+By type:
+  src/services  3/4 compliant
 ```
 
 Notice what *isn't* here: `legacy-import.ts`. An exclusion in frontmatter is structural — the file never becomes a review unit, and the reviewer never sees it.
@@ -132,13 +136,13 @@ Run reviews for a week and the same critiques start repeating — "error message
 praxis axioms triage
 ```
 
-A **curator** model labels each pending critique against the axioms you've already ratified, and sends the rest — the ones no existing axiom matches — to the curation queue. Early on, that's all of them. Then:
+A **curator** model labels each pending critique against your active axioms, and sends the rest — the ones no existing axiom matches — to the curation queue. Early on, that's all of them. Then:
 
 ```bash
 praxis axioms curate
 ```
 
-The curator clusters that unmatched residue and drafts a proposal; you accept; `praxis axioms ratify` traces it to the spec and activates it. From then on the standard has a name — `AX-b951db` — future `praxis axioms triage` runs label every recurring critique under it (the reviewer itself keeps seeing only the spec), reports cite it, and `praxis axioms show AX-b951db` teaches it with a violating and a compliant example. Standards stop being folklore. See [the evidence loop](/concepts/evidence-loop).
+The curator clusters that unmatched residue and drafts an axiom — a named **category of recurring critique**, like "Error messages written for the implementer, not the API consumer"; you accept, the category is traced to the spec passage its norm lives in, and it's live. From then on the issue has a name — `AX-b951db` — future `praxis axioms triage` runs label every recurring critique under it (the reviewer itself keeps seeing only the spec), reports chart its prevalence, and `praxis axioms show AX-b951db` shows the statement with the labeled critiques as live examples. Recurring issues stop being folklore. See [the evidence loop](/concepts/evidence-loop).
 
 ## Optional: the spec layer
 

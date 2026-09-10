@@ -6,7 +6,6 @@ import auditExpertsService from "@/services/audit-experts-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
 import tallyValidationService from "@/services/tally-validation-service.js";
-import { AxiomStore } from "@/stores/axiom-store.js";
 import { DocumentStore } from "@/stores/document-store.js";
 import { ExpertStore } from "@/stores/expert-store.js";
 import { PracticeStore } from "@/stores/practice-store.js";
@@ -107,7 +106,6 @@ function evalOnlyReport(
 
 /** The situational-poll facts, derived from the stores. */
 function evalStateOf(cfg: PraxisConfig): StatusReport["evalState"] {
-  const { axioms } = new AxiomStore(cfg).all();
   const state = deriveTriageStateService(cfg, {});
   const runs = new RunStore(cfg).runs();
   const boundaries = detectEpochBoundariesService(cfg, { reviewers: cfg.reviewers });
@@ -117,7 +115,6 @@ function evalStateOf(cfg: PraxisConfig): StatusReport["evalState"] {
   return {
     pending_triage: state.pending.length,
     awaiting_curation: state.unidentified.length,
-    proposals_pending: axioms.filter((axiom) => axiom.status === "proposed").length,
     calibration_stale: true,
     epoch_boundary_detected: boundaries.length > 0,
     last_run_at: lastRun,

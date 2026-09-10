@@ -62,6 +62,15 @@ describe("resolveReportScopeService", () => {
     expect(scoped.critiques.map((critique) => critique.file_path)).toEqual(["src/a.ts"]);
   });
 
+  it("reads a bare directory target as everything under it", () => {
+    mkdirSync(join(root, "src"), { recursive: true });
+    seedRun({ runId: "r1", files: ["src/a.ts", "tests/a.test.ts"] });
+
+    const scoped = resolveReportScopeService(testConfig(root), { target: "src" });
+
+    expect(scoped.critiques.map((critique) => critique.file_path)).toEqual(["src/a.ts"]);
+  });
+
   it("scopes runs by branch, and critiques follow their runs", () => {
     seedRun({ runId: "r1", branch: "main", files: ["src/a.ts"] });
     seedRun({ runId: "r2", branch: "feature", files: ["src/b.ts"] });

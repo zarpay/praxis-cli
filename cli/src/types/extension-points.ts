@@ -84,14 +84,6 @@ export interface ReviewProvider {
  */
 export type ReviewProviderFactory = () => ReviewProvider;
 
-/** The usage block OpenAI-compatible chat completions may return. */
-export interface ChatCompletionUsage {
-  prompt_tokens?: number;
-  completion_tokens?: number;
-  /** OpenRouter usage accounting's cost in USD. */
-  cost?: number;
-}
-
 /**
  * Interface for output plugins that transform compiled agent profiles
  * into platform-specific formats.

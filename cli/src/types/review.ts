@@ -22,26 +22,22 @@ export interface AssistFileRecord {
 }
 
 /**
- * One active axiom as the reviewer's checklist carries it: the
- * ratified standard with its full teaching material, so the reviewer
- * judges against the extension, not just a label.
+ * One active axiom as the labeling pass carries it: a named category
+ * of recurring critique — id, version, and the statement naming the
+ * issue. The norm lives in the spec it derives from.
  */
 export interface ActiveAxiom {
   id: string;
   version: number;
-  severity: Severity;
-  /** What the axiom asserts, one line for findings surfaces. */
+  /** Names the recurring issue the category collects. */
   statement: string;
-  /** Statement plus both examples, as authored. */
-  body: string;
 }
 
 /**
  * One reported deviation: the atomic unit of evidence (vocabulary).
  *
- * Born on one of the reviewer's two channels: matched critiques
- * carry the checklist axiom they are an instance of; open-channel
- * critiques carry null and flow onward to triage as open codes.
+ * Born raw — the reviewer sees only the spec — and labeled afterwards
+ * into an axiom category at triage; the ids stay null at review time.
  */
 export interface Critique {
   text: string;

@@ -14,7 +14,6 @@ function report(fields: Partial<StatusReport> = {}): StatusReport {
     evalState: {
       awaiting_curation: 0,
       pending_triage: 0,
-      proposals_pending: 0,
       calibration_stale: true,
       epoch_boundary_detected: false,
       last_run_at: null,

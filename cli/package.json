@@ -1,7 +1,7 @@
 {
   "name": "@zarpay/praxis-cli",
-  "version": "1.4.0",
-  "description": "CLI for the Praxis knowledge framework - organize knowledge for humans and AI agents",
+  "version": "2.0.0",
+  "description": "Praxis \u2014 a conceptual linter and knowledge compiler: README specs enforced by LLM reviewers, an append-only evidence ledger, and compiled SME agent profiles",
   "type": "module",
   "bin": {
     "praxis": "dist/index.js"

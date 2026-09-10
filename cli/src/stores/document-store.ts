@@ -66,7 +66,8 @@ export class DocumentStore {
     let context = 0;
 
     for (const file of this.files()) {
-      const type = DocumentFile.fromContent(readText(file), file).type;
+      const content = readText(file);
+      const type = DocumentFile.fromContent(content, file).type;
 
       if (type === "reference") references++;
       else if (type === "convention" || type === "constitution") context++;

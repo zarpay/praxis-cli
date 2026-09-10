@@ -259,7 +259,9 @@ export class VerdictStore {
     if (!exists(path)) return null;
 
     try {
-      return CacheFile.fromJson(readText(path));
+      const content = readText(path);
+
+      return CacheFile.fromJson(content);
     } catch {
       if (discardCorrupt) removeQuietly(path);
 

@@ -1,0 +1,5 @@
+{"kind":"assignment","critique_id":"20260902T222624770Z-8ca43cec:3","axiom_id":"AX-d3e3b0","axiom_version":1,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-09T22:46:54.006Z"}
+{"kind":"assignment","critique_id":"20260907T101932101Z-c0f5baa5:3","axiom_id":"AX-d3e3b0","axiom_version":1,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-09T22:46:54.006Z"}
+{"kind":"assignment","critique_id":"20260907T220924132Z-b03ac727:4","axiom_id":"AX-d3e3b0","axiom_version":1,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-09T22:46:54.006Z"}
+{"kind":"assignment","critique_id":"20260908T120055686Z-539cf1af:3","axiom_id":"AX-d3e3b0","axiom_version":1,"assigned_by":{"decision":"merge","suggested_by":"axioms-merge"},"timestamp":"2026-09-09T22:46:54.006Z"}
+{"kind":"deprecation","axiom_id":"AX-23c1a8","reason":"merged into AX-d3e3b0","timestamp":"2026-09-09T22:46:54.006Z"}

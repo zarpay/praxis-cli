@@ -1,9 +1,8 @@
 import type {
   AxiomDraft,
-  OrganizeTriageInput,
+  PendingCritique,
   ProviderUsage,
   Service,
-  Severity,
   TriageCluster,
   TriageSuggestion,
 } from "@/types.js";
@@ -15,6 +14,16 @@ import triageCritiqueLine from "@/prompts/triage-critique-line.js";
 import triageQuestion from "@/prompts/triage-question.js";
 import triageTools from "@/prompts/triage-tools.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
+
+/** One spec's pending critiques, ready for the curator to organize. */
+interface OrganizeTriageInput {
+  /** Project-relative spec path, as the critiques record it. */
+  specPath: string;
+  specContent: string;
+  critiques: PendingCritique[];
+  /** Established axioms the critiques may fold into: id + statement. */
+  axioms: { id: string; statement: string }[];
+}
 
 /** The curator's organization of one spec's pending critiques. */
 interface TriageOrganization {
@@ -30,12 +39,9 @@ interface TriageWireCluster {
   axiom_id?: string | null;
   draft?: {
     statement?: string;
-    severity?: string;
-    violating_example?: string;
-    compliant_example?: string;
     grounding_hint?: string;
   } | null;
-  why_unassignable?: string | null;
+  why_held?: string | null;
 }
 
 /**
@@ -43,7 +49,7 @@ interface TriageWireCluster {
  *
  * Renders the prompts, makes one completion call, and validates the
  * organization defensively: a cluster citing an unknown critique id or
- * an unknown established axiom is demoted to `unassignable` rather than
+ * an unknown established axiom is demoted to `hold` rather than
  * trusted — a curator hallucination must cost human attention, never
  * corrupt an assignment.
  */
@@ -104,7 +110,7 @@ function normalizeCluster(
   return { critiqueIds, rationale, suggestion: normalizeSuggestion(wire, knownAxioms) };
 }
 
-/** The cluster's suggestion, demoted to unassignable when malformed. */
+/** The cluster's suggestion, demoted to hold when malformed. */
 function normalizeSuggestion(wire: TriageWireCluster, knownAxioms: Set<string>): TriageSuggestion {
   if (wire.suggestion === "assign" && wire.axiom_id && knownAxioms.has(wire.axiom_id)) {
     return { kind: "assign", axiomId: wire.axiom_id };
@@ -115,20 +121,15 @@ function normalizeSuggestion(wire: TriageWireCluster, knownAxioms: Set<string>):
   }
 
   return {
-    kind: "unassignable",
-    why: wire.why_unassignable ?? "The curator's suggestion did not validate.",
+    kind: "hold",
+    why: wire.why_held ?? "The curator's suggestion did not validate.",
   };
 }
 
 /** A wire draft with safe defaults for anything the model left thin. */
 function normalizeDraft(draft: NonNullable<TriageWireCluster["draft"]>): AxiomDraft {
-  const severity: Severity = draft.severity === "warning" ? "warning" : "error";
-
   return {
     statement: draft.statement ?? "",
-    severity,
-    violatingExample: draft.violating_example ?? "(no example drafted)",
-    compliantExample: draft.compliant_example ?? "(no example drafted)",
     groundingHint: draft.grounding_hint ?? "",
   };
 }

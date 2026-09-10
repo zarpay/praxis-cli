@@ -20,8 +20,10 @@ application code at all (ESLint-enforced: no `@/*`).
   the application binds it in `src/helpers/prepare-orchestrator-helper.ts`
   by supplying `() => new CommandContext()`. That binding is the one place
   the machinery meets the application.
-- `views/` is the render kit: `Display` (stdout), `Logger` (stderr), and
-  the badge/stat/table/report helpers. `display.ts` and `logger.ts` are
-  the only two files in the repo allowed to call `console.*`.
+- `views/` is the render kit plus the terminal's three channels: `Display`
+  (stdout), `Logger` (stderr), `Prompter` (stdin — the one interactive
+  input seam), and the badge/stat/table/rule/report helpers. `display.ts`
+  and `logger.ts` are the only two files in the repo allowed to call
+  `console.*`.
 - Where the framework needs something application-specific, it takes it as
   a parameter rather than importing it.

@@ -29,8 +29,13 @@ interface MergeAxiomsOptions {
  * all merged evidence retroactively; the deprecated ids keep their
  * history readable and stop accruing.
  *
- * @throws PraxisError when any id names no active axiom, or the merge
- *   has no sources
+ * A merged-away axiom may already be deprecated: a deprecation that
+ * predates the merge command left its evidence stranded under the
+ * retired id, and folding that history is exactly this command's job —
+ * only the survivor must be active.
+ *
+ * @throws PraxisError when the survivor is not an active axiom, any
+ *   source id names no axiom, or the merge has no sources
  */
 export const mergeAxiomsOrchestrator: Orchestrator<MergeAxiomsOptions> = async (
   ctx,
@@ -45,7 +50,7 @@ export const mergeAxiomsOrchestrator: Orchestrator<MergeAxiomsOptions> = async (
 
   if (loserIds.length === 0) throw errors.mergeNeedsSources(into);
 
-  const losers = loserIds.map((id) => activeOrThrow(axioms, id));
+  const losers = loserIds.map((id) => existingOrThrow(axioms, id));
 
   const critiques = new RunStore(cfg).critiques();
   const labeled = joinCritiqueLabelsService(cfg, { critiques });
@@ -65,7 +70,7 @@ export const mergeAxiomsOrchestrator: Orchestrator<MergeAxiomsOptions> = async (
   }
 
   for (const loser of losers) {
-    store.deprecate(loser.id);
+    if (loser.status !== "deprecated") store.deprecate(loser.id);
   }
 
   new TriageStore(cfg).writeSession(records);
@@ -91,9 +96,18 @@ export const mergeAxiomsOrchestrator: Orchestrator<MergeAxiomsOptions> = async (
 
 export default prepareOrchestrator(mergeAxiomsOrchestrator);
 
-/** The axiom, provided it exists and is active. */
+/** The axiom, provided it exists and is active — the survivor's bar. */
 function activeOrThrow(axioms: AxiomFile[], id: string): AxiomFile {
-  const axiom = axioms.find((candidate) => candidate.id === id && candidate.status === "active");
+  const axiom = existingOrThrow(axioms, id);
+
+  if (axiom.status !== "active") throw errors.mergeSurvivorNotActive(id);
+
+  return axiom;
+}
+
+/** The axiom, provided it exists — deprecated sources still fold. */
+function existingOrThrow(axioms: AxiomFile[], id: string): AxiomFile {
+  const axiom = axioms.find((candidate) => candidate.id === id);
 
   if (!axiom) throw errors.axiomNotFound(id);
 

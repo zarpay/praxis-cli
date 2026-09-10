@@ -32,6 +32,11 @@ export function exists(path: string): boolean {
   return existsSync(path);
 }
 
+/** Whether the path exists and is a directory. */
+export function isDirectory(path: string): boolean {
+  return existsSync(path) && statSync(path).isDirectory();
+}
+
 /** Reads a file as UTF-8 text. */
 export function readText(path: string): string {
   return readFileSync(path, "utf-8");

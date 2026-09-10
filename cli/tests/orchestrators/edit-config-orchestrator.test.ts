@@ -18,6 +18,7 @@ describe("editConfigOrchestrator", () => {
   let cleanup: () => void;
   let configPath: string;
   let ctx: CommandContext;
+  const realTty = process.stdin.isTTY;
 
   beforeAll(() => {
     const dir = createCompilerTmpdir();
@@ -25,14 +26,28 @@ describe("editConfigOrchestrator", () => {
     cleanup = dir.cleanup;
     configPath = join(tmpdir, ".praxis", "config.json");
     ctx = testContext(tmpdir);
+    // The command opens a terminal editor, so these tests fake the terminal.
+    process.stdin.isTTY = true;
   });
 
-  afterAll(() => cleanup());
+  afterAll(() => {
+    process.stdin.isTTY = realTty;
+    cleanup();
+  });
 
   afterEach(() => {
     vi.clearAllMocks();
     delete process.env["VISUAL"];
     delete process.env["EDITOR"];
+  });
+
+  it("refuses without a terminal — an editor has nowhere to open", async () => {
+    process.stdin.isTTY = realTty ?? false;
+
+    const edit = editConfigOrchestrator(ctx, {});
+
+    await expect(edit).rejects.toThrow(/Edit .praxis\/config.json directly/);
+    process.stdin.isTTY = true;
   });
 
   it("spawns the VISUAL editor with the cfg path", async () => {

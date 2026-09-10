@@ -5,7 +5,7 @@ import fg from "fast-glob";
 
 import { errors } from "@/helpers/errors-helper.js";
 import { exists, hasGlobChars, readText } from "@/helpers/files-helper.js";
-import { joinPath, parentDir } from "@/helpers/paths-helper.js";
+import { joinPath, parentDir, resolvePath } from "@/helpers/paths-helper.js";
 import { SpecFile } from "@/models/spec-file.js";
 
 /**
@@ -32,17 +32,21 @@ export class SpecStore {
 
   /**
    * The spec file governing a target, by directory siblinghood: the
-   * pattern matched in the target's own directory.
+   * pattern matched in the target's own directory. A file never governs
+   * itself: a target that is itself a spec (the root README, say) must
+   * not be reviewed against its own text, so the target is excluded
+   * from the match.
    *
    * @throws PraxisError when the directory holds no matching spec
    */
   governingPath(targetPath: string): string {
     const baseDir = parentDir(targetPath);
+    const target = resolvePath(targetPath);
 
     if (!hasGlobChars(this.specFilePattern)) {
       const specPath = joinPath(baseDir, this.specFilePattern);
 
-      if (exists(specPath)) return specPath;
+      if (exists(specPath) && resolvePath(specPath) !== target) return specPath;
 
       throw errors.specNotFound(this.specFilePattern, baseDir, targetPath);
     }
@@ -53,7 +57,9 @@ export class SpecStore {
       absolute: true,
     });
 
-    if (matches.length > 0) return matches[0];
+    const governing = matches.find((match) => resolvePath(match) !== target);
+
+    if (governing !== undefined) return governing;
 
     throw errors.specPatternNotFound(this.specFilePattern, baseDir, targetPath);
   }
@@ -64,7 +70,9 @@ export class SpecStore {
    * @throws PraxisError when the frontmatter is malformed
    */
   read(specPath: string): SpecFileType {
-    return SpecFile.fromContent(readText(specPath), specPath, this.root);
+    const content = readText(specPath);
+
+    return SpecFile.fromContent(content, specPath, this.root);
   }
 
   /** Every spec file under the source directories, absolute paths. */

@@ -1,11 +1,22 @@
-import type { Service, TraceabilityAssessment } from "@/types.js";
+import type { ProviderUsage, Service } from "@/types.js";
 
 import curatorSystemPrompt from "@/prompts/curator-system-prompt.js";
 import traceabilityQuestion from "@/prompts/traceability-question.js";
 import traceabilityTools from "@/prompts/traceability-tools.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
 
-/** One proposal to trace against its spec at ratification. */
+/** The curator's spec-traceability verdict at acceptance. */
+interface TraceabilityAssessment {
+  traceable: boolean;
+  /** `<spec path>#<section>` when traceable. */
+  grounding: string | null;
+  /** The spec passage that grounds the axiom, quoted verbatim. */
+  quotedBasis: string;
+  reasoning: string;
+  usage: ProviderUsage | null;
+}
+
+/** One draft to trace against its spec at acceptance. */
 interface AssessTraceabilityInput {
   /** Project-relative spec path the proposal claims to belong to. */
   specPath: string;
@@ -14,7 +25,7 @@ interface AssessTraceabilityInput {
 }
 
 /**
- * The ratifier's traceability aid: which spec criterion grounds
+ * Curate's traceability check at acceptance: which spec criterion grounds
  * the proposal? Evidence for the human call, never the call itself.
  *
  * Fail-safe direction: a claim of traceability without a grounding

@@ -94,7 +94,7 @@ const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, 
     axioms: rows.sort((a, b) => a.axiomId.localeCompare(b.axiomId)),
     pendingTriage: state.pending.length,
     awaitingCuration: state.unidentified.length,
-    residual: rateCell(state.dismissed + state.rejectedProposals, critiques.length),
+    residual: rateCell(state.dismissed, critiques.length),
     epochs,
   };
 };
@@ -121,7 +121,7 @@ function axiomRow({
   cfg: PraxisConfig;
   birthdates: Map<string, string | null>;
 }): AxiomReportRow {
-  const spec = axiom.derivedFrom?.split("#")[0] ?? null;
+  const spec = axiom.derivedFromSpec();
 
   // Current stock: the reviewer's latest *evidenced* corpus run — a
   // one-file fast loop is feedback, not a stock measurement, and an

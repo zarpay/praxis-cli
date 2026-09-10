@@ -3,6 +3,7 @@ import type { LedgerRunRecord } from "@/types.js";
 import { describe, expect, it } from "vitest";
 
 import deriveEpochsService from "@/services/derive-epochs-service.js";
+import { runRecord } from "@tests/helpers/ledger-runs.js";
 import { testConfig } from "@tests/helpers/test-config.js";
 
 /** A minimal run record; tests vary the epoch-relevant fields. */
@@ -13,16 +14,14 @@ function run(fields: {
   at: string;
   baseline?: boolean;
 }): LedgerRunRecord {
-  return {
-    kind: "run",
+  return runRecord({
     run_id: `${fields.name}-${fields.at}`,
     timestamp: fields.at,
     reviewer_name: fields.name,
     reviewer_model: fields.model ?? "some/model",
     reviewer_hash: fields.hash,
-    scope: "corpus",
     baseline: fields.baseline ?? false,
-  } as LedgerRunRecord;
+  });
 }
 
 describe("deriveEpochsService", () => {
