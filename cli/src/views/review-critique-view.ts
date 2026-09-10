@@ -1,6 +1,7 @@
 import type { ReportLine, View } from "@framework/types.js";
 
-import chalk from "chalk";
+import { card } from "@framework/views/card.js";
+import { palette } from "@framework/views/palette.js";
 
 /** One critique framed for the validity call. */
 interface ReviewCritiqueCard {
@@ -35,20 +36,20 @@ const reviewCritiqueView: View<ReviewCritiqueCard> = ({
   state,
   axiomId,
 }) => {
-  const standing = axiomId === null ? state : `${state} → ${axiomId}`;
+  const standing = axiomId === null ? state : `${state} → ${palette.ref(axiomId)}`;
 
-  const lines: ReportLine[] = [
-    { channel: "heading", text: `Critique ${index}/${total} — ${filePath}` },
-    {
-      channel: "content",
-      entries: [
-        `  ${chalk.gray(`[${reviewerName}] ${severity} · spec ${specPath}`)} ${chalk.gray(id)}`,
-        `    ${text}`,
-        "",
-        `  ${chalk.cyan("Standing:")} ${standing}`,
-      ],
-    },
-  ];
+  const critiqueCard = card({
+    title: `critique ${index}/${total} · ${id}`,
+    attrs: [
+      ["file", filePath],
+      ["spec", specPath],
+      ["reviewer", `${reviewerName} · ${severity}`],
+    ],
+    body: [text],
+    footer: `${palette.meta("standing")}  ${standing}`,
+  });
+
+  const lines: ReportLine[] = [{ channel: "content", entries: ["", ...critiqueCard] }];
 
   return lines;
 };

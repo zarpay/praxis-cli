@@ -85,7 +85,10 @@ function concentrationLines(report: DebtReport): ReportLine[] {
       entries: [
         "",
         "Concentration (current stock by directory):",
-        ...table(worst.map((entry) => [entry.directory, entry.violations])),
+        ...table(
+          worst.map((entry) => [entry.directory, entry.violations]),
+          ["DIRECTORY", "STOCK"],
+        ),
       ],
     },
   ];
@@ -101,7 +104,10 @@ function creditLines(report: DebtReport): ReportLine[] {
       entries: [
         "",
         "Paydown credit (authors of resolving commits):",
-        ...table(report.credits.map((credit) => [credit.author, `${credit.resolved} resolved`])),
+        ...table(
+          report.credits.map((credit) => [credit.author, credit.resolved]),
+          ["AUTHOR", "RESOLVED"],
+        ),
       ],
     },
   ];

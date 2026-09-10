@@ -72,8 +72,8 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 	· The happy path begins before the parlor id is validated.
 [3/4] redeem-coupon.ts
 	✗ FAIL
-	· Error message 'bad input' tells the consumer nothing about what was
-	  wrong or what would be accepted.
+	· Error message 'bad input' tells the consumer nothing about what
+	  was wrong or what would be accepted.
 [4/4] send-newsletter.ts
 	✓ PASS
 
@@ -81,9 +81,15 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
 Total documents: 4
-[Compliant] 2
-[Warnings] 1
-[Errors] 1
+
+  ● 2 pass   ● 1 warn   ● 1 fail   ● 0 not validated
+
+By type:
+  ┌──────────────┬───────────────┐
+  │ TYPE         │ COMPLIANT     │
+  ├──────────────┼───────────────┤
+  │ src/services │ 2/4 compliant │
+  └──────────────┴───────────────┘
 ```
 
 Critiques print raw — the reviewer's own words against the spec. Labels come later: `praxis axioms triage` classifies the pending backlog under active axioms, and from then on reports cite the axiom's id and accepted words (drill-down at `praxis axioms show <id>`).

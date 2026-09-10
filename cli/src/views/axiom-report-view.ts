@@ -1,8 +1,8 @@
 import type { AxiomReport } from "@/types.js";
 import type { View } from "@framework/types.js";
 
-import chalk from "chalk";
-
+import { card } from "@framework/views/card.js";
+import { palette } from "@framework/views/palette.js";
 import { table } from "@framework/views/table.js";
 
 /**
@@ -17,23 +17,29 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
     return [{ channel: "content", entries: [JSON.stringify(payload, null, 2)] }];
   }
 
-  const examples = report.examples.map(
-    (example) =>
-      `  ${example.filePath} ${chalk.gray(`[${example.reviewerName}]`)} ${chalk.gray(example.id)}\n    ${chalk.dim(example.text)}\n`,
-  );
+  const examples = report.examples.flatMap((example) => [
+    `${example.filePath} ${palette.meta(`[${example.reviewerName}]`)} ${palette.meta(example.id)}`,
+    palette.quote(`  ${example.text}`),
+    "",
+  ]);
+
+  const identity = card({
+    title: `${report.axiomId} v${report.version}`,
+    attrs: [
+      ["status", statusMark(report)],
+      ["derives from", report.derivedFrom ?? "—"],
+      ["introduced", report.introduced],
+    ],
+    body: [report.statement],
+  });
 
   return [
-    {
-      channel: "heading",
-      text: severityHeading(report),
-    },
     { channel: "warning", text: `Calibration: ${report.calibration}` },
     {
       channel: "content",
       entries: [
-        report.statement,
         "",
-        `derived from: ${report.derivedFrom ?? "—"} · introduced: ${report.introduced}`,
+        ...identity,
         "",
         ...table(
           report.rows.map((row) => [
@@ -46,8 +52,9 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
           ]),
           ["REVIEWER", "CURRENT STOCK", "FILES", "PRE-SPEC", "POST-SPEC", "UNKNOWN"],
         ),
-        "",
-        ...(examples.length > 0 ? ["Representative critiques:", "", ...examples] : []),
+        ...(examples.length > 0
+          ? ["", palette.structure("Representative critiques"), "", ...examples]
+          : []),
       ],
     },
   ];
@@ -55,11 +62,14 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
 
 export default axiomReportView;
 
-/** The heading: identity and status, the severity only when a historical file carries one. */
-function severityHeading(report: AxiomReport): string {
-  const severity = report.severity === null ? "" : ` (${report.severity}, historical)`;
+/** The status dot, with a historical severity noted when a file carries one. */
+function statusMark(report: AxiomReport): string {
+  const dot =
+    report.status === "active" ? palette.good("● active") : palette.meta(`● ${report.status}`);
+  const severity =
+    report.severity === null ? "" : palette.meta(` · severity ${report.severity} (historical)`);
 
-  return `${report.axiomId} v${report.version} — ${report.status}${severity}`;
+  return `${dot}${severity}`;
 }
 
 /** The stock's evidence date, empty when no evidenced corpus run exists. */

@@ -32,14 +32,14 @@ describe("runReportView", () => {
   it("shows the verdict tallies", () => {
     const text = reportText(runReportView(finished({ compliant: 3, errors: 2 })));
 
-    expect(text).toContain("[Compliant] 3");
-    expect(text).toContain("[Errors] 2");
+    expect(text).toContain("3 pass");
+    expect(text).toContain("2 fail");
   });
 
   it("surfaces unverified units when any exist — they are not violations", () => {
     const text = reportText(runReportView(finished({ unverified: 2 })));
 
-    expect(text).toContain("[Unverified] 2 (could not be reviewed)");
+    expect(text).toContain("2 unverified");
   });
 
   it("stays silent about unverified when everything was reviewable", () => {

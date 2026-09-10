@@ -30,16 +30,10 @@ Untriaged: 11 · Awaiting curation: 0
   Context files:      4
 
 Validation (reviewer: flash)
-  [PASS] 15
-  [WARN] 1
-  [FAIL] 2
-  [NOT VALIDATED] 0
+  ● 15 pass   ● 1 warn   ● 2 fail   ● 0 not validated
 
 Validation (reviewer: v32)
-  [PASS] 14
-  [WARN] 0
-  [FAIL] 4
-  [NOT VALIDATED] 0
+  ● 14 pass   ● 0 warn   ● 4 fail   ● 0 not validated
 
 [OK] No issues found
 ```

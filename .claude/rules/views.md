@@ -28,9 +28,14 @@ export type View<Data> = (data: Data) => ReportLine[];
   module-private helpers — split a piece out only when it is independently
   reusable, not to make files smaller.
 - **Components are the smaller parts views compose**, and they live in the
-  framework's kit (`@framework/views/`): `badge`, `badgeBlock`, `verdictTally`,
-  `statLines`, `table`, `rule`. They return entries and strings — ingredients, not
-  reports. An app-level helper used by exactly one view stays private in that
+  framework's kit (`@framework/views/`): `palette` (the semantic colors —
+  every color has exactly one meaning, and views never call chalk
+  directly), `table` (outlined, ANSI-aware), `card` (title · attrs ·
+  body · footer — the one shape for anything shown one-at-a-time),
+  `frame` (a report's opening: bold title + scope facts as named cells),
+  `verdictTally` (the one-line colored-dot tally), `badge`/`badgeBlock`,
+  `statLines`, `rule`. They return entries and strings — ingredients,
+  not reports. An app-level helper used by exactly one view stays private in that
   view.
 - **Using the kit is mandatory, not stylistic** (owner, 2026-09-10:
   "everything should"). A view never hand-rolls what a component

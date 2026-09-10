@@ -1,7 +1,8 @@
 import type { AxiomFile } from "@/models/axiom-file.js";
 import type { View } from "@framework/types.js";
 
-import chalk from "chalk";
+import { card } from "@framework/views/card.js";
+import { palette } from "@framework/views/palette.js";
 
 /** One of the category's labeled critiques, shown as a live example. */
 interface RepresentativeCritique {
@@ -51,33 +52,46 @@ const axiomShowView: View<ShownAxiom & { json?: boolean }> = ({
     return [{ channel: "content", entries: [JSON.stringify(payload, null, 2)] }];
   }
 
-  const facts = [
-    `introduced: ${axiom.introduced} · mode: ${axiom.mode}`,
-    ...(axiom.severity === null ? [] : [`severity: ${axiom.severity} (historical)`]),
-    `derives from: ${axiom.derivedFrom ?? "—"}`,
-  ];
+  const statusMark =
+    axiom.status === "active" ? palette.good("● active") : palette.meta(`● ${axiom.status}`);
+
+  const identity = card({
+    title: `${axiom.id} v${axiom.version}`,
+    attrs: [
+      ["status", statusMark],
+      ["derives from", axiom.derivedFrom ?? "—"],
+      ["introduced", `${axiom.introduced} · mode ${axiom.mode}`],
+      ...(axiom.severity === null
+        ? []
+        : ([["severity", `${axiom.severity} ${palette.meta("(historical)")}`]] as [
+            string,
+            string,
+          ][])),
+    ],
+    body: axiom.body.trim().split("\n"),
+  });
 
   const examples = critiques.flatMap((critique) => [
-    `  ${critique.filePath} ${chalk.gray(`[${critique.reviewerName}]`)} ${chalk.gray(critique.id)}`,
-    `    ${chalk.dim(critique.text)}`,
+    `${critique.filePath} ${palette.meta(`[${critique.reviewerName}]`)} ${palette.meta(critique.id)}`,
+    palette.quote(`  ${critique.text}`),
     "",
   ]);
 
   return [
-    { channel: "heading", text: `${axiom.id} v${axiom.version} — ${axiom.status}` },
     {
       channel: "content",
       entries: [
-        ...facts,
         "",
-        axiom.body.trim(),
+        ...identity,
         ...(critiques.length > 0
           ? [
               "",
-              `Labeled critiques (${labeledCount} total${labeledCount > critiques.length ? `, showing ${critiques.length}` : ""}):`,
+              palette.structure(
+                `Labeled critiques ${palette.meta(`(${labeledCount} total${labeledCount > critiques.length ? `, showing ${critiques.length}` : ""})`)}`,
+              ),
               "",
               ...examples,
-              "Browse all: `praxis eval critiques --axiom " + axiom.id + "`",
+              `${palette.meta("browse all")}  ${palette.ref(`praxis eval critiques --axiom ${axiom.id}`)}`,
             ]
           : []),
       ],

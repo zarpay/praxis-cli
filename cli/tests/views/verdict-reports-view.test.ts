@@ -52,7 +52,7 @@ describe("verdictReportsView", () => {
   it("shows a pass with its spec", () => {
     const out = rendered(report({ status: "pass", cacheData: cacheData() }));
 
-    expect(out).toContain("Document is compliant");
+    expect(out).toContain("document is compliant");
     expect(out).toContain("docs/README.md");
   });
 
@@ -85,8 +85,8 @@ describe("verdictReportsView", () => {
   it("shows the reasoning only when verbose", () => {
     const subject = report({ status: "pass", cacheData: cacheData() });
 
-    expect(rendered(subject, true)).toContain("AI Reasoning:");
-    expect(rendered(subject, false)).not.toContain("AI Reasoning:");
+    expect(rendered(subject, true)).toContain("AI reasoning");
+    expect(rendered(subject, false)).not.toContain("AI reasoning");
   });
 });
 

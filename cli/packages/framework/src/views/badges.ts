@@ -1,5 +1,7 @@
 import type { BadgeEntry, LineColor } from "@framework/types.js";
 
+import { palette } from "@framework/views/palette.js";
+
 /** Indent every badge in a tallied block shares. */
 const BLOCK_INDENT = 2;
 
@@ -28,22 +30,24 @@ export function badgeBlock(rows: [string, LineColor, string | number][]): BadgeE
 }
 
 /**
- * The standard pass/warn/fail/not-validated tally, in that order.
- *
- * The order and the colors are the project's convention for reporting
- * verdict counts; every place that shows them uses this so they can
- * never disagree.
+ * The standard pass/warn/fail/not-validated tally, in that order, as
+ * one line of colored dots (owner, 2026-09-10): scannable, and the
+ * same order and colors every single time. The dots carry the color;
+ * the counts stay in the default text color.
  */
 export function verdictTally(counts: {
   pass: number;
   warn: number;
   fail: number;
   notValidated: number;
-}): BadgeEntry[] {
-  return badgeBlock([
-    ["PASS", "green", counts.pass],
-    ["WARN", "yellow", counts.warn],
-    ["FAIL", "red", counts.fail],
-    ["NOT VALIDATED", "gray", counts.notValidated],
-  ]);
+}): string {
+  const cell = (paint: (s: string) => string, count: number, label: string) =>
+    `${paint("●")} ${count} ${label}`;
+
+  return [
+    cell(palette.good, counts.pass, "pass"),
+    cell(palette.warn, counts.warn, "warn"),
+    cell(palette.bad, counts.fail, "fail"),
+    cell(palette.meta, counts.notValidated, "not validated"),
+  ].join("   ");
 }

@@ -1,7 +1,8 @@
 import type { PendingCritique, TriageCluster } from "@/types.js";
 import type { ReportLine, View } from "@framework/types.js";
 
-import chalk from "chalk";
+import { card } from "@framework/views/card.js";
+import { palette } from "@framework/views/palette.js";
 
 /** One distinct critique shown for a cluster, with its duplicate count. */
 type ClusterCritique = PendingCritique & {
@@ -27,22 +28,22 @@ interface TriageClusterCard {
  */
 const curateClusterView: View<TriageClusterCard> = ({ index, total, cluster, critiques }) => {
   const critiqueBlocks = critiques.flatMap((critique) => {
-    const copies = critique.copies > 1 ? chalk.gray(` (×${critique.copies})`) : "";
+    const copies = critique.copies > 1 ? palette.meta(` (×${critique.copies})`) : "";
 
     return [
-      `  ${critique.filePath} ${chalk.gray(`[${critique.reviewerName}]`)}${copies} ${chalk.gray(critique.id)}`,
-      `    ${chalk.dim(critique.text)}`,
+      `${critique.filePath} ${palette.meta(`[${critique.reviewerName}]`)}${copies} ${palette.meta(critique.id)}`,
+      palette.quote(`  ${critique.text}`),
       "",
     ];
   });
 
-  const lines: ReportLine[] = [
-    { channel: "heading", text: `Cluster ${index}/${total} — ${cluster.rationale}` },
-    {
-      channel: "content",
-      entries: [...critiqueBlocks, ...suggestionLines(cluster)],
-    },
-  ];
+  const clusterCard = card({
+    title: `cluster ${index}/${total}`,
+    body: [cluster.rationale, "", ...critiqueBlocks.slice(0, -1)],
+    footer: suggestionLines(cluster),
+  });
+
+  const lines: ReportLine[] = [{ channel: "content", entries: ["", ...clusterCard] }];
 
   return lines;
 };
@@ -54,21 +55,22 @@ function suggestionLines(cluster: TriageCluster): string[] {
   const { suggestion } = cluster;
 
   if (suggestion.kind === "assign") {
-    return [`${chalk.cyan("Suggests:")} fold into ${chalk.bold(suggestion.axiomId)}`];
+    return [`${palette.ref("suggests")}  fold into ${palette.ref(suggestion.axiomId)}`];
   }
 
   if (suggestion.kind === "propose") {
     const { draft } = suggestion;
 
     return [
-      `${chalk.cyan("Suggests:")} a new issue category`,
+      `${palette.ref("suggests")}  a new issue category`,
       "",
-      `  ${chalk.bold(draft.statement)}`,
-      draft.groundingHint === "" ? "" : `  Derives from: ${chalk.gray(draft.groundingHint)}`,
+      `  ${palette.structure(draft.statement)}`,
+      draft.groundingHint === "" ? "" : `  derives from ${palette.meta(draft.groundingHint)}`,
     ].filter(Boolean);
   }
 
   return [
-    `${chalk.yellow("Suggests:")} hold — ${suggestion.why} (stays in the queue for the next session)`,
+    `${palette.warn("suggests")}  hold — ${suggestion.why}`,
+    palette.meta("(stays in the queue for the next session)"),
   ];
 }

@@ -101,12 +101,15 @@ praxis eval run
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
 Total documents: 4
-[Compliant] 3
-[Warnings] 0
-[Errors] 1
+
+  ● 3 pass   ● 0 warn   ● 1 fail   ● 0 not validated
 
 By type:
-  src/services  3/4 compliant
+  ┌──────────────┬───────────────┐
+  │ TYPE         │ COMPLIANT     │
+  ├──────────────┼───────────────┤
+  │ src/services │ 3/4 compliant │
+  └──────────────┴───────────────┘
 ```
 
 Notice what *isn't* here: `legacy-import.ts`. An exclusion in frontmatter is structural — the file never becomes a review unit, and the reviewer never sees it.

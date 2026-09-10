@@ -1,23 +1,49 @@
 import { describe, expect, it } from "vitest";
 
+import { stripAnsi } from "@framework/views/palette.js";
 import { table } from "@framework/views/table.js";
 
-describe("table", () => {
-  it("pads columns so the next column starts at one boundary", () => {
-    const [a, b] = table([
-      ["ab", "x"],
-      ["a", "xyz"],
-    ]);
+/** The printable text of each rendered line. */
+function plain(lines: string[]): string[] {
+  return lines.map((line) => stripAnsi(line));
+}
 
-    expect(a.indexOf("x")).toBe(b.indexOf("xyz"));
+describe("table", () => {
+  it("pads columns so every wall aligns", () => {
+    const lines = plain(
+      table([
+        ["ab", "x"],
+        ["a", "xyz"],
+      ]),
+    );
+
+    const widths = new Set(lines.map((line) => line.length));
+
+    expect(widths.size).toBe(1);
   });
 
-  it("renders headers above a dashed rule", () => {
-    const lines = table([["flash", "8"]], ["Reviewer", "Verdicts"]);
+  it("outlines the table, headers above a rule", () => {
+    const lines = plain(table([["flash", "8"]], ["Reviewer", "Verdicts"]));
 
-    expect(lines[0]).toContain("Reviewer");
-    expect(lines[1]).toMatch(/^\s*-+ +-+\s*$/);
-    expect(lines[2]).toContain("flash");
+    expect(lines[0]).toMatch(/^\s*┌.*┬.*┐$/);
+    expect(lines[1]).toContain("Reviewer");
+    expect(lines[2]).toMatch(/^\s*├.*┼.*┤$/);
+    expect(lines[3]).toContain("flash");
+    expect(lines[4]).toMatch(/^\s*└.*┴.*┘$/);
+  });
+
+  it("computes widths on printable text, so styled cells align", () => {
+    const styled = "\u001b[32mactive\u001b[39m";
+    const lines = plain(
+      table([
+        [styled, "1"],
+        ["deprecated", "2"],
+      ]),
+    );
+
+    const widths = new Set(lines.map((line) => line.length));
+
+    expect(widths.size).toBe(1);
   });
 
   it("returns nothing for no rows and no headers", () => {
@@ -25,8 +51,8 @@ describe("table", () => {
   });
 
   it("stringifies numeric cells", () => {
-    const [line] = table([[42, "ok"]]);
+    const lines = plain(table([[42, "ok"]]));
 
-    expect(line).toContain("42");
+    expect(lines[1]).toContain("42");
   });
 });

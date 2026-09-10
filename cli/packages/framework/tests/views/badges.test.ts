@@ -27,10 +27,14 @@ describe("badgeBlock", () => {
 });
 
 describe("verdictTally", () => {
-  it("renders the conventional pass/warn/fail/not-validated tally, in that order", () => {
+  it("renders one dot line: pass, warn, fail, not validated — in that order", () => {
     const tally = verdictTally({ pass: 5, warn: 1, fail: 0, notValidated: 2 });
 
-    expect(tally.map((entry) => entry.badge)).toEqual(["PASS", "WARN", "FAIL", "NOT VALIDATED"]);
-    expect(tally.map((entry) => entry.value)).toEqual([5, 1, 0, 2]);
+    expect(tally).toContain("5 pass");
+    expect(tally).toContain("1 warn");
+    expect(tally).toContain("0 fail");
+    expect(tally).toContain("2 not validated");
+    expect(tally.indexOf("pass")).toBeLessThan(tally.indexOf("warn"));
+    expect(tally.indexOf("warn")).toBeLessThan(tally.indexOf("fail"));
   });
 });

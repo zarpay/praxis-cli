@@ -77,12 +77,12 @@ describe("review state", () => {
 
   it("carries the four buckets in a fixed order", () => {
     const text = rendered([tally({ pass: 1, warn: 2, fail: 3, notValidated: 4 })]);
-    const order = ["[PASS] 1", "[WARN] 2", "[FAIL] 3", "[NOT VALIDATED] 4"];
+    const order = ["1 pass", "2 warn", "3 fail", "4 not validated"];
 
     expect(order.map((mark) => text.indexOf(mark))).toEqual(
       order.map((mark) => text.indexOf(mark)).sort((a, b) => a - b),
     );
-    expect(text.indexOf("[PASS] 1")).toBeGreaterThan(-1);
+    expect(text.indexOf("1 pass")).toBeGreaterThan(-1);
   });
 });
 

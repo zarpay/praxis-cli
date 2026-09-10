@@ -1,5 +1,5 @@
 import type { StatusReport } from "@/types.js";
-import type { BadgeEntry, ReportLine, View } from "@framework/types.js";
+import type { ReportLine, View } from "@framework/types.js";
 
 import { verdictTally } from "@framework/views/badges.js";
 import { statLines } from "@framework/views/stats.js";
@@ -30,11 +30,11 @@ const statusView: View<StatusReport & { json?: boolean }> = (report) => {
     lines.push({ channel: "content", entries: ["", ...counts(report)] });
   }
 
-  for (const { reviewer, badges } of reviewBlocks(report)) {
+  for (const { reviewer, tally } of reviewBlocks(report)) {
     lines.push(
       { channel: "blank" },
       { channel: "heading", text: `Validation (reviewer: ${reviewer})` },
-      { channel: "content", entries: badges },
+      { channel: "content", entries: [`  ${tally}`] },
     );
   }
 
@@ -78,10 +78,10 @@ function counts(report: StatusReport): string[] {
  * one. A project with no reviewers configured still gets a row, so its
  * targets are visibly not validated.
  */
-function reviewBlocks(report: StatusReport): { reviewer: string; badges: BadgeEntry[] }[] {
+function reviewBlocks(report: StatusReport): { reviewer: string; tally: string }[] {
   return report.validation
     .filter((v) => v.pass + v.warn + v.fail + v.notValidated > 0)
-    .map((v) => ({ reviewer: v.reviewer ?? "none configured", badges: verdictTally(v) }));
+    .map((v) => ({ reviewer: v.reviewer ?? "none configured", tally: verdictTally(v) }));
 }
 
 /** The framework-health findings, in display order; empty blocks are dropped. */

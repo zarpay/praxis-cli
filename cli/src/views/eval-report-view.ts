@@ -3,7 +3,7 @@ import type { ReportLine, View } from "@framework/types.js";
 
 import chalk from "chalk";
 
-import { statLines } from "@framework/views/stats.js";
+import { frame } from "@framework/views/frame.js";
 
 /**
  * The eval report, rendered under the measurement hard rules: the calibration
@@ -36,28 +36,21 @@ const evalReportView: View<EvalReport & { json?: boolean }> = (report) => {
     });
   }
 
+  const opening = frame({
+    title: "Eval report",
+    facts: [
+      ["RUNS", report.panel.runs],
+      ["CRITIQUES", report.panel.critiques],
+      ["FILES", report.panel.filesTouched],
+      ["REVIEWERS", report.panel.reviewers.join(", ") || "—"],
+      ["SPECS", report.panel.specs.length],
+      ["COST", report.panel.costUsd === null ? "—" : `$${report.panel.costUsd.toFixed(4)}`],
+    ],
+  });
+
   lines.push(
-    { channel: "heading", text: "Eval report" },
     { channel: "warning", text: `Calibration: ${report.calibration}` },
-    {
-      channel: "content",
-      entries: [
-        ...statLines([
-          ["Runs", report.panel.runs],
-          ["Critiques", report.panel.critiques],
-          ["Files touched", report.panel.filesTouched],
-          ["Reviewers", report.panel.reviewers.join(", ") || "—"],
-          ["Specs", report.panel.specs.length],
-          [
-            "Cost",
-            report.panel.costUsd === null
-              ? "— (offline or unreported)"
-              : `$${report.panel.costUsd.toFixed(4)}`,
-          ],
-        ]),
-        "",
-      ],
-    },
+    { channel: "content", entries: [...opening, ""] },
   );
 
   lines.push(...epochLines(report));

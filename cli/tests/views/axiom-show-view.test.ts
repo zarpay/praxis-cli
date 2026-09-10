@@ -34,10 +34,12 @@ describe("axiomShowView", () => {
   it("shows identity, provenance, and the statement", () => {
     const text = reportText(axiomShowView({ axiom: axiom(), critiques: [], labeledCount: 0 }));
 
-    expect(text).toContain("AX-3f9c2d v2 — active");
-    expect(text).toContain("derives from: src/services/README.md#behavior");
+    expect(text).toContain("AX-3f9c2d v2");
+    expect(text).toContain("● active");
+    expect(text).toContain("derives from");
+    expect(text).toContain("src/services/README.md#behavior");
     expect(text).toContain("Error messages written for the implementer, not the API consumer.");
-    expect(text).not.toContain("severity:");
+    expect(text).not.toContain("severity");
   });
 
   it("shows the category's labeled critiques as its live examples", () => {
@@ -45,7 +47,8 @@ describe("axiomShowView", () => {
       axiomShowView({ axiom: axiom(), critiques: [critique()], labeledCount: 7 }),
     );
 
-    expect(text).toContain("Labeled critiques (7 total, showing 1):");
+    expect(text).toContain("Labeled critiques");
+    expect(text).toContain("(7 total, showing 1)");
     expect(text).toContain("src/services/redeem-coupon.ts");
     expect(text).toContain("Error message 'bad input' tells the consumer nothing.");
     expect(text).toContain("praxis eval critiques --axiom AX-3f9c2d");
@@ -57,7 +60,7 @@ describe("axiomShowView", () => {
 
     const text = reportText(axiomShowView({ axiom: historical, critiques: [], labeledCount: 0 }));
 
-    expect(text).toContain("severity: warning (historical)");
+    expect(text).toContain("warning (historical)");
   });
 
   it("renders the stable JSON contract when asked", () => {

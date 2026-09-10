@@ -2,15 +2,15 @@ import type { AxiomFile } from "@/models/axiom-file.js";
 import type { ListAxiomsResult } from "@/types.js";
 import type { ReportLine, View } from "@framework/types.js";
 
-import chalk from "chalk";
-
+import { palette } from "@framework/views/palette.js";
 import { table } from "@framework/views/table.js";
 
 /**
- * The axiom store at a glance: an aligned identity table with each
- * axiom's statement beneath its row, chronological, problems reported
- * at the end. A leftover `proposed` axiom (from
- * before acceptance activated directly) is flagged with the way out.
+ * The axiom store at a glance: one outlined table, chronological, with
+ * each category's statement elided into its row — the full statement is
+ * `axioms show`'s job. Problems report at the end, and a leftover
+ * `proposed` axiom (from before acceptance activated directly) is
+ * flagged with the way out.
  *
  * With `json` set, the same state renders as the stable machine
  * contract instead — never both, never disagreeing.
@@ -29,25 +29,18 @@ const axiomListView: View<ListAxiomsResult & { json?: boolean }> = ({ axioms, pr
     ];
   }
 
-  const identityRows = axioms.map((axiom) => [
-    axiom.id,
+  const rows = axioms.map((axiom) => [
+    palette.ref(axiom.id),
     `v${axiom.version}`,
-    axiom.status,
-    axiom.severity ?? "—",
-    axiom.introduced,
+    statusCell(axiom.status),
+    palette.meta(axiom.introduced),
+    palette.quote(elide(axiom.statement())),
   ]);
-  const identityLines = table(identityRows, ["ID", "VER", "STATUS", "SEVERITY", "INTRODUCED"]);
-  const header = identityLines.slice(0, 2);
-  const rows = identityLines.slice(2);
-  const entries = axioms.flatMap((axiom, index) => [
-    rows[index] ?? "",
-    `    ${chalk.dim(axiom.statement().replace(/\s+/g, " "))}`,
-    "",
-  ]);
+  const listing = table(rows, ["ID", "VER", "STATUS", "INTRODUCED", "STATEMENT"]);
 
   const lines: ReportLine[] = [
     { channel: "heading", text: `Axioms (${axioms.length})` },
-    { channel: "content", entries: [...header, ...entries] },
+    { channel: "content", entries: listing },
   ];
 
   const proposed = axioms.filter((axiom) => axiom.status === "proposed").length;
@@ -68,6 +61,22 @@ const axiomListView: View<ListAxiomsResult & { json?: boolean }> = ({ axioms, pr
 
   return lines;
 };
+
+/** The status, colored by the one meaning each color carries. */
+function statusCell(status: string): string {
+  if (status === "active") return palette.good(status);
+
+  if (status === "proposed") return palette.warn(status);
+
+  return palette.meta(status);
+}
+
+/** One-line statement, elided to keep the table within a terminal. */
+function elide(statement: string): string {
+  const flat = statement.replace(/\s+/g, " ");
+
+  return flat.length <= 46 ? flat : `${flat.slice(0, 45)}…`;
+}
 
 /** The stable JSON shape for one axiom (schema changes are breaking). */
 function axiomJson(axiom: AxiomFile): Record<string, unknown> {

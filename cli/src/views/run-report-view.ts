@@ -1,7 +1,8 @@
 import type { EvalSummary, ReviewAllResult } from "@/types.js";
 import type { DisplayEntry, View } from "@framework/types.js";
 
-import { badge } from "@framework/views/badges.js";
+import { badge, verdictTally } from "@framework/views/badges.js";
+import { palette } from "@framework/views/palette.js";
 import { table } from "@framework/views/table.js";
 
 /** A completed full run, ready to report. */
@@ -51,17 +52,21 @@ function content(badge: DisplayEntry): { channel: "content"; entries: DisplayEnt
 function summary(totals: EvalSummary): DisplayEntry[] {
   const reviewerNames = Object.keys(totals.byReviewer);
 
+  const tally = verdictTally({
+    pass: totals.compliant,
+    warn: totals.warnings,
+    fail: totals.errors,
+    notValidated: totals.notValidated,
+  });
+
   return [
     "",
     { header: "Summary — corpus conformance (includes pre-spec debt)" },
     `Total documents: ${totals.total}`,
-    badge("Compliant", "green", totals.compliant),
-    badge("Warnings", "yellow", totals.warnings),
-    badge("Errors", "red", totals.errors),
+    "",
+    `  ${tally}`,
     totals.unverified > 0 &&
-      badge("Unverified", "gray", `${totals.unverified} (could not be reviewed)`),
-    totals.notValidated > 0 &&
-      badge("Not Validated", "gray", `${totals.notValidated} (no spec found)`),
+      `  ${palette.warn(`● ${totals.unverified} unverified`)} ${palette.meta("(could not be reviewed — the run fails)")}`,
     "",
     "By type:",
     ...table(
@@ -69,6 +74,7 @@ function summary(totals: EvalSummary): DisplayEntry[] {
         type,
         `${stats.compliant}/${stats.total} compliant`,
       ]),
+      ["TYPE", "COMPLIANT"],
     ),
     ...(reviewerNames.length > 1
       ? [
@@ -78,13 +84,9 @@ function summary(totals: EvalSummary): DisplayEntry[] {
             reviewerNames.map((name) => {
               const stats = totals.byReviewer[name];
 
-              return [
-                name,
-                `${stats?.compliant ?? 0} pass`,
-                `${stats?.warnings ?? 0} warn`,
-                `${stats?.errors ?? 0} fail`,
-              ];
+              return [name, stats?.compliant ?? 0, stats?.warnings ?? 0, stats?.errors ?? 0];
             }),
+            ["REVIEWER", "PASS", "WARN", "FAIL"],
           ),
         ]
       : []),

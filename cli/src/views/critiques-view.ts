@@ -1,9 +1,7 @@
 import type { View } from "@framework/types.js";
 
-import chalk from "chalk";
-
-import { rule } from "@framework/views/rule.js";
-import { statLines } from "@framework/views/stats.js";
+import { card } from "@framework/views/card.js";
+import { palette } from "@framework/views/palette.js";
 
 /** Where one critique stands in the review→label lifecycle. */
 type CritiqueState = "untriaged" | "unmatched" | "labeled" | "dismissed";
@@ -27,9 +25,6 @@ interface CritiquesListing {
   totals: Record<CritiqueState, number>;
   json?: boolean;
 }
-
-/** Width of the rule separating critique blocks. */
-const RULE_WIDTH = 72;
 
 /**
  * The critique listing: one block per critique, separated by a rule —
@@ -66,31 +61,28 @@ const critiquesView: View<CritiquesListing> = ({ rows, totals, json }) => {
 
 export default critiquesView;
 
-/** One critique's block: a rule, its fields aligned, its words, its standing — default text throughout. */
+/** One critique's card: identity in the title, provenance as attributes, the words as body. */
 function critiqueBlock(row: CritiqueRow): string[] {
-  return [
-    rule("─", RULE_WIDTH),
-    ...statLines([
-      ["critique", chalk.bold(row.id)],
+  return card({
+    title: `critique ${row.id}`,
+    attrs: [
       ["when", row.timestamp.replace("T", " ").slice(0, 19)],
       ["run", row.runId],
       ["file", row.filePath],
       ["reviewer", `${row.reviewerName} · ${row.severity}`],
-    ]),
-    "",
-    ...statLines([["feedback", row.text]]),
-    "",
-    ...statLines([["standing", stateLine(row)]]),
-  ];
+    ],
+    body: [row.text],
+    footer: `${palette.meta("standing")}  ${stateLine(row)}`,
+  });
 }
 
 /** The state, colored by what it asks of the human. */
 function stateLine(row: CritiqueRow): string {
-  if (row.state === "labeled") return chalk.cyan(row.axiomId ?? "");
+  if (row.state === "labeled") return palette.ref(row.axiomId ?? "");
 
-  if (row.state === "unmatched") return `${chalk.yellow("unmatched")} — awaiting curation`;
+  if (row.state === "unmatched") return `${palette.warn("unmatched")} — awaiting curation`;
 
   if (row.state === "dismissed") return "dismissed";
 
-  return `${chalk.magenta("untriaged")} — awaiting triage`;
+  return `${palette.attention("untriaged")} — awaiting triage`;
 }

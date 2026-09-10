@@ -1,11 +1,8 @@
 import type { CacheFileData, VerdictReportStatus, VerdictReport } from "@/types.js";
-import type { BadgeEntry, DisplayEntry, View } from "@framework/types.js";
+import type { DisplayEntry, View } from "@framework/types.js";
 
-import chalk from "chalk";
-
-import { badgeBlock } from "@framework/views/badges.js";
-import { rule } from "@framework/views/rule.js";
-import { statLines } from "@framework/views/stats.js";
+import { card } from "@framework/views/card.js";
+import { palette } from "@framework/views/palette.js";
 
 /** Every reviewer's cached report on one target. */
 interface ReviewerReports {
@@ -17,9 +14,6 @@ interface ReviewerReports {
   /** Emit the stable machine contract instead. */
   json?: boolean;
 }
-
-/** Width of the divider rules framing a report. */
-const DIVIDER_WIDTH = 50;
 
 /**
  * Every reviewer's cached report on one target, framed per reviewer when
@@ -46,7 +40,7 @@ const verdictReportsView: View<ReviewerReports> = ({ reports, named, verbose, js
       ? [
           {
             channel: "content" as const,
-            entries: ["", { text: `Reviewer: ${reviewer}`, color: "cyan" as const }],
+            entries: ["", palette.structure(`Reviewer: ${reviewer}`)],
           },
         ]
       : []),
@@ -62,74 +56,78 @@ function reportEntries(report: VerdictReport, verbose: boolean): DisplayEntry[] 
   const issues = cacheData?.result.issues ?? [];
   const showIssues = cacheData && !cacheData.result.compliant && issues.length > 0;
 
-  const documentFacts: [string, string | number][] = [
-    ["Document", report.targetPath],
+  const attrs: [string, string][] = [
+    ["document", report.targetPath],
     ...(cacheData
       ? ([
-          ["Spec", cacheData.document.spec_path],
-          ["Validated", formatDate(cacheData.cached_at)],
-        ] as [string, string | number][])
+          ["spec", cacheData.document.spec_path],
+          ["validated", formatDate(cacheData.cached_at)],
+        ] as [string, string][])
       : []),
+    ["status", statusLine(report.status)],
   ];
 
-  return [
-    "",
-    { header: "Validation Report", width: DIVIDER_WIDTH },
-    "",
-    ...statLines(documentFacts),
-    "",
-    ...statusBadge(report.status),
-    ...(report.isStale && cacheData
-      ? [
-          "",
-          { text: "  ! Document has changed since last validation", color: "yellow" as const },
-          { text: "    Run `praxis eval run <target>` to re-validate", color: "yellow" as const },
-          "",
-          "  Last result:",
-          ...lastResultBadge(cacheData.result),
-        ]
-      : []),
-    ...(showIssues
-      ? ["", "  Issues:", ...issues.map((issue) => `    - ${issueLabel(issue)}${issue.text}`)]
-      : []),
-    ...(report.status === "not_validated"
-      ? ["", `  Run ${chalk.cyan("`praxis eval run " + report.targetPath + "`")} to validate.`]
-      : []),
-    ...(verbose && cacheData
-      ? ["", { header: "AI Reasoning:", char: "-", width: DIVIDER_WIDTH }, cacheData.result.reason]
-      : []),
-    "",
-    rule("=", DIVIDER_WIDTH),
-  ];
+  const body: string[] = [];
+
+  if (report.isStale && cacheData) {
+    body.push(
+      palette.warn("! Document has changed since last validation"),
+      palette.warn("  Run `praxis eval run <target>` to re-validate"),
+      "",
+      `${palette.meta("last result")}  ${lastResultLine(cacheData.result)}`,
+    );
+  }
+
+  if (showIssues) {
+    if (body.length > 0) body.push("");
+
+    body.push("Issues:");
+    body.push(...issues.map((issue) => `  - ${issueLabel(issue)}${issue.text}`));
+  }
+
+  if (report.status === "not_validated") {
+    if (body.length > 0) body.push("");
+
+    body.push(`Run ${palette.ref("`praxis eval run " + report.targetPath + "`")} to validate.`);
+  }
+
+  if (verbose && cacheData) {
+    if (body.length > 0) body.push("");
+
+    body.push(palette.structure("AI reasoning"));
+    body.push(...cacheData.result.reason.split("\n").map((line) => palette.quote(line)));
+  }
+
+  return ["", ...card({ title: "validation report", attrs, body })];
 }
 
-/** The status badge line, with its one-line meaning. */
-function statusBadge(status: VerdictReportStatus): BadgeEntry[] {
+/** The status attribute: a colored dot with the one-line meaning. */
+function statusLine(status: VerdictReportStatus): string {
   switch (status) {
     case "pass":
-      return badgeBlock([["PASS", "green", "Document is compliant"]]);
+      return `${palette.good("● PASS")} — document is compliant`;
     case "warn":
-      return badgeBlock([["WARN", "yellow", "Document has warnings"]]);
+      return `${palette.warn("● WARN")} — document has warnings`;
     case "fail":
-      return badgeBlock([["FAIL", "red", "Document has errors"]]);
+      return `${palette.bad("● FAIL")} — document has errors`;
     case "stale":
-      return badgeBlock([["STALE", "yellow", "Cached result is outdated"]]);
+      return `${palette.warn("● STALE")} — cached result is outdated`;
     case "not_validated":
-      return badgeBlock([["NOT VALIDATED", "gray", "No cached result found"]]);
+      return `${palette.meta("● NOT VALIDATED")} — no cached result found`;
   }
 }
 
-/** The stale block's summary of the outdated verdict: its badge and issue count. */
-function lastResultBadge(result: CacheFileData["result"]): BadgeEntry[] {
+/** The stale block's summary of the outdated verdict: its mark and issue count. */
+function lastResultLine(result: CacheFileData["result"]): string {
   const count = result.issues.length;
   const noun = count === 1 ? "issue" : "issues";
   const value = count > 0 ? `${count} ${noun}` : "no issues";
 
-  if (result.compliant) return badgeBlock([["PASS", "green", value]]);
+  if (result.compliant) return `${palette.good("● PASS")} ${value}`;
 
-  if (result.severity === "warning") return badgeBlock([["WARN", "yellow", value]]);
+  if (result.severity === "warning") return `${palette.warn("● WARN")} ${value}`;
 
-  return badgeBlock([["FAIL", "red", value]]);
+  return `${palette.bad("● FAIL")} ${value}`;
 }
 
 /** A locale date for the report; the raw ISO string when unparsable. */
@@ -143,5 +141,5 @@ function formatDate(isoString: string): string {
 
 /** The axiom citation prefix for a matched critique; empty on the open channel. */
 function issueLabel(issue: { axiomId: string | null }): string {
-  return issue.axiomId === null ? "" : chalk.cyan(`[${issue.axiomId}] `);
+  return issue.axiomId === null ? "" : palette.ref(`[${issue.axiomId}] `);
 }

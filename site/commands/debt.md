@@ -22,17 +22,27 @@ Debt report — corpus, pre-spec debt included
 flash: baseline 2026-09-08 · current stock as evidenced 2026-09-08
 v32: baseline 2026-09-08 · current stock as evidenced 2026-09-08
 
-  AXIOM      REVIEWER  BASELINE  CURRENT  PAID DOWN  APPEARED
-  ---------  --------  --------  -------  ---------  --------
-  AX-2559f7  flash     3         1        2          0
-  AX-b951db  flash     5         5        0          0
+  ┌───────────┬──────────┬──────────┬─────────┬───────────┬──────────┐
+  │ AXIOM     │ REVIEWER │ BASELINE │ CURRENT │ PAID DOWN │ APPEARED │
+  ├───────────┼──────────┼──────────┼─────────┼───────────┼──────────┤
+  │ AX-2559f7 │ flash    │ 3        │ 1       │ 2         │ 0        │
+  │ AX-b951db │ flash    │ 5        │ 5       │ 0         │ 0        │
+  └───────────┴──────────┴──────────┴─────────┴───────────┴──────────┘
 
 Concentration (current stock by directory):
-  src/services  4
-  src/features  2
+  ┌──────────────┬───────┐
+  │ DIRECTORY    │ STOCK │
+  ├──────────────┼───────┤
+  │ src/services │ 4     │
+  │ src/features │ 2     │
+  └──────────────┴───────┘
 
 Paydown credit (authors of resolving commits):
-  Baseline Author  2 resolved
+  ┌─────────────────┬──────────┐
+  │ AUTHOR          │ RESOLVED │
+  ├─────────────────┼──────────┤
+  │ Baseline Author │ 2        │
+  └─────────────────┴──────────┘
 ```
 
 The paydown credit names the git authors whose commits touched each resolved file between the two anchored runs — credit is attributable where blame is not: cleanup is deliberate, directed work.

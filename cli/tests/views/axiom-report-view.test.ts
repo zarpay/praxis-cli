@@ -42,11 +42,13 @@ describe("axiomReportView", () => {
   it("shows identity, provenance, the rate row, and representative critiques", () => {
     const text = reportText(axiomReportView(report()));
 
-    expect(text).toContain("AX-3f9c2d v2 — active");
-    expect(text).toContain("derived from: src/services/README.md#behavior");
+    expect(text).toContain("AX-3f9c2d v2");
+    expect(text).toContain("● active");
+    expect(text).toContain("derives from");
+    expect(text).toContain("src/services/README.md#behavior");
     expect(text).toContain("flash");
     expect(text).toContain("1/5 (20.0%)");
-    expect(text).toContain("Representative critiques:");
+    expect(text).toContain("Representative critiques");
     expect(text).toContain("src/services/redeem-coupon.ts");
   });
 
@@ -60,7 +62,7 @@ describe("axiomReportView", () => {
   it("marks a historical severity as historical in the heading", () => {
     const text = reportText(axiomReportView(report({ severity: "warning" })));
 
-    expect(text).toContain("AX-3f9c2d v2 — active (warning, historical)");
+    expect(text).toContain("severity warning (historical)");
   });
 
   it("renders the machine payload under --json", () => {

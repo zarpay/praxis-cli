@@ -61,15 +61,21 @@ praxis eval report --axiom AX-b951db
 ```
 
 ```
-AX-b951db v1 — active
 [WARN] Calibration: uncalibrated — numbers are directional, not interpretable
-Error messages written for the implementer, not the API consumer.
 
-derived from: src/services/README.md#behavior · introduced: 2026-09-02
+  ╭─ AX-b951db v1 ────────────────────────────────────────────────────╮
+  │ status        ● active                                            │
+  │ derives from  src/services/README.md#behavior                     │
+  │ introduced    2026-09-02                                          │
+  │                                                                   │
+  │ Error messages written for the implementer, not the API consumer. │
+  ╰───────────────────────────────────────────────────────────────────╯
 
-  REVIEWER  CURRENT STOCK                   FILES  PRE-SPEC  POST-SPEC  UNKNOWN
-  --------  ------------------------------  -----  --------  ---------  -------
-  flash     3/41 (7.3%) (as of 2026-09-05)  3      2         1          0
+  ┌──────────┬────────────────────────────────┬───────┬──────────┬───────────┬─────────┐
+  │ REVIEWER │ CURRENT STOCK                  │ FILES │ PRE-SPEC │ POST-SPEC │ UNKNOWN │
+  ├──────────┼────────────────────────────────┼───────┼──────────┼───────────┼─────────┤
+  │ flash    │ 3/41 (7.3%) (as of 2026-09-05) │ 3     │ 2        │ 1         │ 0       │
+  └──────────┴────────────────────────────────┴───────┴──────────┴───────────┴─────────┘
 ```
 
 Whatever triage can't confidently label lands in the curation queue for the next human curate session — today's raw critique is tomorrow's category. And because axioms never enter the review, activating one costs nothing: no cache invalidation, no re-review — the reviewer's question changes only when the spec does.
