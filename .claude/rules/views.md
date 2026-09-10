@@ -41,9 +41,12 @@ export type View<Data> = (data: Data) => ReportLine[];
   `badgeBlock` — hand-built literals are how the indents drifted).
   When the kit lacks the ingredient, add it to the kit with a mirrored
   test — `rule` earned its place exactly this way — rather than
-  hand-rolling at the call site. The one sanctioned exception: a
-  colored `[LABEL]` *inside a sentence* (verdict-reports' `Status:`
-  line), which a whole-line badge entry cannot express.
+  hand-rolling at the call site. Two sanctioned exceptions, both
+  because a whole-line badge entry cannot express them: a colored
+  `[LABEL]` *inside a sentence* (verdict-reports' `Status:` line, the
+  `[reviewer]` provenance tags on critique cards), and the stream
+  counters (`[3/12]` opening a progress line) — typography, not a
+  status badge, and `dim`/`bold` are not badge colors.
 - Streamed output is a view per event: `onProgress: (event) =>
 ctx.render(runProgressView(event))`.
 - Tests assert on the returned `ReportLine[]` (via `@tests/helpers/report-text`),
