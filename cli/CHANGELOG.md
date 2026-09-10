@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-09-10
+
+### Added
+
+- **The presentation system.** Every human-readable surface now composes one visual vocabulary: a semantic color palette where each color has exactly one meaning (cyan is always something you can act on, gray is always provenance, green/yellow/red are always verdicts); outlined box-drawing tables everywhere, with styled cells; a standard card — titled border, aligned key-value attributes, word-wrapped body — for everything shown one-at-a-time (critiques, curate clusters, verdict reports, the axiom drill-downs); report openings that put their scope facts in named cells of a small table; and verdict tallies as one line of colored dots. New framework components: `palette`, `card`, `frame`, plus the outlined `table` and dot `verdictTally`.
+
+Machine contracts are untouched: `--json` payloads and exit codes are byte-identical to 2.0.0. Only what humans read changed.
+
 ## [2.0.0] - 2026-09-10
 
 v2 rebuilds Praxis around one conviction: **the standards that matter are the ones no linter can check, and the only honest way to enforce them is to measure**. The spec is your README — documentation and enforcement in one file, so they cannot drift apart — and named LLM reviewers read it the way a colleague would, holding every governed file to it. A reviewer is an instrument, and instruments have error: teams run several, results are reported per reviewer and never pooled, every verdict is cached by a content hash over exactly what the reviewer saw, and every run appends to a committed, append-only ledger. The reviewer sees only the spec — nothing else ever enters the review — so a verdict means one thing: this file, against this standard, as written.

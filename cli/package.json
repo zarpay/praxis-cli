@@ -1,6 +1,6 @@
 {
   "name": "@zarpay/praxis-cli",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Praxis \u2014 a conceptual linter and knowledge compiler: README specs enforced by LLM reviewers, an append-only evidence ledger, and compiled SME agent profiles",
   "type": "module",
   "bin": {
