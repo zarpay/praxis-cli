@@ -39,7 +39,7 @@ Every assignment and activation is appended to `.praxis/ledger/triage/` with ful
 
 ## praxis axioms reassign \<id\>
 
-`reassign <critique-id> --to <axiom>` is the per-critique human override: a matcher label that looks wrong, or evidence that belongs under a different standard. A dismissed critique is refused — reinstate it with `praxis eval review --reinstate` first; invalid evidence is never categorized. The reverse also holds: a labeled critique that turns out to be untrue is dismissed with `praxis eval review --dismiss` — the label stays in the ledger beneath the dismissal, and reports recompute. The new assignment is appended and wins at read time — the prior record stays in the ledger beneath it. Browse ids with [`praxis eval critiques`](/commands/eval#praxis-eval-critiques).
+`reassign <critique-id> --to <axiom>` is the per-critique human override: a matcher label that looks wrong, or evidence that belongs under a different category. A dismissed critique is refused — reinstate it with `praxis eval review --reinstate` first; invalid evidence is never categorized. The reverse also holds: a labeled critique that turns out to be untrue is dismissed with `praxis eval review --dismiss` — the label stays in the ledger beneath the dismissal, and reports recompute. The new assignment is appended and wins at read time — the prior record stays in the ledger beneath it. Browse ids with [`praxis eval critiques`](/commands/eval#praxis-eval-critiques).
 
 ## praxis axioms deprecate \<id\> · merge
 

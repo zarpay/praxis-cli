@@ -22,12 +22,12 @@ praxis status --json
 Praxis Project Status
 
 Last run: 2026-09-03
-Untriaged: 11 · Awaiting curation: 0 · Proposals: 0
+Untriaged: 11 · Awaiting curation: 0
 
-  Experts:          3
-  Practices:        3
-  References:       1
-  Context files:    4
+  Experts:            3
+  Practices:          3
+  References:         1
+  Context files:      4
 
 Validation (reviewer: flash)
   [PASS] 15
@@ -57,7 +57,6 @@ Exit 1 when any structural issue is found — the same count the closing line pr
   "evalState": {
     "pending_triage": 11,
     "awaiting_curation": 0,
-    "proposals_pending": 0,
     "calibration_stale": true,
     "epoch_boundary_detected": false,
     "last_run_at": "2026-09-03T23:21:21.989Z"

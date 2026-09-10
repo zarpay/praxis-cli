@@ -62,7 +62,7 @@ EDITOR=nano praxis config edit
 VISUAL=code praxis config edit
 ```
 
-The terminal is handed directly to the editor (`stdio: inherit`), so interactive editors like `vim`, `nano`, and `code --wait` all work correctly. Exits with code 1 if the editor cannot be launched.
+The terminal is handed directly to the editor (`stdio: inherit`), so interactive editors like `vim`, `nano`, and `code --wait` all work correctly. Without a terminal (scripts, CI) it refuses with exit 2 — edit `.praxis/config.json` directly there — and exits 1 if the editor cannot be launched.
 
 ## See also
 

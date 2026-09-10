@@ -34,7 +34,7 @@ praxis eval run src/services/redeem-coupon.ts --no-cache
 | `--verbose`         | Print the full AI reasoning after the result                    |
 | `--no-cache`        | Skip the cache and always call the API                          |
 
-**Exit code:** 0 unless a target has errors (warnings pass).
+**Exit code:** 0 unless a target has errors (warnings pass). A directory is refused with the glob hint (exit 2) — name files or a glob (`praxis eval run "src/services/*"`), or run the whole corpus with a bare `praxis eval run`.
 
 ---
 
@@ -195,7 +195,7 @@ A target that cannot be reviewed at all — unreadable, or a cohort too large fo
 
 ## praxis eval report
 
-The read side of the ledger — never a reviewer call. Scopes compose: `eval report [path|glob]` for files (a bare directory reads as everything under it), `--commit <sha>` / `--commits <shas...>` for a commit or a PR's set, `--branch`, `--since <date|ref>`, and `--axiom <id>` for the single-standard drill-down. Every invocation prints the same discipline:
+The read side of the ledger — never a reviewer call. Scopes compose: `eval report [path|glob]` for files (a bare directory reads as everything under it), `--commit <sha>` / `--commits <shas...>` for a commit or a PR's set, `--branch`, `--since <date|ref>`, and `--axiom <id>` for the single-category drill-down. Every invocation prints the same discipline:
 
 - rates as `violations/opportunities (x%)` with the denominator always shown; cells under the small-n floor (5) render **insufficient data**, never a number. Current stock anchors to the latest *evidenced* corpus run (one with cache misses) and prints its date — an all-hit run proves nothing new and never moves the anchor
 - one reviewer, one series — never pooled; every count qualified by population (pre-spec / post-spec / unknown, derived from git birthdates against each axiom's clock)
