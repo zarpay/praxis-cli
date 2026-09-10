@@ -1,0 +1,50 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "0311531a:abbf40e9": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "abbf40e9"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T11:56:01.544Z",
+      "content_hash": "ef564fb2",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The redeem-coupon.ts service fully conforms to the specification. It exports exactly one entry point (`run`) taking the `Store` dependency first and a single input object, returning a `Result<number>`. The module name is verb-first kebab-case ('redeem-coupon'). Domain failures are returned as values (not thrown), and both error messages name what was wrong and what would be accepted instead. Input is validated top-to-bottom before the happy path, the service does one thing, and the only I/O is through the injected `Store`. The doc comment states its purpose in one sentence and enumerates its failure modes."
+      }
+    },
+    "0311531a:e4deaf49": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e4deaf49"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T11:59:57.709Z",
+      "content_hash": "ef564fb2",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document satisfies all criteria: exports a single run function with correct signature, returns domain failures as values with consumer-friendly error messages, validates input before work, does one responsibility, uses only injected Store for I/O, and includes complete documentation with purpose and failure modes."
+      }
+    },
+    "0311531a:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T12:00:55.723Z",
+      "content_hash": "ef564fb2",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 410 words."
+      }
+    }
+  }
+}

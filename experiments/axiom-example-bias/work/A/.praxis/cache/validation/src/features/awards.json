@@ -1,0 +1,80 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "e280f5fa:abbf40e9": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "abbf40e9"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-08T11:53:10.885Z",
+      "content_hash": "385839e6",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The awards feature satisfies the Feature Module Conventions. Structure: there is exactly one entry point (index.ts) which re-exports the entire public API (run as pickWinners, PickWinnersInput, and Award), with no consumer-facing imports of internal files; types live in the dedicated award-types.ts; the logic file is verb-first kebab-case (pick-winners.ts) and follows service conventions (single exported `run`, Results over exceptions with actionable consumer-grade error messages for invalid minReviews and empty standings). Cohesion: every file is reachable from index.ts through its import graph (no orphaned files), the directory serves a single capability (award selection), and the feature name 'awards' describes the capability rather than its implementation. No violations found."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:e4deaf49": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e4deaf49"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-08T11:58:42.828Z",
+      "content_hash": "385839e6",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The awards feature module fully satisfies all specification requirements. It has exactly one entry point (index.ts) that re-exports the public API, includes a dedicated types file (award-types.ts), uses verb-first kebab-case for logic files (pick-winners.ts), follows service conventions with a single exported 'run' function and Result-based error handling, maintains cohesion with all files reachable from index.ts, focuses on one capability (award selection), and uses a descriptive name that describes the capability rather than implementation."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-08T12:00:55.714Z",
+      "content_hash": "385839e6",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 948 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    }
+  }
+}

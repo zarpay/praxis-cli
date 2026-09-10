@@ -53,8 +53,9 @@ curate holds instead of dismissing; ratify and the authoring gate
 retire — acceptance activates with traceability checked inline), and
 **axioms as categories** (2026-09-10: an axiom names a recurring issue,
 never restates a rule; files slim to frontmatter + statement; `merge`
-and `deprecate` collapse over-splitting). EXECUTION.md carries the
-row-level record.
+and `deprecate` collapse over-splitting). The row-level execution
+matrix that tracked all of this was deleted at release — git history
+keeps it — and the dated notes in each spec are the durable record.
 
 ## Removed from scope (owner, 2026-09-05 — formerly "Deferred")
 

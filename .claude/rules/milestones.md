@@ -11,23 +11,21 @@ green.** M2 (critique flow), M3 (axioms), M4 (measurement), and M5
 (diff units) all landed this way; the next one should too.
 
 1. **Plan against the specs.** The requirements live in
-   `cli/specs/` and the buildable rows in `EXECUTION.md`.
-   Design forks that are genuinely the owner's call are put to him as
-   concrete options with a recommendation — he decides quickly and
-   decisively. Everything else is decided in the plan, grounded in a
-   spec section, and recorded.
-2. **Branch off `v2`** (`m<N>-<name>`). `main` stays on the 1.4.x line
-   until v2 releases; milestone branches merge back into `v2` only when
-   the owner says merge.
+   `cli/specs/`. Design forks that are genuinely the owner's call are
+   put to him as concrete options with a recommendation — he decides
+   quickly and decisively. Everything else is decided in the plan,
+   grounded in a spec section, and recorded.
+2. **Branch off `main`** (v2.0.0 released 2026-09-10; `main` is the
+   line). Feature branches merge back only when the owner says merge.
 3. **Build in stages, full gate per stage**: `npm run lint`,
    `typecheck`, prettier, `npx vitest run`, `npm run build` — all from
    `cli/`. Tests mirror one-to-one and land with the stage, not after.
 4. **Specs are updated in the same milestone.** Implementation decisions
    that resolve or supersede spec text are written into the spec *with
-   their date* (house style: "decided 2026-09-04"), open questions get
-   struck through with their resolution, and the `EXECUTION.md` rows
-   flip with the gap named when partial. A spec that lags the code is a
-   bug.
+   their date* (house style: "decided 2026-09-04"), and open questions
+   get struck through with their resolution. A spec that lags the code
+   is a bug. (The per-row `EXECUTION.md` matrix served v2's build and
+   was deleted at release.)
 5. **Site docs are part of done** (`site/`): the affected pages update
    in the milestone branch so docs and implementation merge together.
    The running example is Scoop Society — keep it consistent.

@@ -1,0 +1,50 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "0311531a:abbf40e9": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "abbf40e9"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T11:56:14.662Z",
+      "content_hash": "f96b0e7f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The service conforms to the specification: it exports a single `run` entry point taking the `Store` first and one input object, returning a `Result<T>`; failures are returned as values with consumer-oriented error messages; input is validated before any work; it does one thing; and the only I/O is through the injected Store. The doc comment states the purpose in one sentence and enumerates both domain failure modes (empty subject, no recipients)."
+      }
+    },
+    "0311531a:e4deaf49": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e4deaf49"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T12:00:09.120Z",
+      "content_hash": "f96b0e7f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The send-newsletter.ts file satisfies all criteria in the Service Conventions specification: it exports a run function with the correct signature, has verb-first kebab-case naming, handles domain failures as values with descriptive error messages, validates input before work, does one thing, uses only injected Store for I/O, and includes proper documentation with purpose and failure modes."
+      }
+    },
+    "0311531a:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T12:00:55.724Z",
+      "content_hash": "f96b0e7f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 438 words."
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "0311531a:abbf40e9": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "abbf40e9"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T11:55:45.756Z",
+      "content_hash": "ecc6b3c2",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "The error message for an invalid minReviews is 'invalid input'. The spec explicitly requires error messages to name what was wrong and what would be accepted instead (e.g., 'rating must be a whole number from 1 to 5'), and explicitly calls out 'invalid input' as NOT acceptable. The message should say something like 'minReviews must be a whole number from 0 or greater'.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The service otherwise follows the conventions (single `run` entry point with Store-first signature, verb-first kebab-case module name, domain failures as values, validation before work, single responsibility, no I/O except through the Store, and a doc comment naming purpose and failure modes), but it violates the required error-message standard."
+      }
+    },
+    "0311531a:e4deaf49": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e4deaf49"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T11:59:48.170Z",
+      "content_hash": "ecc6b3c2",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "The error message 'invalid input' violates the specification's requirement that error messages must name what was wrong and what would be accepted instead. The specification explicitly states that 'invalid input' is not acceptable. The error message should describe the specific validation failure, such as 'minReviews must be a non-negative whole number'.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The document violates the specification's requirement for meaningful error messages."
+      }
+    },
+    "0311531a:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-08T12:00:55.723Z",
+      "content_hash": "ecc6b3c2",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 410 words."
+      }
+    }
+  }
+}

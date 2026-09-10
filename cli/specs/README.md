@@ -53,7 +53,6 @@ Two loops share the machinery: the **fast loop** — verdicts and raw critiques 
 | [11-spec-layer.md](./11-spec-layer.md)                                  | Two layers: taxonomy-free eval core; compiler tools as optional spec authoring                   | Shipped                                             |
 | [13-roadmap.md](./13-roadmap.md)                                        | The build order as it happened, and the roadmap ideas                                            | Record                                              |
 | [roadmap/](./roadmap/)                                                  | Withdrawn designs — calibration, harness feedback, git/diff integration — kept for revisiting    | Roadmap                                             |
-| [EXECUTION.md](./EXECUTION.md)                                          | The buildable rows and their outcomes, milestone by milestone                                    | Record                                              |
 
 Read `vocabulary.md` first. Several terms in common use here (spec, reviewer, conformance, coverage) are used more narrowly than their everyday senses, and the distinctions carry weight.
 

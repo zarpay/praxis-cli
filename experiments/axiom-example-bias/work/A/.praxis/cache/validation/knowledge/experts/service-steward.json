@@ -1,0 +1,50 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "244fa7f3:abbf40e9": {
+      "reviewer": {
+        "name": "flash",
+        "model": "deepseek/deepseek-v4-flash-0731",
+        "hash": "abbf40e9"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-08T11:52:40.892Z",
+      "content_hash": "c59e0910",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document satisfies all required frontmatter fields (title, type='expert', alias, description), opens with a level-1 heading naming the expert and its alias ('Service Steward (a.k.a Scooper)'), states in prose that it is the subject-matter expert on how Scoop Society services are written and reviewed, and contains no placeholder text (TODO, TBD, lorem ipsum). The additional frontmatter fields are not prohibited by the specification, so they do not constitute a violation."
+      }
+    },
+    "244fa7f3:e4deaf49": {
+      "reviewer": {
+        "name": "v32",
+        "model": "deepseek/deepseek-v3.2",
+        "hash": "e4deaf49"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-08T11:58:29.232Z",
+      "content_hash": "c59e0910",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document satisfies all required criteria: it has the required frontmatter fields (title, type, alias, description), opens with a level-1 heading naming the expert and its alias, and states in prose what the expert is the subject-matter expert on. No placeholder text is present."
+      }
+    },
+    "244fa7f3:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-08T12:00:55.712Z",
+      "content_hash": "c59e0910",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 285 words."
+      }
+    }
+  }
+}
