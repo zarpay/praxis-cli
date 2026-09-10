@@ -19,7 +19,7 @@ Praxis v2 is two layers. This document names them, states the contract between t
 > `services/discover-domains-service.ts` reading it — `ExpertFile` and
 > `SpecFile` are the two ends.
 
-**The eval layer** — spec, scope, reviewer, cache, ledger, triage, axioms, calibration, metrics, briefs. This is what v2 _is_. Its input contract with the world is exactly three things:
+**The eval layer** — spec, scope, reviewer, cache, ledger, triage/curation, axioms, metrics. This is what v2 _is_. Its input contract with the world is exactly three things:
 
 1. **A spec** — any file carrying direction, identified by `specFilePattern`.
 2. **A scope** — the files the spec governs, via `paths:` frontmatter or directory siblinghood.

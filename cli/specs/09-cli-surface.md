@@ -55,7 +55,7 @@ One CLI, two reading styles. The split is by **command default plus `--json`**, 
 - **Inline progress for long runs** (`[n/total]` with per-file verdicts — v1 1.3.5) so a validation run reads as a live stream, not a silence followed by a wall.
 - **Epoch boundaries are visible furniture**: reports print the named boundary line ("── epoch: model → sonnet-4.6, 2026-08-12 ──") wherever a trend crosses one.
 - **Drill-down, not dumps.** Broad surfaces stay terse and name the next command: `status` → `validate report <path>` → `axioms show <id>`. Consistent noun-verb grammar means the next step is guessable.
-- **Bare `praxis` is the orientation screen**: counts and staleness at a glance — last run, epoch status, pending triage, calibration freshness, debt/paydown one-liner — each with the command that acts on it. The entry point for a human returning after a week _and_ an agent's cheapest situational poll.
+- **Bare `praxis` is the orientation screen**: counts and staleness at a glance — last run, the calibration banner, the two queues (untriaged / awaiting curation), per-reviewer failing counts — each with the command that acts on it. The entry point for a human returning after a week _and_ an agent's cheapest situational poll.
 
 ### Interaction
 
@@ -71,15 +71,16 @@ One CLI, two reading styles. The split is by **command default plus `--json`**, 
 
 ## Surface inventory (v2 additions, gathered from the other docs)
 
-- `praxis eval run [targets...] [--type] [--json]` — no targets = full run; one target = the fast loop; extended output carries axioms on matched critiques (04, 08) and epoch-boundary warnings (02)
+- `praxis eval run [targets...] [--type] [--json]` — no targets = full run; one target = the fast loop; critiques print raw (review→label, 2026-09-07 — labels appear in reports after triage) alongside epoch-boundary warnings (02)
 - `praxis eval report [<path|glob>] [--since] [--branch] [--commit <sha>] [--commits <sha...>] [--axiom] [--json]` (07; three scope levels — files/glob, commit, PR)
 - `praxis eval review [target] [--dismiss <critique-id> --reason] [--reinstate <critique-id> --reason]` — the validity session: a human judges critiques one at a time and dismisses the invalid ones; the one place a critique is dismissed (04, 2026-09-09)
 - `praxis axioms triage | curate | reassign <id> | deprecate <id> | merge <ids...> | show <id> | list` (03, 04)
-- `praxis calibrate run | status` (06)
+- `praxis eval critiques [target] [--state] [--axiom] [--json]` — the id-browsing surface reassign and review take their ids from (04)
+- `praxis eval prune` — drops cache entries no configured reviewer can hit
 - `praxis debt report [--json]` (07)
-- `praxis harness suggest` (08)
+- `praxis harness suggest` — roadmap (withdrawn 2026-09-07 with the harness surfaces, roadmap/08)
 
-The family rule (vocabulary, Terminology decisions): **`eval run` writes — it invokes reviewers; every other `eval` subcommand reads the ledger.** v1's `praxis validate document|all` remain as deprecated aliases through the migration.
+The family rule (vocabulary, Terminology decisions): **`eval run` writes — it invokes reviewers; `eval review` appends human validity decisions; every other `eval` subcommand reads.** v1's `praxis validate` aliases were stripped 2026-08-31 — v2 accepts only v2 spellings.
 
 Each lands with agent-grade help per the rules above; the inventory stays subordinate to the documents that define the semantics.
 

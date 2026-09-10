@@ -75,7 +75,7 @@ Provenance fields are mandatory. Derived fields (population, authorship) record 
 - The ledger is judgment-only (03): static tooling's findings never enter it.
 - Cache hits write **no** critique records (nothing new was reviewed) but are counted on the run record. **Exception (2026-09-04, M5): diff runs record critiques for hit-served sides too** — the before/after comparison is new evidence even when both verdicts came from cache, and the flow labels are what the run exists to record; without them a replay would erase the flow that latest-per-branch reporting reads (12). (An earlier open question — backfilling the first ledger-enabled run from cache hits — was dropped 2026-09-02: no install has pre-ledger history worth reconstructing, and the first real run populates the ledger anyway.)
 
-**Triage partition (added at implementation, 2026-09-03):** the ledger gains a second partition, `.praxis/ledger/triage/<session_id>.jsonl` — append-only records of triage decisions (`assignment`, `unmatched`, `dismissal`, `reinstatement`, `rejection`, `deprecation`), one file per session, same merge-safety as runs. Assignments are the superseding-record mechanism this document's integrity rule promises: a critique record's null `axiom_id` is never mutated; the assignment that resolves it is a new record referencing it. Checklist-born critiques (04's matched channel) carry `axiom_id`/`axiom_version`/`assigned_by: "checklist"` inline at write time.
+**Triage partition (added at implementation, 2026-09-03):** the ledger gains a second partition, `.praxis/ledger/triage/<session_id>.jsonl` — append-only records of triage decisions (`assignment`, `unmatched`, `dismissal`, `reinstatement`, `rejection`, `deprecation`), one file per session, same merge-safety as runs. Assignments are the superseding-record mechanism this document's integrity rule promises: a critique record's null `axiom_id` is never mutated; the assignment that resolves it is a new record referencing it. Historical checklist-born critiques (pre-2026-09-07, when the reviewer still saw an axiom checklist) carry `axiom_id`/`axiom_version`/`assigned_by: "checklist"` inline; since review→label every critique is born with `axiom_id: null`, and only records label it.
 
 ## Integrity
 
@@ -86,5 +86,5 @@ Provenance fields are mandatory. Derived fields (population, authorship) record 
 ## Open questions
 
 1. Retention/compaction: JSONL in git is fine for years at zarpay scale (hundreds of critiques/month). At what volume does this need an index or a different store? Explicitly deferred — plain files first.
-2. PII/content: critique text can quote code. Ledger is in-repo, so no new exposure — but redaction hooks may matter if briefs (08) leave the repo.
+2. PII/content: critique text can quote code. Ledger is in-repo, so no new exposure — but redaction hooks may matter if report output ever leaves the repo (a roadmap/08 concern).
 3. Does `praxis validate` grow a `--no-ledger` flag, or is the ledger unconditional once configured? Tentatively unconditional: an eval store with optional gaps is not an eval store.

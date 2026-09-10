@@ -32,7 +32,7 @@ type declaration outside `src/types/` is an error.
   `Entry`) that lose their association are the failure mode this rule
   exists to prevent. The exception is **spec vocabulary** — `Verdict`,
   `Critique`, `Finding`, `Axiom*`, `Epoch` — which matches
-  `praxis_v2_specs/vocabulary.md` exactly and is never renamed for
+  `specs/vocabulary.md` exactly and is never renamed for
   symmetry.
 - **Demotion and promotion are routine.** When a barrel type's
   consumers drop to one, it moves into that module (the

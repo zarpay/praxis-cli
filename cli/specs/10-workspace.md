@@ -12,26 +12,22 @@ The repo belongs to the developer. Specs are their existing context files (READM
 ```
 .praxis/
 ├── config.json          # human-owned    · committed
-├── axioms/              # human-ratified · committed
-│   ├── AX-0001.md       #   one file per active/deprecated axiom
-│   └── proposed/        #   awaiting ratification (triage output)
-├── calibration/         # human-adjudicated · committed
-│   └── cases/<id>/      #   input + spec ref + expected.json
+├── axioms/              # human-accepted · committed
+│   └── AX-3f9c2d.md     #   one file per active/deprecated axiom (a `proposed/` subdir is historical — acceptance activates directly since 2026-09-09)
 ├── cache/               # machine-owned  · committed (regenerable; shared to save API calls)
 │   └── validation/…     #   one file per target; verdicts keyed by (spec, reviewer)
 └── ledger/              # machine-owned  · committed (append-only evidence)
     ├── runs/<run_id>.jsonl
-    ├── triage/<session_id>.jsonl   # triage decisions (04) — human decisions, machine-recorded
-    └── calibration/<id>.json       # calibration records (06) — partition added 2026-09-05 (owner, 2026-09-04)
+    └── triage/<session_id>.jsonl   # triage/curate/review decisions (04) — human decisions, machine-recorded
 ```
 
-**Adding a top-level entry to `.praxis/` is a design event**, not an implementation convenience. Five entries; each subsystem gets exactly one home; anything that doesn't clearly belong to one of them doesn't get written.
+**Adding a top-level entry to `.praxis/` is a design event**, not an implementation convenience. Four entries (`calibration/` left with the 2026-09-07 withdrawal); each subsystem gets exactly one home; anything that doesn't clearly belong to one of them doesn't get written.
 
 ## Ownership split
 
 Two classes of content, and the distinction is enforced, not stylistic:
 
-- **Human-owned / human-ratified** — `config.json`, `axioms/`, `calibration/`. Markdown and JSON meant to be read, edited, and reviewed in PRs. Praxis writes here only through explicit verbs (`triage` writes proposals, `ratify` moves them) and never rewrites what a human authored.
+- **Human-owned / human-accepted** — `config.json`, `axioms/`. Markdown and JSON meant to be read, edited, and reviewed in PRs. Praxis writes here only through explicit verbs (curate acceptance activates a category; `deprecate` and `merge` flip status) and never rewrites what a human authored beyond those stated edits.
 - **Machine-owned** — `cache/`, `ledger/`. Never hand-edited: cache entries are reproducible artifacts of `(inputs, reviewer)`, and ledger records carry provenance that hand-editing would falsify. Praxis treats unexpected content here as corruption (v1 already deletes corrupt cache files on read), not as input.
 
 ## Commit policy

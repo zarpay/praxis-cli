@@ -6,7 +6,10 @@ duplicate statements across specs are collapsed with every source ID kept.
 
 **Status** — `✅` verified done, `—` not started, `half`/`mostly` partial with
 the gap named, `deferred` schema-only by design. The completion audit ran
-2026-09-02; every former `scan` row now carries its finding.
+2026-09-02; every former `scan` row now carries its finding. Rows record
+what was true when built; later sections supersede earlier rows with the
+date named — read bottom-up for the current truth. **v2.0.0 shipped
+2026-09-10.**
 
 ## Decisions that supersede spec text (update the specs)
 
@@ -31,7 +34,7 @@ the gap named, `deferred` schema-only by design. The completion audit ran
 | Profiles-as-specs discovery                                                                                                          | roadmap M1             | ✅ resolved as stale (2026-09-05): supported by composition — spec discovery sweeps `sources` for `specFilePattern`, and a compiled profile opens with `paths:` frontmatter, so a project points discovery at the profiles (output dir in `sources`, pattern matching the profile filenames) and they govern like any spec. No `agentProfileSuffix` mechanism needed. |
 | Expert-level compile-through for judgment `context:`                                                                                 | roadmap M1             | ✅ dissolved (owner, 2026-09-05): no second key needed — the expert's `context:` files are inlined into the profile body at compile time, and the profile IS the spec, so the reviewer already reads them (and the content hash covers them via the spec content). Spec-level `context:` exists for hand-authored READMEs that point at live files; the expert path freezes at compile time by design — the exact-direction thesis (11). |
 
-## M2 — Critique flow (this branch's milestone)
+## M2 — Critique flow
 
 | Req                                                                                                                                                                                                   | Sources                | Status                                                                                                                                                          |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -57,11 +60,11 @@ the gap named, `deferred` schema-only by design. The completion audit ran
 
 | Req                                                                                                                                                     | Sources                 | Status                                                                                                  |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| Axiom store: `.praxis/axioms/AX-NNNN.md`, `proposed/` subdir; proposed have no metric effect                                                            | 04-a, 04-b, 10-d        | ✅ (ids AX- + 6 random hex — owner decision: never sequential, merge-safe)                              |
-| Axiom frontmatter schema (id, version, status, mode, severity, derived_from, introduced) + statement + both examples — scope/context/supersedes retired, grounded_in renamed derived_from (2026-09-07) | 04-c, VO-k              | ✅ (AxiomFile validates on construction; agentic/cohort/changeset schema-only per roadmap)              |
+| Axiom store: `.praxis/axioms/AX-NNNN.md`, `proposed/` subdir; proposed have no metric effect                                                            | 04-a, 04-b, 10-d        | ✅ (ids AX- + 6 random hex — owner decision: never sequential, merge-safe); `proposed/` retired 2026-09-09 with ratify — acceptance activates directly                              |
+| Axiom frontmatter schema (id, version, status, mode, severity, derived_from, introduced) + statement + both examples — scope/context/supersedes retired, grounded_in renamed derived_from (2026-09-07) | 04-c, VO-k              | ✅ then slimmed by the category reframe (2026-09-10): severity and example sections retired — a file is frontmatter + the statement naming the issue; historical files parse |
 | Identity stability: never reused/renumbered/re-clustered; version bump vs supersede rules                                                               | 04-d, 04-f              | ✅ random mint + store re-roll; version vs supersede is authoring discipline the docs state             |
 | `axioms triage` — interactive; LLM groups/suggests/drafts, human folds/dismisses/accepts; scriptable `--yes`/`--reject`                                 | 04-j, 03-d, 09-z, 09-ab | ✅ curator organizes, human decides; --yes/--reject script it; decisions append to ledger/triage/       |
-| `axioms ratify <id>` — spec traceability required; three outcomes                                                                                       | 04-m, 04-n, 09-aa       | ✅ three outcomes; --spec for critique-less proposals; body preserved byte-for-byte                     |
+| `axioms ratify <id>` — spec traceability required; three outcomes                                                                                       | 04-m, 04-n, 09-aa       | ✅ three outcomes; then retired 2026-09-09 (owner): a duplicate yes — acceptance at curate activates, traceability checked inline                     |
 | `axioms show <id> \| list`                                                                                                                              | 09-c, 03-e              | ✅ (--json on all); `audit` retired 2026-09-09 with the gate                                            |
 | Authoring gate: `appropriate \| not_appropriate \| split`; litmus prompts; advisory                                                                     | 03-f, 03-g, 03-h, RM-e  | ❌ retired (owner, 2026-09-09): a post-acceptance refusal left no record and recurred every curate run; the litmus tests moved into the curator's drafting prompt, `axioms audit` removed |
 | Two-channel reviewer prompt: axiom checklist + open channel; bootstrap = open channel only                                                              | 04-p, 04-q              | ✅ checklist in content hash; posture states the judgment boundary; epoch 0717752e                      |
@@ -114,7 +117,7 @@ lives in `roadmap/`. Historical ledger fields remain readable.
 | --- | --- | --- |
 | Authoring gate retired; guidance lives in the curator's drafting prompt; `axioms audit` removed | 03 | ✅ |
 | Curate never dismisses: assign, propose, or **hold** (nothing written); `--reject` removed; curator-unclustered critiques named and held | 04 | ✅ |
-| Standing proposed axioms are fold targets in curate | 04 | ✅ |
+| Standing proposed axioms are fold targets in curate | 04 | ✅ then superseded 2026-09-09: no standing proposals exist — the session's own activations are the extra fold targets |
 | Curate refuses to start while any critique is untriaged (exit 2, names triage) | 04 | ✅ |
 | Rejected proposal voids its assignments — critiques return to the curate queue | 04, 05 | ✅ via `TriageStore.decisions()`, the one join every reader uses |
 | `praxis eval review` — the validity session; `--dismiss`/`--reinstate` scripted forms; `reinstatement` record kind; dismissed critiques never labeled (`reassign` refuses) | 04, 05, 09 | ✅ |
@@ -132,6 +135,17 @@ lives in `roadmap/`. Historical ledger fields remain readable.
 | No prompts on agent paths; flag equivalents; `config edit` marked human-only                                 | 09-r              | ✅ no interactive prompts exist; `config edit` description and help say human-only (2026-09-05)                                                                                                                                                                                                                                                                   |
 | Denominators on every number; fixed color semantics; `NO_COLOR`; epoch furniture; drill-down grammar; no TUI | 09-u…09-y, 09-ac  | ✅ (audited 2026-09-05): rateCell denominators/floors everywhere (M4); green/yellow/red/gray fixed in the views; NO_COLOR + non-TTY via the framework Logger/Display (chalk); epoch furniture on every report (M4); drill-down grammar = compact-by-reference --json + `axioms show` (M7); no TUI exists                                                                                                                                                                                                                                                                                                                                     |
 | Help text as API docs: when-to-use + examples; top-level typical flows                                       | 09-l, 09-m        | ✅ (2026-09-05): every subcommand carries when-to-use + an example via `addHelpText`; top-level help carries "Typical flows:" and the exit-code legend                                                                                                                                                                                                                                                     |
+
+## Categories, the taxonomy audit, and release (2026-09-10, owner)
+
+| Req | Sources | Status |
+| --- | --- | --- |
+| Axioms reframed: a named, stable **category of recurring critique**, never a rule — statement names the observed issue; altitude = one convention a team decides as a unit | 04 (reframed) | ✅ curator prompts, template, store, views; labeling evidence: the same 20-critique queue labeled 2/20 under spec-passage statements, 12/20 under categories |
+| Axiom files slim to frontmatter + statement; `severity:` and example sections retired (historical files parse; severity renders "(historical)") | 04 | ✅ a category's real examples are its labeled critiques — `axioms show` lists them live from the ledger |
+| `axioms reassign <critique-id> --to` — the per-critique human override; `eval critiques` — the id-browsing surface | 04, 09 | ✅ |
+| `axioms deprecate --reason` and `axioms merge <ids...> --into <id>` — over-splitting collapsed, never endured; deprecated sources fold (stranded evidence recovers) | 04 | ✅ demo audit merged three near-twin groups + one pre-merge-era straggler; survivors inherit the earliest clock |
+| Pre-release sweep: every command exercised live; directory targets refused/expanded honestly; a spec never governs itself; monotonic triage session ids (append order IS file order) | 09 | ✅ 2026-09-10 |
+| **v2.0.0 released** — changelog, README, tag, GitHub release, npm publish with provenance via release.yml | — | ✅ 2026-09-10 |
 
 ## Removed from scope (owner, 2026-09-05)
 

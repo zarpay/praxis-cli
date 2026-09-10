@@ -11,7 +11,7 @@ green.** M2 (critique flow), M3 (axioms), M4 (measurement), and M5
 (diff units) all landed this way; the next one should too.
 
 1. **Plan against the specs.** The requirements live in
-   `cli/praxis_v2_specs/` and the buildable rows in `EXECUTION.md`.
+   `cli/specs/` and the buildable rows in `EXECUTION.md`.
    Design forks that are genuinely the owner's call are put to him as
    concrete options with a recommendation — he decides quickly and
    decisively. Everything else is decided in the plan, grounded in a

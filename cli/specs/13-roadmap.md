@@ -1,6 +1,6 @@
 # 13 — Roadmap: Sequencing and the MVP
 
-**Status: Draft — ordering settled (spec layer → eval layer, critiques → axioms), milestone contents open to adjustment**
+**Status: Record — the build order as it happened. v2.0.0 shipped 2026-09-10.**
 
 The other documents describe an end state. This one says what gets built in what order, and why the order is spec layer first, then the eval layer from the critique flow outward — each milestone leaving a tool that is useful on its own.
 
@@ -17,7 +17,7 @@ Expert/practice compiler, spec targeting via `paths:`, the `eval` CLI family, re
 Critiques become durable records. The ledger (05): run + critique records, full provenance, OpenRouter `usage` captured (cost data exists for the first time). Cache format changes: reviewer-hash namespacing, context-in-key. Reviewer output becomes structured critiques ready for the two channels. Corpus-level only — no git, no axioms yet. _Standalone value: durable evidence and cost visibility on any v1 project, immediately._
 
 **M3 — Axiom flow** _(completes the MVP)_
-The taxonomy machinery: `axioms triage` as the human-in-the-loop review session (04), `proposed/` + `ratify` with spec traceability, the authoring gate (03), the two-channel reviewer (checklist + open channel), residual tracking. The fast loop starts returning axioms instead of raw prose. _Standalone value: the 223 zarpay critiques become a ratified taxonomy; agents get stable, teachable feedback._
+The taxonomy machinery as first designed: `axioms triage` as the human-in-the-loop review session (04), `proposed/` + `ratify` with spec traceability, the authoring gate (03), the two-channel reviewer (checklist + open channel), residual tracking. (Each of those four was later redesigned in live contact — see the post-withdrawal arcs below — but this milestone built the store, the ledgered decisions, and the human-accepts principle everything since stands on.) _Standalone value: the 223 zarpay critiques become an accepted taxonomy; agents get stable, teachable feedback._
 
 **The MVP is M2 + M3.** The scope is novel but not extensive: one new store (ledger), one new record shape (critique), one new interactive surface (triage/ratify), one reviewer-prompt change (two channels). It proves the core thesis — SME critiques are qualitative data that normalize into a longitudinal taxonomy — with zero git machinery.
 
@@ -41,6 +41,20 @@ the core is **specs, evals, axioms, reporting**, and advanced
 capabilities return only atop a rock-solid core. Their designs are
 preserved in `roadmap/`. What stayed from that era: eval run/verdict
 `--json`, the 0/1/2 exit-code contract, and help-as-API-docs.
+
+## The post-withdrawal arcs (2026-09-07 → 2026-09-10)
+
+Three redesigns landed between the simplification and the release, each
+from live contact rather than planning: **review→label** (2026-09-07:
+the reviewer sees only the spec; critiques born raw; `triage` becomes
+the async labeler and `curate` the human session), **validity ↔
+membership** (2026-09-09: `eval review` is the one dismissal surface;
+curate holds instead of dismissing; ratify and the authoring gate
+retire — acceptance activates with traceability checked inline), and
+**axioms as categories** (2026-09-10: an axiom names a recurring issue,
+never restates a rule; files slim to frontmatter + statement; `merge`
+and `deprecate` collapse over-splitting). EXECUTION.md carries the
+row-level record.
 
 ## Removed from scope (owner, 2026-09-05 — formerly "Deferred")
 

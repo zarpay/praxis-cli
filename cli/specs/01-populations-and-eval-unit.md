@@ -79,7 +79,7 @@ Step 3 is mechanical set-difference: an algorithm does it exactly, an LLM approx
 **What verdict diffing demands:**
 
 - **Critiques with identity.** Prose paragraphs cannot be set-differenced. "Is this the same violation as before?" is answerable only when critiques anchor to `(axiom_id, location/symbol)` — the strongest single argument for the axiom layer (04) and for critiques becoming durable records (05).
-- **Shared provenance across the comparison.** If before/after verdicts come from different reviewer states (model swap, spec edit), sampling variance masquerades as introduced/resolved flow. Both sides must share model + spec content hash, or the comparison is refused. Reviewer nondeterminism itself sets a noise floor, measured by calibration variance (06): flow signal below that floor reports as "insufficient data," not as a finding.
+- **Shared provenance across the comparison.** If before/after verdicts come from different reviewer states (model swap, spec edit), sampling variance masquerades as introduced/resolved flow. Both sides must share model + spec content hash, or the comparison is refused. Reviewer nondeterminism itself sets a noise floor — measuring it (calibration variance) is a roadmap idea; until then the small-n floor and the uncalibrated banner carry the uncertainty.
 
 ### Axiom scope: hunk | file | file+context | cohort | changeset
 

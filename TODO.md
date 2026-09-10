@@ -1,6 +1,6 @@
 # TODO
 
-## Roadmap (withdrawn/deferred capabilities live in cli/praxis_v2_specs/roadmap/)
+## Roadmap (withdrawn/deferred capabilities live in cli/specs/roadmap/)
 
 - **`praxis calibrate add <target>`** — scaffold a calibration case:
   copy the target as the case's input file, freeze the governing spec

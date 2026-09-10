@@ -25,8 +25,8 @@ moment of **drafting**, not after acceptance.
 
 **The authoring gate is retired** (owner, 2026-09-09). Praxis shipped
 a curator call that assessed every accepted draft as `appropriate`,
-`not_appropriate` or `split` — at curate-accept, again at ratify, and
-over active axioms via `praxis axioms audit`. It stopped mechanical
+`not_appropriate` or `split` — at curate-accept, again at the (since
+retired) ratify step, and over active axioms via `praxis axioms audit`. It stopped mechanical
 drafts, but at the wrong place: after a human had already accepted the
 cluster. A refused cluster left no ledger record, so its critiques
 resurfaced unchanged on every curate run — the same suggestion, the
@@ -39,14 +39,17 @@ over active axioms, retires with it.
 What holds the boundary now:
 
 - **The curator's drafting prompt** carries the litmus tests below and
-  the aphorism. A cluster that is mechanical is suggested
-  `unassignable` with the reason stated; a cluster that mixes a
+  the aphorism. A cluster that is mechanical is suggested **held** with
+  the reason stated (curate never dismisses — validity is `eval
+  review`'s question, 2026-09-09); a cluster that mixes a
   mechanical half with a judgment half is drafted as the judgment half
-  alone; a cluster an established or standing proposed axiom already
-  remedies is suggested as an assignment, never a twin.
-- **The human at curate and ratify** reads the draft with the same
-  tests in mind and accepts, dismisses, or rejects. Every one of those
-  decisions is a ledger record, so nothing recurs.
+  alone; a cluster an existing category already names is suggested as
+  an assignment, never a twin.
+- **The human at curate** reads the draft with the same tests in mind
+  and accepts, holds, or (for a standing proposal) rejects — and
+  acceptance activates (2026-09-09: ratify retired as a duplicate
+  yes). Every decision that decides something is a ledger record, so
+  nothing recurs.
 - **Deprecation** (04) is the removal path for an active axiom that
   tooling has caught up with: `praxis axioms deprecate <id> --reason
   "now a lint rule"`.
@@ -103,13 +106,13 @@ Delegated tooling's findings do **not** enter the ledger (05). The ledger is jud
 
 ## Removal — axioms that no longer earn their place
 
-An axiom that no longer needs Praxis — the standard became mechanically checkable, or stopped mattering — **is removed** (deprecated, 04): `praxis axioms deprecate <id> --reason`. Its ledger history is frozen at removal; where the standard went is not Praxis's concern. If the standard turns out to still need judgment, it comes back as a new axiom through the normal propose/ratify path. Noticing that tooling has caught up with an axiom is a human reading — the curator re-assessment that once did this (`praxis axioms audit`) retired with the gate (2026-09-09).
+An axiom that no longer needs Praxis — the standard became mechanically checkable, or stopped mattering — **is removed** (deprecated, 04): `praxis axioms deprecate <id> --reason`. Its ledger history is frozen at removal; where the standard went is not Praxis's concern. If the standard turns out to still need judgment, it comes back as a new category through the normal curate path. Noticing that tooling has caught up with an axiom is a human reading — the curator re-assessment that once did this (`praxis axioms audit`) retired with the gate (2026-09-09).
 
 ## Evaluation flow
 
 1. Scoping filters the unit set (excludes out, paths applied).
 2. Judgment standards evaluate per the spec; the reviewer prompt carries the spec, its context files, and the statement that mechanical criteria are out of scope.
-3. Verdict assembly: severity mapping is per-axiom, structured (the events SME already does this in prose — "missing schema → error; missing example → warning").
+3. Verdict assembly: severity is the reviewer's structured call per critique, guided by the spec's own binding-vs-advisory language ("must" reads as error; "should" as warning).
 4. For diff-unit evaluation (01), before/after verdicts feed **verdict diffing** — attribution is computed set-difference over axiom-anchored results on `(axiom_id, location/symbol)` under shared provenance, never a reviewer task.
 5. A unit that cannot be evaluated (context overflow, unreadable file) is `unverified` for the affected axioms — never silently passed.
 

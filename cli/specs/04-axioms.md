@@ -291,7 +291,7 @@ critique no record covers yet — a queue, not a judgment.
 
 1. Re-labeling after taxonomy changes: resolved by construction
    (2026-09-07) — an unmatched record pins the axiom set it was judged
-   against, so ratifying or versioning any axiom automatically
+   against, so activating or versioning any axiom automatically
    re-queues every unidentified critique for triage; the next
    `axioms triage` reconsiders them against the new set without
    touching a single review. Already-assigned critiques keep their

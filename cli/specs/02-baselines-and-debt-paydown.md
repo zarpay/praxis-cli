@@ -48,10 +48,10 @@ The control group promised automatic differential diagnosis (spec problem vs har
 
 - **`harness_gap`** — an axiom whose introduction rate in new work stays high and flat across many diffs within an epoch, while paydown of _other_ axioms proceeds. The standard is followable in principle (violations get fixed when pointed out — resolution flow exists) but the harness doesn't carry it into generation.
 - **`spec_problem`** — triangulated, not proven: high debt density _and_ high introduction rate _and_ paydown attempts that fail re-validation, or high reviewer variance on the axiom (06 — variance is a property of the question, and an unanswerable question is a spec defect). Final call is human.
-- **`reviewer_noise`** — unchanged: residual/self-refuting critiques (04), calibration disagreement (06).
+- **`reviewer_noise`** — unchanged: residual/self-refuting critiques (04), the dismissal rate at `eval review`; calibration disagreement is a roadmap idea (roadmap/06).
 - **`insufficient_data`** — below the small-n floor; say so, recommend nothing.
 
-The brief (08) presents rates and evidence and _suggests_ a diagnosis; the confident automatic spec-vs-harness verdict the control group would have licensed is explicitly downgraded. Where attribution conventions exist (below), the contrast returns as additional evidence, not as the mechanism.
+The reports present rates and evidence and leave diagnosis to the reader (the brief that would _suggest_ one is a roadmap/08 idea); the confident automatic spec-vs-harness verdict the control group would have licensed is explicitly downgraded. Where attribution conventions exist (below), the contrast returns as additional evidence, not as the mechanism.
 
 ## Attribution, retained as an optional sharpening
 

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a three-project repository:
 
-- **`cli/`** — the `@zarpay/praxis-cli` npm package. All CLI source, tests, scaffold, tooling config, and the Praxis v2 design specs (`cli/praxis_v2_specs/`). Has its own `CLAUDE.md` with build commands, architecture, and code conventions — read it before working on the CLI.
+- **`cli/`** — the `@zarpay/praxis-cli` npm package. All CLI source, tests, scaffold, tooling config, and the design specs (`cli/specs/`). Has its own `CLAUDE.md` with build commands, architecture, and code conventions — read it before working on the CLI.
 - **`site/`** — the VitePress documentation site. Self-contained (`cd site && npm install && npm run dev`).
 - **`demo/`** — Scoop Society, a small TypeScript API that uses the development CLI (`file:../cli` dependency) as a real Praxis project: its `knowledge/` compiles into SME profiles, and its `src/` directories carry spec READMEs that `praxis eval run` reviews. Use it to verify end-to-end behavior of CLI changes.
 
@@ -46,4 +46,4 @@ dependency graph and the domain boundaries.
 
 ## Branching
 
-v2 development lives on the long-lived **`v2`** branch; milestone branches (e.g. `m2-critique-flow`) branch off `v2` and merge back into it. **`main` stays at the 1.4.x line** — it receives only docs fixes and v1 hotfixes — and `v2` merges into `main` only at v2 release time. The v2 design specs (`cli/praxis_v2_specs/`) continue to evolve on `v2` alongside the implementation.
+v2.0.0 released 2026-09-10; **`main` is the current line**. Feature branches branch off `main` and merge back when the owner says merge; releases are cut by tagging `main` and publishing a GitHub release (the `release.yml` workflow verifies the tag against `package.json` and publishes to npm). The design specs (`cli/specs/`) evolve alongside the implementation — a spec that lags the code is a bug. The historical `v2` branch is retired.
