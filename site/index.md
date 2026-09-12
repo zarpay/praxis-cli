@@ -21,7 +21,11 @@ Take Scoop Society, a small API for rating ice-cream parlors — the example the
 
 A linter can verify none of that. It can check that a function named `run` exists; it cannot check that an error message would actually help the person who hit it. So the README stays aspirational, three contributors and two agents drift from it in different directions, and nothing says so. That is **conceptual drift** — and it compounds silently, in exactly the code your AI agents are now writing at volume.
 
+The agents drift for a structural reason, not a careless one. A coding model is trained against checks that answer fast: the test passes, the types check, the benchmark counts the problem solved. Code quality has no fast check — the cost of a bad pattern shows up weeks later, long after anything a training run can score. So models get very good at solving the problem, and learn almost nothing about solving it well. The standards you hold beyond what a linter can check are invisible to the thing now writing much of your code.
+
 ## What Praxis does
+
+Praxis asks the question nothing else in your pipeline asks: not *does it work*, but *does it match what you said correct looks like*.
 
 **It enforces judgment standards.** A spec is a README that states what correct looks like for the files around it. `praxis eval run` has one or more LLM reviewers read each file against its spec and return a verdict — pass, warn, or fail — with specific critiques. Verdicts are cached by content hash: unchanged files are free, and editing a file (or its spec) re-reviews exactly what changed.
 
@@ -39,7 +43,7 @@ You, first — the developer who wrote the README and watched it stop being true
 
 Your team, second: the cache and the ledger are committed, so a verdict paid for on one machine is a cache hit on every other, and the evidence of who found what, when, accumulates in git like everything else.
 
-Your agents, third: findings arrive as the reviewer's own words against the spec, and once triage labels them, reports and `praxis axioms show` cite stable axiom ids an agent can look up; `--json` surfaces are stable contracts, and `praxis status --json` is a one-call situational poll. The compiled skill and slash command (via the Claude Code plugin) teach an agent the whole workflow.
+Your agents, third: an agent given a target it can check does far better work than one told to "follow the conventions," and `praxis eval run <file>` is that target for the standards a linter can't hold. Findings arrive as the reviewer's own words against the spec, and once triage labels them, reports and `praxis axioms show` cite stable axiom ids an agent can look up; `--json` surfaces are stable contracts, and `praxis status --json` is a one-call situational poll. The compiled skill and slash command (via the Claude Code plugin) teach an agent the whole workflow.
 
 ## How to read the docs
 
