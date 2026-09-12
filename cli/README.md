@@ -1,8 +1,8 @@
 # Praxis
 
-Every codebase has standards no syntax checker can catch — service objects with architectural conventions, error messages written for the consumer, decision records with agreed-upon shapes. Nobody enforces them. They drift. Praxis fixes that.
+Every codebase has standards no syntax checker can catch — service objects with architectural conventions, error messages written for the consumer, decision records with agreed-upon shapes. Nobody enforces them. They drift. And the coding agents writing more and more of the code can't hold them either: they were trained against tests that pass or fail, never against whether the code was good or followed your conventions. Praxis fixes that.
 
-Praxis is a **conceptual linter and knowledge compiler**. Write a README spec for any directory that defines what valid looks like, then run `praxis eval run` to enforce it — LLM reviewers read the spec the way a colleague would, verdicts are cached by content hash, and every run leaves append-only evidence in a committed ledger. Recurring critiques grow into **axioms** — named, stable categories your reports chart honestly: real denominators, per-reviewer series, pre-spec debt never blamed on the present. When your governed documents are knowledge files, `praxis compile` assembles them into agent profiles: self-contained subject matter experts, deployable to any LLM platform.
+Praxis makes those standards enforceable. Write a README spec for any directory that defines what valid looks like, then run `praxis eval run` to enforce it — LLM reviewers read the spec the way a colleague would, verdicts are cached by content hash, and every run leaves append-only evidence in a committed ledger. Recurring critiques grow into **axioms** — named, stable categories your reports chart honestly: real denominators, per-reviewer series, pre-spec debt never blamed on the present. When your governed documents are knowledge files, `praxis compile` assembles them into agent profiles: self-contained subject matter experts, deployable to any LLM platform.
 
 **→ Full documentation at [zarpay.github.io/praxis-cli](https://zarpay.github.io/praxis-cli/)**
 

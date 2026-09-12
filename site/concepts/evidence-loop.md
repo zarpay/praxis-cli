@@ -1,6 +1,6 @@
 # The Evidence Loop
 
-Most review tooling is amnesiac: it tells you what's wrong, you fix it, and the knowledge evaporates. Praxis is built around the opposite bet — **every review is evidence**, and evidence, kept honestly, compounds into a taxonomy of named standards and numbers you can actually trust.
+Most review tooling is amnesiac: it tells you what's wrong, you fix it, and the knowledge evaporates. That is a bad fit for quality problems, because the cost of a weak standard shows up over weeks and months — no single review can see it. Praxis is built around the opposite bet — **every review is evidence**, and evidence, kept honestly, compounds into a taxonomy of named standards and numbers you can actually trust.
 
 This page follows one finding through the whole loop, using Scoop Society's service conventions.
 
@@ -78,7 +78,7 @@ praxis eval report --axiom AX-b951db
   └──────────┴────────────────────────────────┴───────┴──────────┴───────────┴─────────┘
 ```
 
-Whatever triage can't confidently label lands in the curation queue for the next human curate session — today's raw critique is tomorrow's category. And because axioms never enter the review, activating one costs nothing: no cache invalidation, no re-review — the reviewer's question changes only when the spec does.
+This is what naming buys you: a failure mode with an id can never recur quietly again — every new instance is labeled, counted, and visible. Whatever triage can't confidently label lands in the curation queue for the next human curate session — today's raw critique is tomorrow's category. And because axioms never enter the review, activating one costs nothing: no cache invalidation, no re-review — the reviewer's question changes only when the spec does.
 
 For a developer or an agent, the label is a link, not a lecture: `praxis axioms show AX-b951db` is the drill-down — the statement, the spec passage it derives from, and the category's labeled critiques as live examples — and the category reads identically every run, on every machine.
 

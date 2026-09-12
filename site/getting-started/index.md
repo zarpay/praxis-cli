@@ -8,6 +8,8 @@ This walkthrough builds the setup these docs use everywhere: **Scoop Society**, 
 
 Six months pass. Three developers and two coding agents contribute. The README still says the same thing; half the services quietly stopped doing it. Nothing caught it, because nothing *could*: these are judgment standards, and no linter reads for meaning.
 
+There is a second half to the problem. Agents do their best work against a target they can check — give one a test to pass and it will move mountains; tell it to "follow the conventions" and you get whatever the model guesses that means. `praxis eval run` turns the conventions into a checkable target: for you before you push, and for any agent told to run it before calling its work done.
+
 ## Install
 
 ```bash

@@ -12,6 +12,12 @@ Praxis is the tool for conceptual linting. Write the standard in a README. Run `
 
 The compilation capability — turning knowledge documents into agent profiles — is built on top of this foundation. Linting is what keeps the source knowledge honest. Compilation is what turns trusted knowledge into deployable SME agents.
 
+## The oracle gap
+
+There is a reason no tool enforces these standards already, and it is the same reason coding models don't learn them: verifying quality is expensive. A test suite answers in seconds, so training runs and benchmarks use it as their oracle — did the change make the tests pass? Maintainability has no oracle like that. The cost of a bad abstraction arrives weeks or months later, and no training loop can wait that long to score an answer. So models are trained to solve the problem, and nothing in that training distinguishes solving it from solving it with good code that follows the conventions a team agreed on.
+
+That gap doesn't close on its own. It has to be closed per project, by whoever owns the standards. Praxis is built to be that check: the spec states the standard, the reviewers apply it, the cache makes it affordable, and the ledger keeps the results. It is slower than a test suite and it costs inference — that is the price of checking the thing nothing else checks.
+
 ---
 
 ## Plain markdown, not a proprietary format
@@ -61,7 +67,7 @@ The remaining tradeoffs — an API key, per-call cost, non-determinism at the ma
 
 ## Evidence over amnesia
 
-Most review tooling reports and forgets. Praxis appends every run to a committed ledger — run records with commit, cost, and counts; critique records with full provenance — because the questions that matter later ("when did this start", "did that spec change help", "what did this cost") can only be answered by evidence kept at the time. The cache answers *is this compliant now*; the ledger answers *what has ever happened*. Reports (`eval report`, `debt report`) are pure reads over it: never a reviewer call, rates always with denominators, reviewers never pooled, and nothing charted across an epoch boundary.
+Most review tooling reports and forgets. But the cost of a violated standard shows up over weeks and months, so the instrument has to measure over weeks and months — a point-in-time review can't see a trend. Praxis appends every run to a committed ledger — run records with commit, cost, and counts; critique records with full provenance — because the questions that matter later ("when did this start", "did that spec change help", "what did this cost") can only be answered by evidence kept at the time. The cache answers *is this compliant now*; the ledger answers *what has ever happened*. Reports (`eval report`, `debt report`) are pure reads over it: never a reviewer call, rates always with denominators, reviewers never pooled, and nothing charted across an epoch boundary.
 
 ## LLM proposes, human accepts
 
