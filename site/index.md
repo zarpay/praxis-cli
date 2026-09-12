@@ -21,7 +21,7 @@ Take Scoop Society, a small API for rating ice-cream parlors — the example the
 
 A linter can verify none of that. It can check that a function named `run` exists; it cannot check that an error message would actually help the person who hit it. So the README stays aspirational, three contributors and two agents drift from it in different directions, and nothing says so. That is **conceptual drift** — and it compounds silently, in exactly the code your AI agents are now writing at volume.
 
-The agents drift for a structural reason, not a careless one. A coding model is trained against checks that answer fast: the test passes, the types check, the benchmark counts the problem solved. Code quality has no fast check — the cost of a bad pattern shows up weeks later, long after anything a training run can score. So models get very good at solving the problem, and learn almost nothing about solving it well. The standards you hold beyond what a linter can check are invisible to the thing now writing much of your code.
+The agents drift for a structural reason, not a careless one. A coding model is trained against checks that answer fast: the test passes, the types check, the benchmark counts the problem solved. Code quality has no fast check — the cost of a bad pattern shows up weeks later, long after anything a training run can score. So models get very good at solving the problem, and learn almost nothing about solving it well — with good code, written to the conventions and standards a team has set. Those standards, the ones beyond what a linter can check, are invisible to the thing now writing much of your code.
 
 ## What Praxis does
 

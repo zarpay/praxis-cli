@@ -1,6 +1,6 @@
 # Praxis
 
-Praxis is a **conceptual linter and knowledge compiler**: write README specs that define what valid looks like for any set of files, enforce them with LLM reviewers, and grow a taxonomy of your codebase's recurring issues from the evidence — with every verdict cached, every run in an append-only ledger, and every rate reported honestly. It exists because tests can tell you a problem was solved, but never that it was solved with good code — and the agents writing today's code were trained on exactly that gap. When the governed documents are knowledge files, `praxis compile` assembles them into subject-matter-expert agent profiles.
+Praxis is a **conceptual linter and knowledge compiler**: write README specs that define what valid looks like for any set of files, enforce them with LLM reviewers, and grow a taxonomy of your codebase's recurring issues from the evidence — with every verdict cached, every run in an append-only ledger, and every rate reported honestly. It exists because tests can tell you a problem was solved, but never that it was solved with good code that follows the conventions and standards your team has set — and the agents writing today's code were trained on exactly that gap. When the governed documents are knowledge files, `praxis compile` assembles them into subject-matter-expert agent profiles.
 
 **Current release: v2.0.0** (2026-09-10) — the evidence-first rebuild. See the [changelog](./cli/CHANGELOG.md) and the [docs](https://zarpay.github.io/praxis-cli/).
 
