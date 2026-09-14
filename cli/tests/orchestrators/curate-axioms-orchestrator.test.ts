@@ -132,6 +132,15 @@ function standardPlan() {
 }
 
 describe("curateAxiomsOrchestrator", () => {
+  it("says how long the curator takes before the first call, so a wait is never a surprise", async () => {
+    const root = triageProject(standardPlan());
+    const { logger, output } = createCaptureLogger();
+
+    await curateAxiomsOrchestrator(testContext(root, logger), { yes: true });
+
+    expect(output()).toContain("Curator calls typically take 30-90s");
+  });
+
   it("with --yes: acceptance activates — axiom live with its derivation, parentage assigned, the held critique stays unmatched", async () => {
     const root = triageProject(standardPlan());
     const { logger } = createCaptureLogger();

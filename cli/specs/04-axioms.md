@@ -212,7 +212,13 @@ Labels are applied as append-only records, by two verbs:
    decision), and the curator sees at most one **cohort** (~30 distinct
    critiques) per call, with the session's accepted proposals carried
    into later cohorts as fold targets so categories consolidate instead
-   of re-emerging per cohort.
+   of re-emerging per cohort. Curate's calls are its slowest moment —
+   30-90s each — so every one of them holds a live elapsed line on the
+   terminal for its duration (decided 2026-09-14), the session naming
+   that cost once up front. Triage streams each verdict as it lands;
+   curate cannot, because a cohort yields nothing until the whole call
+   returns, so what it streams instead is the waiting. A silent minute
+   reads as a hang, and a killed session loses the cohort.
 
 **Labels are assignment records, and readers join them.** A critique's
 effective axiom identity is decided in exactly one place

@@ -35,6 +35,14 @@ Curate never dismisses. Every critique here is taken as valid evidence — valid
 
 The guidance on what makes a good axiom is given where the draft is written: the curator's prompt carries the category framing — the statement **names the observed issue** ("Type definitions placed outside the feature's dedicated home"), never restates the spec's rule; one category covers one convention a team decides as a unit — plus the judgment boundary: _if you can write the check, write the check_. A mechanical cluster is suggested as held and a mixed one is drafted as its judgment half alone. **Your acceptance is the decision, and acceptance activates.** One machine check runs first: the category's norm must trace to a spec passage (recorded as `derived_from`). Traceable → the axiom lands active and the next triage labels against it — no cache effect, since the reviewer sees only the spec. Untraceable → the cluster is **held** with the honest instruction: extend the spec, then re-curate. A category whose norm no spec states never starts counting.
 
+**The waits are long, and the terminal says so.** A clustering call reads a whole spec, up to thirty critiques and every active axiom, so 30-90 seconds is normal; the traceability check that runs the moment you accept a draft is another. While either is in flight, a line holds the terminal with a spinner and a clock counting up:
+
+```
+⣻ Clustering 30 critique(s) for src/services/README.md — 1:12
+```
+
+It repaints in place and disappears when the call lands, leaving nothing in the scrollback. The session names the cost once before the first call. Outside a terminal — piped, redirected, in CI, or under `--yes` in a script — there is no spinner and nothing on stdout.
+
 Every assignment and activation is appended to `.praxis/ledger/triage/` with full provenance — who decided, which model suggested. Scriptable with `--yes` (accept everything; recorded as such).
 
 ## praxis axioms reassign \<id\>

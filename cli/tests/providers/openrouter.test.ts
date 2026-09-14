@@ -161,6 +161,26 @@ describe("OpenRouterProvider", () => {
       expect(bodies[0]["tool_choice"]).toBe("required");
       expect(bodies[0]["temperature"]).toBe(0.1);
     });
+
+    it("asks for one whole body, never a stream", async () => {
+      const bodies: Record<string, unknown>[] = [];
+      captureBody(bodies);
+
+      await new OpenRouterProvider().review(request({}));
+
+      expect(bodies[0]["stream"]).toBe(false);
+    });
+
+    it("refuses to stream even when options ask for it", async () => {
+      const bodies: Record<string, unknown>[] = [];
+      captureBody(bodies);
+
+      // Spread first, `stream` would reach the wire and come back as SSE
+      // — which response.json() cannot parse. It is praxis's field.
+      await new OpenRouterProvider().review(request({ options: { stream: true } }));
+
+      expect(bodies[0]["stream"]).toBe(false);
+    });
   });
 
   describe("usage normalization", () => {

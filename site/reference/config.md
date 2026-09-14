@@ -232,7 +232,7 @@ export default function internalProvider() {
 
 A provider may also implement `complete(request)` — the raw structured-output call the [curator](#curator) uses. Only providers that implement it can back the curator.
 
-`options` is passed to the provider verbatim. For the built-in OpenRouter provider it is spread into the request body first, so it can add backend fields (routing, reasoning settings) but never overrides `model`, `temperature`, or the tool-calling protocol. Both `provider` and `options` are part of the reviewer's behavioral identity: changing them re-reviews that reviewer's targets. A local provider module is code your project runs — treat it with the same trust as an npm script.
+`options` is passed to the provider verbatim. For the built-in OpenRouter provider it is spread into the request body first, so it can add backend fields (routing, reasoning settings) but never overrides `model`, `temperature`, or the tool-calling protocol. `stream` is owned too and pinned off: the provider reads one whole JSON body to get one tool call out of it, and a streamed response cannot be parsed that way. Praxis shows a live elapsed line while a call runs instead — a tool call's arguments are not usable until they are complete. Both `provider` and `options` are part of the reviewer's behavioral identity: changing them re-reviews that reviewer's targets. A local provider module is code your project runs — treat it with the same trust as an npm script.
 
 ::: warning Breaking change in v2
 The v1 `validation` section is removed. Configure `reviewers` instead, and move `specFilePattern` to the top level.
