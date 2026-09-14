@@ -1,6 +1,7 @@
 import type { ProviderUsage } from "@/types.js";
 import type { DisplayEntry, View } from "@framework/types.js";
 
+import { duration } from "@framework/views/duration.js";
 import { statLines } from "@framework/views/stats.js";
 
 /** What the labeling pass reports. */
@@ -14,6 +15,8 @@ interface LabelReportData {
   /** Labeling calls that failed — their critiques stay untriaged. */
   failed: number;
   usage: ProviderUsage | null;
+  /** Wall-clock the pass took. */
+  elapsedMs: number;
   sessionPath: string | null;
   dryRun: boolean;
 }
@@ -46,7 +49,8 @@ const labelReportView: View<LabelReportData> = (data) => {
           `${data.failed} labeling call(s) failed — their critiques stay untriaged; rerun triage to retry.`,
         ]
       : []),
-    ...(costLine(data.usage) ? ["", costLine(data.usage)] : []),
+    "",
+    spendLine(data.usage, data.elapsedMs),
     ...(data.sentToCurate + data.skippedNoAxioms > 0
       ? ["", "Next: `praxis axioms curate` works the unmatched critiques — cluster, assign, hold."]
       : []),
@@ -63,9 +67,16 @@ const labelReportView: View<LabelReportData> = (data) => {
 
 export default labelReportView;
 
-/** Curator spend, when reported. */
-function costLine(usage: ProviderUsage | null): string | null {
-  if (usage?.costUsd === null || usage?.costUsd === undefined) return null;
+/**
+ * What the pass took, and what it cost when a curator was called.
+ *
+ * The time always shows; the cost only when something was actually
+ * spent, because "$0.0000" would claim a measurement never taken.
+ */
+function spendLine(usage: ProviderUsage | null, elapsedMs: number): string {
+  const time = `Time: ${duration(elapsedMs)}`;
 
-  return `Curator cost: $${usage.costUsd.toFixed(4)}`;
+  if (usage?.costUsd === null || usage?.costUsd === undefined) return time;
+
+  return `${time} · Curator cost: $${usage.costUsd.toFixed(4)}`;
 }

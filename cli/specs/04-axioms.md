@@ -177,6 +177,8 @@ wrote dismissals for "unassignable" clusters and for gate refusals;
 those were membership judgments wearing a validity record, and the
 demo's were reinstated on 2026-09-09.
 
+**Advisory critiques never queue** (2026-09-14). A `praxis feedback` run is recorded like any other — its critiques, its cost, full provenance — but stamped `scope: "advisory"`, and triage skips those critiques, so curate never sees them either. They describe code in flight; queueing them would bury the critiques about code that landed under the ones about code that was never finished. `eval critiques` still lists them, because browsing the ledger is its job; `eval review` does not offer them, because a critique that is evidence for nothing cannot usefully be judged invalid.
+
 Every reader gets a critique's standing from one join
 (`TriageStore.decisions()`): a dismissal stands until reinstated,
 whatever assignments surround it; among assignments the newest wins; an

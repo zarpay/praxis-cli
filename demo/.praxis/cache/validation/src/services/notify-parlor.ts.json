@@ -1,0 +1,47 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "0311531a:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-14T18:36:04.709Z",
+      "content_hash": "42489a1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 395 words."
+      }
+    },
+    "0311531a:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-14T21:41:35.298Z",
+      "content_hash": "42489a1f",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "Uses `console.log`, violating the requirement 'No I/O except through the injected Store. No timers, no fetch, no console.'",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "Uses `fetch`, violating the requirement 'No I/O except through the injected Store. No timers, no fetch, no console.'",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The document violates the strict I/O restrictions mandated by the specification's behavior section."
+      }
+    }
+  }
+}

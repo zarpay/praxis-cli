@@ -47,6 +47,21 @@ export class RunStore {
       .map((file) => file.run);
   }
 
+  /**
+   * Run ids whose critiques must never reach a queue.
+   *
+   * `praxis feedback` records everything it finds — the ledger answers
+   * what has ever happened — but those critiques describe code in
+   * flight, and queueing them would bury the ones about code that
+   * landed. The scope is on the run, so the answer is a set of run ids
+   * the critique readers filter against.
+   */
+  advisoryRunIds(): Set<string> {
+    const advisory = this.runs().filter((run) => run.scope === "advisory");
+
+    return new Set(advisory.map((run) => run.run_id));
+  }
+
   /** Every critique record, across all run files, sorted by id. */
   critiques(): LedgerCritiqueRecord[] {
     const critiques = this.files()

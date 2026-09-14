@@ -12,13 +12,14 @@ import type {
 } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
-import { readText } from "@/helpers/files-helper.js";
 import { baseName, relativePath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
+import assembleCohortService from "@/services/assemble-cohort-service.js";
 import discoverDomainsService from "@/services/discover-domains-service.js";
 import resolveUnitsService from "@/services/resolve-units-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
+import totalUsageService from "@/services/total-usage-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 import { DocumentStore } from "@/stores/document-store.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
@@ -113,6 +114,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
   }
 
   const verdicts: TargetVerdict[] = [];
+  const allEntries: LedgerEntry[] = [];
   const cacheStats = { hits: 0, misses: 0 };
   const total = queue.length * reviewers.length;
 
@@ -135,7 +137,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
         reviewerName: reviewers.length > 1 ? reviewerConfig.name : undefined,
       });
 
-      const { verdict, cacheHit, evidence } = await reviewUnit(cfg, {
+      const { verdict, cacheHit, elapsedMs, evidence } = await reviewUnit(cfg, {
         unit,
         specPath: domain.specPath,
         type: domain.type,
@@ -150,7 +152,8 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
       }
 
       verdicts.push(verdict);
-      entries.push({ verdict, cacheHit, evidence });
+      entries.push({ verdict, cacheHit, elapsedMs, evidence });
+      allEntries.push({ verdict, cacheHit, elapsedMs, evidence });
 
       if (failFast && !verdict.compliant && !verdict.unverified && verdict.severity === "error") {
         stoppedEarly = true;
@@ -171,10 +174,13 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
   const documentStore = new DocumentStore(cfg);
   const sourceDocs = new Set(documentStore.files());
 
+  const usages = allEntries.map((entry) => entry.evidence?.usage ?? null);
+
   return {
     verdicts,
     cacheStats,
     stoppedEarly,
+    usage: totalUsageService(cfg, { usages }),
     summary: summarize(verdicts, sourceDocs),
   };
 };
@@ -216,6 +222,7 @@ const reviewUnit: Service<
   Promise<{
     verdict: TargetVerdict;
     cacheHit: boolean;
+    elapsedMs: number;
     evidence: LedgerEvidence | null;
   }>
 > = async (cfg, { unit, specPath, type, reviewerConfig, cache, onProgress }) => {
@@ -227,11 +234,15 @@ const reviewUnit: Service<
     reviewer: reviewerConfig.name,
   };
 
+  // Outside the try: a call that waited and then failed still cost that
+  // time, and the ledger should say so.
+  const startedAt = Date.now();
+
   try {
     const cohort = isCohort(unit);
     const target = ReviewSubject.resolve({
       targetPath: unit.path,
-      targetContent: cohort ? assembleCohort(unit, root) : undefined,
+      targetContent: cohort ? assembleCohortService(cfg, { unit }) : undefined,
       kind: cohort ? "cohort" : "file",
       specPath,
       root,
@@ -242,12 +253,14 @@ const reviewUnit: Service<
       reviewer: Reviewer.fromConfig(reviewerConfig),
       cache,
     });
+    const elapsedMs = Date.now() - startedAt;
 
     onProgress?.({ kind: "verdict", verdict });
 
     return {
       verdict: { ...verdict, ...identity },
       cacheHit,
+      elapsedMs,
       evidence: {
         usage,
         specPath: target.specPath,
@@ -263,6 +276,7 @@ const reviewUnit: Service<
     // Nothing was reviewed: no violation, no cache, no ledger critiques.
     return {
       cacheHit: false,
+      elapsedMs: Date.now() - startedAt,
       evidence: null,
       verdict: {
         ...identity,
@@ -274,16 +288,6 @@ const reviewUnit: Service<
     };
   }
 };
-
-/**
- * Assembles a cohort's members into one review input, each labeled
- * with its project-relative path so critiques can locate their file.
- */
-function assembleCohort(unit: EvalUnit, root: string): string {
-  return unit.files
-    .map((file) => `===== FILE: ${relativePath(root, file)} =====\n\n${readText(file)}`)
-    .join("\n\n");
-}
 
 /**
  * Aggregates a run's verdicts.

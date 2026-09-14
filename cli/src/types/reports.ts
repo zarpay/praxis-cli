@@ -176,6 +176,8 @@ export interface EvalReport {
     reviewers: string[];
     specs: string[];
     costUsd: number | null;
+    /** Reviewer time across the scoped runs, in milliseconds. */
+    elapsedMs: number;
     /** Run-indexed cost trend with calendar annotations (07 open q1). */
     costTrend: { runId: string; at: string; costUsd: number | null }[];
   };

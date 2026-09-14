@@ -3,6 +3,7 @@ import type { ReportLine, View } from "@framework/types.js";
 
 import chalk from "chalk";
 
+import { duration } from "@framework/views/duration.js";
 import { frame } from "@framework/views/frame.js";
 
 /**
@@ -45,6 +46,7 @@ const evalReportView: View<EvalReport & { json?: boolean }> = (report) => {
       ["REVIEWERS", report.panel.reviewers.join(", ") || "—"],
       ["SPECS", report.panel.specs.length],
       ["COST", report.panel.costUsd === null ? "—" : `$${report.panel.costUsd.toFixed(4)}`],
+      ["TIME", report.panel.elapsedMs === 0 ? "—" : duration(report.panel.elapsedMs)],
     ],
   });
 

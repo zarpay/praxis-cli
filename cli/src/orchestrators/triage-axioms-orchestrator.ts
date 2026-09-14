@@ -53,6 +53,7 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
   // as each lands, so every one of those writes goes through `paused` —
   // otherwise it interleaves with the repainting wait line and both are
   // corrupted.
+  const startedAt = Date.now();
   const waiting = new Waiting();
   const result = await waiting.during(`Labeling ${pending.length} critique(s)`, () =>
     labelCritiquesService(cfg, {
@@ -66,7 +67,7 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
     }),
   );
 
-  const view = labelReportView({ ...result, dryRun });
+  const view = labelReportView({ ...result, dryRun, elapsedMs: Date.now() - startedAt });
   ctx.render(view);
 
   return "ok";

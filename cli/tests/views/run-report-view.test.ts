@@ -9,10 +9,12 @@ import { reportText } from "@tests/helpers/report-text.js";
 function finished(summary: Partial<EvalSummary>) {
   return {
     cached: false,
+    elapsedMs: 1_000,
     run: {
       verdicts: [],
       cacheStats: { hits: 0, misses: 0 },
       stoppedEarly: false,
+      usage: null,
       summary: {
         total: 5,
         compliant: 5,
@@ -46,5 +48,48 @@ describe("runReportView", () => {
     const text = reportText(runReportView(finished({})));
 
     expect(text).not.toContain("Unverified");
+  });
+
+  it("says a run cost nothing because it was cached, rather than going quiet", () => {
+    const run = finished({});
+    const cachedRun = {
+      ...run,
+      cached: true,
+      elapsedMs: 3_000,
+      run: { ...run.run, cacheStats: { hits: 9, misses: 0 } },
+    };
+
+    expect(reportText(runReportView(cachedRun))).toContain("Time: 3s (from cache)");
+  });
+
+  it("never claims a run was cached when a call was attempted and failed", () => {
+    const run = finished({ unverified: 1 });
+    // A failed call is neither a hit nor a miss, so "no misses" alone
+    // does not mean nothing was attempted.
+    const attempted = {
+      ...run,
+      cached: true,
+      elapsedMs: 90_000,
+      run: { ...run.run, cacheStats: { hits: 68, misses: 0 } },
+    };
+
+    expect(reportText(runReportView(attempted))).toContain("Time: 1m 30s");
+    expect(reportText(runReportView(attempted))).not.toContain("from cache");
+  });
+
+  it("reports the cost when reviewers were actually called", () => {
+    const run = finished({});
+    const paidRun = {
+      ...run,
+      cached: true,
+      elapsedMs: 80_000,
+      run: {
+        ...run.run,
+        cacheStats: { hits: 0, misses: 2 },
+        usage: { promptTokens: 1772, completionTokens: 5740, costUsd: 0.0010863424 },
+      },
+    };
+
+    expect(reportText(runReportView(paidRun))).toContain("Time: 1m 20s, Cost: $0.0011");
   });
 });

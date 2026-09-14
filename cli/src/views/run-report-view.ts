@@ -2,6 +2,7 @@ import type { EvalSummary, ReviewAllResult } from "@/types.js";
 import type { DisplayEntry, View } from "@framework/types.js";
 
 import { badge, verdictTally } from "@framework/views/badges.js";
+import { duration } from "@framework/views/duration.js";
 import { palette } from "@framework/views/palette.js";
 import { table } from "@framework/views/table.js";
 
@@ -10,6 +11,8 @@ interface FinishedRun {
   run: ReviewAllResult;
   /** Whether the cache was consulted — a disabled cache is not a cold one. */
   cached: boolean;
+  /** Wall-clock the run took, for the spend line. */
+  elapsedMs: number;
 }
 
 /**
@@ -19,8 +22,12 @@ interface FinishedRun {
  * The cache line appears only when the cache was consulted — reporting
  * "Hits: 0" for a `--no-cache` run would read as a cold cache rather
  * than a disabled one.
+ *
+ * The spend line always shows the time and shows the cost only when a
+ * reviewer was actually called: a run answered entirely from cache spent
+ * nothing, and "$0.0000" would claim a measurement never taken.
  */
-const runReportView: View<FinishedRun> = ({ run, cached }) => [
+const runReportView: View<FinishedRun> = ({ run, cached, elapsedMs }) => [
   ...(run.stoppedEarly
     ? [content(badge("STOPPED", "yellow", "Review stopped early due to --fail-fast"))]
     : []),
@@ -32,9 +39,34 @@ const runReportView: View<FinishedRun> = ({ run, cached }) => [
         ),
       ]
     : []),
+  content(badge("SPEND", "blue", spend(run, cached, elapsedMs))),
 ];
 
 export default runReportView;
+
+/**
+ * Wall-clock always; cost only when something was paid for.
+ *
+ * A run with no cost says why, rather than going quiet — silence reads
+ * as a missing number, and "free because every verdict was cached" is a
+ * different fact from "we did not measure it".
+ */
+function spend(run: ReviewAllResult, cached: boolean, elapsedMs: number): string {
+  const time = `Time: ${duration(elapsedMs)}`;
+  const cost = run.usage?.costUsd;
+
+  if (cost !== null && cost !== undefined) return `${time}, Cost: $${cost.toFixed(4)}`;
+
+  // Unverified units called a reviewer and failed, and a failed call is
+  // neither a hit nor a miss — so "no misses" alone does not mean
+  // nothing was attempted, and claiming the time was free would be a lie
+  // about a run that just spent ninety seconds.
+  const nothingAttempted = run.cacheStats.misses === 0 && run.summary.unverified === 0;
+
+  if (cached && nothingAttempted) return `${time} (from cache)`;
+
+  return time;
+}
 
 /** One badge on its own content line, padded from what came before. */
 function content(badge: DisplayEntry): { channel: "content"; entries: DisplayEntry[] } {

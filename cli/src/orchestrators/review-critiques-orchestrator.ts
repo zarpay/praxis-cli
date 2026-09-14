@@ -61,7 +61,9 @@ export const reviewCritiquesOrchestrator: Orchestrator<ReviewCritiquesOptions> =
   }
 
   const report = buildCritiquesReportService(cfg, { target });
-  const queue = report.rows.filter((row) => isReviewable(row.state));
+  // Advisory critiques are never evidence for anything, so judging one
+  // invalid decides nothing — they are browsable, not reviewable.
+  const queue = report.rows.filter((row) => !row.advisory && isReviewable(row.state));
 
   if (queue.length === 0) {
     prompter.close();

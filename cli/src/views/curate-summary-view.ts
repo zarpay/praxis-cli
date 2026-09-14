@@ -1,5 +1,6 @@
 import type { View } from "@framework/types.js";
 
+import { duration } from "@framework/views/duration.js";
 import { statLines } from "@framework/views/stats.js";
 
 /** A curate session's counted outcome. */
@@ -14,6 +15,8 @@ interface TriageOutcome {
   pendingLeft: number;
   /** Curator spend across the session, or null when nothing reported. */
   costUsd: number | null;
+  /** Wall-clock the session took. */
+  elapsedMs: number;
 }
 
 /**
@@ -27,6 +30,7 @@ const curateSummaryView: View<TriageOutcome> = ({
   skipped,
   pendingLeft,
   costUsd,
+  elapsedMs,
 }) => {
   const counts: [string, string | number][] = [
     ["Assigned", assigned],
@@ -42,7 +46,10 @@ const curateSummaryView: View<TriageOutcome> = ({
       channel: "content",
       entries: [
         ...statLines(counts),
-        ...(costUsd === null ? [] : ["", `Curator cost: $${costUsd.toFixed(4)}`]),
+        "",
+        costUsd === null
+          ? `Time: ${duration(elapsedMs)}`
+          : `Time: ${duration(elapsedMs)} · Curator cost: $${costUsd.toFixed(4)}`,
         ...(activated > 0
           ? ["", "Newly active axioms label from the next `praxis axioms triage` on."]
           : []),

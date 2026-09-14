@@ -135,6 +135,8 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
     ctx.render(progressView);
   };
 
+  const startedAt = Date.now();
+
   let run;
 
   try {
@@ -152,7 +154,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 
   const reportView = options.json
     ? evalJsonView({ kind: "corpus", summary: run.summary, cacheStats: run.cacheStats })
-    : runReportView({ run, cached: cache });
+    : runReportView({ run, cached: cache, elapsedMs: Date.now() - startedAt });
 
   ctx.render(reportView);
 

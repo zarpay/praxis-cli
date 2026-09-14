@@ -1,5 +1,6 @@
 // The eval loop: subjects, verdicts, critiques, units, runs.
 
+import type { ProviderUsage } from "@/types/extension-points.js";
 import type { Severity } from "@/types/shared.js";
 
 /** How a spec groups its targets into review units. */
@@ -70,6 +71,12 @@ export interface Verdict {
 export interface EvalUnit {
   path: string;
   files: string[];
+}
+
+/** One reviewable unit and the spec that judges it. */
+export interface GovernedUnit {
+  unit: EvalUnit;
+  domain: ValidationDomain;
 }
 
 /** A validation domain: a spec file and the targets it validates. */
@@ -171,6 +178,8 @@ export interface ReviewAllResult {
   summary: EvalSummary;
   /** Cache hits and misses accumulated over the run. */
   cacheStats: { hits: number; misses: number };
+  /** Provider spend across the run; null when nothing was called. */
+  usage: ProviderUsage | null;
   /** Whether fail-fast stopped the run before every unit was reviewed. */
   stoppedEarly: boolean;
 }

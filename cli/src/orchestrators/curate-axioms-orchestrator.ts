@@ -138,6 +138,8 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
   // user reads them as a hang and kills the session.
   ctx.logger.info("Curator calls typically take 30-90s each.");
 
+  const startedAt = Date.now();
+
   await organizeAndDecide(session, state.unidentified);
 
   prompter.close();
@@ -154,6 +156,7 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
     skipped: session.skipped,
     pendingLeft,
     costUsd: session.costUsd,
+    elapsedMs: Date.now() - startedAt,
   });
 
   ctx.render(summary);

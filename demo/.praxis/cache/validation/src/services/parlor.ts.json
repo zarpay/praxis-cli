@@ -1,0 +1,47 @@
+{
+  "version": "5.0",
+  "verdicts": {
+    "0311531a:e3006bd8": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "e3006bd8"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-14T18:36:04.709Z",
+      "content_hash": "e1f58622",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 446 words."
+      }
+    },
+    "0311531a:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-14T21:41:38.755Z",
+      "content_hash": "e1f58622",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "Module name is not verb-first kebab-case; the specification requires names like `create-review.ts`, but this file is named `parlor.ts`.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "Module exports multiple functions; the specification states a service module exports exactly one entry point (`run`), but this file also exports `formatParlor` and `isEligible`.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The document violates the module naming and export structure requirements explicitly defined in the specification."
+      }
+    }
+  }
+}

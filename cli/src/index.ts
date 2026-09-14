@@ -6,6 +6,7 @@ import registerCompileCommand from "@/commands/compile-command.js";
 import registerConfigCommand from "@/commands/config-command.js";
 import registerDebtCommand from "@/commands/debt-command.js";
 import registerEvalCommand from "@/commands/eval-command.js";
+import registerFeedbackCommand from "@/commands/feedback-command.js";
 import registerInitCommand from "@/commands/init-command.js";
 import registerStatusCommand from "@/commands/status-command.js";
 import orientProjectOrchestrator from "@/orchestrators/orient-project-orchestrator.js";
@@ -61,6 +62,7 @@ Exit codes:
   registerInitCommand(program);
   registerCompileCommand(program);
   registerEvalCommand(program);
+  registerFeedbackCommand(program);
   registerAxiomsCommand(program);
   registerDebtCommand(program);
   registerAddCommand(program);
