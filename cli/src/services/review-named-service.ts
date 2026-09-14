@@ -85,6 +85,7 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
     const verdicts: { reviewerName: string; verdict: Verdict }[] = [];
 
     for (const reviewerConfig of reviewers) {
+      const calledAt = Date.now();
       const { verdict, cacheHit, usage } = await reviewTargetService(cfg, {
         target: subject,
         reviewer: Reviewer.fromConfig(reviewerConfig),
@@ -95,10 +96,13 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
           : null,
       });
 
+      const elapsedMs = Date.now() - calledAt;
+
       verdicts.push({ reviewerName: reviewerConfig.name, verdict });
 
       const entries = entriesByReviewer.get(reviewerConfig.name) ?? [];
       entries.push({
+        elapsedMs,
         verdict: { ...verdict, path: targetPath },
         cacheHit,
         evidence: {

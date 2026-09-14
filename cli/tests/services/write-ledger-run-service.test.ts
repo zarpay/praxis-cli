@@ -30,6 +30,7 @@ describe("writeLedgerRunService", () => {
     return {
       verdict: { path: join(root, "docs", "guide.md"), compliant: true, issues: [] },
       cacheHit: false,
+      elapsedMs: 1_200,
       evidence: {
         usage: { promptTokens: 100, completionTokens: 20, costUsd: 0.001 },
         specPath: join(root, "docs", "README.md"),

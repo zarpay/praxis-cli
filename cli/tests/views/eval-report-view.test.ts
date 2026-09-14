@@ -17,6 +17,7 @@ function report(overrides: Partial<EvalReport> = {}): EvalReport {
       reviewers: ["flash"],
       specs: ["docs/README.md"],
       costUsd: 0.01,
+      elapsedMs: 80_000,
       costTrend: [],
     },
     calibration: "v32: uninterpretable — recalibrate",
@@ -73,5 +74,12 @@ describe("evalReportView", () => {
 
     expect(parsed.panel.runs).toBe(2);
     expect(parsed.calibration).toContain("uninterpretable — recalibrate");
+  });
+
+  it("reports reviewer time beside cost", () => {
+    const text = reportText(evalReportView(report()));
+
+    expect(text).toContain("TIME");
+    expect(text).toContain("1m 20s");
   });
 });

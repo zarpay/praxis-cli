@@ -79,6 +79,16 @@ export interface LedgerRunRecord {
   prompt_tokens: number | null;
   completion_tokens: number | null;
   cost_usd: number | null;
+  /**
+   * Wall-clock spent on this reviewer's calls, in milliseconds.
+   *
+   * Time the reviewer cost, not time the command took: cache hits add
+   * nothing, and a call that failed still counts, because it was still
+   * waited for. Summing across a run's records gives the time spent
+   * calling; it will not match the command's own elapsed line, which
+   * includes discovery, rendering and the human.
+   */
+  elapsed_ms: number;
   cache_hits: number;
   cache_misses: number;
   pass_count: number;
@@ -169,6 +179,12 @@ export interface LedgerEntry {
     unverified?: true;
   };
   cacheHit: boolean;
+  /**
+   * Wall-clock this one call took. Lives here rather than on
+   * `evidence`, which is null for a call that failed — and a call that
+   * waited ninety seconds before failing still cost that time.
+   */
+  elapsedMs: number;
   /** Null ⇒ the unit went unverified ⇒ it fans out no critiques. */
   evidence: LedgerEvidence | null;
 }

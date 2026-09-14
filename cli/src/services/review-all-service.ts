@@ -137,7 +137,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
         reviewerName: reviewers.length > 1 ? reviewerConfig.name : undefined,
       });
 
-      const { verdict, cacheHit, evidence } = await reviewUnit(cfg, {
+      const { verdict, cacheHit, elapsedMs, evidence } = await reviewUnit(cfg, {
         unit,
         specPath: domain.specPath,
         type: domain.type,
@@ -152,8 +152,8 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
       }
 
       verdicts.push(verdict);
-      entries.push({ verdict, cacheHit, evidence });
-      allEntries.push({ verdict, cacheHit, evidence });
+      entries.push({ verdict, cacheHit, elapsedMs, evidence });
+      allEntries.push({ verdict, cacheHit, elapsedMs, evidence });
 
       if (failFast && !verdict.compliant && !verdict.unverified && verdict.severity === "error") {
         stoppedEarly = true;
@@ -222,6 +222,7 @@ const reviewUnit: Service<
   Promise<{
     verdict: TargetVerdict;
     cacheHit: boolean;
+    elapsedMs: number;
     evidence: LedgerEvidence | null;
   }>
 > = async (cfg, { unit, specPath, type, reviewerConfig, cache, onProgress }) => {
@@ -232,6 +233,10 @@ const reviewUnit: Service<
     filename: baseName(unit.path),
     reviewer: reviewerConfig.name,
   };
+
+  // Outside the try: a call that waited and then failed still cost that
+  // time, and the ledger should say so.
+  const startedAt = Date.now();
 
   try {
     const cohort = isCohort(unit);
@@ -248,12 +253,14 @@ const reviewUnit: Service<
       reviewer: Reviewer.fromConfig(reviewerConfig),
       cache,
     });
+    const elapsedMs = Date.now() - startedAt;
 
     onProgress?.({ kind: "verdict", verdict });
 
     return {
       verdict: { ...verdict, ...identity },
       cacheHit,
+      elapsedMs,
       evidence: {
         usage,
         specPath: target.specPath,
@@ -269,6 +276,7 @@ const reviewUnit: Service<
     // Nothing was reviewed: no violation, no cache, no ledger critiques.
     return {
       cacheHit: false,
+      elapsedMs: Date.now() - startedAt,
       evidence: null,
       verdict: {
         ...identity,

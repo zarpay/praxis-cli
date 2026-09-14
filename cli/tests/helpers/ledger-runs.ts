@@ -143,6 +143,7 @@ export function runRecord(overrides: Partial<LedgerRunRecord> = {}): LedgerRunRe
   return {
     kind: "run",
     run_id: "r1",
+    elapsed_ms: 0,
     timestamp: "2026-09-02T10:00:00.000Z",
     commit_sha: null,
     branch: null,

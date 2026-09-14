@@ -90,16 +90,19 @@ const reviewUnitsService: Service<ReviewUnitsInput, Promise<ReviewUnitsResult>> 
         ? new VerdictStore(cfg, { reviewer: identity.cacheIdentity(), readOnly: !writeCache })
         : null;
 
+      const calledAt = Date.now();
       const { verdict, cacheHit, usage } = await reviewTargetService(cfg, {
         target: subject,
         reviewer: identity,
         cache,
       });
+      const elapsedMs = Date.now() - calledAt;
 
       verdicts.push({ reviewerName: reviewerConfig.name, verdict });
 
       const entries = entriesByReviewer.get(reviewerConfig.name) ?? [];
       entries.push({
+        elapsedMs,
         verdict: { ...verdict, path: unit.path },
         cacheHit,
         evidence: {

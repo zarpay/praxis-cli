@@ -100,6 +100,7 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
     reviewer_model: reviewer.model,
     reviewer_hash: reviewer.hash,
     ...usageTotals(entries),
+    elapsed_ms: entries.reduce((total, entry) => total + entry.elapsedMs, 0),
     cache_hits: entries.filter((entry) => entry.cacheHit).length,
     cache_misses: entries.filter((entry) => !entry.cacheHit && entry.evidence).length,
     ...verdictCounts(entries),

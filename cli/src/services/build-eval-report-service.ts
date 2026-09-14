@@ -86,6 +86,7 @@ const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, 
       reviewers: distinct(runs.map((run) => run.reviewer_name)),
       specs: distinct(critiques.map((c) => c.spec_path)),
       costUsd: costs.length === 0 ? null : costs.reduce((total, cost) => total + cost, 0),
+      elapsedMs: runs.reduce((total, run) => total + (run.elapsed_ms ?? 0), 0),
       costTrend: [...runs]
         .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
         .map((run) => ({ runId: run.run_id, at: run.timestamp, costUsd: run.cost_usd ?? null })),
