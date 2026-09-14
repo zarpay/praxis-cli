@@ -62,7 +62,23 @@ the owner as a concrete option.
    emitted templates (`src/templates/`) describing old behavior —
    these ship to users.
 
-8. **READMEs and rules coherence.** Each directory README still
+8. **Test mirroring** (`tests.md`): every behaving layer mirrors
+   one-to-one; `commands/` and `prompts/` are the two declared
+   exemptions. Count per layer rather than eyeballing:
+   ```bash
+   for d in services views orchestrators models stores helpers \
+            templates providers plugins; do
+     miss=0; tot=0
+     for f in src/$d/*.ts; do [ -e "$f" ] || continue; n=$(basename "$f" .ts)
+       tot=$((tot+1)); [ -f "tests/$d/$n.test.ts" ] || miss=$((miss+1)); done
+     echo "$d: $((tot-miss))/$tot, $miss missing"; done
+   ```
+   A gap is backfilled with a test of the module's **promise**, never a
+   snapshot of what it currently prints — a test written only to raise
+   the count locks in today's behavior and reads as coverage that
+   nobody has thought about.
+
+9. **READMEs and rules coherence.** Each directory README still
    describes what the directory holds; each rules file's examples still
    exist.
 
