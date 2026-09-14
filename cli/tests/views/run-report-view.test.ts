@@ -9,10 +9,12 @@ import { reportText } from "@tests/helpers/report-text.js";
 function finished(summary: Partial<EvalSummary>) {
   return {
     cached: false,
+    elapsedMs: 1_000,
     run: {
       verdicts: [],
       cacheStats: { hits: 0, misses: 0 },
       stoppedEarly: false,
+      usage: null,
       summary: {
         total: 5,
         compliant: 5,

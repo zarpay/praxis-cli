@@ -14,6 +14,7 @@ import labelingCritiqueLine from "@/prompts/labeling-critique-line.js";
 import labelingQuestion from "@/prompts/labeling-question.js";
 import labelingTools from "@/prompts/labeling-tools.js";
 import requestCuratorCompletionService from "@/services/request-curator-completion-service.js";
+import totalUsageService from "@/services/total-usage-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { TriageStore } from "@/stores/triage-store.js";
 
@@ -176,7 +177,7 @@ const labelCritiquesService: Service<LabelCritiquesInput, Promise<LabelCritiques
     sentToCurate,
     skippedNoAxioms,
     failed,
-    usage: sumUsage(usages),
+    usage: totalUsageService(cfg, { usages }),
     sessionPath,
   };
 };
@@ -287,26 +288,4 @@ async function labelOne(
     usage: completion.usage,
     failed: false,
   };
-}
-
-/** Usage summed across calls; null when nothing was reported. */
-function sumUsage(usages: (ProviderUsage | null)[]): ProviderUsage | null {
-  const reported = usages.filter((usage): usage is ProviderUsage => usage !== null);
-
-  if (reported.length === 0) return null;
-
-  return {
-    promptTokens: total(reported.map((usage) => usage.promptTokens)),
-    completionTokens: total(reported.map((usage) => usage.completionTokens)),
-    costUsd: total(reported.map((usage) => usage.costUsd)),
-  };
-}
-
-/** Sum of the reported values; null when none were reported. */
-function total(values: (number | null)[]): number | null {
-  const known = values.filter((value): value is number => value !== null);
-
-  if (known.length === 0) return null;
-
-  return known.reduce((sum, value) => sum + value, 0);
 }

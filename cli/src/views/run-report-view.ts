@@ -1,7 +1,8 @@
-import type { EvalSummary, ReviewAllResult } from "@/types.js";
+import type { EvalSummary, ProviderUsage, ReviewAllResult } from "@/types.js";
 import type { DisplayEntry, View } from "@framework/types.js";
 
 import { badge, verdictTally } from "@framework/views/badges.js";
+import { duration } from "@framework/views/duration.js";
 import { palette } from "@framework/views/palette.js";
 import { table } from "@framework/views/table.js";
 
@@ -10,6 +11,8 @@ interface FinishedRun {
   run: ReviewAllResult;
   /** Whether the cache was consulted — a disabled cache is not a cold one. */
   cached: boolean;
+  /** Wall-clock the run took, for the spend line. */
+  elapsedMs: number;
 }
 
 /**
@@ -19,8 +22,12 @@ interface FinishedRun {
  * The cache line appears only when the cache was consulted — reporting
  * "Hits: 0" for a `--no-cache` run would read as a cold cache rather
  * than a disabled one.
+ *
+ * The spend line always shows the time and shows the cost only when a
+ * reviewer was actually called: a run answered entirely from cache spent
+ * nothing, and "$0.0000" would claim a measurement never taken.
  */
-const runReportView: View<FinishedRun> = ({ run, cached }) => [
+const runReportView: View<FinishedRun> = ({ run, cached, elapsedMs }) => [
   ...(run.stoppedEarly
     ? [content(badge("STOPPED", "yellow", "Review stopped early due to --fail-fast"))]
     : []),
@@ -32,9 +39,19 @@ const runReportView: View<FinishedRun> = ({ run, cached }) => [
         ),
       ]
     : []),
+  content(badge("SPEND", "blue", spend(run.usage, elapsedMs))),
 ];
 
 export default runReportView;
+
+/** Wall-clock always; cost only when something was paid for. */
+function spend(usage: ProviderUsage | null, elapsedMs: number): string {
+  const time = `Time: ${duration(elapsedMs)}`;
+
+  if (usage?.costUsd === null || usage?.costUsd === undefined) return time;
+
+  return `${time}, Cost: $${usage.costUsd.toFixed(4)}`;
+}
 
 /** One badge on its own content line, padded from what came before. */
 function content(badge: DisplayEntry): { channel: "content"; entries: DisplayEntry[] } {

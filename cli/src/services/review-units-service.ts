@@ -2,6 +2,7 @@ import type {
   GovernedUnit,
   LedgerEntry,
   LedgerScope,
+  ProviderUsage,
   ReviewedTarget,
   Service,
   Verdict,
@@ -14,6 +15,7 @@ import assembleCohortService from "@/services/assemble-cohort-service.js";
 import buildReviewedTargetService from "@/services/build-reviewed-target-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
+import totalUsageService from "@/services/total-usage-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
 
@@ -43,6 +45,8 @@ interface ReviewUnitsInput {
 interface ReviewUnitsResult {
   errors: number;
   warnings: number;
+  /** Provider spend across the run; null when nothing was called. */
+  usage: ProviderUsage | null;
 }
 
 /**
@@ -135,7 +139,10 @@ const reviewUnitsService: Service<ReviewUnitsInput, Promise<ReviewUnitsResult>> 
     });
   }
 
-  return { errors, warnings };
+  const everyEntry = [...entriesByReviewer.values()].flat();
+  const usages = everyEntry.map((entry) => entry.evidence?.usage ?? null);
+
+  return { errors, warnings, usage: totalUsageService(cfg, { usages }) };
 };
 
 export default reviewUnitsService;

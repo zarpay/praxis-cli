@@ -7,6 +7,7 @@ import resolveTargetUnitsService from "@/services/resolve-target-units-service.j
 import reviewUnitsService from "@/services/review-units-service.js";
 import evalJsonView from "@/views/eval-json-view.js";
 import feedbackHeadlineView from "@/views/feedback-headline-view.js";
+import feedbackSummaryView from "@/views/feedback-summary-view.js";
 import reviewedTargetView from "@/views/reviewed-target-view.js";
 import { Waiting } from "@framework/views/waiting.js";
 
@@ -66,6 +67,7 @@ export const giveFeedbackOrchestrator: Orchestrator<GiveFeedbackOptions> = async
 
   const reviewed: ReviewedTarget[] = [];
   const waiting = new Waiting();
+  const startedAt = Date.now();
 
   const onUnit = (event: ReviewedTarget) => {
     if (json) {
@@ -79,8 +81,10 @@ export const giveFeedbackOrchestrator: Orchestrator<GiveFeedbackOptions> = async
     waiting.paused(() => ctx.render(targetView));
   };
 
+  let run;
+
   try {
-    await waiting.during(`Reviewing ${units.length} unit(s)`, () =>
+    run = await waiting.during(`Reviewing ${units.length} unit(s)`, () =>
       reviewUnitsService(cfg, {
         units,
         reviewer,
@@ -97,7 +101,13 @@ export const giveFeedbackOrchestrator: Orchestrator<GiveFeedbackOptions> = async
   if (json) {
     const jsonView = evalJsonView({ kind: "targets", targets: reviewed });
     ctx.render(jsonView);
+
+    return "ok";
   }
+
+  const summary = feedbackSummaryView({ usage: run.usage, elapsedMs: Date.now() - startedAt });
+
+  ctx.render(summary);
 
   return "ok";
 };

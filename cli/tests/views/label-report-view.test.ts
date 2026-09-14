@@ -21,6 +21,7 @@ function report(overrides: Record<string, unknown> = {}) {
     usage: { promptTokens: 10, completionTokens: 5, costUsd: 0.1234 },
     sessionPath: ".praxis/ledger/triage/s1.jsonl",
     dryRun: false,
+    elapsedMs: 8_400,
     ...overrides,
   };
 }

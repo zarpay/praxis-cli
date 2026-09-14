@@ -19,6 +19,7 @@ import assembleCohortService from "@/services/assemble-cohort-service.js";
 import discoverDomainsService from "@/services/discover-domains-service.js";
 import resolveUnitsService from "@/services/resolve-units-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
+import totalUsageService from "@/services/total-usage-service.js";
 import writeLedgerRunService from "@/services/write-ledger-run-service.js";
 import { DocumentStore } from "@/stores/document-store.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
@@ -113,6 +114,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
   }
 
   const verdicts: TargetVerdict[] = [];
+  const allEntries: LedgerEntry[] = [];
   const cacheStats = { hits: 0, misses: 0 };
   const total = queue.length * reviewers.length;
 
@@ -151,6 +153,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
 
       verdicts.push(verdict);
       entries.push({ verdict, cacheHit, evidence });
+      allEntries.push({ verdict, cacheHit, evidence });
 
       if (failFast && !verdict.compliant && !verdict.unverified && verdict.severity === "error") {
         stoppedEarly = true;
@@ -171,10 +174,13 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
   const documentStore = new DocumentStore(cfg);
   const sourceDocs = new Set(documentStore.files());
 
+  const usages = allEntries.map((entry) => entry.evidence?.usage ?? null);
+
   return {
     verdicts,
     cacheStats,
     stoppedEarly,
+    usage: totalUsageService(cfg, { usages }),
     summary: summarize(verdicts, sourceDocs),
   };
 };

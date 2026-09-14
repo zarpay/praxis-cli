@@ -47,6 +47,7 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
     ctx.render(progressView);
   };
 
+  const startedAt = Date.now();
   const run = await reviewAllService(cfg, {
     reviewers,
     // CI verifies without writing: the branch's own runs are the evidence.
@@ -55,7 +56,7 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
     onProgress,
   });
 
-  const reportView = runReportView({ run, cached: true });
+  const reportView = runReportView({ run, cached: true, elapsedMs: Date.now() - startedAt });
   ctx.render(reportView);
 
   const { errors, warnings, unverified } = run.summary;
