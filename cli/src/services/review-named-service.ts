@@ -1,11 +1,12 @@
 import type { PraxisConfig } from "@/models/praxis-config.js";
-import type { Finding, LedgerEntry, ReviewedTarget, Service, Verdict } from "@/types.js";
+import type { LedgerEntry, ReviewedTarget, Service, Verdict } from "@/types.js";
 
 import { errors as praxisErrors, PraxisError } from "@/helpers/errors-helper.js";
 import { isDirectory } from "@/helpers/files-helper.js";
 import { relativePath, resolvePath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
+import buildReviewedTargetService from "@/services/build-reviewed-target-service.js";
 import discoverDomainsService from "@/services/discover-domains-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
@@ -110,20 +111,14 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
       entriesByReviewer.set(reviewerConfig.name, entries);
     }
 
-    const worst = worstVerdict(verdicts.map((entry) => entry.verdict));
+    const reviewed = buildReviewedTargetService(cfg, { path: targetPath, verdicts });
 
-    if (worst && !worst.compliant && worst.severity === "error") errors++;
-
-    if (worst && !worst.compliant && worst.severity === "warning") warnings++;
-
-    if (worst) {
-      onTarget?.({
-        path: targetPath,
-        verdict: worst,
-        findings: assembleFindings(verdicts),
-        reviewerCount: reviewers.length,
-      });
+    if (reviewed && !reviewed.verdict.compliant) {
+      if (reviewed.verdict.severity === "error") errors++;
+      else warnings++;
     }
+
+    if (reviewed) onTarget?.(reviewed);
   }
 
   if (ledger) {
@@ -146,64 +141,6 @@ const reviewNamedService: Service<ReviewNamedInput, Promise<ReviewNamedResult>> 
 };
 
 export default reviewNamedService;
-
-/**
- * The deduplicated finding list a caller works through (vocabulary):
- * every critique is born raw, so identity is the critique's exact text —
- * two reviewers writing the same sentence corroborate one finding, and
- * near-duplicates stay separate until triage labels them under one
- * axiom.
- */
-function assembleFindings(verdicts: { reviewerName: string; verdict: Verdict }[]): Finding[] {
-  const byText = new Map<string, Finding>();
-
-  for (const { reviewerName, verdict } of verdicts) {
-    for (const critique of verdict.issues) {
-      const held = byText.get(critique.text);
-
-      if (held) {
-        if (!held.witnesses.includes(reviewerName)) held.witnesses.push(reviewerName);
-
-        continue;
-      }
-
-      byText.set(critique.text, {
-        axiomId: null,
-        text: critique.text,
-        severity: verdict.severity ?? "error",
-        witnesses: [reviewerName],
-      });
-    }
-  }
-
-  return [...byText.values()];
-}
-
-/**
- * The worst of a target's verdicts, or null when there are none.
- *
- * Reviewers are separate instruments and may disagree, so a target's
- * outcome is the most serious thing any of them said rather than a
- * consensus: any error outranks any warning, which outranks a pass.
- */
-function worstVerdict(verdicts: Verdict[]): Verdict | null {
-  return verdicts.reduce<Verdict | null>(
-    (worst, verdict) => (!worst || severityRank(verdict) > severityRank(worst) ? verdict : worst),
-    null,
-  );
-}
-
-/**
- * Orders one verdict: pass < warning < error.
- *
- * A compliant verdict is lowest regardless of what severity it carries,
- * because severity only describes a failure.
- */
-function severityRank(verdict: Verdict): number {
-  if (verdict.compliant) return 0;
-
-  return verdict.severity === "warning" ? 1 : 2;
-}
 
 /**
  * The spec governing a named target, resolved exactly like a full run:

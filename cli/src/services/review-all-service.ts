@@ -12,10 +12,10 @@ import type {
 } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
-import { readText } from "@/helpers/files-helper.js";
 import { baseName, relativePath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
+import assembleCohortService from "@/services/assemble-cohort-service.js";
 import discoverDomainsService from "@/services/discover-domains-service.js";
 import resolveUnitsService from "@/services/resolve-units-service.js";
 import reviewTargetService from "@/services/review-target-service.js";
@@ -231,7 +231,7 @@ const reviewUnit: Service<
     const cohort = isCohort(unit);
     const target = ReviewSubject.resolve({
       targetPath: unit.path,
-      targetContent: cohort ? assembleCohort(unit, root) : undefined,
+      targetContent: cohort ? assembleCohortService(cfg, { unit }) : undefined,
       kind: cohort ? "cohort" : "file",
       specPath,
       root,
@@ -274,16 +274,6 @@ const reviewUnit: Service<
     };
   }
 };
-
-/**
- * Assembles a cohort's members into one review input, each labeled
- * with its project-relative path so critiques can locate their file.
- */
-function assembleCohort(unit: EvalUnit, root: string): string {
-  return unit.files
-    .map((file) => `===== FILE: ${relativePath(root, file)} =====\n\n${readText(file)}`)
-    .join("\n\n");
-}
 
 /**
  * Aggregates a run's verdicts.
