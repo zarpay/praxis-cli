@@ -23,6 +23,14 @@
       }
     },
     {
+      "name": "mercury",
+      "model": "inception/mercury-2.5",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY",
+      "options": {
+        "max_tokens": 16000
+      }
+    },
+    {
       "name": "counter",
       "model": "none",
       "apiKeyEnvVar": "OPENROUTER_API_KEY",
