@@ -1,6 +1,7 @@
 import type { GovernedUnit, Orchestrator, ReviewedTarget } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
+import { isCohortUnit } from "@/helpers/eval-unit-helper.js";
 import { relativePath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import resolveTargetUnitsService from "@/services/resolve-target-units-service.js";
@@ -118,7 +119,7 @@ export default prepareOrchestrator(giveFeedbackOrchestrator);
 function describe(root: string, units: GovernedUnit[]): string[] {
   return units.map(({ unit }) => {
     const path = relativePath(root, unit.path);
-    const cohort = unit.files.length > 1 || unit.files[0] !== unit.path;
+    const cohort = isCohortUnit(unit);
 
     return cohort ? `${path} (cohort · ${unit.files.length} files)` : path;
   });
