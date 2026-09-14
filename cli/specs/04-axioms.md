@@ -157,7 +157,12 @@ reviewer-trust signal — many dismissals mean the specs disagree with the
 humans, or the reviewers are performing poorly. Curate therefore never
 dismisses: a cluster with no axiom yet is **held** — nothing written,
 the critiques stay unmatched and ride into the next session's cohort,
-where new critiques may complete the pattern. A cluster the human
+where new critiques may complete the pattern. On a hold
+suggestion the session asks `[h]old / [r]eview` rather than
+`[a]ccept / [s]kip` (2026-09-14): accepting and skipping a hold both
+wrote nothing and left the critiques queued, differing only in which
+counter the summary printed, so the pair implied a consequence it did
+not have. A cluster the human
 judges *untrue* rather than uncategorized is held the same way and
 **handed off** (2026-09-14): curate prints the cluster's ids in the
 shape `eval review --dismiss` takes, and writes nothing. The boundary

@@ -372,6 +372,15 @@ async function decideCluster(
   versions: Map<string, number>,
   spec: { path: string; content: string },
 ): Promise<void> {
+  // A hold suggestion has no accept/skip to make: both would write
+  // nothing and leave the critiques exactly where they are, so offering
+  // the pair implies a consequence that does not exist.
+  if (cluster.suggestion.kind === "hold") {
+    await decideHeldCluster(session, critiques);
+
+    return;
+  }
+
   const decision = session.yes
     ? "accept"
     : await session.prompter.choose("[a]ccept / [s]kip / [r]eview — judge these invalid", [
@@ -395,6 +404,42 @@ async function decideCluster(
   await acceptSuggestion(session, cluster, critiques, versions, spec);
 }
 
+/**
+ * A cluster the curator says no category covers yet.
+ *
+ * Only two things can honestly be done with it: agree it waits, or say
+ * it is not true evidence at all. Agreeing is what the old `[a]ccept`
+ * and `[s]kip` both did — neither wrote anything, and the difference
+ * survived only as a counter in the session summary.
+ */
+async function decideHeldCluster(
+  session: CurateSession,
+  critiques: PendingCritique[],
+): Promise<void> {
+  const decision = session.yes
+    ? "hold"
+    : await session.prompter.choose(
+        "[h]old — stays in the queue / [r]eview — judge these invalid",
+        ["hold", "review"],
+      );
+
+  if (decision === "review") {
+    handOffToReview(session, critiques);
+
+    return;
+  }
+
+  holdCluster(session, critiques);
+}
+
+/**
+ * Valid evidence, no axiom yet: nothing written, so the critiques stay
+ * unmatched and join the next session's cohort.
+ */
+function holdCluster(session: CurateSession, critiques: PendingCritique[]): void {
+  session.held += critiques.length;
+}
+
 /** The curator's suggestion, accepted: assign, activate, or hold. */
 async function acceptSuggestion(
   session: CurateSession,
@@ -411,15 +456,13 @@ async function acceptSuggestion(
     return;
   }
 
-  if (suggestion.kind === "hold") {
-    // Valid evidence, no axiom yet: nothing written, so the critiques
-    // stay unmatched and join the next session's cohort.
-    session.held += critiques.length;
+  if (suggestion.kind === "propose") {
+    await activate(session, critiques, suggestion.draft, spec);
 
     return;
   }
 
-  await activate(session, critiques, suggestion.draft, spec);
+  holdCluster(session, critiques);
 }
 
 /** Folds critiques into an established (or session-activated) axiom. */
