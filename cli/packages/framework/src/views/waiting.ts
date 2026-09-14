@@ -2,11 +2,22 @@ import { stderr } from "node:process";
 
 import { palette } from "@framework/views/palette.js";
 
-/** Frames the spinner cycles through, one per repaint. */
-const FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+/**
+ * Frames the spinner cycles through, one per repaint.
+ *
+ * Every frame fills the whole braille cell bar one dot, so the glyph
+ * keeps a constant weight and sits on the row's baseline like the text
+ * beside it. The lighter two-dot arc (`⠋⠙⠹…`) reads as floating above
+ * the line, because most of its frames only use the upper rows.
+ */
+const FRAMES = ["⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"];
 
-/** How often the line repaints. The clock reads in seconds; so does this. */
-const REPAINT_MS = 1000;
+/**
+ * How often the line repaints — fast enough to read as motion rather
+ * than as a clock that happens to tick. The elapsed seconds recompute
+ * on every repaint and simply change less often than the frame does.
+ */
+const REPAINT_MS = 80;
 
 /** Carriage return, then erase from the cursor to the end of the line. */
 const CLEAR_LINE = "\r\u001b[K";

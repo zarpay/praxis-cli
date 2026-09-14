@@ -60,6 +60,25 @@ describe("Waiting on a TTY", () => {
     expect(midFlight).toContain("0:02");
   });
 
+  it("spins several times a second — motion, not a ticking clock", async () => {
+    const { waiting, written } = captured(true);
+
+    waiting.open("Clustering");
+    await vi.advanceTimersByTimeAsync(1000);
+    const frames = new Set(
+      written()
+        .split("\r\u001b[K")
+        .map((paint) => paint.trim().charAt(0))
+        .filter(Boolean),
+    );
+
+    waiting.close();
+
+    // One frame per second would leave a single glyph in a one-second
+    // window, which reads as frozen rather than working.
+    expect(frames.size).toBeGreaterThan(4);
+  });
+
   it("erases the line when the work settles, leaving no trace", async () => {
     const { waiting, written } = captured(true);
 
@@ -94,7 +113,7 @@ describe("Waiting on a TTY", () => {
     const { waiting, written } = captured(true);
 
     waiting.open("Reviewing src/services/apply-discount.ts");
-    await vi.advanceTimersByTimeAsync(3000);
+    await vi.advanceTimersByTimeAsync(3200);
     const midFlight = written();
 
     waiting.close();
