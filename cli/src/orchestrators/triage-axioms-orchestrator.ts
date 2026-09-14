@@ -5,6 +5,7 @@ import deriveTriageStateService from "@/services/derive-triage-state-service.js"
 import labelCritiquesService from "@/services/label-critiques-service.js";
 import labelProgressView from "@/views/label-progress-view.js";
 import labelReportView from "@/views/label-report-view.js";
+import { Waiting } from "@framework/views/waiting.js";
 
 /** What `praxis axioms triage` parses. */
 interface TriageAxiomsOptions {
@@ -48,14 +49,22 @@ export const triageAxiomsOrchestrator: Orchestrator<TriageAxiomsOptions> = async
 
   ctx.logger.info(`Labeling ${pending.length} untriaged critique(s)${dryRun ? " (dry run)" : ""}`);
 
-  const result = await labelCritiquesService(cfg, {
-    pending,
-    dryRun,
-    onProgress: (event) => {
-      const progressView = labelProgressView(event);
-      ctx.render(progressView);
-    },
-  });
+  // The batch runs several calls at once and streams a line per critique
+  // as each lands, so every one of those writes goes through `paused` —
+  // otherwise it interleaves with the repainting wait line and both are
+  // corrupted.
+  const waiting = new Waiting();
+  const result = await waiting.during(`Labeling ${pending.length} critique(s)`, () =>
+    labelCritiquesService(cfg, {
+      pending,
+      dryRun,
+      onProgress: (event) => {
+        const progressView = labelProgressView(event);
+
+        waiting.paused(() => ctx.render(progressView));
+      },
+    }),
+  );
 
   const view = labelReportView({ ...result, dryRun });
   ctx.render(view);

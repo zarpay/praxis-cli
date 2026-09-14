@@ -21,6 +21,7 @@ import { TriageStore } from "@/stores/triage-store.js";
 import curateClusterView from "@/views/curate-cluster-view.js";
 import curateSummaryView from "@/views/curate-summary-view.js";
 import { Prompter } from "@framework/views/prompter.js";
+import { Waiting } from "@framework/views/waiting.js";
 
 /** Unique critiques per curator clustering call. */
 const COHORT_SIZE = 30;
@@ -31,6 +32,8 @@ interface CurateSession {
   cfg: PraxisConfig;
   yes: boolean;
   prompter: Prompter;
+  /** Holds the terminal while a curator call runs — they are slow. */
+  waiting: Waiting;
   /** The curator model, recorded as the suggester in every assignment. */
   suggestedBy: string;
   records: TriageRecord[];
@@ -108,6 +111,7 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
   }
 
   const prompter = new Prompter();
+  const waiting = new Waiting();
 
   if (!yes && !prompter.interactive) {
     throw errors.notATty("praxis axioms curate", "--yes");
@@ -118,6 +122,7 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
     cfg,
     yes,
     prompter,
+    waiting,
     suggestedBy: curator.model,
     records: [],
     activatedThisSession: [],
@@ -127,6 +132,10 @@ export const curateAxiomsOrchestrator: Orchestrator<CurateAxiomsOptions> = async
     skipped: 0,
     costUsd: null,
   };
+
+  // Named once, up front: the waits are long enough that a first-time
+  // user reads them as a hang and kills the session.
+  ctx.logger.info("Curator calls typically take 30-90s each.");
 
   await organizeAndDecide(session, state.unidentified);
 
@@ -222,12 +231,16 @@ async function organizeCohort(
   let organization;
 
   try {
-    organization = await organizeTriageService(session.cfg, {
-      specPath,
-      specContent,
-      critiques: cohort.map((entry) => entry.representative),
-      axioms: [...established, ...session.activatedThisSession],
-    });
+    organization = await session.waiting.during(
+      `Clustering ${cohort.length} critique(s) for ${specPath}`,
+      () =>
+        organizeTriageService(session.cfg, {
+          specPath,
+          specContent,
+          critiques: cohort.map((entry) => entry.representative),
+          axioms: [...established, ...session.activatedThisSession],
+        }),
+    );
   } catch (err) {
     // A curator failure loses one cohort, never the decisions already
     // made: pending is derived, so rerunning curate resumes.
@@ -410,11 +423,13 @@ async function activate(
   let traceability;
 
   try {
-    traceability = await assessTraceabilityService(session.cfg, {
-      specPath: spec.path,
-      specContent: spec.content,
-      statement: draft.statement,
-    });
+    traceability = await session.waiting.during(`Checking traceability against ${spec.path}`, () =>
+      assessTraceabilityService(session.cfg, {
+        specPath: spec.path,
+        specContent: spec.content,
+        statement: draft.statement,
+      }),
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     session.ctx.render([

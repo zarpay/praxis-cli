@@ -13,6 +13,7 @@ import reviewedTargetView from "@/views/reviewed-target-view.js";
 import runAnchoringView from "@/views/run-anchoring-view.js";
 import runProgressView from "@/views/run-progress-view.js";
 import runReportView from "@/views/run-report-view.js";
+import { Waiting } from "@framework/views/waiting.js";
 
 /** How `praxis eval run` and `praxis eval ci` were invoked. */
 interface RunEvalOptions {
@@ -51,6 +52,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 ) => {
   const { root } = ctx;
   const cfg = ctx.config;
+  const waiting = new Waiting();
 
   // Announce any epoch boundary before reviewing: warn, never block.
   const reviewers = selectReviewersService(cfg, { only: options.reviewer });
@@ -81,7 +83,7 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
 
       const targetView = reviewedTargetView({ ...event, verbose: options.verbose ?? false });
 
-      ctx.render(targetView);
+      waiting.paused(() => ctx.render(targetView));
     };
 
     if (options.spec !== undefined && targets.length > 1) {
@@ -90,20 +92,25 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
       );
     }
 
-    const { errors } = await reviewNamedService(cfg, {
-      targets,
-      spec: options.spec,
-      reviewer: options.reviewer,
-      useCache: cache,
-      onTarget,
-    });
+    // Each target lands through `onTarget` while the rest are still in
+    // flight, so those writes go through `paused` — see the corpus path
+    // below, which opens and closes per unit instead.
+    const named = await waiting.during(`Reviewing ${targets.length} target(s)`, () =>
+      reviewNamedService(cfg, {
+        targets,
+        spec: options.spec,
+        reviewer: options.reviewer,
+        useCache: cache,
+        onTarget,
+      }),
+    );
 
     if (options.json) {
       const jsonView = evalJsonView({ kind: "targets", targets: reviewed });
       ctx.render(jsonView);
     }
 
-    return errors === 0 ? "ok" : "failed";
+    return named.errors === 0 ? "ok" : "failed";
   }
 
   if (!options.json) {
@@ -111,19 +118,37 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
     ctx.render(headlineView);
   }
 
+  // The heading prints, then the reviewer call runs — the silent part.
+  // `unit-start` opens the wait and the verdict (or the failure) closes
+  // it, so the events the run already emits are the whole mechanism.
   const onProgress = (event: EvalProgress) => {
     const progressView = runProgressView(event);
 
+    if (event.kind === "unit-start") {
+      ctx.render(progressView);
+      waiting.open(`Reviewing ${event.path}`);
+
+      return;
+    }
+
+    waiting.close();
     ctx.render(progressView);
   };
 
-  const run = await reviewAllService(cfg, {
-    reviewers,
-    type: options.type,
-    failFast: options.failFast ?? false,
-    useCache: cache,
-    onProgress: options.json ? undefined : onProgress,
-  });
+  let run;
+
+  try {
+    run = await reviewAllService(cfg, {
+      reviewers,
+      type: options.type,
+      failFast: options.failFast ?? false,
+      useCache: cache,
+      onProgress: options.json ? undefined : onProgress,
+    });
+  } finally {
+    // A run that throws mid-unit must not leave the line on screen.
+    waiting.close();
+  }
 
   const reportView = options.json
     ? evalJsonView({ kind: "corpus", summary: run.summary, cacheStats: run.cacheStats })
