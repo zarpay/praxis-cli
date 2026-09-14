@@ -49,4 +49,32 @@ describe("runReportView", () => {
 
     expect(text).not.toContain("Unverified");
   });
+
+  it("says a run cost nothing because it was cached, rather than going quiet", () => {
+    const run = finished({});
+    const cachedRun = {
+      ...run,
+      cached: true,
+      elapsedMs: 3_000,
+      run: { ...run.run, cacheStats: { hits: 9, misses: 0 } },
+    };
+
+    expect(reportText(runReportView(cachedRun))).toContain("Time: 3s (from cache)");
+  });
+
+  it("reports the cost when reviewers were actually called", () => {
+    const run = finished({});
+    const paidRun = {
+      ...run,
+      cached: true,
+      elapsedMs: 80_000,
+      run: {
+        ...run.run,
+        cacheStats: { hits: 0, misses: 2 },
+        usage: { promptTokens: 1772, completionTokens: 5740, costUsd: 0.0010863424 },
+      },
+    };
+
+    expect(reportText(runReportView(paidRun))).toContain("Time: 1m 20s, Cost: $0.0011");
+  });
 });

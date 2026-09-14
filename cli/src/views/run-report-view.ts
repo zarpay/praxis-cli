@@ -1,4 +1,4 @@
-import type { EvalSummary, ProviderUsage, ReviewAllResult } from "@/types.js";
+import type { EvalSummary, ReviewAllResult } from "@/types.js";
 import type { DisplayEntry, View } from "@framework/types.js";
 
 import { badge, verdictTally } from "@framework/views/badges.js";
@@ -39,18 +39,27 @@ const runReportView: View<FinishedRun> = ({ run, cached, elapsedMs }) => [
         ),
       ]
     : []),
-  content(badge("SPEND", "blue", spend(run.usage, elapsedMs))),
+  content(badge("SPEND", "blue", spend(run, cached, elapsedMs))),
 ];
 
 export default runReportView;
 
-/** Wall-clock always; cost only when something was paid for. */
-function spend(usage: ProviderUsage | null, elapsedMs: number): string {
+/**
+ * Wall-clock always; cost only when something was paid for.
+ *
+ * A run with no cost says why, rather than going quiet — silence reads
+ * as a missing number, and "free because every verdict was cached" is a
+ * different fact from "we did not measure it".
+ */
+function spend(run: ReviewAllResult, cached: boolean, elapsedMs: number): string {
   const time = `Time: ${duration(elapsedMs)}`;
+  const cost = run.usage?.costUsd;
 
-  if (usage?.costUsd === null || usage?.costUsd === undefined) return time;
+  if (cost !== null && cost !== undefined) return `${time}, Cost: $${cost.toFixed(4)}`;
 
-  return `${time}, Cost: $${usage.costUsd.toFixed(4)}`;
+  if (cached && run.cacheStats.misses === 0) return `${time} (from cache)`;
+
+  return time;
 }
 
 /** One badge on its own content line, padded from what came before. */
