@@ -20,14 +20,17 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
   ],
   "reviewers": [
     {
-      "name": "flash",
-      "model": "deepseek/deepseek-v4-flash-0731",
-      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+      "name": "mercury",
+      "model": "inception/mercury-2.5",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY",
+      "options": { "max_tokens": 16000 }
     },
     {
-      "name": "v32",
-      "model": "deepseek/deepseek-v3.2",
-      "apiKeyEnvVar": "OPENROUTER_API_KEY"
+      "name": "counter",
+      "model": "none",
+      "apiKeyEnvVar": "OPENROUTER_API_KEY",
+      "provider": "./praxis-providers/word-count.js",
+      "options": { "minWords": 20 }
     }
   ],
   "curator": {
@@ -38,7 +41,7 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
 }
 ```
 
-(This is Scoop Society's shape: two reviewers, a frontier curator, and a spec pattern accepting directory READMEs plus its hand-authored `experts.sme.md` spec. Compiled profiles are named `*.expert.md` — a project that wants them discovered as specs uses `"{README.md,*.expert.md}"` instead.)
+(This is Scoop Society's shape: one hosted reviewer, one offline custom-provider reviewer, a frontier curator, and a spec pattern accepting directory READMEs plus its hand-authored `experts.sme.md` spec. Compiled profiles are named `*.expert.md` — a project that wants them discovered as specs uses `"{README.md,*.expert.md}"` instead.)
 
 ---
 
@@ -163,8 +166,8 @@ The reviewers — named inference backends that evaluate targets against specs. 
 {
   "reviewers": [
     {
-      "name": "flash",
-      "model": "deepseek/deepseek-v4-flash-0731",
+      "name": "mercury",
+      "model": "inception/mercury-2.5",
       "apiKeyEnvVar": "OPENROUTER_API_KEY"
     },
     {
@@ -197,8 +200,8 @@ Each reviewer runs through a **provider** — the backend that executes the revi
 {
   "reviewers": [
     {
-      "name": "flash",
-      "model": "deepseek/deepseek-v4-flash-0731",
+      "name": "mercury",
+      "model": "inception/mercury-2.5",
       "apiKeyEnvVar": "OPENROUTER_API_KEY"
     },
     {

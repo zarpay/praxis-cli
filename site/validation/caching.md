@@ -81,6 +81,8 @@ Every cached run ends with the tally, and the run record in the ledger carries t
 
 ```
 [CACHE] Hits: 17, Misses: 1
+
+[SPEND] Time: 24s, Cost: $0.0011
 ```
 
 ## Reading a stale entry

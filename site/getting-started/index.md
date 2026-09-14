@@ -33,8 +33,8 @@ This writes exactly one thing — `.praxis/config.json` — and claims the direc
   "sources": ["src"],
   "reviewers": [
     {
-      "name": "flash",
-      "model": "deepseek/deepseek-v4-flash-0731",
+      "name": "mercury",
+      "model": "inception/mercury-2.5",
       "apiKeyEnvVar": "OPENROUTER_API_KEY"
     }
   ]

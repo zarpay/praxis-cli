@@ -90,6 +90,10 @@ By type:
   ├──────────────┼───────────────┤
   │ src/services │ 2/4 compliant │
   └──────────────┴───────────────┘
+
+[CACHE] Hits: 0, Misses: 4
+
+[SPEND] Time: 1m 12s, Cost: $0.0043
 ```
 
 Each heading names the target by its path relative to the project root, with the directory in gray and the filename highlighted, so two files sharing a name are never confused.
