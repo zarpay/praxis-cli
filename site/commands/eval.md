@@ -65,16 +65,16 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 **Output:**
 
 ```
-[1/4] apply-discount.ts
+[1/4] src/services/apply-discount.ts
 	✓ PASS
-[2/4] rank-parlors.ts
+[2/4] src/services/rank-parlors.ts
 	⚠ WARN
 	· The happy path begins before the parlor id is validated.
-[3/4] redeem-coupon.ts
+[3/4] src/services/redeem-coupon.ts
 	✗ FAIL
 	· Error message 'bad input' tells the consumer nothing about what
 	  was wrong or what would be accepted.
-[4/4] send-newsletter.ts
+[4/4] src/services/send-newsletter.ts
 	✓ PASS
 
 ==================================================
@@ -91,6 +91,8 @@ By type:
   │ src/services │ 2/4 compliant │
   └──────────────┴───────────────┘
 ```
+
+Each heading names the target by its path relative to the project root, with the directory in gray and the filename highlighted, so two files sharing a name are never confused.
 
 Critiques print raw — the reviewer's own words against the spec. Labels come later: `praxis axioms triage` classifies the pending backlog under active axioms, and from then on reports cite the axiom's id and accepted words (drill-down at `praxis axioms show <id>`).
 

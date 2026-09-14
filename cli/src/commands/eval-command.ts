@@ -39,7 +39,7 @@ unchanged content is free.
 
 Examples:
   $ praxis eval run src/services/checkout.ts
-      [1/1] checkout.ts  ✓ PASS   (or findings citing [AX-…] with witnesses)
+      [1/1] src/services/checkout.ts  ✓ PASS   (or findings citing [AX-…] with witnesses)
 `,
     )
     .action(runEvalOrchestrator);

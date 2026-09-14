@@ -3,7 +3,8 @@ import type { View } from "@framework/types.js";
 
 import chalk from "chalk";
 
-import { baseName } from "@/helpers/paths-helper.js";
+import { splitPathTail } from "@/helpers/paths-helper.js";
+import { pathLabel } from "@framework/views/path-label.js";
 
 /**
  * One event of a running review, as it happens: the unit's heading, the
@@ -41,9 +42,13 @@ export default runProgressView;
 /**
  * The line printed before a unit is reviewed.
  *
+ * The target is named by its whole root-relative path — a basename alone
+ * cannot say which `helpers.ts` a critique landed on — with the
+ * directory receding and the filename forward.
+ *
  * `cohortSize` is set only for cohort units, and `reviewerName` only when
  * more than one reviewer is running — a single-reviewer run of plain
- * files gets the bare counter and filename.
+ * files gets the bare counter and path.
  */
 function unitHeading(event: {
   index: number;
@@ -55,8 +60,10 @@ function unitHeading(event: {
   const counter = chalk.dim(`[${event.index}/${event.total}]`);
   const cohort = event.cohortSize ? ` ${chalk.dim(`(cohort · ${event.cohortSize} files)`)}` : "";
   const reviewer = event.reviewerName ? ` ${chalk.cyan(`[reviewer: ${event.reviewerName}]`)}` : "";
+  const parts = splitPathTail(event.path);
+  const target = pathLabel(parts);
 
-  return `${counter} ${chalk.bold(baseName(event.path))}${cohort}${reviewer}`;
+  return `${counter} ${target}${cohort}${reviewer}`;
 }
 
 /** The colored ✓/⚠/✗ mark for a verdict. */
