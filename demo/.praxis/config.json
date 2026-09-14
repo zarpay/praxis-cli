@@ -12,17 +12,6 @@
   ],
   "reviewers": [
     {
-      "name": "flash",
-      "model": "deepseek/deepseek-v4-flash-0731",
-      "apiKeyEnvVar": "OPENROUTER_API_KEY",
-      "options": {
-        "max_tokens": 16000,
-        "reasoning": {
-          "effort": "low"
-        }
-      }
-    },
-    {
       "name": "v32",
       "model": "deepseek/deepseek-v3.2",
       "apiKeyEnvVar": "OPENROUTER_API_KEY",

@@ -31,23 +31,27 @@ a bug.
   with the audit (10-k). `eval ci` must write **nothing**.
 - **Real reviewers are the default for everything judgment-shaped.**
   We are not price-sensitive; the audit's value is live model output,
-  so [paid] rows always run with `flash`/`v32` — `counter` covers only
-  the canary and the custom-provider contract. Known live quirk:
-  `flash` intermittently returns invalid tool-call JSON when critique
-  text echoes quoted strings. That correctly yields UNVERIFIED with an
-  instructive provider error — the system working, not a bug. Prefer
-  `v32` when an assertion needs a completed live verdict.
+  so [paid] rows always run with `v32` — `counter` covers only the
+  canary and the custom-provider contract. **`flash` was retired
+  2026-09-14**: it intermittently returned invalid tool-call JSON when
+  critique text echoed quoted strings, and on 2026-09-14 truncated its
+  arguments three times on one file. Each failure correctly yielded
+  UNVERIFIED with an instructive provider error — the system working,
+  not a bug — but two reviewers prove the multi-reviewer contract as
+  well as three, and the reliable one is the one worth paying for. Its
+  runs stay in the ledger: evidence is append-only, so reports still
+  show what it found.
 
 ## Current demo state (update when it moves)
 
 | Fact | Value |
 | --- | --- |
-| Reviewers | `flash` (deepseek-v4-flash-0731), `v32` (deepseek-v3.2), `counter` (offline `./praxis-providers/word-count.js`). **Epoch opened 2026-09-14**: both live reviewers gained `options: { max_tokens: 16000, reasoning: { effort: "low" } }`, re-baselining them. Cause: `flash` spent its whole output budget reasoning and truncated the tool call mid-string on `src/services/apply-refund.ts` — three times, at 607 and 1338 chars, so a varying cut rather than a fixed ceiling. Praxis sends no `max_tokens` of its own, so the ceiling was the backend's. `counter` is deliberately untouched: its hash backs the all-cache-hits canary |
+| Reviewers | `v32` (deepseek-v3.2) and `counter` (offline `./praxis-providers/word-count.js`); `flash` retired 2026-09-14 (above). **Epoch opened 2026-09-14**: the live reviewers gained `options: { max_tokens: 16000, reasoning: { effort: "low" } }`, re-baselining them. Cause: `flash` spent its whole output budget reasoning and truncated the tool call mid-string on `src/services/apply-refund.ts` — three times, at 607 and 1338 chars, so a varying cut rather than a fixed ceiling. Praxis sends no `max_tokens` of its own, so the ceiling was the backend's. `counter` is deliberately untouched: its hash backs the all-cache-hits canary |
 | Curator | anthropic/claude-sonnet-4.5 |
 | Spec pattern | `{README.md,*.sme.md}` — hand-authored READMEs plus the hand-authored `experts.sme.md` (compiled profiles land in `agent-profiles/*.expert.md`, which is not a source dir and does not govern) |
-| Corpus units | 23 per reviewer (69 verdicts across three reviewers) |
+| Corpus units | 23 per reviewer (46 verdicts across two reviewers since `flash` retired 2026-09-14; 69 across three before) |
 | Axioms | 20 total: 14 active, 6 deprecated (AX-96ff9c; AX-fac03c → AX-b951db 2026-09-07; the 2026-09-10 category audit merged AX-371742+AX-b91c89 → AX-9a7dd5, AX-23c1a8 → AX-d3e3b0, AX-5879ee → AX-c16947, and AX-96ff9c — deprecated in the pre-merge era with 6 stranded labels — folded into AX-4998e8); ids under `.praxis/axioms/`. An axiom is a **category of recurring critique**, never a rule (reframed 2026-09-10): every active statement was rewritten to category style with a version bump — the norm lives in the spec `derived_from` points at; active files are frontmatter + statement only, `severity:` and example sections retired (deprecated files keep them; severity renders "(historical)"). Labeling evidence for the reframe: the same 20-critique queue labeled 2/20 under the old spec-passage statements, 12/20 under the categories (2026-09-10) |
-| Known real findings (corpus) | flash 2 failing, v32 2 failing, counter 0 (re-baselined at the 2026-09-07 epoch) |
+| Known real findings (corpus) | v32 2 failing, counter 0 (re-baselined at the 2026-09-07 epoch; flash found 2 before retiring) |
 | `praxis feedback <target>` [paid on miss] | Prints critiques, records a `scope: "advisory"` run with its cost, and **never** queues: `axioms triage` does not offer what it found. Never writes the cache — a following `eval run <same target>` must MISS. Naming a cohort member reviews the cohort (`src/features/loyalty/index.ts` → `src/features/loyalty`, 3 files); an ungoverned path (`README.md`) or an excluded one (`src/services/legacy-import.ts`) is refused with the no-expert message. Exit 0 always |
 | Known violating files | `src/features/flavor-of-day/` and `src/services/rank-parlors.ts` (both reviewers). Plus four services added 2026-09-14 as a **triage/curate fixture** — deliberate, distinct violations so a fresh run always yields untriaged critiques to watch through the flow: `apply-refund.ts` (throws instead of returning a Result; implementer-facing messages; no doc comment), `notify-parlor.ts` (`console` and `fetch` outside the Store; hardcoded endpoint, retries and timeout), `update-parlor-hours.ts` (work before validation; `"no"` as an error message), `parlor.ts` (named for the entity not the action; three exported entry points where the spec allows one; reads *and* mutates). The multiple-exports violation is the one no active axiom names — it is the intended **unmatched → curate** case |
 | Signature merge | AX-fac03c → AX-b951db (2026-09-07): 8 critiques re-labeled by merge records; `eval report --axiom AX-b951db` counts them |
@@ -89,7 +93,7 @@ calls · **[scratch]** run in a copy.
 | `eval run src/services/redeem-coupon.ts --reviewer v32` [paid on miss] | Fast loop: critiques print **raw** (reviewer prose against the spec — never an `[AX-…]` citation at review time; labels arrive at triage and show in reports); ledger gains a `scope: "files"` run with critiques born `axiom_id: null` |
 | `eval run knowledge/experts/service-steward.md` [free when warm] | The `*.sme.md` half of specFilePattern governs: the expert doc reviews against `experts.sme.md` |
 | `eval run --type tests --reviewer counter` [free] | Domain filter: only the tests domain's 6 units run (all hits when warm) |
-| `eval run --fail-fast --reviewer flash` [free when warm] | Stops at the first error verdict — flavor-of-day fails and later domains never print (verified 2026-09-08: 5 hits then stop) |
+| `eval run --fail-fast --reviewer v32` [free when warm] | Stops at the first error verdict — flavor-of-day fails and later domains never print (verified 2026-09-08: 5 hits then stop) |
 | `eval run <target> --spec <path>` [paid on miss] | Spec override honors exactly one named target; with several targets it is silently dropped (each falls back to its governing spec) — a known nuance |
 | `eval run src/generated/summary.md` [free] | Ignored path: exits 1 with the instructive no-spec error (`ignore` removes it from discovery; naming it finds no governing spec) |
 | `eval run --json` / `eval verdict <t> --json` / `status --json` / `praxis --json` [free] | Stable machine contracts: orientation carries pendingTriage/awaitingCuration/debtLine; status.evalState carries pending_triage, awaiting_curation, proposals_pending, epoch_boundary_detected, last_run_at |
@@ -98,7 +102,7 @@ calls · **[scratch]** run in a copy.
 | Dirty-tree run | Anchoring warning ("feedback, not measurement"); run records carry `commit_sha: null` |
 | `eval verdict src/services/redeem-coupon.ts` [free] | Cached verdict per reviewer, no API call; exit 2 on a target that does not exist |
 | STALE verdict [scratch, free] | `echo "// drift" >> src/services/redeem-coupon.ts` in a copy → `eval verdict` shows `[STALE] Cached result is outdated` for every reviewer (verified 2026-09-08) |
-| Deterministic UNVERIFIED [scratch, free] | `chmod 000 src/services/rank-parlors.ts` in a copy → `eval run --reviewer counter` reports the unit UNVERIFIED and exits 1; `eval ci` likewise. Free and reproducible — no flash quirk needed |
+| Deterministic UNVERIFIED [scratch, free] | `chmod 000 src/services/rank-parlors.ts` in a copy → `eval run --reviewer counter` reports the unit UNVERIFIED and exits 1; `eval ci` likewise. Free and reproducible — no live-model quirk needed |
 | `eval prune` [free] | Prunes only orphaned reviewer hashes; after the 2026-09-07 epoch it swept 57 pre-epoch entries (canary stayed all-hits — live entries untouched). A second run finds nothing to do |
 
 ### Reports (pure reads — never a reviewer call) [free]
