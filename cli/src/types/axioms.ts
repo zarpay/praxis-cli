@@ -39,6 +39,16 @@ export interface TriageCluster {
   suggestion: TriageSuggestion;
 }
 
+/**
+ * Where a critique stands.
+ *
+ * `advisory` is not a queue position but the absence of one: a
+ * `praxis feedback` critique is recorded evidence that was never
+ * destined for triage, so calling it "untriaged" would promise work
+ * nobody can do and make that count disagree with the queue's own.
+ */
+export type CritiqueState = "untriaged" | "unmatched" | "labeled" | "dismissed" | "advisory";
+
 /** One critique's labeling outcome, streamed as the pass runs. */
 export interface LabelProgressEvent {
   /** Completed calls so far, this event included. */

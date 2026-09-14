@@ -75,7 +75,7 @@ describe("buildCritiquesReportService", () => {
     // Judged against a set that no longer exists — back to triage.
     expect(states.get("r1:4")).toBe("untriaged");
     expect(states.get("r1:5")).toBe("untriaged");
-    expect(totals).toEqual({ untriaged: 2, unmatched: 1, labeled: 1, dismissed: 1 });
+    expect(totals).toEqual({ untriaged: 2, unmatched: 1, labeled: 1, dismissed: 1, advisory: 0 });
   });
 
   it("filters by target prefix, axiom, and state — totals stay ledger-wide", () => {
@@ -91,5 +91,33 @@ describe("buildCritiquesReportService", () => {
 
     const byState = buildCritiquesReportService(cfg, { state: "unmatched" });
     expect(byState.rows.map((row) => row.id)).toEqual(["r1:3"]);
+  });
+
+  it("states an advisory critique as advisory, not as untriaged", () => {
+    const root = statesProject();
+
+    seedLedgerRun(root, {
+      name: "flash",
+      hash: "aaaa1111",
+      scope: "advisory",
+      runId: "adv",
+      extraLines: [
+        critiqueLine({
+          runId: "adv",
+          seq: 1,
+          filePath: "docs/guide.md",
+          specPath: "docs/README.md",
+          text: "Feedback only.",
+        }),
+      ],
+    });
+
+    const report = buildCritiquesReportService(testConfig(root), {});
+    const advisory = report.rows.find((row) => row.id === "adv:1");
+
+    // Browsable, and in no queue: "untriaged" would promise work nobody
+    // can do and disagree with what triage reports.
+    expect(advisory?.state).toBe("advisory");
+    expect(report.totals.advisory).toBe(1);
   });
 });

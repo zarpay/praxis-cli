@@ -63,7 +63,7 @@ Example:
     .command("critiques [target]")
     .description("List the ledger's critiques with their ids and lifecycle states")
     .option("--axiom <id>", "only critiques whose effective label is this axiom")
-    .option("--state <state>", "only untriaged | unmatched | labeled | dismissed")
+    .option("--state <state>", "only untriaged | unmatched | labeled | dismissed | advisory")
     .option("--json", "machine-readable output (stable contract)")
     .addHelpText(
       "after",

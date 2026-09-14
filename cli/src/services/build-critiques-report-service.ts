@@ -1,4 +1,4 @@
-import type { CritiqueDecision, Service } from "@/types.js";
+import type { CritiqueDecision, CritiqueState, Service } from "@/types.js";
 
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { RunStore } from "@/stores/run-store.js";
@@ -15,8 +15,6 @@ interface BuildCritiquesReportInput {
 }
 
 /** Where one critique stands in the review→label lifecycle. */
-type CritiqueState = "untriaged" | "unmatched" | "labeled" | "dismissed";
-
 /** One critique, with its id, its words, and where it stands. */
 interface CritiqueRow {
   id: string;
@@ -31,11 +29,6 @@ interface CritiqueRow {
   state: CritiqueState;
   /** The effective label, when state is "labeled". */
   axiomId: string | null;
-  /**
-   * From a `praxis feedback` run: listed here, because browsing the
-   * ledger is this report's job, but never offered to a queue.
-   */
-  advisory: boolean;
 }
 
 /** The listing, with the whole ledger's tallies beside the rows. */
@@ -70,6 +63,7 @@ const buildCritiquesReportService: Service<BuildCritiquesReportInput, CritiquesR
     unmatched: 0,
     labeled: 0,
     dismissed: 0,
+    advisory: 0,
   };
 
   const rows: CritiqueRow[] = [];
@@ -113,7 +107,6 @@ function rowFor(
   advisory: Set<string>,
 ): CritiqueRow {
   const base = {
-    advisory: advisory.has(critique.run_id),
     id: critique.id,
     runId: critique.run_id,
     timestamp: critique.timestamp,
@@ -123,6 +116,10 @@ function rowFor(
     severity: critique.severity,
     text: critique.text,
   };
+
+  // Recorded, browsable, and in no queue — the state says so rather than
+  // borrowing a queue position it will never occupy.
+  if (advisory.has(critique.run_id)) return { ...base, state: "advisory", axiomId: null };
 
   if (decision?.dismissed) return { ...base, state: "dismissed", axiomId: null };
 

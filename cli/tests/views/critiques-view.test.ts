@@ -21,7 +21,7 @@ function row(overrides: Record<string, unknown> = {}) {
 
 /** Zeroed tallies, overridden per case. */
 function totals(overrides: Record<string, number> = {}) {
-  return { untriaged: 0, unmatched: 0, labeled: 0, dismissed: 0, ...overrides };
+  return { untriaged: 0, unmatched: 0, labeled: 0, dismissed: 0, advisory: 0, ...overrides };
 }
 
 describe("critiquesView", () => {
@@ -66,5 +66,16 @@ describe("critiquesView", () => {
 
     expect(parsed.critiques).toHaveLength(1);
     expect(parsed.totals).toEqual(totals({ labeled: 1 }));
+  });
+
+  it("names an advisory critique as feedback rather than as queued work", () => {
+    const rows = [row({ id: "r1:9", state: "advisory", axiomId: null })];
+    const text = reportText(critiquesView({ rows, totals: totals({ advisory: 1 }) }));
+
+    // It is recorded evidence in no queue; calling it untriaged would
+    // promise work nobody can do.
+    expect(text).toContain("advisory");
+    expect(text).toContain("never queued");
+    expect(text).not.toContain("awaiting triage");
   });
 });

@@ -1,4 +1,4 @@
-import type { LedgerCritiqueRecord, LedgerRunRecord } from "@/types.js";
+import type { LedgerScope, LedgerCritiqueRecord, LedgerRunRecord } from "@/types.js";
 
 import { randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -19,7 +19,7 @@ export function seedLedgerRun(
     hash: string;
     model?: string;
     timestamp?: string;
-    scope?: "corpus" | "diff" | "files";
+    scope?: LedgerScope;
     runId?: string;
     branch?: string | null;
     commitSha?: string | null;
