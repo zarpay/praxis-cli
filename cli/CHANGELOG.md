@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Cards no longer outgrow the terminal.** A card drew itself as wide as its widest line, so a long critique, a deep path in an attribute, an unbroken URL or a long title pushed the frame past the window — and the terminal re-wrapped it into something that stopped looking like a frame at all. Every line now wraps to the space available: the card takes the terminal's width (capped at its usual 72 columns), attribute values wrap with a hanging indent under the value column, an unbreakable token is cut rather than allowed to push the wall out, and an over-long title is truncated. Worst affected was `praxis axioms curate`, whose critique text is styled: wrapping skipped any line carrying ANSI codes, so the cluster card blew out to whatever the reviewer wrote — and only ever on a real terminal, since chalk is off under test. Wrapping is now ANSI-aware, reopening the styling on each wrapped line and closing it so no run bleeds into the frame.
+
 - **A reviewer's `options` can no longer turn on streaming and break the run.** `options` is spread into the OpenRouter request body ahead of the fields praxis owns, and `stream` was not one of them — so `"options": { "stream": true }` in a config reached the wire, came back as a `data:` event stream, and died in `response.json()`. `stream` now joins `model`, `messages`, `tools`, `tool_choice` and `temperature` as a field praxis owns, pinned off. Reviewer hashes are computed over the config, not the request body, so no cache is invalidated.
 
 ### Changed
