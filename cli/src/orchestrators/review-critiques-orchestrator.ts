@@ -61,9 +61,7 @@ export const reviewCritiquesOrchestrator: Orchestrator<ReviewCritiquesOptions> =
   }
 
   const report = buildCritiquesReportService(cfg, { target });
-  // Advisory critiques are never evidence for anything, so judging one
-  // invalid decides nothing — they are browsable, not reviewable.
-  const queue = report.rows.filter((row) => !row.advisory && isReviewable(row.state));
+  const queue = report.rows.filter((row) => isReviewable(row.state));
 
   if (queue.length === 0) {
     prompter.close();
@@ -237,7 +235,11 @@ function reinstateMany(
   return "ok";
 }
 
-/** Untriaged or unmatched: no axiom has claimed the critique, so validity is still open. */
+/**
+ * Untriaged or unmatched: no axiom has claimed the critique, so validity
+ * is still open. Advisory critiques are excluded by the same test — they
+ * are evidence for nothing, so judging one invalid decides nothing.
+ */
 function isReviewable(state: string): boolean {
   return state === "untriaged" || state === "unmatched";
 }

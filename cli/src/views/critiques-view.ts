@@ -1,11 +1,10 @@
+import type { CritiqueState } from "@/types.js";
 import type { View } from "@framework/types.js";
 
 import { card } from "@framework/views/card.js";
 import { palette } from "@framework/views/palette.js";
 
 /** Where one critique stands in the review→label lifecycle. */
-type CritiqueState = "untriaged" | "unmatched" | "labeled" | "dismissed";
-
 /** One critique as the listing shows it. */
 interface CritiqueRow {
   id: string;
@@ -42,7 +41,10 @@ const critiquesView: View<CritiquesListing> = ({ rows, totals, json }) => {
     ];
   }
 
-  const tally = `untriaged ${totals.untriaged} · unmatched ${totals.unmatched} · labeled ${totals.labeled} · dismissed ${totals.dismissed}`;
+  // Advisory only when there is some: a project that never ran
+  // `praxis feedback` should not be told about a state it has not met.
+  const advisory = totals.advisory > 0 ? ` · advisory ${totals.advisory}` : "";
+  const tally = `untriaged ${totals.untriaged} · unmatched ${totals.unmatched} · labeled ${totals.labeled} · dismissed ${totals.dismissed}${advisory}`;
 
   if (rows.length === 0) {
     return [
@@ -79,6 +81,8 @@ function critiqueBlock(row: CritiqueRow): string[] {
 /** The state, colored by what it asks of the human. */
 function stateLine(row: CritiqueRow): string {
   if (row.state === "labeled") return palette.ref(row.axiomId ?? "");
+
+  if (row.state === "advisory") return `${palette.meta("advisory")} — feedback, never queued`;
 
   if (row.state === "unmatched") return `${palette.warn("unmatched")} — awaiting curation`;
 

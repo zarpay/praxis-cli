@@ -169,7 +169,7 @@ Safe to run any time: entries belonging to currently configured reviewers are ne
 
 ## praxis eval critiques
 
-The ledger's critiques as a browsable list — each with its id, its words, and where it stands: **untriaged** (triage's queue), **unmatched** (curate's queue), **labeled**, or **dismissed**. Pure read; never a reviewer call.
+The ledger's critiques as a browsable list — each with its id, its words, and where it stands: **untriaged** (triage's queue), **unmatched** (curate's queue), **labeled**, **dismissed**, or **advisory** — recorded by [`praxis feedback`](/commands/feedback) and in no queue at all, so it is never counted as work waiting. Pure read; never a reviewer call.
 
 ```bash
 praxis eval critiques src/services --state unmatched
