@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.2.0] - 2026-09-15
+
+The feedback release. `praxis feedback <target>` is review for the person writing the code: same reviewers, same specs, same prose as `eval run`, recorded in full with its cost — and structurally incapable of reaching triage, curate or a report. A team can now use the fast loop the way it is meant to be used without burying the critiques that describe code which actually shipped.
+
+Around it, the things a long-running review loop needs to be livable: a terminal that says it is working rather than going silent for ninety seconds, every run reporting what it took and what it cost, `elapsed_ms` on the ledger so latency is trendable the way spend already was, and cards that fit the window they are printed in. Several of the fixes below were found by reading output as a user rather than by any test — a run that looked free after failing a call, a truncation diagnosed backwards, two screens disagreeing about how many reviewers a project has.
+
+Machine contracts grow but do not break: `--json` payloads gain fields, exit codes are unchanged.
 
 ### Added
 
@@ -25,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A `praxis feedback` critique is no longer reported as untriaged.** It is structurally excluded from triage and always will be, so calling it "untriaged" promised work nobody could do and made `eval critiques` disagree with the queue: the browse count said 37 where `status` and the orientation screen said 34. `advisory` is now a fifth critique state alongside untriaged, unmatched, labeled and dismissed — not a queue position but the absence of one — filterable with `eval critiques --state advisory`, and counted separately in the tally (shown only where a project has some). The `--json` totals object gains an `advisory` key.
+
+- **The orientation screen no longer names reviewers you have removed.** Bare `praxis` built its per-reviewer failing counts from every corpus run the ledger remembers, so a retired reviewer kept reporting in the present tense — an action nobody can take, since the reviewer is gone and its cache is pruned. It now names configured reviewers only, which is what `status` already did. `eval report` and `debt report` are unchanged and still show every reviewer that ever ran: evidence is append-only, and those are historical surfaces.
+
 - **A run that attempted a call and failed no longer claims it came from cache.** A failed reviewer call is neither a cache hit nor a miss, so a run where every other unit was cached reported "no misses" and the spend line said `(from cache)` — of a run that had just spent ninety seconds on a real API call. The claim now requires that nothing was attempted at all, unverified units included.
 
 - **Truncated tool-call arguments are recognised by where the parser died, not by `finish_reason`.** deepseek via OpenRouter reports `finish_reason: "tool_calls"` for arguments it cut off mid-array, so praxis said "not truncated, rerun to retry" about a response that needed `max_tokens` raised. When the parse error's position is at the end of the payload the value was still open when the string stopped, which is truncation whatever the backend claims — and the message now says so, naming the `finish_reason` that disagreed.
@@ -38,8 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **`praxis eval run` names targets by their path, not their filename.** Each progress heading now prints the target's root-relative path with the directory in gray and the filename in bold — `[1/19] src/services/apply-discount.ts` where it used to print `apply-discount.ts` alone. A basename cannot say which of two same-named files a critique landed on, and cannot be pasted back into `eval run <target>`. The fast loop's verdict badge (`[PASS] src/services/redeem-coupon.ts`) styles its path the same way, as the caller typed it. New framework component: `pathLabel`.
-
-Machine contracts are untouched: `--json` payloads and exit codes are unchanged.
 
 ## [2.1.0] - 2026-09-10
 
