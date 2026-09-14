@@ -20,6 +20,7 @@ import { AxiomStore } from "@/stores/axiom-store.js";
 import { TriageStore } from "@/stores/triage-store.js";
 import curateClusterView from "@/views/curate-cluster-view.js";
 import curateSummaryView from "@/views/curate-summary-view.js";
+import { palette } from "@framework/views/palette.js";
 import { Prompter } from "@framework/views/prompter.js";
 import { Waiting } from "@framework/views/waiting.js";
 
@@ -308,6 +309,33 @@ function holdUnclustered(session: CurateSession, unclustered: DedupedCritique[])
   ]);
 }
 
+/**
+ * A cluster the human judged untrue rather than uncategorized.
+ *
+ * Curate does not write it. Validity is `eval review`'s question and
+ * only its question (04, 2026-09-09) — curate dismissing an
+ * "unassignable" cluster is how membership judgments once got recorded
+ * as validity ones. So the cluster is held exactly like any other, and
+ * what this adds is the handoff: the ids, already in the shape the one
+ * command that can dismiss them takes. The tedium was never the
+ * judgment, it was copying ids out one at a time.
+ */
+function handOffToReview(session: CurateSession, critiques: PendingCritique[]): void {
+  const ids = [...new Set(critiques.map((critique) => critique.id))];
+
+  session.held += critiques.length;
+  session.ctx.render([
+    {
+      channel: "content",
+      entries: [
+        `  ${palette.meta("held — nothing written. To judge these invalid:")}`,
+        `  praxis eval review --dismiss ${ids.join(" ")} --reason "<why>"`,
+        "",
+      ],
+    },
+  ]);
+}
+
 /** Identical critique texts folded into one member with its duplicates. */
 function dedupByText(critiques: PendingCritique[]): DedupedCritique[] {
   const byText = new Map<string, DedupedCritique>();
@@ -346,10 +374,20 @@ async function decideCluster(
 ): Promise<void> {
   const decision = session.yes
     ? "accept"
-    : await session.prompter.choose("[a]ccept / [s]kip", ["accept", "skip"]);
+    : await session.prompter.choose("[a]ccept / [s]kip / [r]eview — judge these invalid", [
+        "accept",
+        "skip",
+        "review",
+      ]);
 
   if (decision === "skip") {
     session.skipped += critiques.length;
+
+    return;
+  }
+
+  if (decision === "review") {
+    handOffToReview(session, critiques);
 
     return;
   }

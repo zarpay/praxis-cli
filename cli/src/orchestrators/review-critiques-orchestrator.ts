@@ -15,10 +15,10 @@ import { Prompter } from "@framework/views/prompter.js";
 interface ReviewCritiquesOptions {
   /** Project-relative path prefix narrowing the session. */
   target?: string;
-  /** Scripted: dismiss this one critique (needs --reason). */
-  dismiss?: string;
-  /** Scripted: lift this one critique's dismissal (needs --reason). */
-  reinstate?: string;
+  /** Scripted: dismiss these critiques, one reason for all (needs --reason). */
+  dismiss?: string[];
+  /** Scripted: lift these critiques' dismissals, one reason for all (needs --reason). */
+  reinstate?: string[];
   reason?: string;
 }
 
@@ -50,9 +50,9 @@ export const reviewCritiquesOrchestrator: Orchestrator<ReviewCritiquesOptions> =
 ) => {
   const cfg = ctx.config;
 
-  if (dismiss !== undefined) return dismissOne(ctx, dismiss, reason);
+  if (dismiss !== undefined) return dismissMany(ctx, dismiss, reason);
 
-  if (reinstate !== undefined) return reinstateOne(ctx, reinstate, reason);
+  if (reinstate !== undefined) return reinstateMany(ctx, reinstate, reason);
 
   const prompter = new Prompter();
 
@@ -77,17 +77,33 @@ export const reviewCritiquesOrchestrator: Orchestrator<ReviewCritiquesOptions> =
     const card = reviewCritiqueView({ ...row, index: index + 1, total: queue.length });
     ctx.render(card);
 
-    const choice = await prompter.choose("[d]ismiss / [n]ext / [q]uit", [
-      "dismiss",
-      "next",
-      "quit",
-    ]);
+    // "all" is keyed [r]est rather than a capital D: choose() matches on
+    // the first character case-insensitively, so [d] and [D] are one key.
+    const choice = await prompter.choose(
+      "[d]ismiss / [r]est — dismiss all remaining / [n]ext / [q]uit",
+      ["dismiss", "rest", "next", "quit"],
+    );
 
     if (choice === "quit") break;
 
-    reviewed++;
+    if (choice === "next") {
+      reviewed++;
+      continue;
+    }
 
-    if (choice === "next") continue;
+    if (choice === "rest") {
+      const why = await prompter.ask(`Why are these ${queue.length - index} critique(s) invalid?`);
+      const shared = why === "" ? "dismissed at review" : why;
+
+      for (const remaining of queue.slice(index)) {
+        records.push(dismissalRecord(remaining.id, shared));
+        reviewed++;
+      }
+
+      break;
+    }
+
+    reviewed++;
 
     const why = await prompter.ask("Why is this critique invalid?");
     records.push(dismissalRecord(row.id, why === "" ? "dismissed at review" : why));
@@ -111,41 +127,64 @@ export const reviewCritiquesOrchestrator: Orchestrator<ReviewCritiquesOptions> =
 
 export default prepareOrchestrator(reviewCritiquesOrchestrator);
 
-/** The scripted dismissal of one critique. */
-function dismissOne(ctx: CommandContext, id: string, reason: string | undefined): "ok" {
+/**
+ * The scripted dismissal of one or more critiques, under one reason.
+ *
+ * A curate cluster is the case this exists for: the whole grouping is
+ * invalid for the same reason, and naming that reason once beats typing
+ * it eight times. Each critique still gets its own dismissal record —
+ * the batch is an input convenience, never a record shape — so reports,
+ * reinstatement and the join read exactly as they always did.
+ */
+function dismissMany(ctx: CommandContext, ids: string[], reason: string | undefined): "ok" {
   const cfg = ctx.config;
 
   if (reason === undefined) {
     throw errors.missingOption(
       "--dismiss",
       "--reason",
-      `praxis eval review --dismiss ${id} --reason "<why>"`,
+      `praxis eval review --dismiss ${ids.join(" ")} --reason "<why>"`,
     );
   }
 
-  requireCritique(cfg, id);
+  // Every id is checked before anything is written: a typo in the
+  // fifth id must not leave the first four dismissed.
+  for (const id of ids) requireCritique(cfg, id);
 
-  if (new TriageStore(cfg).decisions().get(id)?.dismissed) {
-    ctx.render([{ channel: "warning", text: `${id} is already dismissed; nothing to do.` }]);
+  const store = new TriageStore(cfg);
+  const decisions = store.decisions();
+  const already = ids.filter((id) => decisions.get(id)?.dismissed);
+  const fresh = ids.filter((id) => !decisions.get(id)?.dismissed);
 
-    return "ok";
+  if (already.length > 0) {
+    ctx.render([
+      {
+        channel: "warning",
+        text: `Already dismissed, left alone: ${already.join(", ")}.`,
+      },
+    ]);
   }
 
-  new TriageStore(cfg).writeSession([dismissalRecord(id, reason)]);
+  if (fresh.length === 0) return "ok";
+
+  store.writeSession(fresh.map((id) => dismissalRecord(id, reason)));
+
+  const dismissedSubject = fresh.length === 1 ? fresh[0] : `${fresh.length} critiques`;
+
   ctx.render([
     {
       channel: "success",
-      text: `${id} dismissed: ${reason}. It is no longer evidence — out of every queue, never labeled — until reinstated.`,
+      text: `${dismissedSubject} dismissed: ${reason}. No longer evidence — out of every queue, never labeled — until reinstated.${fresh.length === 1 ? "" : ` (${fresh.join(", ")})`}`,
     },
   ]);
 
   return "ok";
 }
 
-/** The scripted reinstatement of one dismissed critique. */
-function reinstateOne(
+/** The scripted reinstatement of one or more critiques, under one reason. */
+function reinstateMany(
   ctx: CommandContext,
-  id: string,
+  ids: string[],
   reason: string | undefined,
 ): "ok" | "failed" {
   const cfg = ctx.config;
@@ -154,27 +193,42 @@ function reinstateOne(
     throw errors.missingOption(
       "--reinstate",
       "--reason",
-      `praxis eval review --reinstate ${id} --reason "<why>"`,
+      `praxis eval review --reinstate ${ids.join(" ")} --reason "<why>"`,
     );
   }
 
-  requireCritique(cfg, id);
+  for (const id of ids) requireCritique(cfg, id);
+
   const store = new TriageStore(cfg);
-  const decision = store.decisions().get(id);
+  const decisions = store.decisions();
+  const dismissed = ids.filter((id) => decisions.get(id)?.dismissed);
+  const standing = ids.filter((id) => !decisions.get(id)?.dismissed);
 
-  if (!decision?.dismissed) {
-    ctx.render([{ channel: "warning", text: `${id} is not dismissed; nothing to reinstate.` }]);
-
-    return "failed";
+  if (standing.length > 0) {
+    ctx.render([
+      {
+        channel: "warning",
+        text: `${standing.join(", ")} is not dismissed; nothing to reinstate.`,
+      },
+    ]);
   }
 
-  store.writeSession([
-    { kind: "reinstatement", critique_id: id, reason, timestamp: new Date().toISOString() },
-  ]);
+  if (dismissed.length === 0) return "failed";
+
+  store.writeSession(
+    dismissed.map((id) => ({
+      kind: "reinstatement" as const,
+      critique_id: id,
+      reason,
+      timestamp: new Date().toISOString(),
+    })),
+  );
+  const reinstatedSubject = dismissed.length === 1 ? dismissed[0] : `${dismissed.length} critiques`;
+
   ctx.render([
     {
       channel: "success",
-      text: `${id} reinstated: ${reason}. It is evidence again and returns to the queue its records put it in.`,
+      text: `${reinstatedSubject} reinstated: ${reason}. Evidence again, back in the queue their records put them in.${dismissed.length === 1 ? "" : ` (${dismissed.join(", ")})`}`,
     },
   ]);
 
