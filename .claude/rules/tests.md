@@ -13,6 +13,28 @@ live in `packages/framework/tests/`, mirroring its `src/`. The one sanctioned
 exception is `tests/integration/`, which exercises whole flows and mirrors
 nothing.
 
+**Mirroring is complete, and the gaps are named.** Every module in a
+layer that *behaves* has a mirrored test: `services/`, `views/`,
+`orchestrators/`, `models/`, `stores/`, `helpers/`, `templates/`,
+`providers/`, `plugins/`, and the framework kit. Two layers are exempt
+because they declare rather than behave, and their contracts are held
+elsewhere:
+
+- **`commands/`** is route declarations — `.option()` chains handed to
+  `.action(orchestrator)`, with no logic to exercise. A test here tests
+  commander. What it could get wrong — a flag whose name stops matching
+  its orchestrator's `Options` — is not type-checked, and is caught by
+  the orchestrator's own tests and the demo run.
+- **`prompts/`** is one `const TEMPLATE` per file. A test would assert a
+  string against itself. The machinery is covered by
+  `prepare-prompt-helper`, and the reviewer-facing text is pinned by
+  `prompt-surface` and the reviewer hash, where changing a word is an
+  epoch event rather than a test failure.
+
+Anything else without a mirrored test is a gap, not a decision. The
+consistency-audit skill counts them per layer, so the number is visible
+rather than discovered.
+
 - **Test the promise, not the implementation.** A service is one input → one
   output: call it with a literal, assert on the result. A model is a class:
   test its public methods and constructor validation. A view returns entries:

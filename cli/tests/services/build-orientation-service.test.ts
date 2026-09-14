@@ -59,9 +59,28 @@ describe("buildOrientationService", () => {
     seedAxiom(root, "AX-bbbb22", { status: "proposed", proposed: true });
     seedLedgerRun(root, { name: "flash", hash: "aaaa1111", failCount: 3 });
 
-    const orientation = buildOrientationService(testConfig(root), {});
+    const cfg = testConfig(root, {
+      reviewers: [{ name: "flash", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" }],
+    });
+    const orientation = buildOrientationService(cfg, {});
 
     expect(orientation.activeAxioms).toBe(1);
     expect(orientation.debtLine).toEqual([{ reviewerName: "flash", errors: 3 }]);
+  });
+
+  it("leaves a retired reviewer out of the debt line", () => {
+    seedLedgerRun(root, { name: "retired", hash: "aaaa1111", failCount: 6 });
+    seedLedgerRun(root, { name: "current", hash: "bbbb2222", failCount: 2 });
+
+    const cfg = testConfig(root, {
+      reviewers: [{ name: "current", model: "m", apiKeyEnvVar: "OPENROUTER_API_KEY" }],
+    });
+    const orientation = buildOrientationService(cfg, {});
+
+    // The ledger remembers every reviewer that ever ran, and `eval
+    // report` is right to show them. This screen is what someone reads
+    // returning after a week, and "retired: 6 failing" is an action they
+    // cannot take — the reviewer is gone and its cache is pruned.
+    expect(orientation.debtLine).toEqual([{ reviewerName: "current", errors: 2 }]);
   });
 });

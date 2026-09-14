@@ -4,7 +4,7 @@ Review for the person writing the code, not for the record.
 
 ```bash
 praxis feedback src/services/checkout.ts
-praxis feedback src/services --reviewer flash
+praxis feedback src/services --reviewer mercury
 praxis feedback src/services/checkout.ts --json
 ```
 

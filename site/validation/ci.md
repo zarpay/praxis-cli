@@ -29,6 +29,8 @@ Because `.praxis/cache/` is committed, CI gets a cache hit on every target uncha
 
 ```
 [CACHE] Hits: 17, Misses: 1
+
+[SPEND] Time: 24s, Cost: $0.0011
 ```
 
 ## GitHub Actions example

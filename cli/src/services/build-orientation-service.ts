@@ -25,10 +25,18 @@ const buildOrientationService: Service<NoInput, Orientation> = (cfg) => {
           anchored: last.commit_sha !== null,
         };
 
+  // Configured reviewers only. The ledger remembers every reviewer that
+  // ever ran, and reports are right to show them — but this screen is
+  // what someone reads returning after a week, and "v32: 6 failing"
+  // about a reviewer that no longer exists is an action they cannot
+  // take. History belongs to `eval report`; this is current state.
+  const configured = new Set(cfg.reviewers.map((reviewer) => reviewer.name));
   const latestCorpusByReviewer = new Map<string, { reviewerName: string; errors: number }>();
 
   for (const run of runs) {
     if (run.scope !== "corpus") continue;
+
+    if (!configured.has(run.reviewer_name)) continue;
 
     latestCorpusByReviewer.set(run.reviewer_name, {
       reviewerName: run.reviewer_name,

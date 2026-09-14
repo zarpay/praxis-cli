@@ -8,6 +8,7 @@ import type {
   Verdict,
 } from "@/types.js";
 
+import { isCohortUnit } from "@/helpers/eval-unit-helper.js";
 import { relativePath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
@@ -70,7 +71,7 @@ const reviewUnitsService: Service<ReviewUnitsInput, Promise<ReviewUnitsResult>> 
   let warnings = 0;
 
   for (const { unit, domain } of units) {
-    const cohort = unit.files.length > 1 || unit.files[0] !== unit.path;
+    const cohort = isCohortUnit(unit);
     const subject = ReviewSubject.resolve({
       targetPath: unit.path,
       targetContent: cohort ? assembleCohortService(cfg, { unit }) : undefined,

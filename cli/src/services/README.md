@@ -9,4 +9,4 @@ sole caller is another service is a private helper in disguise unless
 it holds an independent contract.
 
 Rule: `.claude/rules/services.md`. Exemplars: `review-target-service.ts`
-(a boundary), `derive-flow-metrics-service.ts` (a derivation).
+(a boundary), `derive-population-service.ts` (a derivation).

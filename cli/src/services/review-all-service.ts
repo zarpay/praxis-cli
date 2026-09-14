@@ -12,6 +12,7 @@ import type {
 } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
+import { isCohortUnit } from "@/helpers/eval-unit-helper.js";
 import { baseName, relativePath } from "@/helpers/paths-helper.js";
 import { ReviewSubject } from "@/models/review-subject.js";
 import { Reviewer } from "@/models/reviewer.js";
@@ -89,7 +90,8 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
   },
 ) => {
   const root = cfg.root;
-  const domains = selectDomains(discoverDomainsService(cfg, {}), type);
+  const discovered = discoverDomainsService(cfg, {});
+  const domains = selectDomains(discovered, type);
 
   // Each reviewer gets its own cache bound to its identity: verdicts share
   // one file per target, keyed by (spec, reviewer) so they never collide.
@@ -133,7 +135,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
         index,
         total,
         path: relativePath(root, unit.path),
-        cohortSize: isCohort(unit) ? unit.files.length : undefined,
+        cohortSize: isCohortUnit(unit) ? unit.files.length : undefined,
         reviewerName: reviewers.length > 1 ? reviewerConfig.name : undefined,
       });
 
@@ -187,11 +189,6 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
 
 export default reviewAllService;
 
-/** Whether a unit reviews a set of files rather than the one at its path. */
-function isCohort(unit: EvalUnit): boolean {
-  return unit.files.length > 1 || unit.files[0] !== unit.path;
-}
-
 /**
  * The domains a run covers.
  *
@@ -239,7 +236,7 @@ const reviewUnit: Service<
   const startedAt = Date.now();
 
   try {
-    const cohort = isCohort(unit);
+    const cohort = isCohortUnit(unit);
     const target = ReviewSubject.resolve({
       targetPath: unit.path,
       targetContent: cohort ? assembleCohortService(cfg, { unit }) : undefined,

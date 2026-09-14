@@ -29,11 +29,11 @@ Untriaged: 11 · Awaiting curation: 0
   References:         1
   Context files:      4
 
-Validation (reviewer: flash)
-  ● 15 pass   ● 1 warn   ● 2 fail   ● 0 not validated
+Validation (reviewer: mercury)
+  ● 15 pass   ● 2 warn   ● 6 fail   ● 0 not validated
 
-Validation (reviewer: v32)
-  ● 14 pass   ● 0 warn   ● 4 fail   ● 0 not validated
+Validation (reviewer: counter)
+  ● 23 pass   ● 0 warn   ● 0 fail   ● 0 not validated
 
 [OK] No issues found
 ```
