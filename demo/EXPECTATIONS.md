@@ -42,7 +42,7 @@ a bug.
 
 | Fact | Value |
 | --- | --- |
-| Reviewers | `flash` (deepseek-v4-flash-0731), `v32` (deepseek-v3.2), `counter` (offline `./praxis-providers/word-count.js`) |
+| Reviewers | `flash` (deepseek-v4-flash-0731), `v32` (deepseek-v3.2), `counter` (offline `./praxis-providers/word-count.js`). **Epoch opened 2026-09-14**: both live reviewers gained `options: { max_tokens: 16000, reasoning: { effort: "low" } }`, re-baselining them. Cause: `flash` spent its whole output budget reasoning and truncated the tool call mid-string on `src/services/apply-refund.ts` — three times, at 607 and 1338 chars, so a varying cut rather than a fixed ceiling. Praxis sends no `max_tokens` of its own, so the ceiling was the backend's. `counter` is deliberately untouched: its hash backs the all-cache-hits canary |
 | Curator | anthropic/claude-sonnet-4.5 |
 | Spec pattern | `{README.md,*.sme.md}` — hand-authored READMEs plus the hand-authored `experts.sme.md` (compiled profiles land in `agent-profiles/*.expert.md`, which is not a source dir and does not govern) |
 | Corpus units | 23 per reviewer (69 verdicts across three reviewers) |
