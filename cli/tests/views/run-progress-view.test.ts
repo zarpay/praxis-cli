@@ -25,10 +25,10 @@ function verdict(fields: Partial<Verdict>): Verdict {
 }
 
 describe("a unit starting", () => {
-  it("shows the counter and filename for a plain single-reviewer unit", () => {
-    const text = rendered({ kind: "unit-start", index: 2, total: 7, path: "/p/src/awards.ts" });
+  it("names the target by its whole path, not its filename alone", () => {
+    const text = rendered({ kind: "unit-start", index: 2, total: 7, path: "src/awards.ts" });
 
-    expect(text).toContain("[2/7] awards.ts");
+    expect(text).toContain("[2/7] src/awards.ts");
   });
 
   it("labels a cohort with its member count", () => {
@@ -36,11 +36,17 @@ describe("a unit starting", () => {
       kind: "unit-start",
       index: 1,
       total: 3,
-      path: "/p/src/features/loyalty",
+      path: "src/features/loyalty",
       cohortSize: 4,
     });
 
-    expect(text).toContain("[1/3] loyalty (cohort · 4 files)");
+    expect(text).toContain("[1/3] src/features/loyalty (cohort · 4 files)");
+  });
+
+  it("renders a root-level target with no directory prefix", () => {
+    const text = rendered({ kind: "unit-start", index: 1, total: 1, path: "README.md" });
+
+    expect(text).toContain("[1/1] README.md");
   });
 
   it("names the reviewer when more than one is running", () => {
@@ -48,11 +54,11 @@ describe("a unit starting", () => {
       kind: "unit-start",
       index: 1,
       total: 1,
-      path: "/p/a.ts",
+      path: "src/a.ts",
       reviewerName: "flash",
     });
 
-    expect(text).toContain("[1/1] a.ts [reviewer: flash]");
+    expect(text).toContain("[1/1] src/a.ts [reviewer: flash]");
   });
 
   it("carries both labels at once, cohort before reviewer", () => {
@@ -60,12 +66,12 @@ describe("a unit starting", () => {
       kind: "unit-start",
       index: 5,
       total: 5,
-      path: "/p/dir",
+      path: "src/dir",
       cohortSize: 2,
       reviewerName: "v32",
     });
 
-    expect(text).toContain("[5/5] dir (cohort · 2 files) [reviewer: v32]");
+    expect(text).toContain("[5/5] src/dir (cohort · 2 files) [reviewer: v32]");
   });
 });
 

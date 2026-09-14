@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **`praxis eval run` names targets by their path, not their filename.** Each progress heading now prints the target's root-relative path with the directory in gray and the filename in bold — `[1/19] src/services/apply-discount.ts` where it used to print `apply-discount.ts` alone. A basename cannot say which of two same-named files a critique landed on, and cannot be pasted back into `eval run <target>`. The fast loop's verdict badge (`[PASS] src/services/redeem-coupon.ts`) styles its path the same way, as the caller typed it. New framework component: `pathLabel`.
+
+Machine contracts are untouched: `--json` payloads and exit codes are unchanged.
+
 ## [2.1.0] - 2026-09-10
 
 ### Added

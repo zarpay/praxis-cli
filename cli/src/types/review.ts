@@ -153,6 +153,7 @@ export type EvalProgress =
       /** 1-based position across the whole run, reviewers included. */
       index: number;
       total: number;
+      /** The unit's path relative to the project root — display-ready. */
       path: string;
       /** Member count when the unit is a cohort, undefined for a file. */
       cohortSize?: number;

@@ -7,6 +7,7 @@ import {
   parentDir,
   relativePath,
   resolvePath,
+  splitPathTail,
 } from "@/helpers/paths-helper.js";
 
 describe("paths-helper", () => {
@@ -29,6 +30,30 @@ describe("paths-helper", () => {
 
   it("parentDir takes the containing directory", () => {
     expect(parentDir("/a/b/guide.md")).toBe("/a/b");
+  });
+
+  it("splitPathTail keeps the separator with the directory", () => {
+    expect(splitPathTail("src/services/guide.md")).toEqual({
+      dir: "src/services/",
+      name: "guide.md",
+    });
+  });
+
+  it("splitPathTail gives a bare filename an empty directory", () => {
+    expect(splitPathTail("guide.md")).toEqual({ dir: "", name: "guide.md" });
+  });
+
+  it("splitPathTail treats a directory path's last segment as the name", () => {
+    expect(splitPathTail("src/features/loyalty")).toEqual({
+      dir: "src/features/",
+      name: "loyalty",
+    });
+  });
+
+  it("splitPathTail reproduces the original text exactly when rejoined", () => {
+    const parts = splitPathTail("/a/b/guide.md");
+
+    expect(parts.dir + parts.name).toBe("/a/b/guide.md");
   });
 
   it("fileUrl produces a file:// URL usable by dynamic import()", () => {

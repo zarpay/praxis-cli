@@ -130,7 +130,7 @@ const reviewAllService: Service<ReviewAllInput, Promise<ReviewAllResult>> = asyn
         kind: "unit-start",
         index,
         total,
-        path: unit.path,
+        path: relativePath(root, unit.path),
         cohortSize: isCohort(unit) ? unit.files.length : undefined,
         reviewerName: reviewers.length > 1 ? reviewerConfig.name : undefined,
       });

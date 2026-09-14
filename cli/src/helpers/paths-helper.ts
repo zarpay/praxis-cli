@@ -52,3 +52,10 @@ export function baseName(path: string, ext?: string): string {
 export function parentDir(path: string): string {
   return dirname(path);
 }
+
+/** A path split into its leading directory (separator included) and final segment. */
+export function splitPathTail(path: string): { dir: string; name: string } {
+  const name = basename(path);
+
+  return { dir: path.slice(0, path.length - name.length), name };
+}
