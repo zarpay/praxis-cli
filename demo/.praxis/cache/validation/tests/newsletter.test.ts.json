@@ -15,6 +15,21 @@
         "issues": [],
         "reason": "Review input has 502 words."
       }
+    },
+    "dacac2eb:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-14T21:42:08.135Z",
+      "content_hash": "0f402b1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file follows all conventions: top-level describe names the unit, nested describes use 'when' clauses, it blocks form readable sentences, there is one assertion per block, and test data is built fresh without mocking."
+      }
     }
   }
 }

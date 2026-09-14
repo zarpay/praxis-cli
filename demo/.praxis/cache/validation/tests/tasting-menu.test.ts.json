@@ -15,6 +15,21 @@
         "issues": [],
         "reason": "Review input has 479 words."
       }
+    },
+    "dacac2eb:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-14T21:42:15.939Z",
+      "content_hash": "1d27ad5e",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document adheres to the Test Conventions specification. It correctly frames subjects with module names and when clauses, ensures each it block has exactly one assertion, tests public functionality using honest collaborators without spying, and initializes data fresh within setup."
+      }
     }
   }
 }

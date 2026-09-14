@@ -25,6 +25,31 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-14T21:41:07.347Z",
+      "content_hash": "ae35b04c",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The cohort forms a single feature module under `src/features/summer-promo`. It contains exactly one entry point (`index.ts`) that re-exports the public API. Types are centralized in `summer-promo-types.ts`. Logic resides in `build-banner.ts`, which uses verb-first kebab-case naming, exports `run`, returns a `Result` type, and provides consumer-grade error messages. All files are reachable from the index file, and there are no orphaned files."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

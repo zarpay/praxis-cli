@@ -15,6 +15,21 @@
         "issues": [],
         "reason": "Review input has 539 words."
       }
+    },
+    "dacac2eb:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-14T21:42:00.538Z",
+      "content_hash": "61183485",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file adheres to all specification requirements: the top-level describe names the unit, nested describes use 'when' clauses, it blocks state observable outcomes, each it contains exactly one expect, and tests validate public API functionality without inspecting implementation details."
+      }
     }
   }
 }

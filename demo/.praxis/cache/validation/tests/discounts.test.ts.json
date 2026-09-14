@@ -15,6 +15,21 @@
         "issues": [],
         "reason": "Review input has 503 words."
       }
+    },
+    "dacac2eb:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-14T21:42:05.361Z",
+      "content_hash": "e82dd9b3",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file adheres to all conventions: the top-level describe names the module, nested describes use 'when' clauses, and it blocks form readable sentences with their parents. Each it block contains exactly one expect assertion. Tests exercise the public API and assert on return values using fresh data without spying on implementation details."
+      }
     }
   }
 }

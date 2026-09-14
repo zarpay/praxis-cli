@@ -12,17 +12,6 @@
   ],
   "reviewers": [
     {
-      "name": "v32",
-      "model": "deepseek/deepseek-v3.2",
-      "apiKeyEnvVar": "OPENROUTER_API_KEY",
-      "options": {
-        "max_tokens": 16000,
-        "reasoning": {
-          "effort": "low"
-        }
-      }
-    },
-    {
       "name": "mercury",
       "model": "inception/mercury-2.5",
       "apiKeyEnvVar": "OPENROUTER_API_KEY",

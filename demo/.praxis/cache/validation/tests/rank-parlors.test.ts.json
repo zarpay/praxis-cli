@@ -15,6 +15,21 @@
         "issues": [],
         "reason": "Review input has 585 words."
       }
+    },
+    "dacac2eb:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-14T21:42:11.456Z",
+      "content_hash": "a1734e88",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file adheres to all subject framing rules (module name top-level, 'when' nested, descriptive 'it' strings), maintains one expectation per test block, and tests functionality via the public API without implementation details or shared state dependencies."
+      }
     }
   }
 }

@@ -15,6 +15,28 @@
         "issues": [],
         "reason": "Review input has 460 words."
       }
+    },
+    "0311531a:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-14T21:41:26.224Z",
+      "content_hash": "ef30c4b6",
+      "result": {
+        "compliant": false,
+        "severity": "warning",
+        "issues": [
+          {
+            "text": "A service module exports exactly one entry point: a function named `run`. This file also exports the constant `ACTIVE_CODES` and type `ApplyDiscountInput`. While types are standard in TypeScript, exporting a runtime constant violates the one-entry-point constraint and bypasses the Store for data access.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The service implements the core structural and behavioral requirements: it exports a single `run` entry point, validates input before processing, handles failures as values with clear consumer-facing messages, and provides documentation for failure modes. However, it deviates from the strict export constraint by also exposing `ACTIVE_CODES`."
+      }
     }
   }
 }

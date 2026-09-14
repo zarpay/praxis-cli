@@ -15,6 +15,38 @@
         "issues": [],
         "reason": "Review input has 368 words."
       }
+    },
+    "0311531a:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-14T21:41:57.699Z",
+      "content_hash": "67aeedb2",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "Documentation: The file lacks a module doc comment stating the service's purpose in one sentence and enumerating its domain failure modes as required.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "Error Messages: The error strings (e.g., 'no', 'opensAt failed the regex') do not name what was wrong or what would be accepted instead, violating the requirement that errors be written for the API consumer.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "Validation Order: The service performs work (fetching the parlor, calculating summary and label) before validating the opensAt and closesAt inputs, contrary to the requirement that input is validated before any work happens.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The file violates multiple required criteria regarding documentation, error message quality, and validation ordering."
+      }
     }
   }
 }

@@ -25,6 +25,38 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-14T21:40:50.613Z",
+      "content_hash": "385839e6",
+      "result": {
+        "compliant": false,
+        "severity": "warning",
+        "issues": [
+          {
+            "text": "The types file is named award-types.ts but the convention specifies <feature>-types.ts (expect awards awards-types.ts).",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The cohort satisfies the core structural and cohesion requirements: there is a single entry point, the logic file exports run with a Result type and consumer-grade errors, and all files are reachable. The only deviation is the exact naming of the types file."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

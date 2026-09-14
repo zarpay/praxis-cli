@@ -15,6 +15,28 @@
         "issues": [],
         "reason": "Review input has 410 words."
       }
+    },
+    "0311531a:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-14T21:41:44.993Z",
+      "content_hash": "ecc6b3c2",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "The error message 'invalid input' is explicitly disallowed by the specification. Error messages must name what was wrong and what would be accepted instead (e.g., 'minReviews must be a non-negative integer'), but the current message is generic.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The document violates the explicit requirement for error message content in the Behavior section."
+      }
     }
   }
 }

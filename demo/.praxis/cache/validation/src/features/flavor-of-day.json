@@ -25,6 +25,58 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-14T21:40:56.233Z",
+      "content_hash": "67edd1dd",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "Missing required entry point: The directory lacks `index.ts`, which is mandatory to re-export the feature's public API and serve as the single entry point.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "Violates service conventions: Logic files do not export a `run` function nor use the `Result<T>` type for outcomes; instead, they return raw strings directly.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "Missing dedicated types file: The specification requires a `<feature>-types.ts` file, but none exists in the directory.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "Violates naming convention: Logic files (e.g., `flavor.ts`) use noun-based names instead of the required verb-first kebab-case pattern.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "Cohesion violation: Without an `index.ts`, files in the directory cannot be reached from the entry point, creating orphaned modules.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The cohort violates multiple required structural and behavioral standards in the specification, including the absence of the mandatory entry point, failure to use service conventions, and lack of dedicated type definitions."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

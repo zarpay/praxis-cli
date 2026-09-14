@@ -15,6 +15,21 @@
         "issues": [],
         "reason": "Review input has 463 words."
       }
+    },
+    "0311531a:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-14T21:41:32.386Z",
+      "content_hash": "a6771057",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file conforms to all structure, behavior, and documentation requirements: it exports a single `run` function with correct signature, validates input before work, returns domain errors as values with consumer-friendly messages, and includes a doc comment stating purpose and failure modes."
+      }
     }
   }
 }

@@ -15,6 +15,21 @@
         "issues": [],
         "reason": "Review input has 280 words."
       }
+    },
+    "244fa7f3:e028f7f6": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-14T21:40:44.769Z",
+      "content_hash": "41cb158d",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document satisfies all required frontmatter fields (title, type, alias, description) and content requirements (H1 heading with name/alias, prose stating expertise). No placeholder text is present."
+      }
     }
   }
 }
