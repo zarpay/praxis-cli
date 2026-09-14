@@ -115,6 +115,79 @@ describe("OpenRouterProvider", () => {
     });
   });
 
+  describe("malformed tool-call arguments", () => {
+    /** A response whose tool call carries `args` verbatim, valid JSON or not. */
+    function rawArgumentsResponse(args: string, finishReason: string): object {
+      return {
+        choices: [
+          {
+            finish_reason: finishReason,
+            message: {
+              role: "assistant",
+              content: null,
+              tool_calls: [
+                {
+                  id: "call_1",
+                  type: "function",
+                  function: { name: "validation_fail", arguments: args },
+                },
+              ],
+            },
+          },
+        ],
+      };
+    }
+
+    /** The message of the error one review threw. */
+    async function failureMessage(args: string, finishReason: string): Promise<string> {
+      useOpenRouterResponse(server, rawArgumentsResponse(args, finishReason));
+
+      return await new OpenRouterProvider()
+        .review(request())
+        .then(() => "")
+        .catch((err: Error) => err.message);
+    }
+
+    it("reports the parser's own complaint rather than swallowing it", async () => {
+      const broken = `{"reason": "${"padding ".repeat(20)}" "issues": []}`;
+      const message = await failureMessage(broken, "tool_calls");
+
+      expect(message).toContain("not valid JSON");
+      // The parser names what it expected and where; that is the whole
+      // diagnostic, and it used to be discarded.
+      expect(message).toMatch(/position \d+|Expected|Unexpected/);
+    });
+
+    it("shows the text around the failure, not just a length", async () => {
+      const broken = `{"reason": "${"padding ".repeat(20)}" "issues": []}`;
+      const message = await failureMessage(broken, "tool_calls");
+
+      expect(message).toContain("near:");
+      expect(message).toContain("padding");
+    });
+
+    it("does not blame max_tokens when the model finished on its own", async () => {
+      const message = await failureMessage('{"reason": "a" "issues": []}', "tool_calls");
+
+      expect(message).toContain("was not truncated");
+      expect(message).not.toContain("raise max_tokens");
+    });
+
+    it("blames max_tokens only when the response was actually cut off", async () => {
+      const message = await failureMessage('{"reason": "cut off here', "length");
+
+      expect(message).toContain("cut off");
+      expect(message).toContain("raise max_tokens");
+    });
+
+    it("makes a raw newline visible instead of breaking the message over lines", async () => {
+      const message = await failureMessage('{"reason": "line one\nline two"}', "tool_calls");
+
+      expect(message).toContain("\\n");
+      expect(message.split("\n")).toHaveLength(1);
+    });
+  });
+
   describe("request construction", () => {
     it("requests OpenRouter usage accounting on openrouter.ai hosts", async () => {
       const bodies: Record<string, unknown>[] = [];

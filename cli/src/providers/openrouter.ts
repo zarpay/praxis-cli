@@ -176,26 +176,35 @@ export class OpenRouterProvider implements ReviewProvider {
   /**
    * The tool call's arguments, parsed — with an instructive failure.
    *
-   * Some backends return truncated or empty argument strings (a
-   * completion cut off at max_tokens, or a model quirk); naming the
-   * finish_reason and showing the tail turns a bare "unexpected end of
-   * JSON" into something a config edit can fix.
+   * Two different things arrive here and they want opposite advice. A
+   * completion cut off at max_tokens ends mid-token and is fixed in
+   * config; a model that simply emitted bad JSON — an unescaped quote
+   * or a raw newline inside a long `reason` — ran to completion and is
+   * fixed by rerunning. `finish_reason` tells them apart, so only the
+   * truncated case is told to raise max_tokens.
+   *
+   * The parse error itself is what localizes the fault, so it is
+   * reported rather than swallowed, with the text either side of the
+   * position it names.
    */
   private parseArguments(toolCall: ToolCall, data: ChatCompletionResponse): unknown {
     const raw = toolCall.function.arguments;
 
     try {
       return JSON.parse(raw) as unknown;
-    } catch {
+    } catch (err) {
       const finishReason =
         (data.choices[0] as { finish_reason?: string }).finish_reason ?? "unknown";
-      const head = raw.length > 80 ? `${raw.slice(0, 80)}…` : raw;
-      const tail = raw.length > 80 ? `…${raw.slice(-80)}` : "";
+      const reason = err instanceof Error ? err.message : String(err);
+      const truncated = finishReason === "length";
+      const advice = truncated
+        ? "the response was cut off — raise max_tokens in the model's options"
+        : "the response was not truncated, so the model emitted malformed JSON — rerun to retry";
 
       throw errors.reviewerApiError(
         this.name,
         200,
-        `tool call arguments are not valid JSON (finish_reason: ${finishReason}, ${raw.length} chars, head: "${head}", tail: "${tail}") — if truncated, raise max_tokens in the model's options`,
+        `tool call arguments are not valid JSON: ${reason} — near: "${excerpt(raw, reason)}" (finish_reason: ${finishReason}, ${raw.length} chars; ${advice})`,
       );
     }
   }
@@ -210,4 +219,34 @@ export class OpenRouterProvider implements ReviewProvider {
       costUsd: usage.cost ?? null,
     };
   }
+}
+
+/** Characters of context shown either side of a parse failure. */
+const EXCERPT_RADIUS = 60;
+
+/**
+ * The text around the position a parse error names.
+ *
+ * V8 reports "… at position N" for anything long enough to matter; when
+ * it does not, the head of the payload is the next best thing — the
+ * point is always to show the caller actual characters rather than a
+ * length.
+ */
+function excerpt(raw: string, reason: string): string {
+  const at = /at position (\d+)/.exec(reason)?.[1];
+
+  if (at === undefined) return clip(raw, 0, EXCERPT_RADIUS * 2);
+
+  const position = Number(at);
+
+  return clip(raw, Math.max(0, position - EXCERPT_RADIUS), position + EXCERPT_RADIUS);
+}
+
+/** A slice of the payload, marked where it was cut, with newlines made visible. */
+function clip(raw: string, from: number, to: number): string {
+  const lead = from > 0 ? "…" : "";
+  const trail = to < raw.length ? "…" : "";
+  const body = raw.slice(from, to).replace(/\n/g, "\\n").replace(/\r/g, "\\r");
+
+  return `${lead}${body}${trail}`;
 }
