@@ -72,6 +72,12 @@ export interface EvalUnit {
   files: string[];
 }
 
+/** One reviewable unit and the spec that judges it. */
+export interface GovernedUnit {
+  unit: EvalUnit;
+  domain: ValidationDomain;
+}
+
 /** A validation domain: a spec file and the targets it validates. */
 export interface ValidationDomain {
   /** Directory containing the spec file. */

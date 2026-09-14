@@ -81,6 +81,8 @@ One CLI, two reading styles. The split is by **command default plus `--json`**, 
 - `praxis debt report [--json]` (07)
 - `praxis harness suggest` — roadmap (withdrawn 2026-09-07 with the harness surfaces, roadmap/08)
 
+- `praxis feedback <target> [--reviewer] [--verbose] [--json] [--no-cache]` — review for the person writing the code (decided 2026-09-14). Recorded in full, cost included, under `scope: "advisory"`; its critiques never enter triage or curate and never reach a report, and it never writes the verdict cache — a cache hit writes no critique record, so a cached advisory verdict would suppress the evidence the next measurement run owes. A **top-level verb, not an `eval` subcommand**, precisely so the family rule below stays true: a second reviewer-invoking `eval` subcommand would blur it. Targets resolve to the units their specs define, so a directory works and a named cohort member reviews its cohort; an ungoverned or excluded path is refused. Always exits 0 — advice, not a gate.
+
 The family rule (vocabulary, Terminology decisions): **`eval run` writes — it invokes reviewers; `eval review` appends human validity decisions; every other `eval` subcommand reads.** v1's `praxis validate` aliases were stripped 2026-08-31 — v2 accepts only v2 spellings.
 
 Each lands with agent-grade help per the rules above; the inventory stays subordinate to the documents that define the semantics.

@@ -31,6 +31,11 @@ interface CritiqueRow {
   state: CritiqueState;
   /** The effective label, when state is "labeled". */
   axiomId: string | null;
+  /**
+   * From a `praxis feedback` run: listed here, because browsing the
+   * ledger is this report's job, but never offered to a queue.
+   */
+  advisory: boolean;
 }
 
 /** The listing, with the whole ledger's tallies beside the rows. */
@@ -68,9 +73,11 @@ const buildCritiquesReportService: Service<BuildCritiquesReportInput, CritiquesR
   };
 
   const rows: CritiqueRow[] = [];
+  const runStore = new RunStore(cfg);
+  const advisory = runStore.advisoryRunIds();
 
-  for (const critique of new RunStore(cfg).critiques()) {
-    const row = rowFor(critique, decisions.get(critique.id), activeSet);
+  for (const critique of runStore.critiques()) {
+    const row = rowFor(critique, decisions.get(critique.id), activeSet, advisory);
 
     totals[row.state]++;
 
@@ -103,8 +110,10 @@ function rowFor(
   },
   decision: CritiqueDecision | undefined,
   activeSet: string,
+  advisory: Set<string>,
 ): CritiqueRow {
   const base = {
+    advisory: advisory.has(critique.run_id),
     id: critique.id,
     runId: critique.run_id,
     timestamp: critique.timestamp,

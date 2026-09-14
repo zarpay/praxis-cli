@@ -40,6 +40,7 @@ export type PraxisErrorCode =
   | "MERGE_NEEDS_SOURCES"
   | "MERGE_SURVIVOR_NOT_ACTIVE"
   | "TARGET_IS_DIRECTORY"
+  | "TARGET_NOT_GOVERNED"
   | "AXIOM_NOT_ACTIVE"
   | "CURATOR_NOT_CONFIGURED"
   | "CURATOR_MISSING_FIELD"
@@ -373,6 +374,18 @@ export const errors = {
     return new PraxisError(
       "TARGET_IS_DIRECTORY",
       `"${path}" is a directory. Name the files to review — a glob works: \`praxis eval run "${path}/*"\` — or run the whole corpus with \`praxis eval run\`.`,
+    );
+  },
+
+  /**
+   * A feedback target no expert governs — unmatched by every spec's
+   * `paths:`, or shielded by one's `excludes:`.
+   */
+  targetNotGoverned(path: string): PraxisError {
+    return new PraxisError(
+      "TARGET_NOT_GOVERNED",
+      `No expert covers "${path}" — no spec's \`paths:\` matches it, or a spec's \`excludes:\` shields it. ` +
+        "There is no standard to give feedback against. `praxis status` lists what each spec governs.",
     );
   },
 

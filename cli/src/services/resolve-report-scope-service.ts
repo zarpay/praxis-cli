@@ -47,6 +47,9 @@ const resolveReportScopeService: Service<ResolveReportScopeInput, ScopedLedger> 
     });
 
   const runs = allRuns.filter((run) => {
+    // Advisory runs are feedback on code in flight, never measurement.
+    if (run.scope === "advisory") return false;
+
     if (branch && run.branch !== branch) return false;
 
     if (requestedShas && (run.commit_sha === null || !requestedShas.includes(run.commit_sha))) {

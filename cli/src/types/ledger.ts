@@ -14,7 +14,14 @@ export type LedgerTrigger = "manual" | "ci" | "watch";
  * "diff" is historical — written by the withdrawn diff-units feature
  * (roadmap, 2026-09-07); readers tolerate it, nothing produces it.
  */
-export type LedgerScope = "corpus" | "diff" | "files";
+/**
+ * What a run covered.
+ *
+ * `advisory` is a `praxis feedback` run: fully recorded, with its cost,
+ * and excluded from every queue and every report — it describes code in
+ * flight, not code that landed.
+ */
+export type LedgerScope = "corpus" | "diff" | "files" | "advisory";
 
 /**
  * Reviewer calibration state stamped on a run. "uncalibrated" is

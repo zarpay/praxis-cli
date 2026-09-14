@@ -28,7 +28,7 @@ Append-only JSONL under `.praxis/ledger/`, partitioned by run, committed to git 
 
 ```
 run_id, timestamp, commit_sha, branch, trigger (manual | ci | watch)
-scope (corpus | diff | files), files_evaluated
+scope (corpus | diff | files | advisory), files_evaluated
 reviewer_name, reviewer_model, reviewer_hash, prompt_tokens, completion_tokens, cost_usd
 cache_hits, cache_misses
 pass / warn / fail / unverified counts, critique_count
@@ -39,6 +39,8 @@ baseline: boolean                            # epoch-opening validate all (02)
 `calibration_status_at_run` is the literal `"uncalibrated"` — calibration
 is withdrawn to the roadmap (2026-09-07); the field stays so records keep
 their shape, and historical `calibrated`/`stale` stamps remain readable.
+
+`advisory` (added 2026-09-14) is a `praxis feedback` run: review for the person writing the code. It records everything a run records — the run, its critiques, its cost, full provenance — because the ledger answers what has ever happened. What it never does is **queue**: triage skips advisory critiques, so curate never sees them, and every report already reads corpus only. The reason is volume, not secrecy — a team asking for feedback on files in flight would otherwise bury the critiques about code that shipped. Two invariants make it safe. It **never writes the verdict cache**: a cache hit writes no critique record, so a cached advisory verdict would silently suppress the evidence the next measurement run owes — the one failure that would make the mode worse than not having it. And it is recorded, not suppressed, so cost stays visible and `eval critiques` still shows what the reviewers said.
 
 `diff` (historical — withdrawn 2026-09-07, roadmap; optional, on withdrawn scope `"diff"` runs only): the measured range and its coverage — `base_ref`, `base_sha`, `head_sha`, `changed_files`, `covered`, `uncovered_count`, `uncovered_paths`, `resolved_count`. The head sha is the run's anchor even on a dirty tree, because both sides are read via `git show`, never disk (12). `spec_units` (added 2026-09-03, optional): evaluated units per governing spec, stamped at write time — the applicable-opportunity denominator 07's rates divide by. Absent on older records, whose per-run rates suppress honestly. `reviewer_hash` (added at implementation, 2026-09-02) is what makes the derived-epoch promise true: `reviewer_model` alone cannot see a temperature, prompt-surface, or options change. `unverified` counts units that could not be reviewed at all (03) — never violations.
 

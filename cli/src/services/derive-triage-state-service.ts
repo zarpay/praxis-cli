@@ -67,8 +67,12 @@ const deriveTriageStateService: Service<NoInput, TriageState> = (cfg) => {
   const pending: PendingCritique[] = [];
   const unidentified: PendingCritique[] = [];
 
-  const open = new RunStore(cfg)
+  const runStore = new RunStore(cfg);
+  const advisory = runStore.advisoryRunIds();
+
+  const open = runStore
     .critiques()
+    .filter((critique) => !advisory.has(critique.run_id))
     .filter((critique) => critique.axiom_id === null)
     .filter((critique) => !isSettled(decisions.get(critique.id)));
 
