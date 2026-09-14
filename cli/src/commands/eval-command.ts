@@ -84,8 +84,14 @@ Examples:
     .description(
       "Judge the validity of unlabeled critiques one at a time; dismiss the invalid (recorded)",
     )
-    .option("--dismiss <critique-id>", "scripted: dismiss this critique (with --reason)")
-    .option("--reinstate <critique-id>", "scripted: lift this critique's dismissal (with --reason)")
+    .option(
+      "--dismiss <critique-ids...>",
+      "scripted: dismiss these critiques, one reason for all (with --reason)",
+    )
+    .option(
+      "--reinstate <critique-ids...>",
+      "scripted: lift these critiques' dismissals, one reason for all (with --reason)",
+    )
     .option("--reason <why>", "why — recorded with the decision")
     .addHelpText(
       "after",

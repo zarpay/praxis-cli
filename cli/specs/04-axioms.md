@@ -157,7 +157,22 @@ reviewer-trust signal — many dismissals mean the specs disagree with the
 humans, or the reviewers are performing poorly. Curate therefore never
 dismisses: a cluster with no axiom yet is **held** — nothing written,
 the critiques stay unmatched and ride into the next session's cohort,
-where new critiques may complete the pattern. Before this date curate
+where new critiques may complete the pattern. On a hold
+suggestion the session asks `[h]old / [r]eview` rather than
+`[a]ccept / [s]kip` (2026-09-14): accepting and skipping a hold both
+wrote nothing and left the critiques queued, differing only in which
+counter the summary printed, so the pair implied a consequence it did
+not have. A cluster the human
+judges *untrue* rather than uncategorized is held the same way and
+**handed off** (2026-09-14): curate prints the cluster's ids in the
+shape `eval review --dismiss` takes, and writes nothing. The boundary
+is about which judgment is being made, not which screen it is made on —
+so the dismissal is still authored in review, under its own reason,
+while the tedium it was costing (copying ids out one at a time) is
+gone. `eval review --dismiss` accordingly takes **several ids under one
+reason**, minting one dismissal record each: the batch is an input
+convenience, never a record shape, so the join, reports and
+reinstatement are untouched. Before this date curate
 wrote dismissals for "unassignable" clusters and for gate refusals;
 those were membership judgments wearing a validity record, and the
 demo's were reinstated on 2026-09-09.

@@ -82,12 +82,109 @@ function triageRecords(root: string): TriageRecord[] {
 }
 
 describe("reviewCritiquesOrchestrator", () => {
+  it("--dismiss takes several critiques under one reason, a record each", async () => {
+    const root = reviewProject();
+    const { logger, output } = createCaptureLogger();
+
+    const outcome = await reviewCritiquesOrchestrator(testContext(root, logger), {
+      dismiss: ["r1:1", "r1:2"],
+      reason: "the spec permits this pattern",
+    });
+
+    const records = triageRecords(root);
+    const state = deriveTriageStateService(testConfig(root), {});
+
+    expect(outcome).toBe("ok");
+    // The batch is an input convenience; the ledger keeps one record per
+    // critique so reports and reinstatement are unchanged.
+    expect(records).toHaveLength(2);
+    expect(records.every((record) => record.kind === "dismissal")).toBe(true);
+    expect(
+      records.every(
+        (record) =>
+          record.kind === "dismissal" && record.reason === "the spec permits this pattern",
+      ),
+    ).toBe(true);
+    expect(state.pending).toHaveLength(0);
+    expect(state.unidentified).toHaveLength(0);
+    expect(output()).toContain("2 critiques dismissed");
+  });
+
+  it("--dismiss writes nothing at all when any id is unknown", async () => {
+    const root = reviewProject();
+    const { logger } = createCaptureLogger();
+
+    const attempt = reviewCritiquesOrchestrator(testContext(root, logger), {
+      dismiss: ["r1:1", "r1:nope"],
+      reason: "a typo in the fifth id must not dismiss the first four",
+    });
+
+    await expect(attempt).rejects.toThrow();
+    expect(triageRecords(root)).toEqual([]);
+  });
+
+  it("--dismiss leaves an already-dismissed critique alone and says so", async () => {
+    const root = reviewProject();
+    seedEarlierSession(root, [
+      {
+        kind: "dismissal",
+        critique_id: "r1:1",
+        reason: "already judged",
+        timestamp: "2026-01-01T00:00:00.000Z",
+      },
+    ]);
+    const { logger, output } = createCaptureLogger();
+
+    await reviewCritiquesOrchestrator(testContext(root, logger), {
+      dismiss: ["r1:1", "r1:2"],
+      reason: "the spec permits this pattern",
+    });
+
+    const minted = triageRecords(root).filter(
+      (record) => record.kind === "dismissal" && record.reason !== "already judged",
+    );
+
+    expect(minted).toHaveLength(1);
+    expect(minted[0]).toMatchObject({ critique_id: "r1:2" });
+    expect(output()).toContain("Already dismissed");
+  });
+
+  it("--reinstate takes several critiques under one reason", async () => {
+    const root = reviewProject();
+    seedEarlierSession(root, [
+      {
+        kind: "dismissal",
+        critique_id: "r1:1",
+        reason: "wrong",
+        timestamp: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        kind: "dismissal",
+        critique_id: "r1:2",
+        reason: "wrong",
+        timestamp: "2026-01-01T00:00:00.000Z",
+      },
+    ]);
+    const { logger, output } = createCaptureLogger();
+
+    const outcome = await reviewCritiquesOrchestrator(testContext(root, logger), {
+      reinstate: ["r1:1", "r1:2"],
+      reason: "misread the spec",
+    });
+
+    const reinstatements = triageRecords(root).filter((record) => record.kind === "reinstatement");
+
+    expect(outcome).toBe("ok");
+    expect(reinstatements).toHaveLength(2);
+    expect(output()).toContain("2 critiques reinstated");
+  });
+
   it("--dismiss records the validity judgment and removes the critique from every queue", async () => {
     const root = reviewProject();
     const { logger, output } = createCaptureLogger();
 
     const outcome = await reviewCritiquesOrchestrator(testContext(root, logger), {
-      dismiss: "r1:2",
+      dismiss: ["r1:2"],
       reason: "the spec never forbids queues",
     });
 
@@ -116,7 +213,7 @@ describe("reviewCritiquesOrchestrator", () => {
     const { logger } = createCaptureLogger();
 
     const outcome = await reviewCritiquesOrchestrator(testContext(root, logger), {
-      reinstate: "r1:2",
+      reinstate: ["r1:2"],
       reason: "misread the spec",
     });
 
@@ -132,7 +229,7 @@ describe("reviewCritiquesOrchestrator", () => {
     const { logger, output } = createCaptureLogger();
 
     const outcome = await reviewCritiquesOrchestrator(testContext(root, logger), {
-      reinstate: "r1:2",
+      reinstate: ["r1:2"],
       reason: "misread",
     });
 
@@ -145,7 +242,7 @@ describe("reviewCritiquesOrchestrator", () => {
     const root = reviewProject();
 
     const dismissWithoutReason = reviewCritiquesOrchestrator(testContext(root), {
-      dismiss: "r1:2",
+      dismiss: ["r1:2"],
     });
 
     await expect(dismissWithoutReason).rejects.toThrow(/--dismiss needs --reason/);
@@ -158,7 +255,7 @@ describe("reviewCritiquesOrchestrator", () => {
     ]);
 
     const outcome = await reviewCritiquesOrchestrator(testContext(root), {
-      dismiss: "r1:1",
+      dismiss: ["r1:1"],
       reason: "the reviewer hallucinated this",
     });
 
@@ -179,7 +276,7 @@ describe("reviewCritiquesOrchestrator", () => {
     const root = reviewProject();
 
     const dismissUnknown = reviewCritiquesOrchestrator(testContext(root), {
-      dismiss: "r9:9",
+      dismiss: ["r9:9"],
       reason: "x",
     });
 

@@ -182,10 +182,13 @@ The validity session — the one place a critique is judged **invalid**. Triage 
 ```bash
 praxis eval review src/services
 praxis eval review --dismiss 20260907T101932101Z-c0f5baa5:6 --reason "the spec permits this"
+praxis eval review --dismiss <id> <id> <id> --reason "the spec permits this"
 praxis eval review --reinstate 20260907T101932101Z-c0f5baa5:6 --reason "misread the spec"
 ```
 
-Interactively, every **untriaged** or **unmatched** critique in scope comes up one at a time — a critique labeled under an axiom is valid by definition (a human or the matcher found it an instance of a standard), so it is never offered and `--dismiss` refuses it; `axioms reassign` is the tool when it belongs elsewhere. Each card shows where it was said, by which reviewer, the words, and where the label lifecycle has it, and you choose `[d]ismiss / [n]ext / [q]uit`. A dismissal takes a reason and is appended to the ledger. A dismissed critique is not evidence: it leaves every queue, is never labeled or curated, and `axioms reassign` refuses it, until `--reinstate` lifts the dismissal.
+`--dismiss` and `--reinstate` take **several ids under one reason** — the shape `praxis axioms curate` hands you when you mark a whole cluster for review. Each critique still gets its own record, so reports and reinstatement are unchanged; one unknown id refuses the whole batch rather than dismissing the ids before it.
+
+Interactively, every **untriaged** or **unmatched** critique in scope comes up one at a time — a critique labeled under an axiom is valid by definition (a human or the matcher found it an instance of a standard), so it is never offered and `--dismiss` refuses it; `axioms reassign` is the tool when it belongs elsewhere. Each card shows where it was said, by which reviewer, the words, and where the label lifecycle has it, and you choose `[d]ismiss / [r]est / [n]ext / [q]uit` — `[r]est` dismisses the current critique and every one remaining in scope under a single reason. A dismissal takes a reason and is appended to the ledger. A dismissed critique is not evidence: it leaves every queue, is never labeled or curated, and `axioms reassign` refuses it, until `--reinstate` lifts the dismissal.
 
 The dismissal count over all critiques is the **reviewer-trust signal**, printed at the end of the session and on `eval report`: many dismissals mean the specs disagree with the humans, or the reviewers are drifting. Because curate never dismisses, the number means exactly that.
 
