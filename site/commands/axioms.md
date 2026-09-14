@@ -38,7 +38,7 @@ The guidance on what makes a good axiom is given where the draft is written: the
 **The waits are long, and the terminal says so.** A clustering call reads a whole spec, up to thirty critiques and every active axiom, so 30-90 seconds is normal; the traceability check that runs the moment you accept a draft is another. While either is in flight, a line holds the terminal with a spinner and a clock counting up:
 
 ```
-⠼ Clustering 30 critique(s) for src/services/README.md — 1:12
+⣻ Clustering 30 critique(s) for src/services/README.md — 1:12
 ```
 
 It repaints in place and disappears when the call lands, leaving nothing in the scrollback. The session names the cost once before the first call. Outside a terminal — piped, redirected, in CI, or under `--yes` in a script — there is no spinner and nothing on stdout.
