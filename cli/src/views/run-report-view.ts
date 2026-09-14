@@ -57,7 +57,13 @@ function spend(run: ReviewAllResult, cached: boolean, elapsedMs: number): string
 
   if (cost !== null && cost !== undefined) return `${time}, Cost: $${cost.toFixed(4)}`;
 
-  if (cached && run.cacheStats.misses === 0) return `${time} (from cache)`;
+  // Unverified units called a reviewer and failed, and a failed call is
+  // neither a hit nor a miss — so "no misses" alone does not mean
+  // nothing was attempted, and claiming the time was free would be a lie
+  // about a run that just spent ninety seconds.
+  const nothingAttempted = run.cacheStats.misses === 0 && run.summary.unverified === 0;
+
+  if (cached && nothingAttempted) return `${time} (from cache)`;
 
   return time;
 }

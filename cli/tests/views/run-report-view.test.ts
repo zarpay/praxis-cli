@@ -62,6 +62,21 @@ describe("runReportView", () => {
     expect(reportText(runReportView(cachedRun))).toContain("Time: 3s (from cache)");
   });
 
+  it("never claims a run was cached when a call was attempted and failed", () => {
+    const run = finished({ unverified: 1 });
+    // A failed call is neither a hit nor a miss, so "no misses" alone
+    // does not mean nothing was attempted.
+    const attempted = {
+      ...run,
+      cached: true,
+      elapsedMs: 90_000,
+      run: { ...run.run, cacheStats: { hits: 68, misses: 0 } },
+    };
+
+    expect(reportText(runReportView(attempted))).toContain("Time: 1m 30s");
+    expect(reportText(runReportView(attempted))).not.toContain("from cache");
+  });
+
   it("reports the cost when reviewers were actually called", () => {
     const run = finished({});
     const paidRun = {

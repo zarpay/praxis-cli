@@ -177,15 +177,16 @@ export class OpenRouterProvider implements ReviewProvider {
    * The tool call's arguments, parsed — with an instructive failure.
    *
    * Two different things arrive here and they want opposite advice. A
-   * completion cut off at max_tokens ends mid-token and is fixed in
-   * config; a model that simply emitted bad JSON — an unescaped quote
-   * or a raw newline inside a long `reason` — ran to completion and is
-   * fixed by rerunning. `finish_reason` tells them apart, so only the
-   * truncated case is told to raise max_tokens.
+   * completion cut off at max_tokens ends mid-value and is fixed in
+   * config; a model that emitted bad JSON — an unescaped quote, a raw
+   * newline inside a long `reason` — ran to completion and is fixed by
+   * rerunning.
    *
-   * The parse error itself is what localizes the fault, so it is
-   * reported rather than swallowed, with the text either side of the
-   * position it names.
+   * What tells them apart is *where* the parser died, not
+   * `finish_reason`, which some backends report as `tool_calls` even
+   * for arguments they cut. So the parse error is reported rather than
+   * swallowed: it localizes the fault, and its position against the
+   * payload's length is the truncation signal.
    */
   private parseArguments(toolCall: ToolCall, data: ChatCompletionResponse): unknown {
     const raw = toolCall.function.arguments;
@@ -196,10 +197,7 @@ export class OpenRouterProvider implements ReviewProvider {
       const finishReason =
         (data.choices[0] as { finish_reason?: string }).finish_reason ?? "unknown";
       const reason = err instanceof Error ? err.message : String(err);
-      const truncated = finishReason === "length";
-      const advice = truncated
-        ? "the response was cut off — raise max_tokens in the model's options"
-        : "the response was not truncated, so the model emitted malformed JSON — rerun to retry";
+      const advice = truncationAdvice(raw, reason, finishReason);
 
       throw errors.reviewerApiError(
         this.name,
@@ -219,6 +217,30 @@ export class OpenRouterProvider implements ReviewProvider {
       costUsd: usage.cost ?? null,
     };
   }
+}
+
+/**
+ * What to tell the reader, from where the parse died.
+ *
+ * A parser that runs out of input reports a position at the end of the
+ * payload — the value was still open when the string stopped. That is
+ * truncation, and it is a far better signal than `finish_reason`, which
+ * some backends report as `tool_calls` even when the arguments were cut
+ * (observed on deepseek via OpenRouter, 2026-09-14: 1338 chars, failure
+ * at position 1338, finish_reason `tool_calls`). A failure anywhere
+ * else is a complete payload the model simply wrote badly.
+ */
+function truncationAdvice(raw: string, reason: string, finishReason: string): string {
+  const at = /at position (\d+)/.exec(reason)?.[1];
+  const endedEarly = at !== undefined && Number(at) >= raw.length - 1;
+
+  if (endedEarly || finishReason === "length") {
+    const despite = finishReason === "length" ? "" : ` despite finish_reason "${finishReason}"`;
+
+    return `the arguments end before the JSON closes${despite} — the response was cut off, so raise max_tokens in the model's options`;
+  }
+
+  return "the payload is complete but malformed — rerun to retry";
 }
 
 /** Characters of context shown either side of a parse failure. */

@@ -166,17 +166,29 @@ describe("OpenRouterProvider", () => {
       expect(message).toContain("padding");
     });
 
-    it("does not blame max_tokens when the model finished on its own", async () => {
+    it("does not blame max_tokens for a complete but malformed payload", async () => {
       const message = await failureMessage('{"reason": "a" "issues": []}', "tool_calls");
 
-      expect(message).toContain("was not truncated");
+      expect(message).toContain("complete but malformed");
       expect(message).not.toContain("raise max_tokens");
     });
 
-    it("blames max_tokens only when the response was actually cut off", async () => {
+    it("blames max_tokens when the response was cut off", async () => {
       const message = await failureMessage('{"reason": "cut off here', "length");
 
       expect(message).toContain("cut off");
+      expect(message).toContain("raise max_tokens");
+    });
+
+    it("trusts where the parser died over a finish_reason that says otherwise", async () => {
+      // Observed on deepseek via OpenRouter: arguments cut mid-array,
+      // finish_reason still "tool_calls". The position is at the end of
+      // the payload, which is what truncation looks like.
+      const cut = '{"reason": "ok", "issues": [{"text": "unclosed"}';
+      const message = await failureMessage(cut, "tool_calls");
+
+      expect(message).toContain("end before the JSON closes");
+      expect(message).toContain('despite finish_reason "tool_calls"');
       expect(message).toContain("raise max_tokens");
     });
 
