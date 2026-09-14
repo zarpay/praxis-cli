@@ -40,7 +40,14 @@ interface ChatCompletionResponse {
  * Request `options` are spread first, so they can add backend fields
  * (e.g. OpenRouter routing or reasoning settings) but never clobber
  * the protocol fields praxis owns: model, messages, tools,
- * tool_choice, temperature.
+ * tool_choice, temperature, stream.
+ *
+ * `stream` is owned and pinned false. This provider reads one whole
+ * JSON body and wants one tool call out of it; an SSE response would
+ * reach `response.json()` as a `data:` stream and fail to parse. Praxis
+ * shows a live elapsed line while a call runs (09) rather than
+ * streaming tokens — a tool call's arguments are not usable until they
+ * are complete — so nothing here has a reason to stream.
  */
 export class OpenRouterProvider implements ReviewProvider {
   readonly name = "openrouter";
@@ -104,6 +111,7 @@ export class OpenRouterProvider implements ReviewProvider {
         tools: request.tools,
         tool_choice: "required",
         temperature: request.temperature,
+        stream: false,
         ...(this.supportsUsageAccounting(request.baseUrl) && { usage: { include: true } }),
       }),
     });

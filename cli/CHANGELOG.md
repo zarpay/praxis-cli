@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **A long model call now holds the terminal instead of going silent.** `praxis axioms curate` could sit for 30-90 seconds with nothing on screen — twice per cluster, since the traceability check fires the instant you accept a draft — and a terminal that prints nothing for a minute reads as a hang, so sessions got killed mid-cohort. Every long call now shows one line on stderr with a spinner and a clock counting up (`⠼ Clustering 30 critique(s) for src/services/README.md — 1:12`), repainted in place and erased when the call lands. Wired into curate's clustering and traceability calls, `axioms triage`'s labeling batch, and `eval run`'s reviewer calls on a cache miss; curate also names the 30-90s cost once up front. Animation needs a TTY — piped, in CI, or under `--yes`, the channel is silent and stdout is untouched. New framework component: `Waiting`.
 
+### Fixed
+
+- **A reviewer's `options` can no longer turn on streaming and break the run.** `options` is spread into the OpenRouter request body ahead of the fields praxis owns, and `stream` was not one of them — so `"options": { "stream": true }` in a config reached the wire, came back as a `data:` event stream, and died in `response.json()`. `stream` now joins `model`, `messages`, `tools`, `tool_choice` and `temperature` as a field praxis owns, pinned off. Reviewer hashes are computed over the config, not the request body, so no cache is invalidated.
+
 ### Changed
 
 - **`praxis eval run` names targets by their path, not their filename.** Each progress heading now prints the target's root-relative path with the directory in gray and the filename in bold — `[1/19] src/services/apply-discount.ts` where it used to print `apply-discount.ts` alone. A basename cannot say which of two same-named files a critique landed on, and cannot be pasted back into `eval run <target>`. The fast loop's verdict badge (`[PASS] src/services/redeem-coupon.ts`) styles its path the same way, as the caller typed it. New framework component: `pathLabel`.
