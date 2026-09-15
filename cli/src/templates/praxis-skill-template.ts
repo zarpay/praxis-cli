@@ -26,13 +26,13 @@ Every run also appends evidence to the ledger: one run record per reviewer plus 
 
 **When the change is done.** \`praxis eval run <path>\` is the run that counts — it writes the verdict to the cache and the critique to the ledger, and it is the verdict CI will read. Findings name the standard behind them: \`praxis axioms show <id>\` for a cited \`[AX-3f9c2d]\`, and \`praxis eval verdict <path> --verbose\` to re-read the reasoning later without paying again.
 
-**Before pushing.** \`praxis eval run\` over the corpus, or \`--type <type>\` for the domain you touched. Unchanged files come back from the cache, so the bill is only what you changed.
+**Before pushing.** \`praxis eval run\` over the corpus, or name what you touched — \`eval run\` takes files, so a directory goes in as a glob: \`praxis eval run "src/services/*"\`. Unchanged files come back from the cache, so the bill is only what you changed.
 
-**Resolving a backlog.** When a run comes back with findings across many files, take the whole list first — the corpus, or \`--type <type>\` for one domain — and work it one file at a time, each fix the minimum the finding asks for and verified before the next. Fixing opportunistically as you read leaves no way to tell what is left. Close with a full run, which catches what the fixes moved.
+**Resolving a backlog.** When a run comes back with findings across many files, take the whole list first — the corpus, or the glob covering what one spec governs — and work it one file at a time, each fix the minimum the finding asks for and verified before the next. Fixing opportunistically as you read leaves no way to tell what is left. Close with a full run, which catches what the fixes moved.
 
 **When the reviewer is wrong.** Dismiss it; do not skip it. \`praxis eval critiques <path> --state untriaged\` for the id, then \`praxis eval review --dismiss <id> --reason "…"\`. A skipped critique waits in the queue forever, and dismissals are the reviewer-trust signal — a run of them means the spec is what needs the edit.
 
-**When the standard itself changes.** Editing a spec invalidates every verdict it produced; re-run that type to see the corpus against the new bar. Experts and practices start from \`praxis add\`, and \`praxis compile\` rebuilds the profiles from them.
+**When the standard itself changes.** Editing a spec invalidates every verdict it produced; re-run the files it governs to see them against the new bar. Experts and practices start from \`praxis add\`, and \`praxis compile\` rebuilds the profiles from them.
 
 The read side — \`eval report\`, \`debt report\`, \`eval critiques\`, \`axioms show\` — never calls a reviewer, so it costs nothing to consult at any point.
 
@@ -65,7 +65,7 @@ praxis status                       # document counts, review coverage, structur
 # Review — reviewer calls happen only on cache misses; unchanged content is free
 praxis eval run                     # the whole corpus
 praxis eval run <path>              # one file against its spec (the fast loop)
-praxis eval run --type <type>       # one spec's targets (the "By type:" label from a full run)
+praxis eval run "<glob>"            # the subset you name — files, never a bare directory
 praxis feedback <path>              # same reviewers, as advice: never queued, never cached
 praxis eval ci                      # the full run CI makes, writing no ledger record
 
