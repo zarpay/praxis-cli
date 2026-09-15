@@ -40,7 +40,7 @@ expected.json:
 **Composition rule: cases must include true positives and true negatives.** A set built only from observed reviewer false positives trains the loop toward a reviewer that passes everything; leniency must cost agreement score exactly as over-triggering does. Sources for cases:
 
 - Spec `exemplars` (03, scoping) — spec-blessed positives, free seed cases.
-- Disputed verdicts from real runs, once a human adjudicates ("confirmed false positive" outcomes from resolution workflows like `/praxis-resolve` are exactly this).
+- Disputed verdicts from real runs, once a human adjudicates (a critique dismissed through `eval review` is exactly this).
 - Deliberately constructed minimal violations per axiom — the unit tests of the spec.
 
 Cases are frozen against a spec _content hash_. When the spec changes materially, affected cases are re-adjudicated or retired — a spec edit invalidating half the calibration set is correct behavior, and visible.

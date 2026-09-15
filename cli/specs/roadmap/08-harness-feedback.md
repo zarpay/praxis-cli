@@ -16,7 +16,7 @@ The point of the whole system: evidence about _which harness elements to change_
 
 **Praxis emits a brief. A coding agent drafts the change. A human ratifies the PR.**
 
-Praxis does not edit the harness, and does not embed a second LLM loop of its own (a loop that would itself need evaluating — the recursion has to stop somewhere, and it stops here). The drafting happens via a generated slash command, following the exact mechanism the Claude Code plugin already uses for `/praxis-resolve`: `praxis harness suggest` produces the brief; `/praxis-harness` (generated into the plugin's commands, alongside the existing ones in `ensureCommands()`) instructs the coding agent to read it, propose harness edits, and open a reviewable PR.
+Praxis does not edit the harness, and does not embed a second LLM loop of its own (a loop that would itself need evaluating — the recursion has to stop somewhere, and it stops here). The drafting happens via a generated slash command, written the way the Claude Code plugin writes the praxis skill — one typed template, emitted by `ensureCommands()`: `praxis harness suggest` produces the brief; `/praxis-harness` instructs the coding agent to read it, propose harness edits, and open a reviewable PR. It would be the plugin's only command, the retired `/praxis-resolve` having shown that a command restating the skill earns nothing; this one carries a brief the skill cannot.
 
 ## The fast loop: live feedback to the agent
 

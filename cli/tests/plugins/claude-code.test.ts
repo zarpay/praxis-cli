@@ -271,33 +271,29 @@ describe("ClaudeCodePlugin", () => {
     expect(pluginJson.keywords).toEqual(["ai", "agents"]);
   });
 
-  it("writes praxis-resolve command to commands/ directory", () => {
+  it("writes no praxis-resolve command", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
     plugin.compile("Content", metadata({ name: "tester", description: "Test" }), "Tester");
 
-    const commandPath = join(root, "plugins", "praxis", "commands", "praxis-resolve.md");
-    expect(existsSync(commandPath)).toBe(true);
-
-    const content = readFileSync(commandPath, "utf-8");
-    expect(content).toContain("Iteratively resolve Praxis spec violations");
-    expect(content).toContain("$ARGUMENTS");
-    expect(content).toContain("praxis eval run");
+    expect(existsSync(join(root, "plugins", "praxis", "commands", "praxis-resolve.md"))).toBe(
+      false,
+    );
   });
 
-  it("writes praxis-resolve command to custom outputDir", () => {
+  it("clears a praxis-resolve command left by an earlier version", () => {
     const root = makeTmpdir();
-    const plugin = new ClaudeCodePlugin({
-      root,
-      logger: new Logger(),
-      pluginConfig: { name: "claude-code", outputDir: "./my-plugins/custom" },
-    });
+    const commandsDir = join(root, "plugins", "praxis", "commands");
+    mkdirSync(commandsDir, { recursive: true });
+    writeFileSync(join(commandsDir, "praxis-resolve.md"), "stale");
+    writeFileSync(join(commandsDir, "mine.md"), "a command praxis never wrote");
+    const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
     plugin.compile("Content", metadata({ name: "tester", description: "Test" }), "Tester");
 
-    const commandPath = join(root, "my-plugins", "custom", "commands", "praxis-resolve.md");
-    expect(existsSync(commandPath)).toBe(true);
+    expect(existsSync(join(commandsDir, "praxis-resolve.md"))).toBe(false);
+    expect(existsSync(join(commandsDir, "mine.md"))).toBe(true);
   });
 
   it("writes praxis skill to skills/praxis/SKILL.md", () => {

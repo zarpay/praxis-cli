@@ -28,6 +28,8 @@ Every run also appends evidence to the ledger: one run record per reviewer plus 
 
 **Before pushing.** \`praxis eval run\` over the corpus, or \`--type <type>\` for the domain you touched. Unchanged files come back from the cache, so the bill is only what you changed.
 
+**Resolving a backlog.** When a run comes back with findings across many files, take the whole list first — the corpus, or \`--type <type>\` for one domain — and work it one file at a time, each fix the minimum the finding asks for and verified before the next. Fixing opportunistically as you read leaves no way to tell what is left. Close with a full run, which catches what the fixes moved.
+
 **When the reviewer is wrong.** Dismiss it; do not skip it. \`praxis eval critiques <path> --state untriaged\` for the id, then \`praxis eval review --dismiss <id> --reason "…"\`. A skipped critique waits in the queue forever, and dismissals are the reviewer-trust signal — a run of them means the spec is what needs the edit.
 
 **When the standard itself changes.** Editing a spec invalidates every verdict it produced; re-run that type to see the corpus against the new bar. Experts and practices start from \`praxis add\`, and \`praxis compile\` rebuilds the profiles from them.
