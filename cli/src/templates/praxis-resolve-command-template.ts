@@ -23,64 +23,62 @@ Work through Praxis spec violations one at a time: discover the full scope first
 
 **Default: resolve both FAILs and WARNs.** Warnings are real deviations from the spec.
 
----
-
 ## Phase 1 — Discovery
 
-Run validation across the full scope **without** \`--fail-fast\` to see everything before touching anything:
+See everything before touching anything. Run without \`--fail-fast\`:
 
 \`\`\`bash
-# All specs:
-praxis eval run
-
-# Scoped to a type:
-praxis eval run --type <type>
-
-# Specific files (force fresh review):
-praxis eval run <path> --no-cache --verbose
+praxis eval run                  # all specs
+praxis eval run --type <type>    # one type
+praxis eval run <path> <path>    # named files
 \`\`\`
 
-Build a numbered checklist of every item to resolve. Do not begin fixing until the full list is in front of you.
+\`eval run\` takes files, not directories — for a whole directory, pass a glob: \`praxis eval run "backend/app/events/*"\`.
 
----
+Build a numbered checklist of every finding. Do not begin fixing until the full list is in front of you.
 
 ## Phase 2 — Resolve loop
 
-Work through the checklist one item at a time.
+Work the checklist one item at a time.
 
-**For each item:**
+1. **Understand the finding.** \`praxis eval verdict <path> --verbose\` replays the reviewer's full reasoning from the cache, with no API call. A finding citing \`[AX-xxxxxx]\` names a standard — \`praxis axioms show <id>\` gives its statement and the critiques behind it.
 
-1. **Read the file** and understand the violation. Use \`praxis eval verdict <path> --verbose\` to see cached reasoning, or \`praxis eval run <path> --verbose\` if no cached entry yet.
+2. **Fix** — the minimum change that satisfies the finding. Do not refactor unrelated code.
 
-2. **Fix** — apply the minimum change that satisfies the reported issue. Do not refactor unrelated code.
-
-3. **Verify** — the edit auto-invalidates the cache entry. Run:
+3. **Verify** — the edit auto-invalidates the cache entry:
    \`\`\`bash
    praxis eval run <path>
    \`\`\`
-   - \`✓ PASS\` or \`⚠ WARN\` (when only fixing FAILs) → check off, move to next
-   - Still failing → re-read the issue, fix again, verify again
-   - Confirmed false positive → note it explicitly, skip, move to next
+   - \`✓ PASS\`, or \`⚠ WARN\` when only FAILs are in scope → check it off
+   - Still failing → iterate with \`praxis feedback <path>\`: the same reviewers, but its critiques never enter the triage queue, because a half-fixed file is not evidence. It writes no cache entry, so run \`praxis eval run <path>\` once more when feedback comes back clean.
+   - A false positive → dismiss it on the record, don't skip it (below)
 
-4. Mark the checklist item done before moving on.
+4. Mark the item done before moving on.
 
----
+### False positives
+
+A finding the spec does not actually support is dismissed, not left sitting in the queue:
+
+\`\`\`bash
+praxis eval critiques <path> --state untriaged                  # the ids
+praxis eval review --dismiss <id> <id> --reason "why it is wrong"
+\`\`\`
+
+The dismissal rate is the reviewer-trust signal: a run of them means the spec and the humans disagree, and the spec is what needs the edit.
 
 ## Phase 3 — Final sweep
-
-After all items are addressed, run the full scope once more to confirm no regressions:
 
 \`\`\`bash
 praxis eval run
 \`\`\`
 
----
+Unchanged files come back from the cache, so this costs no reviewer calls beyond what you actually touched. An \`UNVERIFIED\` target — never reviewed, or a cohort too large for the model's context — fails the run without being a violation: that is a scoping problem, not something to fix in the file.
 
 ## Summary
 
 Report:
-- Files resolved and the common violation patterns
-- Any WARNs left and why (if \`--no-warns\` was used)
-- False positives encountered — these may indicate the spec needs clarification
+- Files resolved and the violation patterns they shared
+- WARNs left and why (if \`--no-warns\` was used)
+- Critiques dismissed and the reason — these are the spec's own bug reports
 `;
 }
