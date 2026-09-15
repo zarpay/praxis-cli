@@ -82,8 +82,6 @@ plugins/
     ├── agents/                  ← compiled agent files
     ├── .claude-plugin/
     │   └── plugin.json
-    ├── commands/
-    │   └── praxis-resolve.md    ← /praxis-resolve slash command
     └── skills/
         └── praxis/SKILL.md      ← the agent-facing CLI reference
 ```

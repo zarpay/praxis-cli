@@ -1,10 +1,9 @@
 import type { AgentMetadata, CompilerPlugin, CompilerPluginOptions } from "@/types.js";
 
-import { exists, readJson, writeJson, writeText } from "@/helpers/files-helper.js";
+import { exists, readJson, removeFile, writeJson, writeText } from "@/helpers/files-helper.js";
 import { joinPath, resolvePath } from "@/helpers/paths-helper.js";
 import evalTargetingTemplate from "@/templates/eval-targeting-template.js";
 import pluginManifestTemplate from "@/templates/plugin-manifest-template.js";
-import praxisResolveCommandTemplate from "@/templates/praxis-resolve-command-template.js";
 import praxisSkillTemplate from "@/templates/praxis-skill-template.js";
 
 /**
@@ -71,15 +70,23 @@ export class ClaudeCodePlugin implements CompilerPlugin {
   }
 
   /**
-   * Writes the agent-facing surface: the /praxis-resolve slash command
-   * and the praxis skill, so an agent in the project knows the CLI
-   * without being taught it in every session.
+   * Writes the agent-facing surface: the praxis skill, so an agent in
+   * the project knows the CLI without being taught it in every session.
+   *
+   * The `/praxis-resolve` slash command was the other half of this and
+   * is retired: it restated the skill's own command surface, which is
+   * how the two drifted apart. Projects compiled before the retirement
+   * still hold the file, and only this plugin can say it is stale, so
+   * the path is cleared here rather than left for a reader to wonder
+   * about. The `commands/` directory itself is never removed — an
+   * `outputDir` of `.claude` shares it with commands Praxis never
+   * wrote.
    */
   private ensureCommands(): void {
-    writeText(
-      joinPath(this.outputDir, "commands", "praxis-resolve.md"),
-      praxisResolveCommandTemplate(),
-    );
+    const retiredCommand = joinPath(this.outputDir, "commands", "praxis-resolve.md");
+
+    if (exists(retiredCommand)) removeFile(retiredCommand);
+
     writeText(joinPath(this.outputDir, "skills", "praxis", "SKILL.md"), praxisSkillTemplate());
   }
 

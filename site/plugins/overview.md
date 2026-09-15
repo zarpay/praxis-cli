@@ -40,7 +40,7 @@ Or use the object form with per-plugin options:
 
 | Plugin        | Description                                                                                                             |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `claude-code` | Generates Claude Code agent files with YAML frontmatter, manages `plugin.json`, and writes the `/praxis-resolve` command and praxis skill |
+| `claude-code` | Generates Claude Code agent files with YAML frontmatter, manages `plugin.json`, and writes the praxis skill |
 
 ## Plugin output directories
 

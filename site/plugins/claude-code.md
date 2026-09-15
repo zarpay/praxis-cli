@@ -92,18 +92,15 @@ The `name` field is controlled by `claudeCodePluginName` (default: `"praxis"`). 
 
 If `plugin.json` already exists, the plugin only updates the `name` field — other fields you have customized are preserved.
 
-## The `/praxis-resolve` slash command and the skill
+## The praxis skill
 
-The plugin writes two agent-facing artifacts alongside the compiled agents:
+Alongside the compiled agents the plugin writes **`skills/praxis/SKILL.md`**, the CLI reference an agent loads so it knows the commands, the cache, the specs, and the ledger without being taught them every session. It carries the loop — what to run while writing, what to run when the change is done, how to work a backlog — and the three hard rules: triage and curate stay out of a working session, `.praxis/cache/` and `.praxis/ledger/` are never hand-edited, and what a run writes is committed with the code that produced it.
 
-- **`commands/praxis-resolve.md`** — a `/praxis-resolve` slash command: a disciplined resolve loop (discover the full scope, fix one finding, verify with `praxis eval run <path>`, repeat) that an agent works through until the project is compliant.
-- **`skills/praxis/SKILL.md`** — the praxis skill: the CLI reference an agent loads so it knows the commands, the cache, the specs, and the ledger without being taught them every session.
+An agent working from it runs `praxis eval run`, so the verdicts it acts on are the ones CI will check.
 
-```
-/praxis-resolve src/services --no-warns
-```
+### The retired `/praxis-resolve` command
 
-Resolving still runs `praxis eval run` under the hood, so the reviewer verdicts an agent acts on are the same ones CI will check. (`claudeCodePluginName` namespaces the plugin itself; the command file is always `praxis-resolve.md`.)
+The plugin used to write a `/praxis-resolve` slash command as well. It restated the skill's own command surface — the same six commands, a second time — which is how the two drifted apart, and a project gained nothing from having the CLI explained twice. Compile removes the file if an earlier version left one behind; the `commands/` directory is untouched, since an `outputDir` of `.claude` shares it with commands Praxis never wrote.
 
 ## Plugin configuration options
 
