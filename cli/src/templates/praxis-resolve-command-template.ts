@@ -74,6 +74,8 @@ praxis eval run
 
 Unchanged files come back from the cache, so this costs no reviewer calls beyond what you actually touched. An \`UNVERIFIED\` target — never reviewed, or a cohort too large for the model's context — fails the run without being a violation: that is a scoping problem, not something to fix in the file.
 
+Commit the \`.praxis/\` updates with the code. The verdicts and ledger records these runs wrote are part of the change, and nobody should pay for them twice.
+
 ## Summary
 
 Report:

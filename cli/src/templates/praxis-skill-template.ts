@@ -12,7 +12,7 @@ description: Reference for the Praxis CLI — what it does, how to use it, and h
 
 Praxis is a CLI with two complementary functions:
 
-**Conceptual linting** — spec files state what correct looks like for the files they govern. \`praxis eval run\` has an LLM reviewer read each file or directory against its spec and caches the verdict. The cache is content-hash keyed: editing a file (or its spec) auto-invalidates its entry. Never delete the cache manually.
+**Conceptual linting** — spec files state what correct looks like for the files they govern. \`praxis eval run\` has an LLM reviewer read each file or directory against its spec and caches the verdict. The cache is content-hash keyed: editing a file (or its spec) auto-invalidates its entry.
 
 **Knowledge compilation** — expert files in the configured \`expertsDir\` compile into self-contained specification framed as agent profiles, and each enabled plugin writes its own output (this document was written by the claude-code plugin).
 
@@ -32,7 +32,15 @@ Every run also appends evidence to the ledger: one run record per reviewer plus 
 
 **When the standard itself changes.** Editing a spec invalidates every verdict it produced; re-run that type to see the corpus against the new bar. Experts and practices start from \`praxis add\`, and \`praxis compile\` rebuilds the profiles from them.
 
-Not part of a code change: \`axioms triage\` and \`axioms curate\` are human-led sessions over the accumulated backlog, and \`eval report\` / \`debt report\` read the ledger. None of them belong in the middle of a fix.
+The read side — \`eval report\`, \`debt report\`, \`eval critiques\`, \`axioms show\` — never calls a reviewer, so it costs nothing to consult at any point.
+
+## Hard rules
+
+**Triage and curate never happen during development.** \`axioms triage\` and \`axioms curate\` re-label the accumulated backlog and change what every later report says. They are a human-led session on their own commit and review cycle, never a step inside someone's feature work. While developing, the only review commands are \`eval\` and \`feedback\`.
+
+**Never edit \`.praxis/cache/\` or \`.praxis/ledger/\` by hand.** Not a line, not a file, not a deletion. The cache holds verdicts already paid for, the ledger is append-only evidence, and a hand-altered record is worth nothing — there is no way to tell what a reviewer actually said from one, and nothing to rebuild it from.
+
+**Always commit what a run writes.** The cache entries and ledger records a run produces belong in the same commit as the code that produced them. That is what stops the team re-paying for verdicts someone already bought, and what keeps the evidence attached to the change it describes.
 
 ## Project structure
 
@@ -94,7 +102,6 @@ When a finding cites an axiom id like \`[AX-3f9c2d]\`, that names a stable categ
 - The hash covers everything the reviewer saw — target, spec, assist files — so changing any of them invalidates the verdicts they produced
 - A reviewer's own settings are part of the key: swapping its model or prompt opens a new epoch, and old entries stop being readable
 - \`--no-cache\` skips the read *and* the write, so its verdict is not kept (use sparingly, mainly to check reviewer non-determinism on borderline results)
-- Never delete \`.praxis/cache/\` — it accumulates valid verdicts and saves API calls
 
 Every configured reviewer evaluates every target and results are reported per reviewer, never pooled.
 `;

@@ -97,7 +97,7 @@ If `plugin.json` already exists, the plugin only updates the `name` field — ot
 The plugin writes two agent-facing artifacts alongside the compiled agents:
 
 - **`commands/praxis-resolve.md`** — a `/praxis-resolve` slash command: a disciplined resolve loop (discover the full scope, fix one finding, verify with `praxis eval run <path>`, repeat) that an agent works through until the project is compliant. Re-attempts on a file go through [`praxis feedback`](/commands/feedback), so the churn of a half-fixed file never reaches triage, and a finding the spec does not support is dismissed through [`praxis eval review`](/commands/eval#praxis-eval-review) rather than silently skipped.
-- **`skills/praxis/SKILL.md`** — the praxis skill: the CLI reference an agent loads so it knows the commands, the cache, the specs, and the ledger without being taught them every session.
+- **`skills/praxis/SKILL.md`** — the praxis skill: the CLI reference an agent loads so it knows the commands, the cache, the specs, and the ledger without being taught them every session. It carries the loop (what to run while writing, what to run when the change is done) and the three hard rules: triage and curate stay out of a working session, `.praxis/cache/` and `.praxis/ledger/` are never hand-edited, and what a run writes is committed with the code that produced it.
 
 ```
 /praxis-resolve src/services --no-warns
