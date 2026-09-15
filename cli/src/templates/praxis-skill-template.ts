@@ -12,11 +12,27 @@ description: Reference for the Praxis CLI — what it does, how to use it, and h
 
 Praxis is a CLI with two complementary functions:
 
-**Conceptual linting** — spec files state what correct looks like for the files they govern. \`praxis eval run\` has an LLM reviewer read each file against its spec and caches the verdict. The cache is content-hash keyed: editing a file (or its spec) auto-invalidates its entry. Never delete the cache manually.
+**Conceptual linting** — spec files state what correct looks like for the files they govern. \`praxis eval run\` has an LLM reviewer read each file or directory against its spec and caches the verdict. The cache is content-hash keyed: editing a file (or its spec) auto-invalidates its entry. Never delete the cache manually.
 
-**Knowledge compilation** — expert files in the configured \`expertsDir\` compile into self-contained SME agent profiles, and each enabled plugin writes its own output (this document was written by the claude-code plugin).
+**Knowledge compilation** — expert files in the configured \`expertsDir\` compile into self-contained specification framed as agent profiles, and each enabled plugin writes its own output (this document was written by the claude-code plugin).
 
-Every run also appends evidence to the ledger: one run record per reviewer plus one critique per issue, at \`.praxis/ledger/\`. Recurring critiques are labeled into **axioms** — named, ratified standards; the reviewer itself sees only the spec (\`axioms triage\` labels, \`axioms curate\` clusters).
+Every run also appends evidence to the ledger: one run record per reviewer plus one critique per issue, at \`.praxis/ledger/\`. Recurring critiques are labeled into **axioms** — named critique categories; the reviewer itself sees only the spec (\`axioms triage\` labels, \`axioms curate\` clusters).
+
+## The loop
+
+**Arriving.** Bare \`praxis\` says where the project stands — last run, what is waiting, what it owes. \`praxis status\` adds coverage: what is governed by a spec and what nothing has ever read.
+
+**While writing.** \`praxis feedback <path>\` is the real reviewers against the real spec, as advice: it writes no cache entry and its critiques never enter triage, because a file in flight is not evidence. It always exits 0. Run it as often as it helps.
+
+**When the change is done.** \`praxis eval run <path>\` is the run that counts — it writes the verdict to the cache and the critique to the ledger, and it is the verdict CI will read. Findings name the standard behind them: \`praxis axioms show <id>\` for a cited \`[AX-3f9c2d]\`, and \`praxis eval verdict <path> --verbose\` to re-read the reasoning later without paying again.
+
+**Before pushing.** \`praxis eval run\` over the corpus, or \`--type <type>\` for the domain you touched. Unchanged files come back from the cache, so the bill is only what you changed.
+
+**When the reviewer is wrong.** Dismiss it; do not skip it. \`praxis eval critiques <path> --state untriaged\` for the id, then \`praxis eval review --dismiss <id> --reason "…"\`. A skipped critique waits in the queue forever, and dismissals are the reviewer-trust signal — a run of them means the spec is what needs the edit.
+
+**When the standard itself changes.** Editing a spec invalidates every verdict it produced; re-run that type to see the corpus against the new bar. Experts and practices start from \`praxis add\`, and \`praxis compile\` rebuilds the profiles from them.
+
+Not part of a code change: \`axioms triage\` and \`axioms curate\` are human-led sessions over the accumulated backlog, and \`eval report\` / \`debt report\` read the ledger. None of them belong in the middle of a fix.
 
 ## Project structure
 
@@ -37,8 +53,8 @@ praxis                              # last run, pending triage, proposals, debt
 praxis status                       # document counts, review coverage, structural issues
 
 # Review — reviewer calls happen only on cache misses; unchanged content is free
-praxis eval run <path>              # one file against its spec (the fast loop)
 praxis eval run                     # the whole corpus
+praxis eval run <path>              # one file against its spec (the fast loop)
 praxis eval run --type <type>       # one spec's targets (the "By type:" label from a full run)
 praxis feedback <path>              # same reviewers, as advice: never queued, never cached
 praxis eval ci                      # the full run CI makes, writing no ledger record
@@ -47,11 +63,11 @@ praxis eval ci                      # the full run CI makes, writing no ledger r
 # --reviewer <name> · --fail-fast (full run only) · --no-cache (skips reads AND writes)
 
 # Read what was already said — never a reviewer call
-praxis eval verdict <path> --verbose         # PASS | WARN | FAIL | STALE | NOT VALIDATED
+praxis eval verdict <path> --verbose             # PASS | WARN | FAIL | STALE | NOT VALIDATED
 praxis eval critiques <path> --state untriaged   # critique ids and their lifecycle state
-praxis axioms show <id>                      # the drill-down behind a cited [AX-xxxxxx]
-praxis eval report                           # per-axiom rates, epochs, costs
-praxis debt report                           # pre-spec debt and where it concentrates
+praxis axioms show <id>                          # the drill-down behind a cited [AX-xxxxxx]
+praxis eval report                               # per-axiom rates, epochs, costs
+praxis debt report                               # pre-spec debt and where it concentrates
 
 # Judge a critique invalid — the one place that happens, and it takes a reason
 praxis eval review --dismiss <id> <id> --reason "why it is wrong"
@@ -66,9 +82,9 @@ Exit codes: \`0\` clean · \`1\` violations, or a target no reviewer could read 
 
 ## How specs work
 
-Spec files match \`specFilePattern\` (default \`README.md\`; check \`.praxis/config.json\`).
+Spec files match \`specFilePattern\` (check \`.praxis/config.json\`).
 
-A spec with \`paths:\` frontmatter governs those glob patterns — files of any extension. Without \`paths:\`, it governs its own directory's sibling \`.md\` files. \`excludes:\` shields files from review, and \`context:\` is assist-only material inlined into the prompt. Under \`cohort: by_directory\` the review unit is the whole directory, so naming one file in it reviews the cohort. Positive examples belong in the spec's own prose — a live file held up as exemplary drifts with its next edit.
+A spec with \`paths:\` frontmatter governs those glob patterns — files of any extension. \`excludes:\` shields files from review, and \`context:\` is assist-only material inlined into the prompt. Under \`cohort: by_directory\` the review unit is the whole directory, so naming one file in it reviews the cohort. Positive examples belong in the spec's own prose.
 
 When a finding cites an axiom id like \`[AX-3f9c2d]\`, that names a stable category of recurring critique: \`praxis axioms show <id>\` gives its statement, the spec passage the rule lives in, and real labeled critiques as examples.
 
