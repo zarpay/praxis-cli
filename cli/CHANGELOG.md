@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-09-15
+
+The agent surface release. Everything Praxis tells a coding agent about itself now lives in one file — the praxis skill — and that file says *when* to run things, not only what exists. The `/praxis-resolve` slash command, which restated the same six commands a second time, is retired, and `praxis compile` clears the copy it left in your project.
+
+The skill had drifted: it predated `praxis feedback`, never named the one place a critique is judged invalid, and got two things wrong about the cache. A reference nobody re-reads is where an agent's wrong ideas come from, so this release treats it as shipped surface rather than documentation.
+
+### Changed
+
+- **The praxis skill says when to run what, not just what exists.** A command list leaves the reader to guess the order to use them in. The skill now opens with the loop: `feedback` while a file is in flight, `eval run` when the change is done — that is the verdict CI will read — a full run before pushing, dismissal when the reviewer is wrong, and how to work a backlog without losing track of what is left. Three hard rules follow it: `axioms triage` and `axioms curate` stay out of a working session and get their own commit and review cycle; `.praxis/cache/` and `.praxis/ledger/` are never hand-edited; and what a run writes is committed with the code that produced it. The command list underneath is grouped by consequence — what calls a reviewer, what never does, what records a decision.
+
+- **The skill covers the surface 2.2 added.** `praxis feedback`, `eval ci` and `eval critiques` / `eval review --dismiss` were all absent, which left the dismissal flow undiscoverable from inside a project — an agent that cannot see it skips a bad critique instead of dismissing it, and the queue keeps the critique forever. `cohort: by_directory` is in as well, since it decides what naming a target even means, along with the exit codes and the rule that every reviewer evaluates every target and results are never pooled.
+
+- **Filtering is taught by target, not by `--type`.** A domain's type is the directory its spec sits in, so a glob over the files a spec governs selects the same run without leaning on a label whose future is not settled. The flag itself is unchanged — this is what the skill teaches, not what the CLI accepts.
+
+### Removed
+
+- **The `/praxis-resolve` slash command.** It named the same six commands the skill's loop names, so every CLI change had to be made in two places, and between releases the two drifted apart — which is how the skill came to be a version behind in the first place. The one thing only the command carried, the backlog discipline, is now a beat in the loop: take the whole list before fixing anything, one file at a time, close with a full run. `praxis compile` deletes a `praxis-resolve.md` an earlier version wrote, because nothing else can tell that file is stale and left alone it teaches a pre-2.2 loop forever. The `commands/` directory is never touched — an `outputDir` of `.claude` shares it with commands Praxis never wrote.
+
+### Fixed
+
+- **Two wrong claims in the skill.** A spec with no `paths:` governs its own directory's sibling `.md` files, not siblings of any extension. And `--no-cache` skips the write as well as the read, so a run made with it keeps no verdict — an agent reaching for it to refresh a stale entry was getting the opposite of what it wanted.
+
 ## [2.2.0] - 2026-09-15
 
 The feedback release. `praxis feedback <target>` is review for the person writing the code: same reviewers, same specs, same prose as `eval run`, recorded in full with its cost — and structurally incapable of reaching triage, curate or a report. A team can now use the fast loop the way it is meant to be used without burying the critiques that describe code which actually shipped.
