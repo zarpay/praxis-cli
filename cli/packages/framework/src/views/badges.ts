@@ -39,15 +39,21 @@ export function verdictTally(counts: {
   pass: number;
   warn: number;
   fail: number;
-  notValidated: number;
+  /** Omitted entirely when the caller reports not-validated elsewhere. */
+  notValidated?: number;
 }): string {
   const cell = (paint: (s: string) => string, count: number, label: string) =>
     `${paint("●")} ${count} ${label}`;
 
-  return [
+  const cells = [
     cell(palette.good, counts.pass, "pass"),
     cell(palette.warn, counts.warn, "warn"),
     cell(palette.bad, counts.fail, "fail"),
-    cell(palette.meta, counts.notValidated, "not validated"),
-  ].join("   ");
+  ];
+
+  if (counts.notValidated !== undefined) {
+    cells.push(cell(palette.meta, counts.notValidated, "not validated"));
+  }
+
+  return cells.join("   ");
 }

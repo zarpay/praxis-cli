@@ -14,7 +14,6 @@ JSON (--json), stable contract:
   { scope { target, since, branch, commits, unresolvableShas },
     panel { runs, critiques, filesTouched, reviewers, specs, costUsd,
             elapsedMs, costTrend },
-    calibration,
     axioms: [ { axiomId, statement, severity, reviewerName,
                 rate { numerator, denominator, rate, display },
                 asOf, files, byPopulation, segments } ],

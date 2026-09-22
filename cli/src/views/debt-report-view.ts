@@ -1,8 +1,7 @@
 import type { DebtReport } from "@/types.js";
 import type { ReportLine, View } from "@framework/types.js";
 
-import chalk from "chalk";
-
+import { palette } from "@framework/views/palette.js";
 import { table } from "@framework/views/table.js";
 
 /**
@@ -28,24 +27,34 @@ const debtReportView: View<DebtReport & { json?: boolean }> = (report) => {
     ];
   }
 
+  // Story order: what the baseline held, what appeared since, what got
+  // paid down, and where that leaves the stock now.
   const rowTable = table(
     report.rows.map((row) => [
       row.axiomId,
       row.reviewerName,
       row.baselineStock,
-      row.currentStock,
-      row.paydown,
       row.appearedSinceBaseline,
+      row.paydown,
+      row.currentStock,
     ]),
-    ["AXIOM", "REVIEWER", "BASELINE", "CURRENT", "PAID DOWN", "APPEARED"],
+    ["AXIOM", "REVIEWER", "BASELINE", "APPEARED", "PAID DOWN", "CURRENT"],
   );
 
   const lines: ReportLine[] = [
     { channel: "heading", text: "Debt report — corpus, pre-spec debt included" },
-    { channel: "warning", text: `Calibration: ${report.calibration}` },
     {
       channel: "content",
-      entries: [...report.evidence.map(evidenceLine), "", ...rowTable],
+      entries: [
+        "",
+        "Evidence freshness — when each reviewer's stock was measured. An",
+        "all-hit run re-evidences nothing, so a stale date means unmeasured",
+        "since then, never clean:",
+        ...report.evidence.map(evidenceLine),
+        "",
+        "Stock by axiom (baseline → current, one row per reviewer):",
+        ...rowTable,
+      ],
     },
   ];
 
@@ -118,7 +127,5 @@ function evidenceLine(entry: DebtReport["evidence"][number]): string {
   const baseline = entry.baselineAt.slice(0, 10);
   const current = entry.currentAt.slice(0, 10);
 
-  return chalk.gray(
-    `${entry.reviewerName}: baseline ${baseline} · current stock as evidenced ${current}`,
-  );
+  return palette.meta(`  ${entry.reviewerName}: baseline ${baseline} · last evidenced ${current}`);
 }

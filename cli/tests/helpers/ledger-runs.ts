@@ -163,7 +163,6 @@ export function runRecord(overrides: Partial<LedgerRunRecord> = {}): LedgerRunRe
     fail_count: 0,
     unverified_count: 0,
     critique_count: 0,
-    calibration_status_at_run: "uncalibrated",
     baseline: false,
     ...overrides,
   };

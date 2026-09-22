@@ -7,7 +7,7 @@ import { duration } from "@framework/views/duration.js";
 import { frame } from "@framework/views/frame.js";
 
 /**
- * The eval report, rendered under the measurement hard rules: the calibration
+ * The eval report, rendered under the measurement hard rules:
  * banner first (rule 4), every rate beside its denominator (rule 3),
  * one reviewer one series (rule 7), populations qualifying counts
  * (rule 2), epoch boundaries as named furniture (rule 6), and the
@@ -50,10 +50,7 @@ const evalReportView: View<EvalReport & { json?: boolean }> = (report) => {
     ],
   });
 
-  lines.push(
-    { channel: "warning", text: `Calibration: ${report.calibration}` },
-    { channel: "content", entries: [...opening, ""] },
-  );
+  lines.push({ channel: "content", entries: [...opening, ""] });
 
   lines.push(...epochLines(report));
   lines.push(...axiomLines(report.axioms));

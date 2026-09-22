@@ -30,6 +30,36 @@
         "issues": [],
         "reason": "The file conforms to the service specification: correct naming (verb-first kebab-case) and location, exports a single `run` function with the required signature (Store first, single input, Result<T>), handles domain failures as values with clear error messages, validates input before proceeding, and includes a doc comment detailing purpose and failure modes."
       }
+    },
+    "0311531a:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-22T21:49:20.421Z",
+      "content_hash": "ef564fb2",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file exports the required run function with the correct signature and behavior. Domain errors are returned as values with consumer-friendly messages indicating valid alternatives. Input checks precede the success path, and the doc comment enumerates the purpose and failure modes as specified."
+      }
+    },
+    "0311531a:7adec26a": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "7adec26a"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-22T21:49:55.422Z",
+      "content_hash": "ef564fb2",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 410 words."
+      }
     }
   }
 }

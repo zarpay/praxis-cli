@@ -76,9 +76,10 @@ src/
 
 That handoff between the layers is a real contract: an expert's `validates:` is
 compiled out as the spec's `paths:` (`templates/eval-targeting-template.ts` writes it,
-`services/discover-domains-service.ts` reads it), and `cohort:`/`excludes:`/
-`context:` pass through under the same names. `ExpertFile` and `SpecFile` are
-the two ends of it.
+`services/discover-domains-service.ts` reads it), `cohort:`/`excludes:`/
+`context:` pass through under the same names, and the expert's alias compiles
+out as the spec's `type:` — the label its verdicts group under. `ExpertFile`
+and `SpecFile` are the two ends of it.
 
 ### The layers
 
@@ -189,7 +190,7 @@ The measurement layer is pure read-side: `eval report` (three scope levels — f
 
 `praxis eval prune` is the epoch structure's other half: a behavioral change writes new cache keys and orphans the old ones, and pruning removes every entry whose reviewer hash matches no configured reviewer.
 
-Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `context:` (assist-only, inlined, joins the hash). The retired `exemplars:` key parses and is ignored — positive examples live in spec prose.
+Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `context:` (assist-only, inlined, joins the hash), `type:` (the reporting label verdicts group under — compiled profiles carry the expert's alias; undeclared, the spec's directory path; never derived from the filename). The retired `exemplars:` key parses and is ignored — positive examples live in spec prose.
 
 Key files: `services/review-target-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile, AxiomFile, PracticeFile, CacheFile), `stores/` (VerdictStore, RunStore, TriageStore, AxiomStore, ExpertStore, PracticeStore, SpecStore, DocumentStore), `services/` (discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
 

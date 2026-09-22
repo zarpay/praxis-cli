@@ -46,7 +46,6 @@ export type PraxisErrorCode =
   | "CURATOR_NOT_CONFIGURED"
   | "CURATOR_MISSING_FIELD"
   | "PROVIDER_CANNOT_COMPLETE"
-  | "INVALID_CALIBRATION_CASE"
   | "NOT_A_TTY";
 
 /**
@@ -415,17 +414,6 @@ export const errors = {
     return new PraxisError(
       "NOT_A_TTY",
       "praxis config edit opens an editor and stdin is not a terminal. Edit .praxis/config.json directly.",
-    );
-  },
-
-  // --- Calibration ---
-
-  /** A case directory under .praxis/calibration/cases/ is malformed. */
-  invalidCalibrationCase(caseId: string, problem: string): PraxisError {
-    return new PraxisError(
-      "INVALID_CALIBRATION_CASE",
-      `Calibration case "${caseId}" is malformed: ${problem} — ` +
-        "a case directory holds one input file, the frozen spec as spec.md, and expected.json",
     );
   },
 

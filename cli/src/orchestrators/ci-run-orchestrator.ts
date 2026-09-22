@@ -3,6 +3,7 @@ import type { Orchestrator } from "@/types.js";
 
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
+import measureEvalCoverageService from "@/services/measure-eval-coverage-service.js";
 import reviewAllService from "@/services/review-all-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
 import epochBoundaryView from "@/views/epoch-boundary-view.js";
@@ -56,7 +57,14 @@ export const ciRunOrchestrator: Orchestrator<CiRunOptions> = async (ctx, { stric
     onProgress,
   });
 
-  const reportView = runReportView({ run, cached: true, elapsedMs: Date.now() - startedAt });
+  const coverage = measureEvalCoverageService(cfg, {});
+  const reportView = runReportView({
+    run,
+    cached: true,
+    elapsedMs: Date.now() - startedAt,
+    coverage,
+  });
+
   ctx.render(reportView);
 
   const { errors, warnings, unverified } = run.summary;

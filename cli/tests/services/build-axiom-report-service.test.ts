@@ -66,7 +66,6 @@ describe("buildAxiomReportService", () => {
     const report = buildReport([{ name: "flash" }, { name: "v32" }]);
 
     expect(report.axiomId).toBe(AXIOM);
-    expect(report.calibration).toContain("uncalibrated");
     expect(report.rows.map((row) => row.reviewerName).sort()).toEqual(["flash", "v32"]);
     expect(report.examples.map((example) => example.id)).toContain("r1:1");
   });

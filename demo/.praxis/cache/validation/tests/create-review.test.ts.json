@@ -30,6 +30,36 @@
         "issues": [],
         "reason": "The file adheres to all specification rules: it uses the correct framing for describe/it blocks, maintains one expectation per it block (using toMatchObject for compound shapes), and tests functionality via the public API with fresh state and no implementation mocks."
       }
+    },
+    "dacac2eb:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-22T21:49:38.860Z",
+      "content_hash": "9d212d01",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The test file adheres to all specification conventions: subject framing uses correct naming patterns, each test contains a single assertion, functionality is tested via public APIs without mocking collaborators, and test data is instantiated fresh per case."
+      }
+    },
+    "dacac2eb:7adec26a": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "7adec26a"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-22T21:49:55.426Z",
+      "content_hash": "9d212d01",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 681 words."
+      }
     }
   }
 }

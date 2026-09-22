@@ -9,7 +9,6 @@ import { reportText } from "@tests/helpers/report-text.js";
 function report(overrides: Partial<AxiomReport> = {}): AxiomReport {
   return {
     axiomId: "AX-3f9c2d",
-    calibration: "uncalibrated",
     statement: "Error messages written for the implementer, not the API consumer.",
     status: "active",
     severity: null,

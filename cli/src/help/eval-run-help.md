@@ -29,7 +29,13 @@ JSON (--json), stable contract, two modes:
               reason, findings: [ { text, severity, witnesses } ] } ] }
   corpus:   { mode: "corpus", summary { total, compliant, warnings,
               errors, unverified, notValidated, byType, byReviewer },
-              cache { hits, misses } }
+              cache { hits, misses },
+              coverage { sourceFiles, observed { files, rate, display },
+                         passing { files, rate, display } } }
+  coverage measures the source corpus: observed is the share of files
+  any spec governs; passing is the CI-grade score — files every
+  configured reviewer's verdict passes. The corpus report prints both
+  beside the tally.
 
 Exit codes: 0 no violations · 1 violations or run failure · 2 usage.
 

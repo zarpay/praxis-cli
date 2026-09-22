@@ -4,7 +4,7 @@ Your tests pass, your linter is green — and the code still isn't written the w
 
 Praxis makes those standards enforceable. Write a README spec that says what correct looks like for the files it governs; `praxis eval run` has LLM reviewers hold every file to it. Recurring findings grow into a named taxonomy of your codebase's real issues — every verdict cached, every run in an append-only ledger, every rate reported honestly. And when the governed documents are knowledge files, `praxis compile` assembles them into subject-matter-expert agent profiles.
 
-**Current release: v2.4.0** (2026-09-22) — the help release, and a new reviewer epoch. See the [changelog](./cli/CHANGELOG.md) and the [docs](https://zarpay.github.io/praxis-cli/).
+**Current release: v2.5.0** (2026-09-23) — eval coverage you can gate on, the four-table status, and honest units everywhere. See the [changelog](./cli/CHANGELOG.md) and the [docs](https://zarpay.github.io/praxis-cli/).
 
 ```bash
 npm install -g @zarpay/praxis-cli

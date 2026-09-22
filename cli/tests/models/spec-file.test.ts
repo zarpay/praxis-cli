@@ -17,6 +17,16 @@ describe("SpecFile", () => {
     });
   });
 
+  describe("type", () => {
+    it("returns the declared reporting label", () => {
+      expect(spec(['type: "guards.expert"']).type).toBe("guards.expert");
+    });
+
+    it("is undefined when undeclared — the eval layer falls back to the directory", () => {
+      expect(spec(["cohort: by_file"]).type).toBeUndefined();
+    });
+  });
+
   describe("paths", () => {
     it("returns the declared target patterns", () => {
       const patterns = spec(["paths:", '  - "src/services/*.ts"']).paths;

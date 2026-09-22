@@ -1,6 +1,7 @@
 ---
 name: sundae
 description: Use this agent to review Scoop Society feature modules for cohesion, or for advice on composing a new feature. Invoke it whenever directories under src/features/ are added or changed.
+type: "Sundae"
 paths:
   - "src/features/*"
 cohort: by_directory

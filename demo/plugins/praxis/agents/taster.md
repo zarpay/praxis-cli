@@ -1,6 +1,7 @@
 ---
 name: taster
 description: Use this agent to review Scoop Society test suites for convention adherence, or for advice on structuring a new suite. Invoke it whenever files under tests/ are added or changed.
+type: "Taster"
 paths:
   - "tests/*.test.ts"
 ---

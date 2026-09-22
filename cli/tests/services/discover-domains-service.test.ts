@@ -41,6 +41,15 @@ describe("discoverDomainsService", () => {
     expect(domains(root)[0]?.type).toBe("src/services");
   });
 
+  it("a declared type: label wins over the directory", () => {
+    const root = project({
+      "src/services/README.md": '---\ntype: "guards.expert"\n---\n\n# Services\n',
+      "src/services/a.ts": "a\n",
+    });
+
+    expect(domains(root)[0]?.type).toBe("guards.expert");
+  });
+
   it("expands `paths:` into an explicit target list", () => {
     const root = project({
       "src/services/README.md": '---\npaths:\n  - "src/services/*.ts"\n---\n\n# Services\n',

@@ -57,6 +57,56 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-22T21:48:07.826Z",
+      "content_hash": "385839e6",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The fileset satisfies all specification criteria: it contains a single entry point (index.ts) that re-exports the complete public API; types reside in award-types.ts; logic files use verb-first kebab-case naming and follow service conventions (one exported run, Result type, consumer-grade errors); and all files are reachable from the entry point with a single cohesive capability."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
+    },
+    "e280f5fa:7adec26a": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "7adec26a"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-22T21:49:55.408Z",
+      "content_hash": "385839e6",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 948 words."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

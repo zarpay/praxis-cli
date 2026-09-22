@@ -30,6 +30,36 @@
         "issues": [],
         "reason": "The file adheres to all specification requirements: the top-level describe names the unit, nested describes use 'when' clauses, it blocks state observable outcomes, each it contains exactly one expect, and tests validate public API functionality without inspecting implementation details."
       }
+    },
+    "dacac2eb:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-22T21:49:34.184Z",
+      "content_hash": "61183485",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file adheres to the specification's subject framing patterns, uses exactly one expect call per it block, and focuses on functional outcomes without implementation spies or mocks. Test data is initialized fresh within each suite setup."
+      }
+    },
+    "dacac2eb:7adec26a": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "7adec26a"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-22T21:49:55.425Z",
+      "content_hash": "61183485",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 539 words."
+      }
     }
   }
 }

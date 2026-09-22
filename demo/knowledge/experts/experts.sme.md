@@ -1,3 +1,7 @@
+---
+type: "expert-docs"
+---
+
 # Expert Document Conventions
 
 Documents in this directory define Scoop Society's SME experts. This

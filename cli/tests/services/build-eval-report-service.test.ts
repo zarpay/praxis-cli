@@ -49,10 +49,6 @@ describe("buildEvalReportService", () => {
     return buildEvalReportService(cfg, { scoped });
   }
 
-  it("carries the calibration banner unconditionally (rule 4)", () => {
-    expect(report().calibration).toContain("uncalibrated");
-  });
-
   it("keeps reviewers as separate series — never pooled (rule 7)", () => {
     seedLedgerRun(root, {
       name: "flash",

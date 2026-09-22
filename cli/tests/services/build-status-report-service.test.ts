@@ -208,7 +208,13 @@ describe("buildStatusReportService", () => {
       const report = await reportFor(root);
 
       expect(report.compilerInUse).toBe(false);
-      expect(report.counts).toEqual({ experts: 0, practices: 0, references: 0, context: 0 });
+      expect(report.counts).toEqual({
+        experts: 0,
+        practices: 0,
+        references: 0,
+        context: 0,
+        axioms: 0,
+      });
       expect(report.orphanedPractices).toEqual([]);
       expect(report.issueCount).toBe(0);
 
@@ -244,7 +250,6 @@ describe("buildStatusReportService", () => {
     expect(report.evalState).toEqual({
       pending_triage: 0,
       awaiting_curation: 0,
-      calibration_stale: true,
       epoch_boundary_detected: false,
       last_run_at: null,
     });

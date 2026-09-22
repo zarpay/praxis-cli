@@ -10,8 +10,7 @@ Behavior:
   when each reviewer's stock was last evidenced.
 
 JSON (--json), stable contract:
-  { calibration,
-    evidence: [ { reviewerName, baselineAt, currentAt } ],
+  {    evidence: [ { reviewerName, baselineAt, currentAt } ],
     rows: [ { axiomId, statement, reviewerName, baselineStock,
               currentStock, paydown, appearedSinceBaseline } ],
     concentration: [ { directory, violations } ],
@@ -19,7 +18,7 @@ JSON (--json), stable contract:
 
 Example:
   $ praxis debt report
-      AX-b951db [v32] baseline 3 → current 1 · paid down 2 · appeared 0
+      AX-b951db [v32] baseline 3 · appeared 0 · paid down 2 → current 1
 
 Next:
   praxis eval run           a fresh corpus run to re-evidence the stock

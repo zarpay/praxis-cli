@@ -11,7 +11,7 @@ import type {
   Service,
 } from "@/types.js";
 
-import { CALIBRATION_STATUS, rateCell } from "@/helpers/metrics-helper.js";
+import { rateCell } from "@/helpers/metrics-helper.js";
 import countSpecUnitsService from "@/services/count-spec-units-service.js";
 import deriveEpochsService from "@/services/derive-epochs-service.js";
 import derivePopulationService from "@/services/derive-population-service.js";
@@ -34,8 +34,7 @@ interface BuildEvalReportInput {
  * recent scoped run over that spec's applicable opportunities — never a
  * pooled cross-reviewer number (rule 7); populations qualify every
  * violation count (rule 2); epoch segments never sum across a boundary
- * (rule 6); and the calibration banner is unconditional until M6
- * (rule 4).
+ * (rule 6).
  */
 const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, { scoped }) => {
   const { runs } = scoped;
@@ -91,7 +90,6 @@ const buildEvalReportService: Service<BuildEvalReportInput, EvalReport> = (cfg, 
         .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
         .map((run) => ({ runId: run.run_id, at: run.timestamp, costUsd: run.cost_usd ?? null })),
     },
-    calibration: CALIBRATION_STATUS,
     axioms: rows.sort((a, b) => a.axiomId.localeCompare(b.axiomId)),
     pendingTriage: state.pending.length,
     awaitingCuration: state.unidentified.length,

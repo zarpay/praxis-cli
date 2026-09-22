@@ -28,7 +28,7 @@ Behavior:
   (untriaged / awaiting curation), active axioms, per-reviewer errors —
   each line naming the command that acts on it. With --json it is the
   cheapest situational poll: { lastRun, pendingTriage, awaitingCuration,
-  activeAxioms, calibration, debtLine }.
+  activeAxioms, debtLine }.
 
   stdout is data, stderr is commentary: progress and headings go to
   stderr, so piped or captured stdout stays parseable. Every read
