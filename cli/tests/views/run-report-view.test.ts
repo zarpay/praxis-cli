@@ -43,6 +43,45 @@ describe("runReportView", () => {
     expect(text).toContain("2 fail");
   });
 
+  it("never pools reviewers: two reviewers render as table rows, not one tally", () => {
+    const text = reportText(
+      runReportView(
+        finished({
+          total: 31,
+          compliant: 40,
+          errors: 6,
+          notValidated: 8,
+          byReviewer: {
+            mercury: { compliant: 17, warnings: 0, errors: 6 },
+            counter: { compliant: 23, warnings: 0, errors: 0 },
+          },
+        }),
+      ),
+    );
+
+    expect(text).not.toContain("40 pass");
+    expect(text).toMatch(/mercury\s*│\s*17\s*│\s*0\s*│\s*6/);
+    expect(text).toMatch(/counter\s*│\s*23\s*│\s*0\s*│\s*0/);
+    expect(text).toContain("Not validated: 8 of 31 documents");
+    expect(text).toContain("By type (verdicts from 2 reviewers):");
+  });
+
+  it("labels unverified as verdict counts when reviewers render separately", () => {
+    const text = reportText(
+      runReportView(
+        finished({
+          unverified: 2,
+          byReviewer: {
+            mercury: { compliant: 1, warnings: 0, errors: 0 },
+            counter: { compliant: 1, warnings: 0, errors: 0 },
+          },
+        }),
+      ),
+    );
+
+    expect(text).toContain("Unverified: 2 verdict(s)");
+  });
+
   it("prints both coverage slices beside the conformance tally (07: they render together)", () => {
     const text = reportText(runReportView(finished({})));
 

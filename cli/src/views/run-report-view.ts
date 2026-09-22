@@ -100,15 +100,48 @@ const emptyCorpusNotice: DisplayEntry[] = [
  * The aggregated summary block.
  *
  * Reviewers are separate instruments, so their series render separately
- * and are never pooled into one number — the by-reviewer block appears
- * only when there is more than one, because with a single reviewer it
- * would just restate the totals.
+ * and are never pooled into one number (07 rule 7). With one reviewer
+ * the one-line tally is exact — verdicts and documents coincide — so it
+ * stays. With several, pooling their verdicts into one line would print
+ * "40 pass" against 31 documents, so the tally becomes the per-reviewer
+ * table and the document-counted facts get their own labeled lines,
+ * each wearing its denominator.
  */
 function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
   if (totals.total === 0) return emptyCorpusNotice;
 
   const reviewerNames = Object.keys(totals.byReviewer);
+  const multiReviewer = reviewerNames.length > 1;
+  const verdictLines = multiReviewer ? reviewerTable(totals, reviewerNames) : pooledTally(totals);
 
+  // The by-type cells count verdicts; with several reviewers each
+  // document contributes one per reviewer, and the label says so
+  // rather than letting the counts read as documents.
+  const byTypeLabel = multiReviewer
+    ? `By type (verdicts from ${reviewerNames.length} reviewers):`
+    : "By type:";
+
+  return [
+    "",
+    { header: "Summary — corpus conformance (includes pre-spec debt)" },
+    `Total documents: ${totals.total}`,
+    `Eval coverage: observed ${coverage.observed.display} · passing ${coverage.passing.display}`,
+    "",
+    ...verdictLines,
+    "",
+    byTypeLabel,
+    ...table(
+      Object.entries(totals.byType).map(([type, stats]) => [
+        type,
+        `${stats.compliant}/${stats.total} compliant`,
+      ]),
+      ["TYPE", "COMPLIANT"],
+    ),
+  ];
+}
+
+/** The single-reviewer tally: one line, verdicts and documents coincide. */
+function pooledTally(totals: EvalSummary): DisplayEntry[] {
   const tally = verdictTally({
     pass: totals.compliant,
     warn: totals.warnings,
@@ -117,36 +150,25 @@ function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
   });
 
   return [
-    "",
-    { header: "Summary — corpus conformance (includes pre-spec debt)" },
-    `Total documents: ${totals.total}`,
-    `Eval coverage: observed ${coverage.observed.display} · passing ${coverage.passing.display}`,
-    "",
     `  ${tally}`,
     totals.unverified > 0 &&
       `  ${palette.warn(`● ${totals.unverified} unverified`)} ${palette.meta("(could not be reviewed — the run fails)")}`,
-    "",
-    "By type:",
-    ...table(
-      Object.entries(totals.byType).map(([type, stats]) => [
-        type,
-        `${stats.compliant}/${stats.total} compliant`,
-      ]),
-      ["TYPE", "COMPLIANT"],
-    ),
-    ...(reviewerNames.length > 1
-      ? [
-          "",
-          "By reviewer:",
-          ...table(
-            reviewerNames.map((name) => {
-              const stats = totals.byReviewer[name];
+  ];
+}
 
-              return [name, stats?.compliant ?? 0, stats?.warnings ?? 0, stats?.errors ?? 0];
-            }),
-            ["REVIEWER", "PASS", "WARN", "FAIL"],
-          ),
-        ]
-      : []),
+/** The multi-reviewer tally: verdict counts per reviewer, document counts labeled. */
+function reviewerTable(totals: EvalSummary, reviewerNames: string[]): DisplayEntry[] {
+  const rows = reviewerNames.map((name) => {
+    const stats = totals.byReviewer[name];
+
+    return [name, stats?.compliant ?? 0, stats?.warnings ?? 0, stats?.errors ?? 0];
+  });
+
+  return [
+    ...table(rows, ["REVIEWER", "PASS", "WARN", "FAIL"]),
+    totals.notValidated > 0 &&
+      `Not validated: ${totals.notValidated} of ${totals.total} documents ${palette.meta("(no spec governs them)")}`,
+    totals.unverified > 0 &&
+      `${palette.warn(`Unverified: ${totals.unverified} verdict(s)`)} ${palette.meta("(could not be reviewed — the run fails)")}`,
   ];
 }
