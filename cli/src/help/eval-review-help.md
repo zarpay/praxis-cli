@@ -10,7 +10,8 @@ Behavior:
   The dismissal rate is the reviewer-trust signal: many dismissals mean
   the specs disagree with the humans, or the reviewers are drifting.
   Interactive by default; the scripted flags never prompt and are the
-  agent-reachable path — both take --reason, which is recorded.
+  agent-reachable path — both take one or more critique ids with a
+  single --reason recorded against each.
 
 Examples:
   $ praxis eval review src/services

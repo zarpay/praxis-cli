@@ -1,6 +1,8 @@
 When to use: after changing a file (the fast loop), or with no targets
-for the full corpus. This is the command an agent runs between edits;
---json is the feedback channel.
+for the full corpus. This is the run that counts — verdict cached,
+critiques queued as evidence; --json is the fast loop's feedback. For
+advice on code still in flight, `praxis feedback` runs the same
+reviewers without recording evidence.
 
 Behavior:
   Reviewer calls happen only on cache misses: the cache key is a
@@ -31,12 +33,16 @@ JSON (--json), stable contract, two modes:
 
 Exit codes: 0 no violations · 1 violations or run failure · 2 usage.
 
+Targets are files or globs (quote globs so the shell passes them
+through), never a bare directory: `praxis eval run "src/services/*"`.
+
 Examples:
   $ praxis eval run src/services/checkout.ts --json
   $ praxis eval run                  # full corpus, misses only
   $ praxis eval run --type services --reviewer sonnet
 
 Next:
+  praxis feedback <target>      the same review as advice, in flight
   praxis eval verdict <target>  re-read the cached verdict, free
   praxis axioms show <id>       the standard behind a cited [AX-...]
   praxis eval critiques         browse critique ids and states

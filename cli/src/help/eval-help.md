@@ -29,7 +29,8 @@ A spec, minimally — a README.md next to the code it governs:
   the check. A spec holds the standards you can only describe.
 
 The loop, in order:
-  praxis eval run <target>     review what you changed (the fast loop)
+  praxis feedback <target>     advice while writing (never queued)
+  praxis eval run <target>     the run that counts (the fast loop)
   praxis eval critiques        browse what reviewers said, with ids
   praxis axioms triage/curate  label recurring critiques into axioms
   praxis eval report           read the evidence: rates, epochs, costs

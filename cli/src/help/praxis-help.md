@@ -12,6 +12,7 @@ New project: `praxis init` creates .praxis/config.json and prints the
 setup path (write a spec → set the reviewer's key → first run).
 
 Typical flows:
+  Get advice while writing:         praxis feedback <target>
   Evaluate work you just changed:   praxis eval run <target> --json
   Understand a violated standard:   praxis axioms show <id>
   Check project health:             praxis status
