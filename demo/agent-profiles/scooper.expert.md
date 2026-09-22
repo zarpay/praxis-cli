@@ -1,4 +1,5 @@
 ---
+type: "Scooper"
 paths:
   - "src/services/*.ts"
 excludes:

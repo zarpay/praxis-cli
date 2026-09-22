@@ -38,12 +38,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-22T21:47:57.258Z",
-      "content_hash": "7de401cd",
+      "cached_at": "2026-09-22T22:23:18.886Z",
+      "content_hash": "aeec2605",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The document includes all required frontmatter fields (title, type, alias, description) with correct values, opens with a level-1 heading naming the expert and alias, explicitly states the subject-matter expertise in prose, and contains no placeholder text."
+        "reason": "The document satisfies all mandatory frontmatter fields (title, type, alias, description) with correct values. The body begins with the required level-1 heading naming the expert and its alias, and includes prose describing the subject-matter expertise. No placeholder text is present."
       }
     },
     "244fa7f3:7adec26a": {
@@ -53,12 +53,12 @@
         "hash": "7adec26a"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-22T21:49:55.404Z",
-      "content_hash": "7de401cd",
+      "cached_at": "2026-09-22T22:23:26.866Z",
+      "content_hash": "aeec2605",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 294 words."
+        "reason": "Review input has 298 words."
       }
     }
   }

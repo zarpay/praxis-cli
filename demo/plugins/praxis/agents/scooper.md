@@ -1,6 +1,7 @@
 ---
 name: scooper
 description: Use this agent to review Scoop Society services for convention adherence, or for advice when writing a new service. Invoke it whenever files under src/services/ are added or changed.
+type: "Scooper"
 paths:
   - "src/services/*.ts"
 excludes:

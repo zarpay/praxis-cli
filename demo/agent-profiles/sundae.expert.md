@@ -1,4 +1,5 @@
 ---
+type: "Sundae"
 paths:
   - "src/features/*"
 cohort: by_directory

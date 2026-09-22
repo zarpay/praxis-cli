@@ -1,4 +1,5 @@
 ---
+type: "Taster"
 paths:
   - "tests/*.test.ts"
 ---

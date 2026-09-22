@@ -38,12 +38,12 @@
         "hash": "7adec26a"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-22T21:49:55.406Z",
-      "content_hash": "41cb158d",
+      "cached_at": "2026-09-22T22:23:26.868Z",
+      "content_hash": "53765490",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 280 words."
+        "reason": "Review input has 284 words."
       }
     },
     "244fa7f3:6af9f0d7": {
@@ -53,12 +53,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-22T21:56:03.958Z",
-      "content_hash": "41cb158d",
+      "cached_at": "2026-09-22T22:23:26.823Z",
+      "content_hash": "53765490",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The document includes all required frontmatter fields (title, type, alias, description) with correct values, opens with a level-1 heading naming the expert and alias, states the subject-matter expertise in prose, and contains no placeholder text."
+        "reason": "The document includes all required frontmatter fields (title, type, alias, description) and content elements (H1 heading with expert and alias name, prose describing subject-matter expertise). It contains no prohibited placeholder text."
       }
     }
   }
