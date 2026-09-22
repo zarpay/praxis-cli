@@ -1,8 +1,6 @@
 import type { Orientation } from "@/types.js";
 import type { View } from "@framework/types.js";
 
-import chalk from "chalk";
-
 import { table } from "@framework/views/table.js";
 
 /**
@@ -32,7 +30,6 @@ const orientationView: View<Orientation & { json?: boolean }> = (orientation) =>
       channel: "content",
       entries: [
         lastRunLine,
-        chalk.gray(`Calibration: ${orientation.calibration}`),
         "",
         ...table([
           ["Active axioms", orientation.activeAxioms, "`praxis axioms list`"],

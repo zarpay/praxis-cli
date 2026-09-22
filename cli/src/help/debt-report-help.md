@@ -10,8 +10,7 @@ Behavior:
   when each reviewer's stock was last evidenced.
 
 JSON (--json), stable contract:
-  { calibration,
-    evidence: [ { reviewerName, baselineAt, currentAt } ],
+  {    evidence: [ { reviewerName, baselineAt, currentAt } ],
     rows: [ { axiomId, statement, reviewerName, baselineStock,
               currentStock, paydown, appearedSinceBaseline } ],
     concentration: [ { directory, violations } ],

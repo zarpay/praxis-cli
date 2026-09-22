@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 /**
  * The codebase's standard content hash: an 8-char sha256 prefix.
  *
- * Every content identity — review inputs, cache keys, calibration case
+ * Every content identity — review inputs, cache keys, record
  * sets — goes through this one function, so "content hash" means the
  * same thing everywhere it appears in the ledger.
  */

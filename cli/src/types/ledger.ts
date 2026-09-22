@@ -24,13 +24,6 @@ export type LedgerTrigger = "manual" | "ci" | "watch";
 export type LedgerScope = "corpus" | "diff" | "files" | "advisory";
 
 /**
- * Reviewer calibration state stamped on a run. "uncalibrated" is
- * the absent case — no record exists for the reviewer's current hash —
- * and stays the historical member every earlier record carries.
- */
-export type CalibrationStatus = "uncalibrated" | "calibrated" | "stale";
-
-/**
  * Historical (withdrawn diff-units feature, roadmap 2026-09-07):
  * verdict-diff classification. Never written by current code; kept so
  * committed records stay typed.
@@ -105,7 +98,12 @@ export interface LedgerRunRecord {
   spec_units?: Record<string, number>;
   /** Historical: present on withdrawn scope-"diff" runs only. */
   diff?: LedgerDiffFacts;
-  calibration_status_at_run: CalibrationStatus;
+  /**
+   * Historical (calibration withdrew to the roadmap 2026-09-07; the
+   * stamp itself removed 2026-09-23): present on earlier records,
+   * never written by current code.
+   */
+  calibration_status_at_run?: string;
   baseline: boolean;
 }
 

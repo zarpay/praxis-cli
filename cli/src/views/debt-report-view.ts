@@ -42,7 +42,6 @@ const debtReportView: View<DebtReport & { json?: boolean }> = (report) => {
 
   const lines: ReportLine[] = [
     { channel: "heading", text: "Debt report — corpus, pre-spec debt included" },
-    { channel: "warning", text: `Calibration: ${report.calibration}` },
     {
       channel: "content",
       entries: [...report.evidence.map(evidenceLine), "", ...rowTable],

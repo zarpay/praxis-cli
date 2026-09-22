@@ -81,7 +81,6 @@ Exit 1 when any structural issue is found — the same count the closing line pr
   "evalState": {
     "pending_triage": 11,
     "awaiting_curation": 0,
-    "calibration_stale": true,
     "epoch_boundary_detected": false,
     "last_run_at": "2026-09-03T23:21:21.989Z"
   },

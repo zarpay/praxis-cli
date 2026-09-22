@@ -161,7 +161,6 @@ function evalStateOf(cfg: PraxisConfig): StatusReport["evalState"] {
   return {
     pending_triage: state.pending.length,
     awaiting_curation: state.unidentified.length,
-    calibration_stale: true,
     epoch_boundary_detected: boundaries.length > 0,
     last_run_at: lastRun,
   };

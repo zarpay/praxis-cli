@@ -9,7 +9,6 @@ import { reportText } from "@tests/helpers/report-text.js";
 function report(overrides: Partial<DebtReport> = {}): DebtReport {
   return {
     evidence: [],
-    calibration: "v32: uninterpretable — recalibrate",
     rows: [
       {
         axiomId: "AX-aaaa11",
@@ -30,11 +29,10 @@ function report(overrides: Partial<DebtReport> = {}): DebtReport {
 }
 
 describe("debtReportView", () => {
-  it("is honestly named and carries the calibration banner", () => {
+  it("is honestly named", () => {
     const text = reportText(debtReportView(report()));
 
     expect(text).toContain("pre-spec debt included");
-    expect(text).toContain("uninterpretable — recalibrate");
   });
 
   it("renders stock movement, concentration, and credit", () => {

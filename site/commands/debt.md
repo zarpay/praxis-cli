@@ -12,13 +12,12 @@ Per reviewer, over the latest epoch:
 - **Concentration** — current stock by directory, worst first.
 - **Re-baseline deltas** — stock across the last two epochs' baselines, with the boundary named: numbers never cross an epoch boundary as a trend.
 
-Every report carries its calibration status; `--json` emits the built payload verbatim as a stable contract.
+`--json` emits the built payload verbatim as a stable contract.
 
 ## Example
 
 ```
 Debt report — corpus, pre-spec debt included
-[WARN] Calibration: uncalibrated — numbers are directional, not interpretable
 flash: baseline 2026-09-08 · current stock as evidenced 2026-09-08
 v32: baseline 2026-09-08 · current stock as evidenced 2026-09-08
 

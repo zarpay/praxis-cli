@@ -88,24 +88,9 @@ describe("writeLedgerRunService", () => {
       reviewer_name: "flash",
       reviewer_model: "some/model",
       reviewer_hash: "abcd1234",
-      calibration_status_at_run: "uncalibrated",
       baseline: true,
     });
     expect(run.timestamp).toBeTruthy();
-  });
-
-  it("stamps the caller's calibration status; absent stays uncalibrated", () => {
-    const { path } = writeLedgerRunService(testConfig(root), {
-      reviewer: REVIEWER,
-      trigger: "manual",
-      scope: "corpus",
-      entries: [entry()],
-      calibrationStatus: "calibrated",
-    });
-    const firstLine = readFileSync(path, "utf8").split("\n", 1)[0];
-    const run = JSON.parse(firstLine) as LedgerRunRecord;
-
-    expect(run.calibration_status_at_run).toBe("calibrated");
   });
 
   it("stamps spec_units onto the run record when the caller supplies them", () => {

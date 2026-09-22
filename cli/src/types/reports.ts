@@ -42,8 +42,6 @@ export interface StatusReport {
     pending_triage: number;
     /** Unmatched critiques — `axioms curate` works them. */
     awaiting_curation: number;
-    /** Always true: calibration is a roadmap feature. */
-    calibration_stale: boolean;
     epoch_boundary_detected: boolean;
     last_run_at: string | null;
   };
@@ -111,7 +109,6 @@ export interface Orientation {
   pendingTriage: number;
   awaitingCuration: number;
   activeAxioms: number;
-  calibration: string;
   /** Errors at the latest corpus run, per reviewer. */
   debtLine: { reviewerName: string; errors: number }[] | null;
 }
@@ -228,8 +225,6 @@ export interface EvalReport {
     /** Run-indexed cost trend with calendar annotations (07 open q1). */
     costTrend: { runId: string; at: string; costUsd: number | null }[];
   };
-  /** "uncalibrated" until M6; rendered on every report (07 rule 4). */
-  calibration: string;
   axioms: AxiomReportRow[];
   /** Untriaged critiques — the triage queue. */
   pendingTriage: number;
@@ -243,8 +238,6 @@ export interface EvalReport {
 /** The single-axiom drill-down payload. */
 export interface AxiomReport {
   axiomId: string;
-  /** The per-reviewer calibration banner — carried on the payload like every other report. */
-  calibration: string;
   statement: string;
   status: AxiomStatus;
   severity: Severity | null;
@@ -279,7 +272,6 @@ export interface PaydownCredit {
 
 /** The debt report payload. */
 export interface DebtReport {
-  calibration: string;
   /** When each reviewer's stock was last evidenced — the staleness facts. */
   evidence: { reviewerName: string; baselineAt: string; currentAt: string }[];
   rows: DebtRow[];

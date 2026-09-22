@@ -26,7 +26,7 @@ JSON (--json):
     feedback { critiques, labeled, untriaged, awaitingCuration,
                dismissed, advisory },
     issueCount,
-    evalState { pending_triage, awaiting_curation, calibration_stale,
+    evalState { pending_triage, awaiting_curation,
                 epoch_boundary_detected, last_run_at },
     invalidExperts, orphanedPractices, danglingRefs,
     expertsMissingDescription, zeroMatchGlobs }

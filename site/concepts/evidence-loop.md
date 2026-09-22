@@ -61,7 +61,6 @@ praxis eval report --axiom AX-b951db
 ```
 
 ```
-[WARN] Calibration: uncalibrated — numbers are directional, not interpretable
 
   ╭─ AX-b951db v1 ────────────────────────────────────────────────────╮
   │ status        ● active                                            │
@@ -90,7 +89,6 @@ A raw critique can't be charted: its wording varies by run and by reviewer. An a
 - **One reviewer, one series** — reviewers are separate instruments; their numbers are never pooled.
 - **Populations** — every count is qualified pre-spec / post-spec against the axiom's `introduced` date, so old debt is never dressed up as new failure. `praxis debt report` charts that pre-spec backlog honestly: baseline stock, paydown, who paid it down, where it concentrates.
 - **Epochs** — a reviewer's behavioral identity (config + prompt surface) is hashed onto every run. Change the model and you've changed the instrument: praxis announces the boundary, the next full run opens a new baseline, and no trend line crosses it.
-- **The calibration banner** — every report says its numbers are directional, not interpretable: the reviewers are unvalidated instruments, and the reports refuse to pretend otherwise. Honesty is a feature.
 
 ## The division of labor
 

@@ -224,7 +224,6 @@ The read side of the ledger — never a reviewer call. Scopes compose: `eval rep
 - rates as `violations/opportunities (x%)` with the denominator always shown; cells under the small-n floor (5) render **insufficient data**, never a number. Current stock anchors to the latest *evidenced* corpus run (one with cache misses) and prints its date — an all-hit run proves nothing new and never moves the anchor
 - one reviewer, one series — never pooled; every count qualified by population (pre-spec / post-spec / unknown, derived from git birthdates against each axiom's clock)
 - epoch boundaries as named furniture; nothing trends across one
-- the calibration banner on every report (uncalibrated — numbers are directional)
 - costs, the dismissed-as-invalid rate (the reviewer-trust signal), and the two queues
 - a requested sha that no longer resolves renders the missing-commit note (squash workflows orphan branch shas by policy) — the run's attestation stays usable
 
