@@ -22,7 +22,7 @@ praxis status --json
 ```
 Praxis Project Status
 
-Last run: 2026-09-03
+Last run: 2026-09-03 14:07 UTC
 Untriaged: 11 · Awaiting curation: 0
 
   ┌───────────────┬───────┐

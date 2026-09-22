@@ -82,14 +82,18 @@ Summary — corpus conformance (includes pre-spec debt)
 ==================================================
 Total documents: 4
 
-  ┌──────────┬───────┬──────┐
-  │ COVERAGE │ FILES │ RATE │
-  ├──────────┼───────┼──────┤
-  │ Observed │ 4/4   │ 100% │
-  │ Passing  │ 2/4   │ 50%  │
-  └──────────┴───────┴──────┘
+Coverage:
+  ┌───────────────┬───────┬──────┐
+  │ COVERAGE      │ FILES │ RATE │
+  ├───────────────┼───────┼──────┤
+  │ Observed      │ 4/4   │ 100% │
+  │ Passing       │ 2/4   │ 50%  │
+  │ Not validated │ 0/4   │ 0%   │
+  └───────────────┴───────┴──────┘
 
-  ● 2 pass   ● 1 warn   ● 1 fail   ● 0 not validated
+Verdicts:
+
+  ● 2 pass   ● 1 warn   ● 1 fail
 
 By type:
   ┌──────────────┬───────────────┐

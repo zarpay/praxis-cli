@@ -66,6 +66,13 @@ describe("review state", () => {
     expect(text).toMatch(/Passing\s*│\s*3\/5\s*│\s*60%/);
   });
 
+  it("shows the last run with date and time", () => {
+    const stamped = report();
+    stamped.evalState.last_run_at = "2026-09-22T21:56:09.047Z";
+
+    expect(reportText(statusView(stamped))).toContain("Last run: 2026-09-22 21:56 UTC");
+  });
+
   it("renders one table row per reviewer that has reviewed something", () => {
     const text = rendered([tally({ reviewer: "flash", pass: 2 }), tally({ reviewer: "v32" })]);
 

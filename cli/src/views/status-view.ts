@@ -133,7 +133,7 @@ function findings(report: StatusReport): { heading: string; items: string[] }[] 
 /** The situational-poll facts, each naming its command. */
 function evalStateLines(report: StatusReport): string[] {
   const { evalState } = report;
-  const lastRun = evalState.last_run_at === null ? "never" : evalState.last_run_at.slice(0, 10);
+  const lastRun = evalState.last_run_at === null ? "never" : lastRunStamp(evalState.last_run_at);
 
   return [
     `Last run: ${lastRun}`,
@@ -142,6 +142,13 @@ function evalStateLines(report: StatusReport): string[] {
       ? ["Epoch boundary detected — the next full run opens a new baseline."]
       : []),
   ];
+}
+
+/** An ISO timestamp as "YYYY-MM-DD HH:MM UTC" — date and time, minute precision. */
+function lastRunStamp(iso: string): string {
+  const stamp = iso.slice(0, 16).replace("T", " ");
+
+  return `${stamp} UTC`;
 }
 
 /** The coverage slices as rows: what is governed, and what clears. */

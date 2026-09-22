@@ -122,13 +122,17 @@ function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
     ? `By type (verdicts from ${reviewerNames.length} reviewers):`
     : "By type:";
 
+  const verdictLabel = multiReviewer ? "By reviewer:" : "Verdicts:";
+
   return [
     "",
     { header: "Summary — corpus conformance (includes pre-spec debt)" },
     `Total documents: ${totals.total}`,
     "",
-    ...coverageTable(coverage),
+    "Coverage:",
+    ...coverageTable(coverage, totals),
     "",
+    verdictLabel,
     ...verdictLines,
     "",
     byTypeLabel,
@@ -142,8 +146,14 @@ function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
   ];
 }
 
-/** The coverage slices as rows: what is governed, and what clears. */
-function coverageTable(coverage: EvalCoverage): string[] {
+/**
+ * The coverage slices as rows: what is governed, what clears, and what
+ * no spec covers. Not-validated counts documents rather than corpus
+ * files — a different denominator, worn by its own FILES cell.
+ */
+function coverageTable(coverage: EvalCoverage, totals: EvalSummary): string[] {
+  const notValidatedRate = totals.total === 0 ? null : totals.notValidated / totals.total;
+
   const rows = [
     [
       "Observed",
@@ -155,6 +165,7 @@ function coverageTable(coverage: EvalCoverage): string[] {
       `${coverage.passing.files}/${coverage.sourceFiles}`,
       percent(coverage.passing.rate),
     ],
+    ["Not validated", `${totals.notValidated}/${totals.total}`, percent(notValidatedRate)],
   ];
 
   return table(rows, ["COVERAGE", "FILES", "RATE"]);
@@ -162,11 +173,11 @@ function coverageTable(coverage: EvalCoverage): string[] {
 
 /** The single-reviewer tally: one line, verdicts and documents coincide. */
 function pooledTally(totals: EvalSummary): DisplayEntry[] {
+  // Not-validated lives in the coverage table, never repeated here.
   const tally = verdictTally({
     pass: totals.compliant,
     warn: totals.warnings,
     fail: totals.errors,
-    notValidated: totals.notValidated,
   });
 
   return [
@@ -186,8 +197,6 @@ function reviewerTable(totals: EvalSummary, reviewerNames: string[]): DisplayEnt
 
   return [
     ...table(rows, ["REVIEWER", "PASS", "WARN", "FAIL"]),
-    totals.notValidated > 0 &&
-      `Not validated: ${totals.notValidated} of ${totals.total} documents ${palette.meta("(no spec governs them)")}`,
     totals.unverified > 0 &&
       `${palette.warn(`Unverified: ${totals.unverified} verdict(s)`)} ${palette.meta("(could not be reviewed — the run fails)")}`,
   ];
