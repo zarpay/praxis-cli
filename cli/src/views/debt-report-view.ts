@@ -1,8 +1,7 @@
 import type { DebtReport } from "@/types.js";
 import type { ReportLine, View } from "@framework/types.js";
 
-import chalk from "chalk";
-
+import { palette } from "@framework/views/palette.js";
 import { table } from "@framework/views/table.js";
 
 /**
@@ -46,7 +45,15 @@ const debtReportView: View<DebtReport & { json?: boolean }> = (report) => {
     { channel: "heading", text: "Debt report — corpus, pre-spec debt included" },
     {
       channel: "content",
-      entries: [...report.evidence.map(evidenceLine), "", ...rowTable],
+      entries: [
+        "Evidence freshness — when each reviewer's stock was measured. An",
+        "all-hit run re-evidences nothing, so a stale date means unmeasured",
+        "since then, never clean:",
+        ...report.evidence.map(evidenceLine),
+        "",
+        "Stock by axiom (baseline → current, one row per reviewer):",
+        ...rowTable,
+      ],
     },
   ];
 
@@ -119,7 +126,5 @@ function evidenceLine(entry: DebtReport["evidence"][number]): string {
   const baseline = entry.baselineAt.slice(0, 10);
   const current = entry.currentAt.slice(0, 10);
 
-  return chalk.gray(
-    `${entry.reviewerName}: baseline ${baseline} · current stock as evidenced ${current}`,
-  );
+  return palette.meta(`  ${entry.reviewerName}: baseline ${baseline} · last evidenced ${current}`);
 }

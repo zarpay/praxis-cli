@@ -18,9 +18,13 @@ Per reviewer, over the latest epoch:
 
 ```
 Debt report — corpus, pre-spec debt included
-flash: baseline 2026-09-08 · current stock as evidenced 2026-09-08
-v32: baseline 2026-09-08 · current stock as evidenced 2026-09-08
+Evidence freshness — when each reviewer's stock was measured. An
+all-hit run re-evidences nothing, so a stale date means unmeasured
+since then, never clean:
+  flash: baseline 2026-09-08 · last evidenced 2026-09-08
+  v32: baseline 2026-09-08 · last evidenced 2026-09-08
 
+Stock by axiom (baseline → current, one row per reviewer):
   ┌───────────┬──────────┬──────────┬──────────┬───────────┬─────────┐
   │ AXIOM     │ REVIEWER │ BASELINE │ APPEARED │ PAID DOWN │ CURRENT │
   ├───────────┼──────────┼──────────┼──────────┼───────────┼─────────┤
