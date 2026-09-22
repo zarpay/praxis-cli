@@ -59,7 +59,7 @@ Every bullet requires reading comprehension to decide — which is exactly what 
 
 ## Severity: must vs. should
 
-The severity boundary the reviewer answers through is drawn in its verdict tools: a violated **core or required** criterion fails, a **non-critical deviation or unmet optional** criterion warns. Which side of that line a standard falls on is the reviewer's reading of your spec — so write the intent into the language. Binding phrasing ("must", "never", "always") reads as core; advisory phrasing ("should", "prefer", "recommended") reads as optional. The words aren't hard-coded anywhere; they work because the reviewer reads them as intent.
+The severity boundary the reviewer answers through is drawn in its verdict tools: a violated **core or required** criterion fails, a **non-critical deviation or unmet optional** criterion warns. Which side of that line a standard falls on is the reviewer's reading of your spec — so write the intent into the language. Binding phrasing ("must", "never", "always") reads as core; advisory phrasing ("should", "prefer", "recommended") reads as optional. The verdict tool descriptions name these cues to the reviewer, so binding and advisory phrasing steer severity by design rather than by the model's own reading.
 
 By default errors fail a run and warnings don't; `eval ci --strict` makes warnings blocking too.
 

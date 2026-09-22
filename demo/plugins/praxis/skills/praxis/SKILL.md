@@ -12,6 +12,8 @@ Praxis is a CLI with two complementary functions:
 
 Every run also appends evidence to the ledger: one run record per reviewer plus one critique per issue, at `.praxis/ledger/`. Recurring critiques are labeled into **axioms** — named, ratified standards; the reviewer itself sees only the spec (`axioms triage` labels, `axioms curate` clusters).
 
+**Help is the full documentation.** Run `praxis <command> --help` before guessing: every command's help states when to use it, how it behaves (writes vs reads, cache and ledger effects), its `--json` contract, the commands to run next, and a link into the site docs. This document is only the orientation.
+
 ---
 
 ## Project structure

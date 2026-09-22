@@ -15,10 +15,10 @@ refs:
   - content/reference/vocabulary.md
 ---
 
-# Sample Role
+# Sample Expert
 
-This is the sample role body content.
+This is the sample expert body content.
 
 ## Identity
 
-A sample role for testing.
+A sample expert for testing.

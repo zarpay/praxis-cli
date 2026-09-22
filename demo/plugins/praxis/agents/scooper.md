@@ -6,7 +6,7 @@ paths:
 excludes:
   - "src/services/legacy-import.ts"
 ---
-# Role
+# Expert
 
 # Service Steward (a.k.a **Scooper**)
 
@@ -31,7 +31,7 @@ enforced by review, not by memory.
 - HTTP routing (`src/index.ts`) and storage (`src/store/`)
 - Deciding what features Scoop Society should have
 
-# Responsibilities
+# Practices
 
 # Review Service Quality
 

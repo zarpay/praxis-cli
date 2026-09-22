@@ -63,7 +63,7 @@ describe("compileExpertsService", () => {
   });
 
   describe("compiling one expert", () => {
-    it("compiles a single role to agent output and profile", async () => {
+    it("compiles a single expert to agent output and profile", async () => {
       const expertFile = join(expertsDir, "test-expert.md");
 
       await compileFile(expertFile);
@@ -78,7 +78,7 @@ describe("compileExpertsService", () => {
       await compileFile(expertFile);
       const content = readFileSync(join(agentsOutputDir, "tester.md"), "utf-8");
 
-      expect(content).toContain("# Role");
+      expect(content).toContain("# Expert");
       expect(content).toContain("A test expert for unit testing");
     });
 
@@ -312,7 +312,7 @@ describe("compileExpertsService", () => {
   });
 
   describe("compiling every expert", () => {
-    it("compiles all roles in the roles directory", async () => {
+    it("compiles all experts in the experts directory", async () => {
       const result = await compileAll();
 
       expect(result.compiled).toBeGreaterThanOrEqual(1);
@@ -333,9 +333,9 @@ describe("compileExpertsService", () => {
       expect(existsSync(join(agentsOutputDir, "readme.md"))).toBe(false);
     });
 
-    it("skips roles without alias", async () => {
+    it("skips experts without alias", async () => {
       const noAlias = join(expertsDir, "no-alias.md");
-      writeFileSync(noAlias, "---\ntitle: No Alias\n---\n# No Alias Role");
+      writeFileSync(noAlias, "---\ntitle: No Alias\n---\n# No Alias Expert");
 
       const result = await compileAll();
 
@@ -362,7 +362,7 @@ describe("compileExpertsService", () => {
 
       // Pure profile has no frontmatter
       expect(profile).not.toMatch(/^---\n/);
-      expect(profile).toContain("# Role");
+      expect(profile).toContain("# Expert");
     });
 
     it("writes Claude Code frontmatter only in plugin output", async () => {

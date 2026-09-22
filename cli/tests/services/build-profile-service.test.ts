@@ -6,68 +6,68 @@ import { testConfig } from "@tests/helpers/test-config.js";
 const CONFIG = testConfig("/project");
 
 describe("buildProfileService", () => {
-  describe("role", () => {
-    it("renders the role section", () => {
+  describe("expert", () => {
+    it("renders the expert section", () => {
       const output = buildProfileService(CONFIG, {
-        role: "# Test Role\n\nRole content here.",
-        responsibilities: [],
+        expert: "# Test Expert\n\nExpert content here.",
+        practices: [],
         constitution: [],
         context: [],
         reference: [],
       });
 
-      expect(output).toContain("# Role");
-      expect(output).toContain("Role content here.");
+      expect(output).toContain("# Expert");
+      expect(output).toContain("Expert content here.");
     });
   });
 
-  describe("responsibilities", () => {
-    it("adds responsibilities with --- separators between items", () => {
+  describe("practices", () => {
+    it("adds practices with --- separators between items", () => {
       const output = buildProfileService(CONFIG, {
-        role: "",
-        responsibilities: ["First responsibility content.", "Second responsibility content."],
+        expert: "",
+        practices: ["First practice content.", "Second practice content."],
         constitution: [],
         context: [],
         reference: [],
       });
 
-      expect(output).toContain("# Responsibilities");
-      expect(output).toContain("First responsibility content.");
+      expect(output).toContain("# Practices");
+      expect(output).toContain("First practice content.");
       expect(output).toContain("---");
-      expect(output).toContain("Second responsibility content.");
+      expect(output).toContain("Second practice content.");
     });
 
-    it("handles single responsibility without separator", () => {
+    it("handles single practice without separator", () => {
       const output = buildProfileService(CONFIG, {
-        role: "",
-        responsibilities: ["Only responsibility."],
+        expert: "",
+        practices: ["Only practice."],
         constitution: [],
         context: [],
         reference: [],
       });
 
-      expect(output).toContain("Only responsibility.");
+      expect(output).toContain("Only practice.");
       expect(output).not.toContain("---");
     });
 
     it("skips section if empty array", () => {
       const output = buildProfileService(CONFIG, {
-        role: "",
-        responsibilities: [],
+        expert: "",
+        practices: [],
         constitution: [],
         context: [],
         reference: [],
       });
 
-      expect(output).not.toContain("# Responsibilities");
+      expect(output).not.toContain("# Practices");
     });
   });
 
   describe("constitution", () => {
     it("adds constitution with blank line separators (not ---)", () => {
       const output = buildProfileService(CONFIG, {
-        role: "",
-        responsibilities: [],
+        expert: "",
+        practices: [],
         constitution: ["Identity content.", "Principles content."],
         context: [],
         reference: [],
@@ -83,8 +83,8 @@ describe("buildProfileService", () => {
   describe("context", () => {
     it("adds context with --- separators", () => {
       const output = buildProfileService(CONFIG, {
-        role: "",
-        responsibilities: [],
+        expert: "",
+        practices: [],
         constitution: [],
         context: ["First context.", "Second context."],
         reference: [],
@@ -100,8 +100,8 @@ describe("buildProfileService", () => {
   describe("reference", () => {
     it("adds reference with --- separators", () => {
       const output = buildProfileService(CONFIG, {
-        role: "",
-        responsibilities: [],
+        expert: "",
+        practices: [],
         constitution: [],
         context: [],
         reference: ["First reference.", "Second reference."],
@@ -117,56 +117,56 @@ describe("buildProfileService", () => {
   describe("assembly", () => {
     it("assembles sections in a fixed order", () => {
       const profile = buildProfileService(CONFIG, {
-        role: "Role body",
-        responsibilities: ["Resp 1"],
+        expert: "Expert body",
+        practices: ["Practice 1"],
         constitution: ["Const 1"],
         context: ["Ctx 1"],
         reference: ["Ref 1"],
       });
 
-      const rolePos = profile.indexOf("# Role");
-      const respPos = profile.indexOf("# Responsibilities");
+      const expertPos = profile.indexOf("# Expert");
+      const practicesPos = profile.indexOf("# Practices");
       const constPos = profile.indexOf("# Constitution");
       const ctxPos = profile.indexOf("# Context");
       const refPos = profile.indexOf("# Reference");
 
-      expect(rolePos).toBeLessThan(respPos);
-      expect(respPos).toBeLessThan(constPos);
+      expect(expertPos).toBeLessThan(practicesPos);
+      expect(practicesPos).toBeLessThan(constPos);
       expect(constPos).toBeLessThan(ctxPos);
       expect(ctxPos).toBeLessThan(refPos);
     });
 
     it("produces no frontmatter — platform wrapping belongs to plugins", () => {
       const profile = buildProfileService(CONFIG, {
-        role: "Role body",
-        responsibilities: [],
+        expert: "Expert body",
+        practices: [],
         constitution: [],
         context: [],
         reference: [],
       });
 
       expect(profile).not.toMatch(/^---\n/);
-      expect(profile.startsWith("# Role")).toBe(true);
+      expect(profile.startsWith("# Expert")).toBe(true);
     });
 
     it("omits empty sections", () => {
       const profile = buildProfileService(CONFIG, {
-        role: "Role body",
-        responsibilities: [],
+        expert: "Expert body",
+        practices: [],
         constitution: [],
         context: [],
         reference: [],
       });
 
-      expect(profile).toContain("# Role");
-      expect(profile).not.toContain("# Responsibilities");
+      expect(profile).toContain("# Expert");
+      expect(profile).not.toContain("# Practices");
       expect(profile).not.toContain("# Constitution");
     });
 
     it("returns an empty string when every section is empty", () => {
       const profile = buildProfileService(CONFIG, {
-        role: "",
-        responsibilities: [],
+        expert: "",
+        practices: [],
         constitution: [],
         context: [],
         reference: [],

@@ -54,7 +54,7 @@ const compileExpertService: Service<CompileExpertInput, Promise<CompileExpertRes
   const expertContent = readText(expertFile);
   const expert = ExpertFile.fromContent(expertContent, expertFile);
 
-  const [responsibilities, constitution, context, reference] = await Promise.all([
+  const [practices, constitution, context, reference] = await Promise.all([
     inline(cfg, expert.refs("practices"), "Referenced file not found"),
     inline(cfg, expert.constitution, "Constitution file not found"),
     inline(cfg, expert.refs("context"), "Referenced file not found"),
@@ -65,8 +65,8 @@ const compileExpertService: Service<CompileExpertInput, Promise<CompileExpertRes
   const warnings = [
     // An expert with no description compiles, but emits no agent
     // metadata — the profile is readable and not dispatchable.
-    ...(metadata ? [] : ["No description found in role, skipping agent metadata"]),
-    ...responsibilities.warnings,
+    ...(metadata ? [] : ["No description found in expert, skipping agent metadata"]),
+    ...practices.warnings,
     ...constitutionWarnings(expert.constitution, constitution.bodies),
     ...constitution.warnings,
     ...context.warnings,
@@ -74,8 +74,8 @@ const compileExpertService: Service<CompileExpertInput, Promise<CompileExpertRes
   ];
 
   const profile = buildProfileService(cfg, {
-    role: expert.body(),
-    responsibilities: responsibilities.bodies,
+    expert: expert.body(),
+    practices: practices.bodies,
     constitution: constitution.bodies,
     context: context.bodies,
     reference: reference.bodies,

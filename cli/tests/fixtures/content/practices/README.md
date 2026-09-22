@@ -1,7 +1,7 @@
 ---
-title: Responsibilities
+title: Practices
 ---
 
-# Responsibilities
+# Practices
 
-README for responsibilities directory.
+README for practices directory.

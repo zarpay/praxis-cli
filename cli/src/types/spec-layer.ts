@@ -4,10 +4,10 @@
 import type { CompilerPlugin } from "@/types/extension-points.js";
 
 /**
- * Metadata extracted from role frontmatter for agent compilation.
+ * Metadata extracted from expert frontmatter for agent compilation.
  *
  * Used by plugins to generate platform-specific output (e.g. Claude Code
- * frontmatter). The fields map to role frontmatter keys prefixed with `agent_`.
+ * frontmatter). The fields map to expert frontmatter keys prefixed with `agent_`.
  */
 export interface AgentMetadata {
   /** Agent name (lowercase, hyphenated). */

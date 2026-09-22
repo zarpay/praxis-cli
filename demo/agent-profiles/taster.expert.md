@@ -3,7 +3,7 @@ paths:
   - "tests/*.test.ts"
 ---
 
-# Role
+# Expert
 
 # Test Steward (a.k.a **Taster**)
 
@@ -28,7 +28,7 @@ sentences and survive refactors that don't change behavior.
 - The behavior being tested (that's the service conventions, Scooper)
 - Deciding what functionality deserves coverage
 
-# Responsibilities
+# Practices
 
 # Review Test Quality
 

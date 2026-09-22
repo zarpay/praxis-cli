@@ -74,6 +74,27 @@ function content(badge: DisplayEntry): { channel: "content"; entries: DisplayEnt
 }
 
 /**
+ * A run that found nothing to review is a setup gap, not a clean bill:
+ * the notice says why it happens and what creates the first review
+ * unit (09: errors instruct).
+ */
+const emptyCorpusNotice: DisplayEntry[] = [
+  "",
+  { header: "Summary — corpus conformance (includes pre-spec debt)" },
+  "Total documents: 0 — no spec governs any files yet.",
+  "",
+  "A full run reviews the files that specs govern, and specs are",
+  "discovered in the directories `sources` lists in .praxis/config.json.",
+  "To get a first review unit:",
+  "  1. Write a spec: a README.md next to the code it governs, stating",
+  "     what correct looks like (paths: frontmatter widens its scope;",
+  "     without it the spec governs its own directory's files)",
+  '  2. Point sources at that directory: "sources": ["src"]',
+  "  3. Run `praxis eval run` again — or `praxis eval run <file>` to",
+  "     review one file without touching sources",
+];
+
+/**
  * The aggregated summary block.
  *
  * Reviewers are separate instruments, so their series render separately
@@ -82,6 +103,8 @@ function content(badge: DisplayEntry): { channel: "content"; entries: DisplayEnt
  * would just restate the totals.
  */
 function summary(totals: EvalSummary): DisplayEntry[] {
+  if (totals.total === 0) return emptyCorpusNotice;
+
   const reviewerNames = Object.keys(totals.byReviewer);
 
   const tally = verdictTally({

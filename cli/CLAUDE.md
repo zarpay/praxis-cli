@@ -37,6 +37,9 @@ src/
                   shapes live in packages/framework/src/types.ts
   helpers/        plain reusable modules any layer may lean on: files, paths,
                   text, errors, prepare-orchestrator binding ({name}-helper.ts)
+  help/           the long-form --help documents, one markdown file per help
+                  moment, imported as strings by commands/ (agent-grade per
+                  specs/09; only commands/ and index.ts import them)
   models/         data structures and the helpers on that data, valid by
                   construction (Frontmatter, MarkdownFile, Reviewer, SpecFile…)
   services/       one action, one input, one output ({verb}-{noun}-service.ts)
@@ -155,7 +158,7 @@ at them rather than at captured stdout. Long runs still stream through an
 Expert .md file (with YAML frontmatter)
   → Document parsed (models/markdown-file.ts → models/frontmatter.ts)
   → Referenced content resolved via globs (services/expand-globs-service.ts)
-  → Sections assembled: Expert → Responsibilities → Constitution → Context → Reference
+  → Sections assembled: Expert → Practices → Constitution → Context → Reference
       (services/build-profile-service.ts)
   → Pure profile written to agentProfilesOutputDir/{alias}.md
   → Each plugin receives profile + metadata and writes its own output

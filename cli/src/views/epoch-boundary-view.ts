@@ -20,7 +20,8 @@ const epochBoundaryView: View<EpochBoundary[]> = (boundaries) => {
       channel: "content",
       entries: [
         "  Numbers do not cross an epoch boundary. Run a full `praxis eval run` to open",
-        "  the new epoch with a baseline.",
+        "  the new epoch with a baseline, then `praxis eval prune` to drop the old",
+        "  epoch's orphaned cache entries.",
         "",
       ],
     },

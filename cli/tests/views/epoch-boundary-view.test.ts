@@ -46,7 +46,7 @@ describe("epochBoundaryView", () => {
     expect(warningText).toContain("config or prompt surface");
   });
 
-  it("recommends the re-baseline after the warnings", () => {
+  it("recommends the re-baseline and the prune after the warnings", () => {
     const boundaries = [boundary(), boundary({ reviewerName: "v32" })];
 
     const lines = epochBoundaryView(boundaries);
@@ -56,5 +56,6 @@ describe("epochBoundaryView", () => {
     expect(lines).toHaveLength(5);
     expect(recommendation.channel).toBe("content");
     expect(recommendationText).toContain("praxis eval run");
+    expect(recommendationText).toContain("praxis eval prune");
   });
 });

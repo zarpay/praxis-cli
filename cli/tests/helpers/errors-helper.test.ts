@@ -47,9 +47,9 @@ describe("errors", () => {
   });
 
   it("fileAlreadyExists", () => {
-    const err = errors.fileAlreadyExists("roles/dup.md");
+    const err = errors.fileAlreadyExists("experts/dup.md");
     expect(err.code).toBe("FILE_ALREADY_EXISTS");
-    expect(err.message).toBe("File already exists: roles/dup.md");
+    expect(err.message).toBe("File already exists: experts/dup.md");
   });
 
   it("duplicateReviewerName", () => {
@@ -99,17 +99,17 @@ describe("errors", () => {
   });
 
   it("specNotFound", () => {
-    const err = errors.specNotFound("SPEC.md", "/p/roles", "/p/roles/doc.md");
+    const err = errors.specNotFound("SPEC.md", "/p/experts", "/p/experts/doc.md");
     expect(err.code).toBe("SPEC_NOT_FOUND");
-    expect(err.message).toContain("No SPEC.md found in /p/roles for /p/roles/doc.md");
+    expect(err.message).toContain("No SPEC.md found in /p/experts for /p/experts/doc.md");
     expect(err.message).toContain("specFilePattern");
   });
 
   it("specPatternNotFound", () => {
-    const err = errors.specPatternNotFound("*.sme.md", "/p/roles", "/p/roles/doc.md");
+    const err = errors.specPatternNotFound("*.sme.md", "/p/experts", "/p/experts/doc.md");
     expect(err.code).toBe("SPEC_NOT_FOUND");
     expect(err.message).toContain(
-      "No file matching '*.sme.md' found in /p/roles for /p/roles/doc.md",
+      "No file matching '*.sme.md' found in /p/experts for /p/experts/doc.md",
     );
     expect(err.message).toContain("specFilePattern");
   });

@@ -160,11 +160,11 @@ describe("PraxisConfig", () => {
 
   it("loads custom practicesDir from cfg", () => {
     const dir = makeTmpdir();
-    writeConfig(dir, { practicesDir: "knowledge/responsibilities" });
+    writeConfig(dir, { practicesDir: "knowledge/practices" });
 
     const cfg = new PraxisConfig(dir);
 
-    expect(cfg.practicesDir).toBe(join(dir, "knowledge", "responsibilities"));
+    expect(cfg.practicesDir).toBe(join(dir, "knowledge", "practices"));
   });
 
   it("throws a descriptive error for invalid JSON", () => {

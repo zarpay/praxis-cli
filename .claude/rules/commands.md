@@ -26,8 +26,21 @@ then hands them to one orchestrator. Nothing else. Nothing imports `commands/`.
   An orchestrator exports itself already wrapped, so there is nothing to prepare,
   adapt or close over here. There is no lambda anywhere: both sides have a fixed
   shape, so `prepareOrchestrator` derives the options from commander's own
-  argument names and parsed flags. A command file imports orchestrators and
-  nothing else — no model, no service, no view, no helper.
+  argument names and parsed flags. A command file imports orchestrators and its
+  help documents, and nothing else — no model, no service, no view, no helper.
+
+- **Long-form help lives in `src/help/`, not inline.** One markdown file per
+  help moment (`eval-run-help.md`, group-level `eval-help.md`, root
+  `praxis-help.md`), imported as a string (tsup `loader: { ".md": "text" }`)
+  and handed to `.addHelpText("after", `` `\n${...}` ``)` — the leading newline
+  is the blank separator after the options block. Help is the API
+  documentation and agents are first-class readers (`specs/09-cli-surface.md`):
+  every leaf states When to use, Behavior, Examples, the `--json` contract
+  where the flag exists, Next commands, and ends with a `Docs:` site link —
+  the mirrored tests in `tests/commands/` enforce the last two. Only
+  `commands/` and `src/index.ts` import `@/help/*` — a documented contract,
+  like the spec↔eval isolation, since a lint block would clobber the layer
+  rules.
 
 - **A command's flags and arguments _are_ its orchestrator's `Options`.** Name
   them to match — `<target> --verbose` yields `{ target, verbose }` — and the

@@ -1,5 +1,8 @@
 import type { CommandRegistrar } from "@framework/types.js";
 
+import configEditHelp from "@/help/config-edit-help.md";
+import configHelp from "@/help/config-help.md";
+import configShowHelp from "@/help/config-show-help.md";
 import editConfigOrchestrator from "@/orchestrators/edit-config-orchestrator.js";
 import showConfigOrchestrator from "@/orchestrators/show-config-orchestrator.js";
 
@@ -9,33 +12,21 @@ import showConfigOrchestrator from "@/orchestrators/show-config-orchestrator.js"
  * Shows the config file or opens it for editing.
  */
 const configCommand: CommandRegistrar = (program) => {
-  const config = program.command("config").description("View or edit the project configuration");
+  const config = program
+    .command("config")
+    .description("View or edit the project configuration")
+    .addHelpText("after", `\n${configHelp}`);
 
   config
     .command("show")
     .description("Print the project configuration as written, with its file path")
-    .addHelpText(
-      "after",
-      `
-When to use: to see the effective config and where it lives.
-
-Example:
-  $ praxis config show`,
-    )
+    .addHelpText("after", `\n${configShowHelp}`)
     .action(showConfigOrchestrator);
 
   config
     .command("edit")
     .description("Open the project configuration in $VISUAL, $EDITOR, or vi (human-only)")
-    .addHelpText(
-      "after",
-      `
-When to use: humans at a terminal only — it opens an interactive
-editor. Agents and scripts edit .praxis/config.json directly.
-
-Example:
-  $ praxis config edit`,
-    )
+    .addHelpText("after", `\n${configEditHelp}`)
     .action(editConfigOrchestrator);
 };
 
