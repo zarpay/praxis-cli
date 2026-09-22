@@ -130,7 +130,7 @@ function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
     `Total documents: ${totals.total}`,
     "",
     "Coverage:",
-    ...coverageTable(coverage, totals),
+    ...coverageTable(coverage),
     "",
     verdictLabel,
     ...verdictLines,
@@ -147,12 +147,13 @@ function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
 }
 
 /**
- * The coverage slices as rows: what is governed, what clears, and what
- * no spec covers. Not-validated counts documents rather than corpus
- * files — a different denominator, worn by its own FILES cell.
+ * The coverage slices as rows over one denominator, the corpus:
+ * governed, clearing, and no spec at all. Observed and Not observed
+ * partition the corpus; Passing is the subset of Observed that clears.
  */
-function coverageTable(coverage: EvalCoverage, totals: EvalSummary): string[] {
-  const notValidatedRate = totals.total === 0 ? null : totals.notValidated / totals.total;
+function coverageTable(coverage: EvalCoverage): string[] {
+  const unobserved = coverage.sourceFiles - coverage.observed.files;
+  const unobservedRate = coverage.sourceFiles === 0 ? null : unobserved / coverage.sourceFiles;
 
   const rows = [
     [
@@ -165,7 +166,7 @@ function coverageTable(coverage: EvalCoverage, totals: EvalSummary): string[] {
       `${coverage.passing.files}/${coverage.sourceFiles}`,
       percent(coverage.passing.rate),
     ],
-    ["Not validated", `${totals.notValidated}/${totals.total}`, percent(notValidatedRate)],
+    ["Not observed", `${unobserved}/${coverage.sourceFiles}`, percent(unobservedRate)],
   ];
 
   return table(rows, ["COVERAGE", "FILES", "RATE"]);

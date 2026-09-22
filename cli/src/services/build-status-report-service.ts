@@ -3,10 +3,12 @@ import type { NoInput, Service, StatusReport } from "@/types.js";
 
 import { exists } from "@/helpers/files-helper.js";
 import auditExpertsService from "@/services/audit-experts-service.js";
+import buildCritiquesReportService from "@/services/build-critiques-report-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
 import measureEvalCoverageService from "@/services/measure-eval-coverage-service.js";
 import tallyValidationService from "@/services/tally-validation-service.js";
+import { AxiomStore } from "@/stores/axiom-store.js";
 import { DocumentStore } from "@/stores/document-store.js";
 import { ExpertStore } from "@/stores/expert-store.js";
 import { PracticeStore } from "@/stores/practice-store.js";
@@ -32,9 +34,11 @@ const buildStatusReportService: Service<NoInput, Promise<StatusReport>> = async 
   const validation = tallyValidationService(cfg, {});
   const evalState = evalStateOf(cfg);
   const coverage = measureEvalCoverageService(cfg, {});
+  const feedback = feedbackOf(cfg);
+  const activeAxioms = activeAxiomCount(cfg);
 
   if (!exists(cfg.expertsDir)) {
-    return evalOnlyReport(validation, evalState, coverage);
+    return evalOnlyReport({ validation, evalState, coverage, feedback, activeAxioms });
   }
 
   const expertStore = new ExpertStore(cfg);
@@ -60,10 +64,12 @@ const buildStatusReportService: Service<NoInput, Promise<StatusReport>> = async 
       practices: practiceStore.files().length,
       references: counts.references,
       context: counts.context,
+      axioms: activeAxioms,
     },
     validation,
     evalState,
     coverage,
+    feedback,
     issueCount: issueCountOf(findings),
     ...findings,
   };
@@ -88,18 +94,30 @@ function issueCountOf(findings: {
   );
 }
 
-/** The report for a project with no spec layer: validation state only. */
-function evalOnlyReport(
-  validation: StatusReport["validation"],
-  evalState: StatusReport["evalState"],
-  coverage: StatusReport["coverage"],
-): StatusReport {
+/** The eval-layer facts every report carries, spec layer or not. */
+interface EvalFacts {
+  validation: StatusReport["validation"];
+  evalState: StatusReport["evalState"];
+  coverage: StatusReport["coverage"];
+  feedback: StatusReport["feedback"];
+  activeAxioms: number;
+}
+
+/** The report for a project with no spec layer: eval-layer state only. */
+function evalOnlyReport({
+  validation,
+  evalState,
+  coverage,
+  feedback,
+  activeAxioms,
+}: EvalFacts): StatusReport {
   return {
     compilerInUse: false,
-    counts: { experts: 0, practices: 0, references: 0, context: 0 },
+    counts: { experts: 0, practices: 0, references: 0, context: 0, axioms: activeAxioms },
     validation,
     evalState,
     coverage,
+    feedback,
     issueCount: 0,
     orphanedPractices: [],
     danglingRefs: [],
@@ -107,6 +125,29 @@ function evalOnlyReport(
     invalidExperts: [],
     zeroMatchGlobs: [],
   };
+}
+
+/** The critique lifecycle totals, from the same derivation `eval critiques` reports. */
+function feedbackOf(cfg: PraxisConfig): StatusReport["feedback"] {
+  const { totals } = buildCritiquesReportService(cfg, {});
+  const critiques =
+    totals.untriaged + totals.unmatched + totals.labeled + totals.dismissed + totals.advisory;
+
+  return {
+    critiques,
+    labeled: totals.labeled,
+    untriaged: totals.untriaged,
+    awaitingCuration: totals.unmatched,
+    dismissed: totals.dismissed,
+    advisory: totals.advisory,
+  };
+}
+
+/** How many axioms are currently active. */
+function activeAxiomCount(cfg: PraxisConfig): number {
+  const { axioms } = new AxiomStore(cfg).all();
+
+  return axioms.filter((axiom) => axiom.status === "active").length;
 }
 
 /** The situational-poll facts, derived from the stores. */

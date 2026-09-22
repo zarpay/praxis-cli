@@ -27,9 +27,13 @@ const statusView: View<StatusReport & { json?: boolean }> = (report) => {
   lines.push({ channel: "content", entries: ["", ...evalStateLines(report)] });
 
   if (report.compilerInUse) {
-    const documentsTable = table(documentRows(report), ["DOCUMENTS", "COUNT"]);
+    const knowledgeTable = table(knowledgeRows(report), ["KNOWLEDGE", "COUNT"]);
 
-    lines.push({ channel: "content", entries: ["", ...documentsTable] });
+    lines.push(
+      { channel: "blank" },
+      { channel: "heading", text: "Knowledge" },
+      { channel: "content", entries: knowledgeTable },
+    );
   }
 
   const coverage = table(coverageRows(report.coverage), ["COVERAGE", "FILES", "RATE"]);
@@ -40,23 +44,25 @@ const statusView: View<StatusReport & { json?: boolean }> = (report) => {
     { channel: "content", entries: coverage },
   );
 
-  const validationRows = reviewRows(report);
+  const verdictRows = reviewRows(report);
 
-  if (validationRows.length > 0) {
-    const validationTable = table(validationRows, [
-      "REVIEWER",
-      "PASS",
-      "WARN",
-      "FAIL",
-      "NOT VALIDATED",
-    ]);
+  if (verdictRows.length > 0) {
+    const verdictsTable = table(verdictRows, ["REVIEWER", "PASS", "WARN", "FAIL", "NOT VALIDATED"]);
 
     lines.push(
       { channel: "blank" },
-      { channel: "heading", text: "Validation" },
-      { channel: "content", entries: validationTable },
+      { channel: "heading", text: "Verdicts" },
+      { channel: "content", entries: verdictsTable },
     );
   }
+
+  const feedbackTable = table(feedbackRows(report.feedback), ["FEEDBACK", "COUNT"]);
+
+  lines.push(
+    { channel: "blank" },
+    { channel: "heading", text: "Feedback" },
+    { channel: "content", entries: feedbackTable },
+  );
 
   if (!report.compilerInUse) return lines;
 
@@ -80,13 +86,26 @@ const statusView: View<StatusReport & { json?: boolean }> = (report) => {
 
 export default statusView;
 
-/** The document-count table's rows. */
-function documentRows(report: StatusReport): (string | number)[][] {
+/** The knowledge table's rows: authored documents, plus the active axioms. */
+function knowledgeRows(report: StatusReport): (string | number)[][] {
   return [
     ["Experts", report.counts.experts],
     ["Practices", report.counts.practices],
     ["References", report.counts.references],
     ["Context files", report.counts.context],
+    ["Axioms", report.counts.axioms],
+  ];
+}
+
+/** The feedback table's rows: every critique, and where each stands. */
+function feedbackRows(feedback: StatusReport["feedback"]): (string | number)[][] {
+  return [
+    ["Critiques", feedback.critiques],
+    ["Labeled", feedback.labeled],
+    ["Untriaged", feedback.untriaged],
+    ["Awaiting curation", feedback.awaitingCuration],
+    ["Dismissed", feedback.dismissed],
+    ["Advisory", feedback.advisory],
   ];
 }
 
@@ -137,7 +156,6 @@ function evalStateLines(report: StatusReport): string[] {
 
   return [
     `Last run: ${lastRun}`,
-    `Untriaged: ${evalState.pending_triage} · Awaiting curation: ${evalState.awaiting_curation}`,
     ...(evalState.epoch_boundary_detected
       ? ["Epoch boundary detected — the next full run opens a new baseline."]
       : []),
@@ -151,8 +169,11 @@ function lastRunStamp(iso: string): string {
   return `${stamp} UTC`;
 }
 
-/** The coverage slices as rows: what is governed, and what clears. */
+/** The coverage slices as rows: governed, clearing, and no spec at all — one denominator. */
 function coverageRows(coverage: StatusReport["coverage"]): string[][] {
+  const unobserved = coverage.sourceFiles - coverage.observed.files;
+  const unobservedRate = coverage.sourceFiles === 0 ? null : unobserved / coverage.sourceFiles;
+
   return [
     [
       "Observed",
@@ -164,5 +185,6 @@ function coverageRows(coverage: StatusReport["coverage"]): string[][] {
       `${coverage.passing.files}/${coverage.sourceFiles}`,
       percent(coverage.passing.rate),
     ],
+    ["Not observed", `${unobserved}/${coverage.sourceFiles}`, percent(unobservedRate)],
   ];
 }

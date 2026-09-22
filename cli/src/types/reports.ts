@@ -13,12 +13,13 @@ export interface StatusReport {
    * projects are never asked about a taxonomy they don't have.
    */
   compilerInUse: boolean;
-  /** Document counts by content type. */
+  /** Knowledge counts: authored documents by type, plus the active axioms. */
   counts: {
     experts: number;
     practices: number;
     references: number;
     context: number;
+    axioms: number;
   };
   /**
    * Cached verdict counts across all spec targets, one row per reviewer —
@@ -58,6 +59,21 @@ export interface StatusReport {
   zeroMatchGlobs: { expert: string; pattern: string }[];
   /** Spec coverage over the source corpus. */
   coverage: EvalCoverage;
+  /** The critique lifecycle totals — the feedback the eval loop has produced. */
+  feedback: {
+    /** Every critique on the ledger. */
+    critiques: number;
+    /** Labeled under an active axiom. */
+    labeled: number;
+    /** Never triaged, or triaged against a since-changed axiom set. */
+    untriaged: number;
+    /** Considered by the matcher and unmatched — curate's queue. */
+    awaitingCuration: number;
+    /** Ruled invalid by a human. */
+    dismissed: number;
+    /** From advisory runs — never evidence. */
+    advisory: number;
+  };
 }
 
 /**
