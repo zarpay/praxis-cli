@@ -85,7 +85,7 @@ function passingUnitsOf(cfg: PraxisConfig, units: EvalUnit[]): EvalUnit[] {
     caches.every((cache) => {
       const entry = cache.readEntry({ targetPath: unit.path });
 
-      return entry !== null && entry.result.compliant;
+      return entry?.result.compliant ?? false;
     }),
   );
 }

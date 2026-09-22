@@ -155,9 +155,9 @@ describe("passing — the verdict-backed score", () => {
     const cfg = testConfig(root, { sources: ["src"], reviewers: REVIEWERS });
 
     // a.ts: both reviewers pass. b.ts: one passes, one has no verdict.
-    cache(root, REVIEWERS[0]!, "a.ts", PASS);
-    cache(root, REVIEWERS[1]!, "a.ts", PASS);
-    cache(root, REVIEWERS[0]!, "b.ts", PASS);
+    cache(root, REVIEWERS[0], "a.ts", PASS);
+    cache(root, REVIEWERS[1], "a.ts", PASS);
+    cache(root, REVIEWERS[0], "b.ts", PASS);
 
     const coverage = measureEvalCoverageService(cfg, {});
 
@@ -169,8 +169,8 @@ describe("passing — the verdict-backed score", () => {
     const root = partiallyGovernedProject();
     const cfg = testConfig(root, { sources: ["src"], reviewers: REVIEWERS });
 
-    cache(root, REVIEWERS[0]!, "a.ts", PASS);
-    cache(root, REVIEWERS[1]!, "a.ts", FAIL);
+    cache(root, REVIEWERS[0], "a.ts", PASS);
+    cache(root, REVIEWERS[1], "a.ts", FAIL);
 
     const coverage = measureEvalCoverageService(cfg, {});
 
@@ -180,10 +180,10 @@ describe("passing — the verdict-backed score", () => {
   it("a warn verdict is not a passing verdict", () => {
     const root = partiallyGovernedProject();
     const warned: Verdict = { compliant: false, severity: "warning", issues: [], reason: "meh" };
-    const cfg = testConfig(root, { sources: ["src"], reviewers: [REVIEWERS[0]!] });
+    const cfg = testConfig(root, { sources: ["src"], reviewers: [REVIEWERS[0]] });
 
-    cache(root, REVIEWERS[0]!, "a.ts", warned);
-    cache(root, REVIEWERS[0]!, "b.ts", PASS);
+    cache(root, REVIEWERS[0], "a.ts", warned);
+    cache(root, REVIEWERS[0], "b.ts", PASS);
 
     const coverage = measureEvalCoverageService(cfg, {});
 

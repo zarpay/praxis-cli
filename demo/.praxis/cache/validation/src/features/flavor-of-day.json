@@ -102,6 +102,48 @@
           "hash": "1f6fdfe2"
         }
       ]
+    },
+    "e280f5fa:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "src/features/README.md",
+      "cached_at": "2026-09-22T21:56:09.031Z",
+      "content_hash": "67edd1dd",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "Missing index.ts entry point: The specification requires exactly one entry point, index.ts, to re-export the public API, but this file is absent from the directory.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "Orphaned files: The file old-rotation.ts is marked as legacy code (Kept around in case we go back) and is not reachable from an entry point, violating the requirement that all files must be reachable from index.ts.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "Service convention violations: The logic files export multiple functions instead of a single run entry point, and they return primitive strings instead of the mandated Result<T> type found in the domain context.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The directory lacks the mandated entry point and contains legacy logic that violates service conventions and cohesion requirements."
+      },
+      "context_files": [
+        {
+          "path": "src/domain/types.ts",
+          "hash": "f1d20738"
+        },
+        {
+          "path": "src/store/memory-store.ts",
+          "hash": "1f6fdfe2"
+        }
+      ]
     }
   }
 }

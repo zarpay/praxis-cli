@@ -95,7 +95,9 @@ context:
 
 Because context files are part of what the reviewer sees, they join the cached verdict's content hash: editing one invalidates the affected verdicts exactly like editing the target or the spec does.
 
-`excludes:` and `cohort:` also compile through from an expert's `validates:` targeting, the same way `paths:` does.
+**`type:`** — the reporting label this spec's verdicts group under, in the run summary's by-type table and the `--type` run scope. Undeclared, it falls back to the spec's directory path — right for the README-next-to-code layout, where one spec governs its own directory.
+
+`excludes:` and `cohort:` also compile through from an expert's `validates:` targeting, the same way `paths:` does — and the expert's alias compiles through as `type:`, so a project of compiled profiles gets one row per expert instead of one row per output directory.
 
 ## Positive examples live in prose
 

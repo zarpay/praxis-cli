@@ -22,6 +22,8 @@ export interface AgentMetadata {
   permissionMode?: string;
   /** Glob patterns for files this profile validates (written as paths: in output). */
   validates: string[];
+  /** The eval-layer reporting label — the expert's alias (written as type: in output). */
+  type: string;
   /** How validated targets group into review units (written as cohort: in output). */
   cohort?: string;
   /** Glob patterns structurally excluded from review (written as excludes: in output). */

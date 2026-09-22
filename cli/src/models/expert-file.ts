@@ -124,6 +124,7 @@ export class ExpertFile {
     return {
       name: this.agentName,
       description: this.description,
+      type: this.alias,
       cohort: this.cohort,
       tools: this.agentTools,
       model: this.agentModel,

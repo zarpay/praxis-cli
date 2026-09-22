@@ -45,6 +45,21 @@
         "issues": [],
         "reason": "Review input has 280 words."
       }
+    },
+    "244fa7f3:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-22T21:56:03.958Z",
+      "content_hash": "41cb158d",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document includes all required frontmatter fields (title, type, alias, description) with correct values, opens with a level-1 heading naming the expert and alias, states the subject-matter expertise in prose, and contains no placeholder text."
+      }
     }
   }
 }

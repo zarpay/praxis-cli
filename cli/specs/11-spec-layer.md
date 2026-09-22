@@ -13,7 +13,11 @@ Praxis v2 is two layers. This document names them, states the contract between t
 > spec↔eval isolation is a **documented contract rather than a path
 > rule**: after the collapse no path means "the eval side", so ESLint
 > cannot express the ban. The contract stands unchanged: the compiler
-> writes files (profiles carrying `paths:`/`cohort:`/`excludes:`), and
+> writes files (profiles carrying `paths:`/`cohort:`/`excludes:`, and
+> `type:` — the expert's alias, the reporting label the eval layer
+> groups the spec's verdicts under; decided 2026-09-23: a spec may
+> declare `type:` itself, the fallback is the spec's directory, and the
+> label is never derived from the filename), and
 > the eval side consumes them as plain files, never calling back. The
 > bridge is `templates/eval-targeting-template.ts` writing `paths:` and
 > `services/discover-domains-service.ts` reading it — `ExpertFile` and
