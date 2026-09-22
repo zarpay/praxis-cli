@@ -42,6 +42,48 @@
         ],
         "reason": "The document violates the strict I/O restrictions mandated by the specification's behavior section."
       }
+    },
+    "0311531a:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-22T21:49:07.839Z",
+      "content_hash": "42489a1f",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "The file uses `console.log`, `fetch`, and `AbortSignal.timeout`. The specification mandates 'No I/O except through the injected Store. No timers, no fetch, no console.'",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "The file exports `NotifyParlorInput` alongside `run`. The specification mandates a service module exports 'exactly one entry point: a function named `run`'.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The file violates mandatory behavioral constraints regarding I/O and structural constraints regarding exports."
+      }
+    },
+    "0311531a:7adec26a": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "7adec26a"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-22T21:49:55.420Z",
+      "content_hash": "42489a1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 395 words."
+      }
     }
   }
 }

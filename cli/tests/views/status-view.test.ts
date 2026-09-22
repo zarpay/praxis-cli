@@ -24,7 +24,11 @@ function report(fields: Partial<StatusReport> = {}): StatusReport {
     expertsMissingDescription: [],
     invalidExperts: [],
     zeroMatchGlobs: [],
-    coverage: { governed: 4, sourceFiles: 5, rate: 0.8, display: "80% (4/5 files)" },
+    coverage: {
+      sourceFiles: 5,
+      observed: { files: 4, rate: 0.8, display: "80% (4/5 files)" },
+      passing: { files: 3, rate: 0.6, display: "60% (3/5 files)" },
+    },
     ...fields,
   };
 }
@@ -53,10 +57,10 @@ describe("review state", () => {
     return reportText(statusView(report({ validation })));
   }
 
-  it("prints eval coverage in the situational block", () => {
+  it("prints both coverage slices in the situational block", () => {
     const text = reportText(statusView(report()));
 
-    expect(text).toContain("Eval coverage: 80% (4/5 files)");
+    expect(text).toContain("Eval coverage: observed 80% (4/5 files) · passing 60% (3/5 files)");
   });
 
   it("renders one block per reviewer that has reviewed something", () => {

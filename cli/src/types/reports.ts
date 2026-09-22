@@ -61,19 +61,29 @@ export interface StatusReport {
 }
 
 /**
- * Spec coverage over the source corpus — the number a team maintains
- * ("we hold 90% eval coverage"). Governed files over every reviewable
- * file under `sources` minus `ignore`; spec files, templates, and the
+ * Eval coverage over the source corpus — the numbers a team maintains
+ * ("we hold 90% eval coverage") and a CI can rely on. Two slices over
+ * one denominator: `observed` is structural (a spec governs the file),
+ * `passing` is the verdict-backed score (every configured reviewer's
+ * recorded verdict is compliant — an ungoverned, unreviewed, warned, or
+ * failed file counts against it). Spec files, templates, and the
  * authored taxonomy (experts, practices, compiled profiles) are
  * direction rather than corpus and count on neither side. A census,
  * not a sample: the small-n floor does not apply.
  */
 export interface EvalCoverage {
-  /** Source files at least one spec governs. */
-  governed: number;
   /** Every reviewable file under `sources` minus `ignore`. */
   sourceFiles: number;
-  /** governed / sourceFiles in 0–1, or null when there are no source files. */
+  /** Files at least one spec governs — what a run would review. */
+  observed: EvalCoverageSlice;
+  /** Files every configured reviewer's recorded verdict passes. */
+  passing: EvalCoverageSlice;
+}
+
+/** One coverage slice: a file count over the corpus. */
+export interface EvalCoverageSlice {
+  files: number;
+  /** files / sourceFiles in 0–1, or null when there are no source files. */
   rate: number | null;
   /** Render-ready, per the surface rule: "62% (52/84 files)". */
   display: string;

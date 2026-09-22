@@ -42,6 +42,53 @@
         ],
         "reason": "The document violates the module naming and export structure requirements explicitly defined in the specification."
       }
+    },
+    "0311531a:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-22T21:49:12.809Z",
+      "content_hash": "e1f58622",
+      "result": {
+        "compliant": false,
+        "severity": "error",
+        "issues": [
+          {
+            "text": "Module name `parlor.ts` violates the naming convention; it must be verb-first kebab-case (e.g., `update-parlor.ts`).",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "The module exports multiple functions (`formatParlor`, `isEligible`); the specification requires exactly one entry point: a function named `run`.",
+            "axiomId": null,
+            "axiomVersion": null
+          },
+          {
+            "text": "The `run` function performs two responsibilities: it calculates data and mutates state (`parlor.city = input.newCity`). Services must do one thing.",
+            "axiomId": null,
+            "axiomVersion": null
+          }
+        ],
+        "reason": "The file violates multiple structural and behavioral requirements defined in the service conventions."
+      }
+    },
+    "0311531a:7adec26a": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "7adec26a"
+      },
+      "spec_path": "src/services/README.md",
+      "cached_at": "2026-09-22T21:49:55.421Z",
+      "content_hash": "e1f58622",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 446 words."
+      }
     }
   }
 }

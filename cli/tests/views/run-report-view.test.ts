@@ -10,7 +10,11 @@ function finished(summary: Partial<EvalSummary>) {
   return {
     cached: false,
     elapsedMs: 1_000,
-    coverage: { governed: 4, sourceFiles: 5, rate: 0.8, display: "80% (4/5 files)" },
+    coverage: {
+      sourceFiles: 5,
+      observed: { files: 4, rate: 0.8, display: "80% (4/5 files)" },
+      passing: { files: 3, rate: 0.6, display: "60% (3/5 files)" },
+    },
     run: {
       verdicts: [],
       cacheStats: { hits: 0, misses: 0 },
@@ -39,10 +43,10 @@ describe("runReportView", () => {
     expect(text).toContain("2 fail");
   });
 
-  it("prints eval coverage beside the conformance tally (07: they render together)", () => {
+  it("prints both coverage slices beside the conformance tally (07: they render together)", () => {
     const text = reportText(runReportView(finished({})));
 
-    expect(text).toContain("Eval coverage: 80% (4/5 files)");
+    expect(text).toContain("Eval coverage: observed 80% (4/5 files) · passing 60% (3/5 files)");
   });
 
   it("surfaces unverified units when any exist — they are not violations", () => {

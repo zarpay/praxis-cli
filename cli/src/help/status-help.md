@@ -7,23 +7,26 @@ Behavior:
   is found (invalid experts, orphaned practices, dangling refs,
   zero-match globs), so it doubles as a cheap CI step. Framework
   health only surfaces when the spec-layer compiler is in use.
-  Eval coverage is the share of source files at least one spec governs
-  — governed files over every file under `sources` minus `ignore`
-  (spec files, templates, and the authored taxonomy count on neither
-  side). It is the number a team maintains the way it maintains test
-  coverage.
+  Eval coverage is two slices over every file under `sources` minus
+  `ignore` (spec files, templates, and the authored taxonomy count on
+  neither side): observed — files at least one spec governs — and
+  passing, the score a CI can rely on: files whose recorded verdict is
+  compliant from every configured reviewer, so ungoverned, unreviewed,
+  warned, and failed files all count against it. These are the numbers
+  a team maintains the way it maintains test coverage.
 
 JSON (--json):
   { compilerInUse, counts { experts, practices, references, context },
     validation [ { reviewer, pass, warn, fail, notValidated } ],
-    coverage { governed, sourceFiles, rate, display },
+    coverage { sourceFiles, observed { files, rate, display },
+               passing { files, rate, display } },
     issueCount,
     evalState { pending_triage, awaiting_curation, calibration_stale,
                 epoch_boundary_detected, last_run_at },
     invalidExperts, orphanedPractices, danglingRefs,
     expertsMissingDescription, zeroMatchGlobs }
   Stable contract. evalState is the situational poll: what needs doing,
-  from one call, before any discovery crawl. coverage.rate is 0-1 or
+  from one call, before any discovery crawl. A slice's rate is 0-1 or
   null when sources hold no files; display is the render-ready form.
 
 Examples:

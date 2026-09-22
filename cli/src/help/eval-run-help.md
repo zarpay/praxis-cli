@@ -30,9 +30,12 @@ JSON (--json), stable contract, two modes:
   corpus:   { mode: "corpus", summary { total, compliant, warnings,
               errors, unverified, notValidated, byType, byReviewer },
               cache { hits, misses },
-              coverage { governed, sourceFiles, rate, display } }
-  coverage is the share of source files at least one spec governs —
-  the maintained number; the corpus report prints it beside the tally.
+              coverage { sourceFiles, observed { files, rate, display },
+                         passing { files, rate, display } } }
+  coverage measures the source corpus: observed is the share of files
+  any spec governs; passing is the CI-grade score — files every
+  configured reviewer's verdict passes. The corpus report prints both
+  beside the tally.
 
 Exit codes: 0 no violations · 1 violations or run failure · 2 usage.
 

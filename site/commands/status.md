@@ -12,7 +12,7 @@ praxis status --json
 ## What it reports
 
 - **Situational facts** — last run, the untriaged and awaiting-curation queue counts, eval coverage, and whether an epoch boundary is waiting for a baseline run. Always shown.
-- **Eval coverage** — the share of source files at least one spec governs: governed files over every file under `sources` minus `ignore` (spec files, templates, and the authored taxonomy count on neither side). This is the number a team maintains the way it maintains test coverage.
+- **Eval coverage** — two slices over every file under `sources` minus `ignore` (spec files, templates, and the authored taxonomy count on neither side): **observed**, the share of files at least one spec governs, and **passing**, the score a CI can rely on — files whose recorded verdict is compliant from every configured reviewer, so ungoverned, unreviewed, warned, and failed files all count against it. These are the numbers a team maintains the way it maintains test coverage.
 - **Review state** — pass / warn / fail / not-validated counts per reviewer, read from the committed cache. One block per reviewer, never pooled.
 - **Document counts** — only when the spec-layer compiler is in use (the configured experts directory exists).
 - **Structural issues** — found without any LLM call, compiler projects only: dangling references, orphaned practices, experts missing descriptions, experts that fail to parse, globs matching nothing.
@@ -24,7 +24,7 @@ Praxis Project Status
 
 Last run: 2026-09-03
 Untriaged: 11 · Awaiting curation: 0
-Eval coverage: 62% (52/84 files)
+Eval coverage: observed 62% (52/84 files) · passing 48% (40/84 files)
 
   Experts:            3
   Practices:          3
@@ -58,10 +58,9 @@ Exit 1 when any structural issue is found — the same count the closing line pr
     "last_run_at": "2026-09-03T23:21:21.989Z"
   },
   "coverage": {
-    "governed": 52,
     "sourceFiles": 84,
-    "rate": 0.62,
-    "display": "62% (52/84 files)"
+    "observed": { "files": 52, "rate": 0.62, "display": "62% (52/84 files)" },
+    "passing": { "files": 40, "rate": 0.48, "display": "48% (40/84 files)" }
   },
   "issueCount": 0
 }
@@ -71,7 +70,7 @@ Bare `praxis` is the same orientation for humans — counts and staleness at a g
 
 ## Everything without keys
 
-The whole report is a pure read — no API key, no network. Review-state counts come from `.praxis/cache/validation/` (a target shows NOT VALIDATED until something reviews it; run `praxis eval run` to populate the cache), and eval coverage comes from spec discovery alone, so it is accurate before the first run ever happens.
+The whole report is a pure read — no API key, no network. Review-state counts come from `.praxis/cache/validation/` (a target shows NOT VALIDATED until something reviews it; run `praxis eval run` to populate the cache), and eval coverage reads spec discovery plus the same cache — observed is accurate before the first run ever happens, and passing climbs as verdicts land.
 
 ## See also
 

@@ -30,6 +30,21 @@
         "issues": [],
         "reason": "The document satisfies all required frontmatter fields (title, type, alias, description) and content requirements (H1 heading with name/alias, prose stating expertise). No placeholder text is present."
       }
+    },
+    "244fa7f3:7adec26a": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "7adec26a"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-22T21:49:55.406Z",
+      "content_hash": "41cb158d",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 280 words."
+      }
     }
   }
 }

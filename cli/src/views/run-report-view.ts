@@ -120,7 +120,7 @@ function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
     "",
     { header: "Summary — corpus conformance (includes pre-spec debt)" },
     `Total documents: ${totals.total}`,
-    `Eval coverage: ${coverage.display}`,
+    `Eval coverage: observed ${coverage.observed.display} · passing ${coverage.passing.display}`,
     "",
     `  ${tally}`,
     totals.unverified > 0 &&

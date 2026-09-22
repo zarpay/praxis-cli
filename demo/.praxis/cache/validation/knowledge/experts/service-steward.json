@@ -30,6 +30,36 @@
         "issues": [],
         "reason": "The document includes all required frontmatter fields (title, type, alias, description) with correct values, opens with a level-1 heading naming the expert and alias, states the subject matter in prose, and contains no placeholder text."
       }
+    },
+    "244fa7f3:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-22T21:47:59.602Z",
+      "content_hash": "c59e0910",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The document includes all required frontmatter fields with correct values, opens with a level-1 heading naming the expert and alias, includes the required prose stating the subject matter, and contains no placeholder text."
+      }
+    },
+    "244fa7f3:7adec26a": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "7adec26a"
+      },
+      "spec_path": "knowledge/experts/experts.sme.md",
+      "cached_at": "2026-09-22T21:49:55.405Z",
+      "content_hash": "c59e0910",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 285 words."
+      }
     }
   }
 }
