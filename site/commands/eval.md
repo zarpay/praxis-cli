@@ -80,8 +80,6 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 ==================================================
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
-Total documents: 4
-
 Coverage:
   ┌───────────────┬───────┬──────┐
   │ COVERAGE      │ FILES │ RATE │

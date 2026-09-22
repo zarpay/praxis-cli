@@ -84,7 +84,7 @@ function content(badge: DisplayEntry): { channel: "content"; entries: DisplayEnt
 const emptyCorpusNotice: DisplayEntry[] = [
   "",
   { header: "Summary — corpus conformance (includes pre-spec debt)" },
-  "Total documents: 0 — no spec governs any files yet.",
+  "Nothing to review — no spec governs any files yet.",
   "",
   "A full run reviews the files that specs govern, and specs are",
   "discovered in the directories `sources` lists in .praxis/config.json.",
@@ -124,10 +124,12 @@ function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
 
   const verdictLabel = multiReviewer ? "By reviewer:" : "Verdicts:";
 
+  // `totals.total` stays in the --json contract; printed, it was a
+  // third population (source .md docs + targeted files) conflicting
+  // with the corpus and verdict counts around it.
   return [
     "",
     { header: "Summary — corpus conformance (includes pre-spec debt)" },
-    `Total documents: ${totals.total}`,
     "",
     "Coverage:",
     ...coverageTable(coverage),

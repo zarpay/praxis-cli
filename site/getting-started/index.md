@@ -102,8 +102,6 @@ praxis eval run
 ==================================================
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
-Total documents: 4
-
 Coverage:
   ┌───────────────┬───────┬──────┐
   │ COVERAGE      │ FILES │ RATE │
