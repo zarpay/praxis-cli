@@ -27,7 +27,7 @@ The repo belongs to the developer. Specs are their existing context files (READM
 
 Two classes of content, and the distinction is enforced, not stylistic:
 
-- **Human-owned / human-accepted** — `config.json`, `axioms/`. Markdown and JSON meant to be read, edited, and reviewed in PRs. Praxis writes here only through explicit verbs (curate acceptance activates a category; `deprecate` and `merge` flip status) and never rewrites what a human authored beyond those stated edits.
+- **Human-owned / human-accepted** — `config.json`, `axioms/`. Markdown and JSON meant to be read, edited, and reviewed in PRs. Praxis writes here only through explicit verbs (curate acceptance activates a category; `deprecate` and `merge` flip status) and never rewrites what a human authored beyond those stated edits. One stated edit was added 2026-09-22: `config.json` pins the praxis version (`version`), enforced at every dispatch — praxis is installed globally rather than declared in a package.json, so nothing else keeps teammates on one version against one committed cache and ledger, and a version change can be an epoch. A config with no pin adopts the running version with a warning (the one time Praxis adds a field to config.json); a conflicting pin refuses with exit 2 and both ways out (install the pinned version, or move the pin).
 - **Machine-owned** — `cache/`, `ledger/`. Never hand-edited: cache entries are reproducible artifacts of `(inputs, reviewer)`, and ledger records carry provenance that hand-editing would falsify. Praxis treats unexpected content here as corruption (v1 already deletes corrupt cache files on read), not as input.
 
 ## Commit policy

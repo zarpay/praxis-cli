@@ -46,8 +46,8 @@ Each reference key is a path or glob pattern (or a list of them), relative to th
 Resolved bodies are assembled in a fixed section order, each referenced file's frontmatter stripped:
 
 ```
-# Role             ← the expert file's own body
-# Responsibilities ← inlined from practices:
+# Expert           ← the expert file's own body
+# Practices        ← inlined from practices:
 # Constitution     ← inlined from constitution:
 # Context          ← inlined from context:
 # Reference        ← inlined from refs:

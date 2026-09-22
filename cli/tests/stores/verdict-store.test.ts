@@ -33,9 +33,9 @@ describe("VerdictStore", () => {
 
     describe("pathFor", () => {
       it("strips projectRoot from absolute document paths", () => {
-        const path = cache.pathFor(join(projectRoot, "roles", "my-role.md"));
+        const path = cache.pathFor(join(projectRoot, "experts", "my-expert.md"));
 
-        expect(path).toBe(join(cacheRoot, "roles", "my-role.json"));
+        expect(path).toBe(join(cacheRoot, "experts", "my-expert.json"));
       });
 
       it("handles nested source directories", () => {
@@ -45,9 +45,9 @@ describe("VerdictStore", () => {
       });
 
       it("uses relative paths as-is when no projectRoot match", () => {
-        const path = cache.pathFor("roles/my-role.md");
+        const path = cache.pathFor("experts/my-expert.md");
 
-        expect(path).toBe(join(cacheRoot, "roles", "my-role.json"));
+        expect(path).toBe(join(cacheRoot, "experts", "my-expert.json"));
       });
 
       it("gives every reviewer the same file for one target", () => {
@@ -57,7 +57,7 @@ describe("VerdictStore", () => {
         const b = new VerdictStore(testConfig(projectRoot), {
           reviewer: { name: "b", model: "m", hash: "bbbb2222" },
         });
-        const targetPath = join(projectRoot, "roles", "shared.md");
+        const targetPath = join(projectRoot, "experts", "shared.md");
 
         // One artifact per target — every reviewer's verdicts land in it.
         expect(a.pathFor(targetPath)).toBe(b.pathFor(targetPath));
@@ -73,35 +73,35 @@ describe("VerdictStore", () => {
           reviewer: { name: "b", model: "m", hash: "bbbb2222" },
         });
 
-        expect(a.keyFor("roles/README.md")).not.toBe(b.keyFor("roles/README.md"));
-        expect(a.keyFor("roles/README.md")).toBe(a.keyFor("roles/README.md"));
+        expect(a.keyFor("experts/README.md")).not.toBe(b.keyFor("experts/README.md"));
+        expect(a.keyFor("experts/README.md")).toBe(a.keyFor("experts/README.md"));
       });
 
       it("keys different specs differently for one reviewer", () => {
-        expect(cache.keyFor("roles/README.md")).not.toBe(cache.keyFor("docs/README.md"));
+        expect(cache.keyFor("experts/README.md")).not.toBe(cache.keyFor("docs/README.md"));
       });
     });
 
     describe("relativeToRoot", () => {
       it("makes an absolute path project-relative, so cache files are portable", () => {
-        const rel = cache.relativeToRoot(join(projectRoot, "roles", "a.md"));
+        const rel = cache.relativeToRoot(join(projectRoot, "experts", "a.md"));
 
-        expect(rel).toBe(join("roles", "a.md"));
+        expect(rel).toBe(join("experts", "a.md"));
       });
     });
   });
 
   describe("readVerdict", () => {
-    const specPath = "roles/README.md";
+    const specPath = "experts/README.md";
 
     it("returns null when no cache entry exists", () => {
-      const targetPath = join(projectRoot, "roles", "test-expert.md");
+      const targetPath = join(projectRoot, "experts", "test-expert.md");
 
       expect(cache.readVerdict({ targetPath, contentHash: "nonexist", specPath })).toBeNull();
     });
 
     it("returns null when the content hash does not match — editing invalidates", () => {
-      const targetPath = join(projectRoot, "roles", "test-expert.md");
+      const targetPath = join(projectRoot, "experts", "test-expert.md");
       cache.writeVerdict({
         targetPath,
         contentHash: "abcd1234",
@@ -153,7 +153,7 @@ describe("VerdictStore", () => {
       const cacheB = new VerdictStore(testConfig(projectRoot), {
         reviewer: { name: "b", model: "m", hash: "bbbb2222" },
       });
-      const targetPath = join(projectRoot, "roles", "shared.md");
+      const targetPath = join(projectRoot, "experts", "shared.md");
 
       cacheA.writeVerdict({
         targetPath,
@@ -169,7 +169,7 @@ describe("VerdictStore", () => {
     });
 
     it("deletes a corrupt cache file and returns null — a bad cache costs a re-review, never a crash", () => {
-      const targetPath = join(projectRoot, "roles", "corrupt.md");
+      const targetPath = join(projectRoot, "experts", "corrupt.md");
       const cachePath = cache.pathFor(targetPath);
       mkdirSync(join(cachePath, ".."), { recursive: true });
       writeFileSync(cachePath, "not valid json{{{");
@@ -179,7 +179,7 @@ describe("VerdictStore", () => {
     });
 
     it("returns null for an unrecognized cache version", () => {
-      const targetPath = join(projectRoot, "roles", "future.md");
+      const targetPath = join(projectRoot, "experts", "future.md");
       const cachePath = cache.pathFor(targetPath);
       mkdirSync(join(cachePath, ".."), { recursive: true });
       writeFileSync(cachePath, JSON.stringify({ version: "99.0", something: "else" }));
@@ -189,11 +189,11 @@ describe("VerdictStore", () => {
   });
 
   describe("writeVerdict", () => {
-    const specPath = "roles/README.md";
+    const specPath = "experts/README.md";
     const hash = "abcd1234";
 
     it("writes a verdict that reads back exactly", () => {
-      const targetPath = join(projectRoot, "roles", "test-expert.md");
+      const targetPath = join(projectRoot, "experts", "test-expert.md");
       const result = { compliant: true, issues: [], reason: "All good" };
 
       cache.writeVerdict({ targetPath, contentHash: hash, result, specPath });
@@ -202,7 +202,7 @@ describe("VerdictStore", () => {
     });
 
     it("preserves the severity field through serialization", () => {
-      const targetPath = join(projectRoot, "roles", "test-expert.md");
+      const targetPath = join(projectRoot, "experts", "test-expert.md");
       const result = {
         compliant: false,
         issues: [{ text: "Missing section", axiomId: null, axiomVersion: null }],
@@ -255,7 +255,7 @@ describe("VerdictStore", () => {
       const cacheB = new VerdictStore(testConfig(projectRoot), {
         reviewer: { name: "b", model: "m", hash: "bbbb2222" },
       });
-      const targetPath = join(projectRoot, "roles", "shared.md");
+      const targetPath = join(projectRoot, "experts", "shared.md");
 
       cacheA.writeVerdict({
         targetPath,
@@ -276,7 +276,7 @@ describe("VerdictStore", () => {
     });
 
     it("replaces a corrupt cache file with a fresh one", () => {
-      const targetPath = join(projectRoot, "roles", "corrupt.md");
+      const targetPath = join(projectRoot, "experts", "corrupt.md");
       const cachePath = cache.pathFor(targetPath);
       mkdirSync(join(cachePath, ".."), { recursive: true });
       writeFileSync(cachePath, "not valid json{{{");
@@ -295,7 +295,7 @@ describe("VerdictStore", () => {
 
     describe("text sanitization", () => {
       it("strips control characters and double quotes from reason and issues", () => {
-        const targetPath = join(projectRoot, "roles", "test-expert.md");
+        const targetPath = join(projectRoot, "experts", "test-expert.md");
         const result = {
           compliant: false,
           issues: [
@@ -319,7 +319,7 @@ describe("VerdictStore", () => {
       });
 
       it("preserves newlines and tabs in reason text", () => {
-        const targetPath = join(projectRoot, "roles", "test-expert.md");
+        const targetPath = join(projectRoot, "experts", "test-expert.md");
         const result = { compliant: true, issues: [], reason: "Yes\n\tAll good\nNo issues" };
 
         cache.writeVerdict({ targetPath, contentHash: hash, result, specPath });
@@ -333,12 +333,12 @@ describe("VerdictStore", () => {
   });
 
   describe("readEntry", () => {
-    const specPath = "roles/README.md";
+    const specPath = "experts/README.md";
     const hash = "abcd1234";
     const result = { compliant: true, issues: [], reason: "All good" };
 
     it("returns the full entry without hash validation, for reporting", () => {
-      const targetPath = join(projectRoot, "roles", "test-expert.md");
+      const targetPath = join(projectRoot, "experts", "test-expert.md");
       cache.writeVerdict({ targetPath, contentHash: hash, result, specPath });
 
       const cached = cache.readEntry({ targetPath, specPath });
@@ -353,18 +353,18 @@ describe("VerdictStore", () => {
     });
 
     it("returns the first entry when specPath is omitted", () => {
-      const targetPath = join(projectRoot, "roles", "test-expert.md");
+      const targetPath = join(projectRoot, "experts", "test-expert.md");
       cache.writeVerdict({ targetPath, contentHash: hash, result, specPath });
 
       expect(cache.readEntry({ targetPath })?.result).toEqual(result);
     });
 
     it("returns null when no cache file exists", () => {
-      expect(cache.readEntry({ targetPath: join(projectRoot, "roles", "none.md") })).toBeNull();
+      expect(cache.readEntry({ targetPath: join(projectRoot, "experts", "none.md") })).toBeNull();
     });
 
     it("still answers when the stored hash is stale — staleness is the reporter's call", () => {
-      const targetPath = join(projectRoot, "roles", "test-expert.md");
+      const targetPath = join(projectRoot, "experts", "test-expert.md");
       cache.writeVerdict({ targetPath, contentHash: hash, result, specPath });
 
       const entry = cache.readEntry({ targetPath, specPath });
@@ -379,7 +379,7 @@ describe("VerdictStore", () => {
       const cacheB = new VerdictStore(testConfig(projectRoot), {
         reviewer: { name: "b", model: "m", hash: "bbbb2222" },
       });
-      const targetPath = join(projectRoot, "roles", "shared.md");
+      const targetPath = join(projectRoot, "experts", "shared.md");
 
       cacheA.writeVerdict({
         targetPath,
@@ -393,7 +393,7 @@ describe("VerdictStore", () => {
     });
 
     it("does not delete corrupt cache files — reporting must not destroy evidence", () => {
-      const targetPath = join(projectRoot, "roles", "corrupt.md");
+      const targetPath = join(projectRoot, "experts", "corrupt.md");
       const cachePath = cache.pathFor(targetPath);
       mkdirSync(join(cachePath, ".."), { recursive: true });
       writeFileSync(cachePath, "not valid json{{{");

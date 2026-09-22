@@ -37,7 +37,7 @@ describe("ClaudeCodePlugin", () => {
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
     plugin.compile(
-      "# Role\n\nTest content\n",
+      "# Expert\n\nTest content\n",
       metadata({ name: "tester", description: "A test agent" }),
       "Tester",
     );
@@ -51,7 +51,7 @@ describe("ClaudeCodePlugin", () => {
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
     plugin.compile(
-      "# Role\n\nTest content\n",
+      "# Expert\n\nTest content\n",
       metadata({ name: "tester", description: "A test agent" }),
       "Tester",
     );
@@ -60,7 +60,7 @@ describe("ClaudeCodePlugin", () => {
     expect(content).toMatch(/^---\n/);
     expect(content).toContain("name: tester");
     expect(content).toContain("description: A test agent");
-    expect(content).toContain("# Role");
+    expect(content).toContain("# Expert");
   });
 
   it("includes optional metadata fields", () => {
@@ -68,7 +68,7 @@ describe("ClaudeCodePlugin", () => {
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
     plugin.compile(
-      "# Role\n\nContent\n",
+      "# Expert\n\nContent\n",
       metadata({
         name: "tester",
         description: "A test agent",
@@ -89,11 +89,11 @@ describe("ClaudeCodePlugin", () => {
     const root = makeTmpdir();
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
-    plugin.compile("# Role\n\nContent\n", null, "Tester");
+    plugin.compile("# Expert\n\nContent\n", null, "Tester");
 
     const content = readFileSync(join(root, "plugins", "praxis", "agents", "tester.md"), "utf-8");
     expect(content).not.toMatch(/^---\n/);
-    expect(content).toContain("# Role");
+    expect(content).toContain("# Expert");
   });
 
   it("includes paths: in frontmatter when metadata.validates is set", () => {
@@ -101,7 +101,7 @@ describe("ClaudeCodePlugin", () => {
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
     plugin.compile(
-      "# Role\n\nContent\n",
+      "# Expert\n\nContent\n",
       metadata({
         name: "servus-expert",
         description: "SME on Servus",
@@ -124,7 +124,7 @@ describe("ClaudeCodePlugin", () => {
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
     plugin.compile(
-      "# Role\n\nContent\n",
+      "# Expert\n\nContent\n",
       metadata({ name: "tester", description: "A test agent" }),
       "Tester",
     );
@@ -138,7 +138,7 @@ describe("ClaudeCodePlugin", () => {
     const plugin = new ClaudeCodePlugin({ root, logger: new Logger() });
 
     plugin.compile(
-      "# Role\n\nContent\n",
+      "# Expert\n\nContent\n",
       metadata({ name: "tester", description: "Use this agent to do: things & stuff [here]" }),
       "Tester",
     );
@@ -177,7 +177,7 @@ describe("ClaudeCodePlugin", () => {
     });
 
     plugin.compile(
-      "# Role\n\nContent\n",
+      "# Expert\n\nContent\n",
       metadata({ name: "tester", description: "Test" }),
       "Tester",
     );

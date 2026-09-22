@@ -99,8 +99,8 @@ export interface CompilerPlugin {
    * Compiles a pure agent profile into a platform-specific output file.
    *
    * @param profileContent - Pure markdown profile (no plugin-specific frontmatter)
-   * @param metadata - Agent metadata from role frontmatter, or null if missing
-   * @param alias - The role's alias (used for output file naming)
+   * @param metadata - Agent metadata from expert frontmatter, or null if missing
+   * @param alias - The expert's alias (used for output file naming)
    */
   compile(profileContent: string, metadata: AgentMetadata | null, alias: string): void;
 }

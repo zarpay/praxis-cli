@@ -1,5 +1,6 @@
 import type { CommandRegistrar } from "@framework/types.js";
 
+import statusHelp from "@/help/status-help.md";
 import analyzeProjectOrchestrator from "@/orchestrators/analyze-project-orchestrator.js";
 
 /**
@@ -14,16 +15,7 @@ const statusCommand: CommandRegistrar = (program) => {
     .command("status")
     .description("Show project health and review coverage")
     .option("--json", "machine-readable output (stable contract)")
-    .addHelpText(
-      "after",
-      `
-When to use: a health check — document counts, per-reviewer review
-state, structural issues. Exits 1 when the taxonomy has drifted, so it
-doubles as a cheap CI step. --json is an agent's situational poll.
-
-Example:
-  $ praxis status --json | jq .evalState.pending_triage`,
-    )
+    .addHelpText("after", `\n${statusHelp}`)
     .action(analyzeProjectOrchestrator);
 };
 

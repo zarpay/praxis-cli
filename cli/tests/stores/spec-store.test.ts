@@ -32,13 +32,13 @@ describe("SpecStore", () => {
 
     it("finds the sibling spec by glob pattern", () => {
       mkdirSync(join(root, "docs"), { recursive: true });
-      writeFileSync(join(root, "docs", "README.roles.md"), "# Roles Spec");
+      writeFileSync(join(root, "docs", "README.experts.md"), "# Experts Spec");
       writeFileSync(join(root, "docs", "doc.md"), "# Doc");
 
       const store = new SpecStore(testConfig(root, { specFilePattern: "README.*.md" }));
 
       expect(store.governingPath(join(root, "docs", "doc.md"))).toBe(
-        join(root, "docs", "README.roles.md"),
+        join(root, "docs", "README.experts.md"),
       );
     });
 
@@ -64,11 +64,11 @@ describe("SpecStore", () => {
 
     it("skips the target itself when the glob would match it", () => {
       mkdirSync(join(root, "docs"), { recursive: true });
-      writeFileSync(join(root, "docs", "README.roles.md"), "# Roles Spec");
+      writeFileSync(join(root, "docs", "README.experts.md"), "# Experts Spec");
       writeFileSync(join(root, "docs", "README.tools.md"), "# Tools Spec");
 
       const store = new SpecStore(testConfig(root, { specFilePattern: "README.*.md" }));
-      const governing = store.governingPath(join(root, "docs", "README.roles.md"));
+      const governing = store.governingPath(join(root, "docs", "README.experts.md"));
 
       expect(governing).toBe(join(root, "docs", "README.tools.md"));
     });

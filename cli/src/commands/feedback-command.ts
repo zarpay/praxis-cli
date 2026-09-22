@@ -1,5 +1,6 @@
 import type { CommandRegistrar } from "@framework/types.js";
 
+import feedbackHelp from "@/help/feedback-help.md";
 import giveFeedbackOrchestrator from "@/orchestrators/give-feedback-orchestrator.js";
 
 /**
@@ -18,27 +19,7 @@ const feedbackCommand: CommandRegistrar = (program) => {
     .option("--verbose", "show full AI reasoning", false)
     .option("--no-cache", "disable the verdict cache")
     .option("--json", "machine-readable outcome on stdout")
-    .addHelpText(
-      "after",
-      `
-When to use: you are writing a file and want the reviewers' opinion now.
-The run is recorded in the ledger with its cost, exactly like any other,
-but its critiques never enter triage or curate and never reach a report —
-they describe code in flight, not code that landed. Use \`praxis eval run\`
-when you mean the critiques as evidence.
-
-It also never writes the verdict cache, so a later \`eval run\` on the same
-content still calls the reviewer and records what it finds.
-
-The target resolves to whatever the specs govern: a file, a directory, or —
-when a spec uses \`cohort: by_directory\` — the whole cohort a named file
-belongs to. Always exits 0; this is advice, not a gate.
-
-Examples:
-  $ praxis feedback src/services/checkout.ts
-  $ praxis feedback src/services --reviewer flash
-`,
-    )
+    .addHelpText("after", `\n${feedbackHelp}`)
     .action(giveFeedbackOrchestrator);
 };
 

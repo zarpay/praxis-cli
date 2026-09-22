@@ -99,7 +99,7 @@ export class ExpertFile {
     return new ExpertFile(document.frontmatter, path, document.body);
   }
 
-  /** The expert's prose, frontmatter stripped — the compiled Role section. */
+  /** The expert's prose, frontmatter stripped — the compiled Expert section. */
   body(): string {
     return this.bodyText;
   }
@@ -107,7 +107,7 @@ export class ExpertFile {
   /**
    * Patterns for one reference key, as written.
    *
-   * @param key - the section this feeds: responsibilities, context, or reference
+   * @param key - the frontmatter key this resolves: practices, context, or refs
    */
   refs(key: RefKey): string[] {
     return this.references[key];

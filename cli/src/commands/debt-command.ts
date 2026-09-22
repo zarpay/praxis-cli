@@ -1,5 +1,7 @@
 import type { CommandRegistrar } from "@framework/types.js";
 
+import debtHelp from "@/help/debt-help.md";
+import debtReportHelp from "@/help/debt-report-help.md";
 import reportDebtOrchestrator from "@/orchestrators/report-debt-orchestrator.js";
 
 /**
@@ -11,23 +13,14 @@ import reportDebtOrchestrator from "@/orchestrators/report-debt-orchestrator.js"
 const debtCommand: CommandRegistrar = (program) => {
   const debtCmd = program
     .command("debt")
-    .description("Pre-spec debt: the baseline, its paydown, and where it concentrates");
+    .description("Pre-spec debt: the baseline, its paydown, and where it concentrates")
+    .addHelpText("after", `\n${debtHelp}`);
 
   debtCmd
     .command("report")
     .description("Debt stock and corpus paydown per axiom, concentration, re-baseline deltas")
     .option("--json", "machine-readable output (stable contract)")
-    .addHelpText(
-      "after",
-      `
-When to use: to run a debt program — baseline → current stock per
-axiom, paydown credited by git author, concentration by directory.
-Pure read: never calls a reviewer.
-
-Example:
-  $ praxis debt report
-      AX-b951db [v32] baseline 3 → current 1 · paid down 2 · appeared 0`,
-    )
+    .addHelpText("after", `\n${debtReportHelp}`)
     .action(reportDebtOrchestrator);
 };
 

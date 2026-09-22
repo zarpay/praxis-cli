@@ -22,8 +22,11 @@ import promptSurface from "@/prompts/prompt-surface.js";
 // "41134ad4" (2026-09-07: review→label — the checklist leaves the
 // reviewer entirely; owner's single-channel prompt; issues untagged) →
 // "a0c2757a" (2026-09-08: exemplars retired — live code held up as a
-// blessed example drifts; the EXEMPLARS section leaves the surface).
-const LOCKED_SURFACE_SHA8 = "a0c2757a";
+// blessed example drifts; the EXEMPLARS section leaves the surface) →
+// "f956ad7f" (2026-09-22: severity language named — the warn/fail tool
+// descriptions state the binding-vs-advisory cue from 03, so the spec
+// author's phrasing steers severity by design).
+const LOCKED_SURFACE_SHA8 = "f956ad7f";
 
 describe("promptSurface", () => {
   it("is deterministic", () => {

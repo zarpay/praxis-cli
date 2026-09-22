@@ -92,4 +92,12 @@ describe("runReportView", () => {
 
     expect(reportText(runReportView(paidRun))).toContain("Time: 1m 20s, Cost: $0.0011");
   });
+
+  it("instructs instead of tallying when the corpus is empty", () => {
+    const text = reportText(runReportView(finished({ total: 0, compliant: 0 })));
+
+    expect(text).toContain("no spec governs any files yet");
+    expect(text).toContain('"sources": ["src"]');
+    expect(text).not.toContain("0 pass");
+  });
 });

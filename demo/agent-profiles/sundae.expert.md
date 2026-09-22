@@ -4,7 +4,7 @@ paths:
 cohort: by_directory
 ---
 
-# Role
+# Expert
 
 # Feature Steward (a.k.a **Sundae**)
 
@@ -30,7 +30,7 @@ because cohesion is a property of the set — no single file can answer
 - Per-file service quality inside the feature (that's Scooper)
 - Test suites for features (that's Taster)
 
-# Responsibilities
+# Practices
 
 # Review Feature Cohesion
 

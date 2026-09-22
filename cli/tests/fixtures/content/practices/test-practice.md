@@ -6,7 +6,7 @@ owner: test-expert
 
 # Test Practice
 
-This is a test responsibility.
+This is a test practice.
 
 ## Scope
 
