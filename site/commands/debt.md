@@ -18,6 +18,7 @@ Per reviewer, over the latest epoch:
 
 ```
 Debt report — corpus, pre-spec debt included
+
 Evidence freshness — when each reviewer's stock was measured. An
 all-hit run re-evidences nothing, so a stale date means unmeasured
 since then, never clean:
