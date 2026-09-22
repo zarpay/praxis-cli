@@ -28,16 +28,18 @@ const debtReportView: View<DebtReport & { json?: boolean }> = (report) => {
     ];
   }
 
+  // Story order: what the baseline held, what appeared since, what got
+  // paid down, and where that leaves the stock now.
   const rowTable = table(
     report.rows.map((row) => [
       row.axiomId,
       row.reviewerName,
       row.baselineStock,
-      row.currentStock,
-      row.paydown,
       row.appearedSinceBaseline,
+      row.paydown,
+      row.currentStock,
     ]),
-    ["AXIOM", "REVIEWER", "BASELINE", "CURRENT", "PAID DOWN", "APPEARED"],
+    ["AXIOM", "REVIEWER", "BASELINE", "APPEARED", "PAID DOWN", "CURRENT"],
   );
 
   const lines: ReportLine[] = [

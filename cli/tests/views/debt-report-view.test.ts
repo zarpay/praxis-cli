@@ -39,7 +39,8 @@ describe("debtReportView", () => {
     const text = reportText(debtReportView(report()));
 
     expect(text).toContain("AXIOM");
-    expect(text).toMatch(/AX-aaaa11\s*│\s*flash\s*│\s*3\s*│\s*2\s*│\s*1\s*│\s*0/);
+    expect(text).toMatch(/BASELINE\s*│\s*APPEARED\s*│\s*PAID DOWN\s*│\s*CURRENT/);
+    expect(text).toMatch(/AX-aaaa11\s*│\s*flash\s*│\s*3\s*│\s*0\s*│\s*1\s*│\s*2/);
     expect(text).toMatch(/src\/services\s*│\s*2/);
     expect(text).toMatch(/Fixer\s*│\s*1/);
   });

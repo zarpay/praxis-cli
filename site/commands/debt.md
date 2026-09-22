@@ -21,12 +21,12 @@ Debt report — corpus, pre-spec debt included
 flash: baseline 2026-09-08 · current stock as evidenced 2026-09-08
 v32: baseline 2026-09-08 · current stock as evidenced 2026-09-08
 
-  ┌───────────┬──────────┬──────────┬─────────┬───────────┬──────────┐
-  │ AXIOM     │ REVIEWER │ BASELINE │ CURRENT │ PAID DOWN │ APPEARED │
-  ├───────────┼──────────┼──────────┼─────────┼───────────┼──────────┤
-  │ AX-2559f7 │ flash    │ 3        │ 1       │ 2         │ 0        │
-  │ AX-b951db │ flash    │ 5        │ 5       │ 0         │ 0        │
-  └───────────┴──────────┴──────────┴─────────┴───────────┴──────────┘
+  ┌───────────┬──────────┬──────────┬──────────┬───────────┬─────────┐
+  │ AXIOM     │ REVIEWER │ BASELINE │ APPEARED │ PAID DOWN │ CURRENT │
+  ├───────────┼──────────┼──────────┼──────────┼───────────┼─────────┤
+  │ AX-2559f7 │ flash    │ 3        │ 0        │ 2         │ 1       │
+  │ AX-b951db │ flash    │ 5        │ 0        │ 0         │ 5       │
+  └───────────┴──────────┴──────────┴──────────┴───────────┴─────────┘
 
 Concentration (current stock by directory):
   ┌──────────────┬───────┐
