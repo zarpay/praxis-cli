@@ -82,10 +82,12 @@ describe("runReportView", () => {
     expect(text).toContain("Unverified: 2 verdict(s)");
   });
 
-  it("prints both coverage slices beside the conformance tally (07: they render together)", () => {
+  it("renders coverage as a table beside the conformance tally (07: they render together)", () => {
     const text = reportText(runReportView(finished({})));
 
-    expect(text).toContain("Eval coverage: observed 80% (4/5 files) · passing 60% (3/5 files)");
+    expect(text).toMatch(/COVERAGE\s*│\s*FILES\s*│\s*RATE/);
+    expect(text).toMatch(/Observed\s*│\s*4\/5\s*│\s*80%/);
+    expect(text).toMatch(/Passing\s*│\s*3\/5\s*│\s*60%/);
   });
 
   it("surfaces unverified units when any exist — they are not violations", () => {

@@ -4,6 +4,7 @@ import type { DisplayEntry, View } from "@framework/types.js";
 import { badge, verdictTally } from "@framework/views/badges.js";
 import { duration } from "@framework/views/duration.js";
 import { palette } from "@framework/views/palette.js";
+import { percent } from "@framework/views/stats.js";
 import { table } from "@framework/views/table.js";
 
 /** A completed full run, ready to report. */
@@ -125,7 +126,8 @@ function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
     "",
     { header: "Summary — corpus conformance (includes pre-spec debt)" },
     `Total documents: ${totals.total}`,
-    `Eval coverage: observed ${coverage.observed.display} · passing ${coverage.passing.display}`,
+    "",
+    ...coverageTable(coverage),
     "",
     ...verdictLines,
     "",
@@ -138,6 +140,24 @@ function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
       ["TYPE", "COMPLIANT"],
     ),
   ];
+}
+
+/** The coverage slices as rows: what is governed, and what clears. */
+function coverageTable(coverage: EvalCoverage): string[] {
+  const rows = [
+    [
+      "Observed",
+      `${coverage.observed.files}/${coverage.sourceFiles}`,
+      percent(coverage.observed.rate),
+    ],
+    [
+      "Passing",
+      `${coverage.passing.files}/${coverage.sourceFiles}`,
+      percent(coverage.passing.rate),
+    ],
+  ];
+
+  return table(rows, ["COVERAGE", "FILES", "RATE"]);
 }
 
 /** The single-reviewer tally: one line, verdicts and documents coincide. */

@@ -103,7 +103,13 @@ praxis eval run
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
 Total documents: 4
-Eval coverage: observed 100% (4/4 files) · passing 75% (3/4 files)
+
+  ┌──────────┬───────┬──────┐
+  │ COVERAGE │ FILES │ RATE │
+  ├──────────┼───────┼──────┤
+  │ Observed │ 4/4   │ 100% │
+  │ Passing  │ 3/4   │ 75%  │
+  └──────────┴───────┴──────┘
 
   ● 3 pass   ● 0 warn   ● 1 fail   ● 0 not validated
 

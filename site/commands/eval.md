@@ -81,7 +81,13 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
 Total documents: 4
-Eval coverage: observed 100% (4/4 files) · passing 50% (2/4 files)
+
+  ┌──────────┬───────┬──────┐
+  │ COVERAGE │ FILES │ RATE │
+  ├──────────┼───────┼──────┤
+  │ Observed │ 4/4   │ 100% │
+  │ Passing  │ 2/4   │ 50%  │
+  └──────────┴───────┴──────┘
 
   ● 2 pass   ● 1 warn   ● 1 fail   ● 0 not validated
 

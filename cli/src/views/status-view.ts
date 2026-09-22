@@ -1,6 +1,7 @@
 import type { StatusReport } from "@/types.js";
 import type { ReportLine, View } from "@framework/types.js";
 
+import { percent } from "@framework/views/stats.js";
 import { table } from "@framework/views/table.js";
 
 /**
@@ -30,6 +31,14 @@ const statusView: View<StatusReport & { json?: boolean }> = (report) => {
 
     lines.push({ channel: "content", entries: ["", ...documentsTable] });
   }
+
+  const coverage = table(coverageRows(report.coverage), ["COVERAGE", "FILES", "RATE"]);
+
+  lines.push(
+    { channel: "blank" },
+    { channel: "heading", text: "Coverage" },
+    { channel: "content", entries: coverage },
+  );
 
   const validationRows = reviewRows(report);
 
@@ -129,9 +138,24 @@ function evalStateLines(report: StatusReport): string[] {
   return [
     `Last run: ${lastRun}`,
     `Untriaged: ${evalState.pending_triage} · Awaiting curation: ${evalState.awaiting_curation}`,
-    `Eval coverage: observed ${report.coverage.observed.display} · passing ${report.coverage.passing.display}`,
     ...(evalState.epoch_boundary_detected
       ? ["Epoch boundary detected — the next full run opens a new baseline."]
       : []),
+  ];
+}
+
+/** The coverage slices as rows: what is governed, and what clears. */
+function coverageRows(coverage: StatusReport["coverage"]): string[][] {
+  return [
+    [
+      "Observed",
+      `${coverage.observed.files}/${coverage.sourceFiles}`,
+      percent(coverage.observed.rate),
+    ],
+    [
+      "Passing",
+      `${coverage.passing.files}/${coverage.sourceFiles}`,
+      percent(coverage.passing.rate),
+    ],
   ];
 }

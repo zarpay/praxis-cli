@@ -58,10 +58,12 @@ describe("review state", () => {
     return reportText(statusView(report({ validation })));
   }
 
-  it("prints both coverage slices in the situational block", () => {
+  it("renders coverage as a table — observed and passing rows, counts and rates", () => {
     const text = reportText(statusView(report()));
 
-    expect(text).toContain("Eval coverage: observed 80% (4/5 files) · passing 60% (3/5 files)");
+    expect(text).toMatch(/COVERAGE\s*│\s*FILES\s*│\s*RATE/);
+    expect(text).toMatch(/Observed\s*│\s*4\/5\s*│\s*80%/);
+    expect(text).toMatch(/Passing\s*│\s*3\/5\s*│\s*60%/);
   });
 
   it("renders one table row per reviewer that has reviewed something", () => {

@@ -24,7 +24,6 @@ Praxis Project Status
 
 Last run: 2026-09-03
 Untriaged: 11 · Awaiting curation: 0
-Eval coverage: observed 62% (52/84 files) · passing 48% (40/84 files)
 
   ┌───────────────┬───────┐
   │ DOCUMENTS     │ COUNT │
@@ -34,6 +33,13 @@ Eval coverage: observed 62% (52/84 files) · passing 48% (40/84 files)
   │ References    │ 1     │
   │ Context files │ 4     │
   └───────────────┴───────┘
+
+  ┌──────────┬───────┬──────┐
+  │ COVERAGE │ FILES │ RATE │
+  ├──────────┼───────┼──────┤
+  │ Observed │ 52/84 │ 62%  │
+  │ Passing  │ 40/84 │ 48%  │
+  └──────────┴───────┴──────┘
 
 Validation
   ┌──────────┬──────┬──────┬──────┬───────────────┐
