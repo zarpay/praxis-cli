@@ -26,16 +26,22 @@ Last run: 2026-09-03
 Untriaged: 11 · Awaiting curation: 0
 Eval coverage: observed 62% (52/84 files) · passing 48% (40/84 files)
 
-  Experts:            3
-  Practices:          3
-  References:         1
-  Context files:      4
+  ┌───────────────┬───────┐
+  │ DOCUMENTS     │ COUNT │
+  ├───────────────┼───────┤
+  │ Experts       │ 3     │
+  │ Practices     │ 3     │
+  │ References    │ 1     │
+  │ Context files │ 4     │
+  └───────────────┴───────┘
 
-Validation (reviewer: mercury)
-  ● 15 pass   ● 2 warn   ● 6 fail   ● 0 not validated
-
-Validation (reviewer: counter)
-  ● 23 pass   ● 0 warn   ● 0 fail   ● 0 not validated
+Validation
+  ┌──────────┬──────┬──────┬──────┬───────────────┐
+  │ REVIEWER │ PASS │ WARN │ FAIL │ NOT VALIDATED │
+  ├──────────┼──────┼──────┼──────┼───────────────┤
+  │ mercury  │ 15   │ 2    │ 6    │ 0             │
+  │ counter  │ 23   │ 0    │ 0    │ 0             │
+  └──────────┴──────┴──────┴──────┴───────────────┘
 
 [OK] No issues found
 ```

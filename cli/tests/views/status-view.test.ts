@@ -39,15 +39,16 @@ function tally(fields: Partial<StatusReport["validation"][number]>) {
 }
 
 describe("document counts", () => {
-  it("renders one aligned line per document type", () => {
+  it("renders the counts as an outlined table, one row per document type", () => {
     const text = reportText(
       statusView(report({ counts: { experts: 3, practices: 7, references: 1, context: 2 } })),
     );
 
-    expect(text).toContain("  Experts:            3");
-    expect(text).toContain("  Practices:          7");
-    expect(text).toContain("  References:         1");
-    expect(text).toContain("  Context files:      2");
+    expect(text).toMatch(/DOCUMENTS\s*│\s*COUNT/);
+    expect(text).toMatch(/Experts\s*│\s*3/);
+    expect(text).toMatch(/Practices\s*│\s*7/);
+    expect(text).toMatch(/References\s*│\s*1/);
+    expect(text).toMatch(/Context files\s*│\s*2/);
   });
 });
 
@@ -63,37 +64,30 @@ describe("review state", () => {
     expect(text).toContain("Eval coverage: observed 80% (4/5 files) · passing 60% (3/5 files)");
   });
 
-  it("renders one block per reviewer that has reviewed something", () => {
+  it("renders one table row per reviewer that has reviewed something", () => {
     const text = rendered([tally({ reviewer: "flash", pass: 2 }), tally({ reviewer: "v32" })]);
 
-    expect(text).toContain("Validation (reviewer: flash)");
-    expect(text).not.toContain("Validation (reviewer: v32)");
+    expect(text).toMatch(/flash\s*│\s*2/);
+    expect(text).not.toContain("v32");
   });
 
   it("keeps a reviewer whose only verdicts are failures", () => {
-    expect(rendered([tally({ reviewer: "flash", fail: 1 })])).toContain("(reviewer: flash)");
+    expect(rendered([tally({ reviewer: "flash", fail: 1 })])).toContain("flash");
   });
 
   it("keeps a reviewer with nothing but unvalidated targets", () => {
-    expect(rendered([tally({ reviewer: "flash", notValidated: 4 })])).toContain(
-      "(reviewer: flash)",
-    );
+    expect(rendered([tally({ reviewer: "flash", notValidated: 4 })])).toContain("flash");
   });
 
   it("labels the nameless reader when no reviewer is configured", () => {
-    expect(rendered([tally({ reviewer: null, notValidated: 3 })])).toContain(
-      "(reviewer: none configured)",
-    );
+    expect(rendered([tally({ reviewer: null, notValidated: 3 })])).toContain("none configured");
   });
 
-  it("carries the four buckets in a fixed order", () => {
+  it("carries the four buckets as columns in a fixed order", () => {
     const text = rendered([tally({ pass: 1, warn: 2, fail: 3, notValidated: 4 })]);
-    const order = ["1 pass", "2 warn", "3 fail", "4 not validated"];
 
-    expect(order.map((mark) => text.indexOf(mark))).toEqual(
-      order.map((mark) => text.indexOf(mark)).sort((a, b) => a - b),
-    );
-    expect(text.indexOf("1 pass")).toBeGreaterThan(-1);
+    expect(text).toMatch(/REVIEWER\s*│\s*PASS\s*│\s*WARN\s*│\s*FAIL\s*│\s*NOT VALIDATED/);
+    expect(text).toMatch(/flash\s*│\s*1\s*│\s*2\s*│\s*3\s*│\s*4/);
   });
 });
 
@@ -206,7 +200,7 @@ describe("the whole report", () => {
         compilerInUse: false,
         validation: [tally({ reviewer: "flash", pass: 2 })],
       }),
-    ).toContain("Validation (reviewer: flash)");
+    ).toContain("Validation");
     expect(lines.some((line) => line.channel === "content")).toBe(true);
   });
 
