@@ -3,6 +3,7 @@ import type { EvalProgress, Orchestrator, ReviewedTarget } from "@/types.js";
 import { gitFacts } from "@/helpers/git-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
+import measureEvalCoverageService from "@/services/measure-eval-coverage-service.js";
 import reviewAllService from "@/services/review-all-service.js";
 import reviewNamedService from "@/services/review-named-service.js";
 import selectReviewersService from "@/services/select-reviewers-service.js";
@@ -152,9 +153,11 @@ export const runEvalOrchestrator: Orchestrator<RunEvalOptions> = async (
     waiting.close();
   }
 
+  const coverage = measureEvalCoverageService(cfg, {});
+
   const reportView = options.json
-    ? evalJsonView({ kind: "corpus", summary: run.summary, cacheStats: run.cacheStats })
-    : runReportView({ run, cached: cache, elapsedMs: Date.now() - startedAt });
+    ? evalJsonView({ kind: "corpus", summary: run.summary, cacheStats: run.cacheStats, coverage })
+    : runReportView({ run, cached: cache, elapsedMs: Date.now() - startedAt, coverage });
 
   ctx.render(reportView);
 

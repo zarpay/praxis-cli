@@ -1,4 +1,4 @@
-import type { EvalSummary, ReviewAllResult } from "@/types.js";
+import type { EvalCoverage, EvalSummary, ReviewAllResult } from "@/types.js";
 import type { DisplayEntry, View } from "@framework/types.js";
 
 import { badge, verdictTally } from "@framework/views/badges.js";
@@ -13,6 +13,8 @@ interface FinishedRun {
   cached: boolean;
   /** Wall-clock the run took, for the spend line. */
   elapsedMs: number;
+  /** Spec coverage over the source corpus (07: renders with conformance, always). */
+  coverage: EvalCoverage;
 }
 
 /**
@@ -27,11 +29,11 @@ interface FinishedRun {
  * reviewer was actually called: a run answered entirely from cache spent
  * nothing, and "$0.0000" would claim a measurement never taken.
  */
-const runReportView: View<FinishedRun> = ({ run, cached, elapsedMs }) => [
+const runReportView: View<FinishedRun> = ({ run, cached, elapsedMs, coverage }) => [
   ...(run.stoppedEarly
     ? [content(badge("STOPPED", "yellow", "Review stopped early due to --fail-fast"))]
     : []),
-  { channel: "content", entries: summary(run.summary) },
+  { channel: "content", entries: summary(run.summary, coverage) },
   ...(cached
     ? [
         content(
@@ -102,7 +104,7 @@ const emptyCorpusNotice: DisplayEntry[] = [
  * only when there is more than one, because with a single reviewer it
  * would just restate the totals.
  */
-function summary(totals: EvalSummary): DisplayEntry[] {
+function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
   if (totals.total === 0) return emptyCorpusNotice;
 
   const reviewerNames = Object.keys(totals.byReviewer);
@@ -118,6 +120,7 @@ function summary(totals: EvalSummary): DisplayEntry[] {
     "",
     { header: "Summary — corpus conformance (includes pre-spec debt)" },
     `Total documents: ${totals.total}`,
+    `Eval coverage: ${coverage.display}`,
     "",
     `  ${tally}`,
     totals.unverified > 0 &&

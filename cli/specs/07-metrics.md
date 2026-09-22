@@ -5,7 +5,7 @@
 
 ## Hard rules (violating these is a bug, not a style choice)
 
-1. **Coverage and conformance render together, always.** A conformance figure without its coverage denominator is not printed. Rising conformance + falling coverage renders as a warning, not a win.
+1. **Coverage and conformance render together, always.** A conformance figure without its coverage denominator is not printed. Rising conformance + falling coverage renders as a warning, not a win. (Implemented 2026-09-22: **eval coverage** — governed files over every file under `sources` minus `ignore` — renders in `praxis status`, in the corpus summary of `eval run` and `eval ci`, and in their `--json` payloads as `coverage { governed, sourceFiles, rate, display }`. Spec files, templates, and the authored taxonomy (experts, practices, compiled profiles) are direction rather than corpus and count on neither side; a spec's `excludes:` leave files in the corpus but ungoverned. A census, not a sample: the small-n floor does not apply, and `measure-eval-coverage-service` derives both sides from the eval layer's own discovery, so the number counts what a run would actually review.)
 2. **Every conformance number carries a population qualifier** (01). Unqualified "conformance" does not appear in any output.
 3. **Rates over counts, with denominators shown** — violations _per applicable opportunity_ (vocabulary), and the opportunity count is displayed, with small-n suppression (02): cells under the floor render as "insufficient data," never as a rate.
 4. **The calibration banner appears on every report**: uncalibrated — numbers are directional, not interpretable. (Calibration itself withdrew to the roadmap 2026-09-07; the honesty stayed as the standing banner.)

@@ -56,6 +56,27 @@ export interface StatusReport {
   expertsMissingDescription: string[];
   /** Expert glob references that match no files. */
   zeroMatchGlobs: { expert: string; pattern: string }[];
+  /** Spec coverage over the source corpus. */
+  coverage: EvalCoverage;
+}
+
+/**
+ * Spec coverage over the source corpus — the number a team maintains
+ * ("we hold 90% eval coverage"). Governed files over every reviewable
+ * file under `sources` minus `ignore`; spec files, templates, and the
+ * authored taxonomy (experts, practices, compiled profiles) are
+ * direction rather than corpus and count on neither side. A census,
+ * not a sample: the small-n floor does not apply.
+ */
+export interface EvalCoverage {
+  /** Source files at least one spec governs. */
+  governed: number;
+  /** Every reviewable file under `sources` minus `ignore`. */
+  sourceFiles: number;
+  /** governed / sourceFiles in 0–1, or null when there are no source files. */
+  rate: number | null;
+  /** Render-ready, per the surface rule: "62% (52/84 files)". */
+  display: string;
 }
 
 /** What the orientation screen shows — bare `praxis`. */

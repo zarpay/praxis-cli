@@ -81,6 +81,7 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
 Total documents: 4
+Eval coverage: 100% (4/4 files)
 
   ● 2 pass   ● 1 warn   ● 1 fail   ● 0 not validated
 
@@ -106,7 +107,7 @@ Critiques print raw — the reviewer's own words against the spec. Labels come l
 
 ### `praxis eval ci`
 
-A full run with a structured summary, for pull request pipelines.
+A full run with a structured summary, for pull request pipelines. The summary prints eval coverage beside the conformance tally, so the gate states how much of the corpus it actually gates.
 
 ```bash
 praxis eval ci
@@ -126,7 +127,7 @@ praxis eval ci --strict
 
 ### `--json`: the fast loop's delivery
 
-`praxis eval run <target> --json` emits the outcome as stable JSON on stdout — the feedback a coding agent or a CI hook consumes directly. Critiques carry their raw text (labels are applied later, at triage, and appear in reports); corpus mode emits the run summary. `eval verdict` and bare `praxis` take `--json` too.
+`praxis eval run <target> --json` emits the outcome as stable JSON on stdout — the feedback a coding agent or a CI hook consumes directly. Critiques carry their raw text (labels are applied later, at triage, and appear in reports); corpus mode emits the run summary plus `coverage { governed, sourceFiles, rate, display }` — the share of source files any spec governs. `eval verdict` and bare `praxis` take `--json` too.
 
 ## `praxis eval verdict <path>`
 

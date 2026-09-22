@@ -41,9 +41,24 @@ export class DocumentStore {
 
   /** Absolute paths of every document across the source directories. */
   files(): string[] {
+    return this.sweep("**/*.md");
+  }
+
+  /**
+   * Absolute paths of every reviewable file across the source
+   * directories, any extension — the corpus a coverage figure is
+   * measured over. Same listing rules as the document sweep: specs and
+   * templates are direction, not corpus, and ignore patterns hold.
+   */
+  sourceFiles(): string[] {
+    return this.sweep("**/*");
+  }
+
+  /** One pass over the source trees, under the store's listing rules. */
+  private sweep(pattern: string): string[] {
     return this.sources.flatMap((source) =>
       fg
-        .sync("**/*.md", {
+        .sync(pattern, {
           cwd: joinPath(this.root, source),
           onlyFiles: true,
           absolute: true,

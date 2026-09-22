@@ -5,6 +5,7 @@ import { exists } from "@/helpers/files-helper.js";
 import auditExpertsService from "@/services/audit-experts-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import detectEpochBoundariesService from "@/services/detect-epoch-boundaries-service.js";
+import measureEvalCoverageService from "@/services/measure-eval-coverage-service.js";
 import tallyValidationService from "@/services/tally-validation-service.js";
 import { DocumentStore } from "@/stores/document-store.js";
 import { ExpertStore } from "@/stores/expert-store.js";
@@ -30,9 +31,10 @@ import { RunStore } from "@/stores/run-store.js";
 const buildStatusReportService: Service<NoInput, Promise<StatusReport>> = async (cfg) => {
   const validation = tallyValidationService(cfg, {});
   const evalState = evalStateOf(cfg);
+  const coverage = measureEvalCoverageService(cfg, {});
 
   if (!exists(cfg.expertsDir)) {
-    return evalOnlyReport(validation, evalState);
+    return evalOnlyReport(validation, evalState, coverage);
   }
 
   const expertStore = new ExpertStore(cfg);
@@ -61,6 +63,7 @@ const buildStatusReportService: Service<NoInput, Promise<StatusReport>> = async 
     },
     validation,
     evalState,
+    coverage,
     issueCount: issueCountOf(findings),
     ...findings,
   };
@@ -89,12 +92,14 @@ function issueCountOf(findings: {
 function evalOnlyReport(
   validation: StatusReport["validation"],
   evalState: StatusReport["evalState"],
+  coverage: StatusReport["coverage"],
 ): StatusReport {
   return {
     compilerInUse: false,
     counts: { experts: 0, practices: 0, references: 0, context: 0 },
     validation,
     evalState,
+    coverage,
     issueCount: 0,
     orphanedPractices: [],
     danglingRefs: [],

@@ -1,10 +1,15 @@
-import type { EvalSummary, Finding, ReviewedTarget, Verdict } from "@/types.js";
+import type { EvalCoverage, EvalSummary, Finding, ReviewedTarget, Verdict } from "@/types.js";
 import type { View } from "@framework/types.js";
 
 /** The two shapes `eval run --json` can end in. */
 type EvalJsonData =
   | { kind: "targets"; targets: ReviewedTarget[] }
-  | { kind: "corpus"; summary: EvalSummary; cacheStats: { hits: number; misses: number } };
+  | {
+      kind: "corpus";
+      summary: EvalSummary;
+      cacheStats: { hits: number; misses: number };
+      coverage: EvalCoverage;
+    };
 
 /**
  * The machine contract for `eval run --json`: the run's
@@ -24,7 +29,7 @@ function payloadOf(data: EvalJsonData): object {
     return { mode: "targets", targets: data.targets.map(targetJson) };
   }
 
-  return { mode: "corpus", summary: data.summary, cache: data.cacheStats };
+  return { mode: "corpus", summary: data.summary, cache: data.cacheStats, coverage: data.coverage };
 }
 
 /** One fast-loop target: status, reason, and the deduplicated findings. */

@@ -11,8 +11,9 @@ praxis status --json
 
 ## What it reports
 
-- **Situational facts** — last run, the untriaged and awaiting-curation queue counts, and whether an epoch boundary is waiting for a baseline run. Always shown.
-- **Review coverage** — pass / warn / fail / not-validated counts per reviewer, read from the committed cache. One block per reviewer, never pooled.
+- **Situational facts** — last run, the untriaged and awaiting-curation queue counts, eval coverage, and whether an epoch boundary is waiting for a baseline run. Always shown.
+- **Eval coverage** — the share of source files at least one spec governs: governed files over every file under `sources` minus `ignore` (spec files, templates, and the authored taxonomy count on neither side). This is the number a team maintains the way it maintains test coverage.
+- **Review state** — pass / warn / fail / not-validated counts per reviewer, read from the committed cache. One block per reviewer, never pooled.
 - **Document counts** — only when the spec-layer compiler is in use (the configured experts directory exists).
 - **Structural issues** — found without any LLM call, compiler projects only: dangling references, orphaned practices, experts missing descriptions, experts that fail to parse, globs matching nothing.
 
@@ -23,6 +24,7 @@ Praxis Project Status
 
 Last run: 2026-09-03
 Untriaged: 11 · Awaiting curation: 0
+Eval coverage: 62% (52/84 files)
 
   Experts:            3
   Practices:          3
@@ -55,15 +57,21 @@ Exit 1 when any structural issue is found — the same count the closing line pr
     "epoch_boundary_detected": false,
     "last_run_at": "2026-09-03T23:21:21.989Z"
   },
+  "coverage": {
+    "governed": 52,
+    "sourceFiles": 84,
+    "rate": 0.62,
+    "display": "62% (52/84 files)"
+  },
   "issueCount": 0
 }
 ```
 
 Bare `praxis` is the same orientation for humans — counts and staleness at a glance, each line naming the command that acts on it.
 
-## Coverage without keys
+## Everything without keys
 
-Coverage counts are read from `.praxis/cache/validation/` — no API key, no network. A target shows NOT VALIDATED when nothing has reviewed it yet. Run `praxis eval run` to populate the cache; from then on `status` tracks it.
+The whole report is a pure read — no API key, no network. Review-state counts come from `.praxis/cache/validation/` (a target shows NOT VALIDATED until something reviews it; run `praxis eval run` to populate the cache), and eval coverage comes from spec discovery alone, so it is accurate before the first run ever happens.
 
 ## See also
 

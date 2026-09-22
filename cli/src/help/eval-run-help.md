@@ -29,7 +29,10 @@ JSON (--json), stable contract, two modes:
               reason, findings: [ { text, severity, witnesses } ] } ] }
   corpus:   { mode: "corpus", summary { total, compliant, warnings,
               errors, unverified, notValidated, byType, byReviewer },
-              cache { hits, misses } }
+              cache { hits, misses },
+              coverage { governed, sourceFiles, rate, display } }
+  coverage is the share of source files at least one spec governs —
+  the maintained number; the corpus report prints it beside the tally.
 
 Exit codes: 0 no violations · 1 violations or run failure · 2 usage.
 
