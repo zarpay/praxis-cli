@@ -39,6 +39,7 @@ export function prepareOrchestrator<Ctx extends { logger: Logger }, Options = No
   orchestrator: Orchestrator<Ctx, Options>,
   extra: Partial<Options> = {},
   exitCodeFor: (err: unknown) => number = () => 1,
+  beforeDispatch?: (ctx: Ctx) => void,
 ): (...args: unknown[]) => Promise<void> {
   return async (...args: unknown[]) => {
     const command = args.at(-1) as Command;
@@ -55,6 +56,10 @@ export function prepareOrchestrator<Ctx extends { logger: Logger }, Options = No
     const ctx = createContext();
 
     try {
+      // Application-wide preconditions run inside the error policy, so
+      // a gate that throws exits like any other classified error.
+      beforeDispatch?.(ctx);
+
       if ((await orchestrator(ctx, options)) === "failed") process.exit(1);
     } catch (err) {
       ctx.logger.error(err instanceof Error ? err.message : String(err));

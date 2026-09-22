@@ -11,11 +11,7 @@ import registerInitCommand from "@/commands/init-command.js";
 import registerStatusCommand from "@/commands/status-command.js";
 import praxisHelp from "@/help/praxis-help.md";
 import orientProjectOrchestrator from "@/orchestrators/orient-project-orchestrator.js";
-
-import pkg from "../package.json";
-
-/** CLI version, sourced from package.json and inlined at build time. */
-const VERSION = pkg.version;
+import { CLI_VERSION } from "@/version.js";
 
 /**
  * Creates and configures the root CLI program.
@@ -27,7 +23,7 @@ const VERSION = pkg.version;
 function createProgram(): Command {
   const program = new Command();
 
-  program.name("praxis").description("CLI for the Praxis knowledge framework").version(VERSION);
+  program.name("praxis").description("CLI for the Praxis knowledge framework").version(CLI_VERSION);
 
   // Commander throws instead of exiting, so usage mistakes get exit
   // code 2. Set before the subcommands register — they copy the

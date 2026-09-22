@@ -162,4 +162,49 @@ describe("prepareOrchestrator", () => {
 
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
+
+  it("runs beforeDispatch against the context before the orchestrator", async () => {
+    const order: string[] = [];
+    const handler = prepareOrchestrator(
+      captureLogger,
+      () => {
+        order.push("orchestrator");
+
+        return Promise.resolve("ok" as const);
+      },
+      {},
+      () => 1,
+      () => order.push("gate"),
+    );
+
+    await handler(fakeCommand([], {}));
+
+    expect(order).toEqual(["gate", "orchestrator"]);
+  });
+
+  it("a throwing beforeDispatch exits through the error policy, orchestrator unrun", async () => {
+    const captured = captureLogger();
+    const gateError = new Error("config pins another version");
+    const exitCodeFor = (err: unknown) => (err === gateError ? 2 : 1);
+    let ran = false;
+    const handler = prepareOrchestrator(
+      () => captured,
+      () => {
+        ran = true;
+
+        return Promise.resolve("ok" as const);
+      },
+      {},
+      exitCodeFor,
+      () => {
+        throw gateError;
+      },
+    );
+
+    await handler(fakeCommand([], {}));
+
+    expect(ran).toBe(false);
+    expect(captured.output()).toBe("[ERROR] config pins another version\n");
+    expect(exitSpy).toHaveBeenCalledWith(2);
+  });
 });

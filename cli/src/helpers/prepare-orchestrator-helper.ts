@@ -1,6 +1,7 @@
 import type { Orchestrator } from "@/types.js";
 
 import { PraxisError, USAGE_ERROR_CODES } from "@/helpers/errors-helper.js";
+import { enforceVersionPin } from "@/helpers/version-pin-helper.js";
 import { CommandContext } from "@/models/command-context.js";
 import { prepareOrchestrator as prepare } from "@framework/prepare-orchestrator.js";
 
@@ -17,7 +18,7 @@ export function prepareOrchestrator<Options>(
   orchestrator: Orchestrator<Options>,
   extra: Partial<Options> = {},
 ): (...args: unknown[]) => Promise<void> {
-  return prepare(() => new CommandContext(), orchestrator, extra, exitCodeFor);
+  return prepare(() => new CommandContext(), orchestrator, extra, exitCodeFor, enforceVersionPin);
 }
 
 /** 2 for usage/config mistakes, 1 for everything else. */

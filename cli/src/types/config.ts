@@ -3,6 +3,8 @@
 
 /** Config shape as it may appear on disk (all fields optional). */
 export interface RawConfig {
+  /** The praxis version this project pins; every dispatch enforces it. */
+  version?: string;
   agentProfilesOutputDir?: string | false;
   plugins?: RawPluginEntry[];
   sources?: string[];

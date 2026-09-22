@@ -13,6 +13,8 @@ import { configFile } from "@/models/project-paths.js";
 
 /** Config shape after defaults are applied. */
 interface NormalizedConfig {
+  /** The pinned praxis version, or null when the project pins none. */
+  version: string | null;
   agentProfilesOutputDir: string | false;
   plugins: PluginConfigEntry[];
   sources: string[];
@@ -51,6 +53,7 @@ export const DEFAULT_REVIEWER_TEMPERATURE = 0.0;
 
 /** Defaults used when the config file is absent or fields are omitted. */
 const DEFAULT_CONFIG: NormalizedConfig = {
+  version: null,
   agentProfilesOutputDir: "./agent-profiles",
   plugins: [],
   sources: ["experts", "practices", "reference", "context"],
@@ -102,6 +105,11 @@ export class PraxisConfig {
     }
 
     return resolvePath(this.root, val);
+  }
+
+  /** The pinned praxis version, or null when the project pins none. */
+  get version(): string | null {
+    return this.data.version;
   }
 
   /** Array of normalized plugin config entries. */
@@ -210,6 +218,7 @@ export class PraxisConfig {
    */
   private normalize(raw: RawConfig): NormalizedConfig {
     return {
+      version: raw.version ?? DEFAULT_CONFIG.version,
       agentProfilesOutputDir: raw.agentProfilesOutputDir ?? DEFAULT_CONFIG.agentProfilesOutputDir,
       plugins: this.normalizePlugins(raw.plugins ?? []),
       sources: raw.sources ?? DEFAULT_CONFIG.sources,

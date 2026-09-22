@@ -3,6 +3,8 @@ When to use: once, at a project's root, before anything else.
 Behavior:
   Writes only .praxis/config.json — with empty sources and a default
   OpenRouter reviewer — and claims the directory as a Praxis project;
+  the first command run against it pins the CLI's version into the
+  config (praxis enforces one version per project from then on);
   the cache, ledger, and axiom directories are created lazily by the
   first run that needs them. Your specs are your existing READMEs;
   nothing else is scaffolded. Re-running never overwrites what exists,

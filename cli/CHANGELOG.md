@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-09-22
+
+The help release. `--help` is now the API documentation it was always specified to be (09): every command states when to use it, how it behaves — what writes, what reads, what the cache and ledger do — worked examples, its `--json` contract's fields, the commands to run next, and a link into the site docs. There is no separate agent surface and no parallel tier to drift; this is the one surface, written for both audiences, and tests enforce the standard on every command.
+
+**This release opens an epoch.** The verdict tool descriptions now name the severity cue the docs promised — binding language ("must", "never", "always") marks required criteria, advisory language ("should", "prefer") optional ones — which changes the reviewer's prompt surface and therefore its identity. Every project's next run re-reviews and opens a new epoch with a baseline; run `praxis eval prune` afterward to drop the old epoch's orphaned cache entries. The boundary warning now says exactly that.
+
+### Added
+
+- **Agent-grade help on every command.** Long-form help lives in `src/help/`, one markdown document per help moment, bundled into the binary. The root `--help` opens with what Praxis *is* — the standards your linter can't hold — and the setup path; group help carries the cross-command workflows (the eval loop, the axiom lifecycle); every leaf ends with a docs link. Mirrored tests fail the build on a command whose help lacks its "When to use" or its docs link.
+
+- **The config pins the praxis version.** Praxis is installed globally, not declared in a `package.json`, so nothing kept two teammates from running different versions against one committed cache and ledger — and a version change can be an epoch. `.praxis/config.json` now carries `"version"`, enforced before every command: a config with no pin adopts the running version with a warning (commit the change), a matching pin is silence, and a conflicting pin refuses with exit 2 and both ways out — `npm install -g @zarpay/praxis-cli@<pinned>`, or move the pin.
+
+- **An empty corpus run instructs instead of shrugging.** `Total documents: 0` now explains why it happens — specs are discovered in the directories `sources` lists — and gives the three steps to a first review unit, instead of an empty tally table that reads as a clean bill.
+
+### Changed
+
+- **The reviewer is told the severity boundary's language cue.** `validation_warn` and `validation_fail` name the binding-vs-advisory reading (03) that previously worked only because models inferred it. Prompt-surface change: epoch `a0c2757a` → `f956ad7f`.
+
+- **Compiled profiles speak the v2 vocabulary.** Section headings are `# Expert` and `# Practices` (were `# Role` / `# Responsibilities`, the last surfaces still speaking v1). A project that discovers profiles as specs re-reviews their targets on the next run — a content change, not an epoch.
+
+- **The epoch-boundary warning names the cleanup.** After "run a full `praxis eval run` to open the new epoch with a baseline" it now adds `praxis eval prune` for the orphaned entries the old epoch leaves behind.
+
+- **The praxis skill points at `--help` first.** Run the command's help before guessing; the skill is only the orientation.
+
 ## [2.3.0] - 2026-09-15
 
 The agent surface release. Everything Praxis tells a coding agent about itself now lives in one file — the praxis skill — and that file says *when* to run things, not only what exists. The `/praxis-resolve` slash command, which restated the same six commands a second time, is retired, and `praxis compile` clears the copy it left in your project.

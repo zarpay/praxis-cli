@@ -321,6 +321,24 @@ describe("PraxisConfig", () => {
     });
   });
 
+  describe("version", () => {
+    it("loads the pinned praxis version", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, { version: "2.4.0" });
+
+      const cfg = new PraxisConfig(dir);
+
+      expect(cfg.version).toBe("2.4.0");
+    });
+
+    it("is null when the project pins none", () => {
+      const dir = makeTmpdir();
+      const cfg = new PraxisConfig(dir);
+
+      expect(cfg.version).toBeNull();
+    });
+  });
+
   it("loads ignore patterns from cfg", () => {
     const dir = makeTmpdir();
     writeConfig(dir, { ignore: ["docs/generated/**", "**/.*.md"] });

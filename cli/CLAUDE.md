@@ -201,6 +201,7 @@ Key files: `services/review-target-service.ts`, `models/` (Reviewer, ReviewSubje
 
 Config lives at `{root}/.praxis/config.json` with these fields:
 
+- `version: string` — the praxis version this project pins, enforced at every dispatch (no pin: warn and adopt the running version; conflict: exit 2 with the install command and the pin-edit alternative). `helpers/version-pin-helper.ts`, wired as the composition root's `beforeDispatch` gate.
 - `sources: string[]` — directories scanned for documents (default: `experts`, `practices`, `reference`, `context`)
 - `expertsDir: string` — where expert `.md` files live (default: `"experts"`)
 - `practicesDir: string` — where practice `.md` files live (default: `"practices"`)
