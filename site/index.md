@@ -11,7 +11,25 @@ hero:
     - theme: alt
       text: The Evidence Loop
       link: /concepts/evidence-loop
+    - theme: alt
+      text: Watch the intro (7 min)
+      link: https://youtu.be/huyE-TMQfF8
 ---
+
+## Watch the intro
+
+Seven minutes on why Praxis exists, what the loop looks like on screen, and where to start.
+
+<div class="video-embed">
+  <iframe
+    src="https://www.youtube-nocookie.com/embed/huyE-TMQfF8"
+    title="Praxis — Your linter can't check this"
+    loading="lazy"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen
+  ></iframe>
+</div>
 
 ## The problem
 
