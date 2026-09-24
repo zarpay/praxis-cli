@@ -1,6 +1,5 @@
 import type { NoInput, Orientation, Service } from "@/types.js";
 
-import { CALIBRATION_STATUS } from "@/helpers/metrics-helper.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
 import { RunStore } from "@/stores/run-store.js";
@@ -51,7 +50,6 @@ const buildOrientationService: Service<NoInput, Orientation> = (cfg) => {
     pendingTriage: state.pending.length,
     awaitingCuration: state.unidentified.length,
     activeAxioms: axioms.filter((axiom) => axiom.status === "active").length,
-    calibration: CALIBRATION_STATUS,
     debtLine,
   };
 };

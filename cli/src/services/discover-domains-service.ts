@@ -33,9 +33,13 @@ function domainFor(store: SpecStore, specPath: string, cfg: PraxisConfig): Valid
   const excludes = spec.excludes.map((p) => joinPath(root, p));
   const ignore = [...cfg.absoluteIgnore, ...excludes];
 
+  // Declared label first (compiled profiles carry the expert's alias);
+  // the spec's directory is the fallback for undeclared README specs.
+  const type = spec.type ?? (relativePath(root, dir) || baseName(dir));
+
   const domain: ValidationDomain = {
     dir,
-    type: relativePath(root, dir) || baseName(dir),
+    type,
     specPath,
     excludes,
     cohort: spec.cohort,

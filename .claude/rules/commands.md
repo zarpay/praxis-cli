@@ -26,8 +26,14 @@ then hands them to one orchestrator. Nothing else. Nothing imports `commands/`.
   An orchestrator exports itself already wrapped, so there is nothing to prepare,
   adapt or close over here. There is no lambda anywhere: both sides have a fixed
   shape, so `prepareOrchestrator` derives the options from commander's own
-  argument names and parsed flags. A command file imports orchestrators and
-  nothing else — no model, no service, no view, no helper.
+  argument names and parsed flags. A command file imports orchestrators and its
+  help documents, and nothing else — no model, no service, no view, no helper.
+
+- **Long-form help lives in `src/help/`, not inline.** A command imports its
+  help documents as strings and hands `.addHelpText("after", `` `\n${...}` ``)`
+  the result — the leading newline is the blank separator after the options
+  block. The content standard, the prettier exclusion, and the update
+  discipline live in `.claude/rules/help.md`.
 
 - **A command's flags and arguments _are_ its orchestrator's `Options`.** Name
   them to match — `<target> --verbose` yields `{ target, verbose }` — and the

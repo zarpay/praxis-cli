@@ -112,7 +112,7 @@ An axiom that no longer needs Praxis — the standard became mechanically checka
 
 1. Scoping filters the unit set (excludes out, paths applied).
 2. Judgment standards evaluate per the spec; the reviewer prompt carries the spec, its context files, and the statement that mechanical criteria are out of scope.
-3. Verdict assembly: severity is the reviewer's structured call per critique, guided by the spec's own binding-vs-advisory language ("must" reads as error; "should" as warning).
+3. Verdict assembly: severity is the reviewer's structured call per critique, guided by the spec's own binding-vs-advisory language ("must" reads as error; "should" as warning). The verdict tool descriptions name that cue explicitly since 2026-09-22 — binding language marks required criteria, advisory language optional ones — a prompt-surface change, so an epoch event.
 4. For diff-unit evaluation (01), before/after verdicts feed **verdict diffing** — attribution is computed set-difference over axiom-anchored results on `(axiom_id, location/symbol)` under shared provenance, never a reviewer task.
 5. A unit that cannot be evaluated (context overflow, unreadable file) is `unverified` for the affected axioms — never silently passed.
 

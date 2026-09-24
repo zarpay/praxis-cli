@@ -35,6 +35,12 @@ export class SpecFile {
   /** Spec-blessed positive examples, as written. */
   /** Assist-only material inlined into the review, as written. */
   readonly context: string[];
+  /**
+   * The reporting label this spec's verdicts group under (`type:`) —
+   * compiled profiles carry the expert's alias here; undeclared, the
+   * eval layer falls back to the spec's directory.
+   */
+  readonly type: string | undefined;
 
   private constructor(fields: Frontmatter, path: string) {
     this.path = path;
@@ -42,6 +48,7 @@ export class SpecFile {
     this.cohort = fields.enumValue("cohort", COHORT_MODES) ?? "by_file";
     this.excludes = fields.stringList("excludes");
     this.context = fields.stringList("context");
+    this.type = fields.optionalString("type");
   }
 
   /**

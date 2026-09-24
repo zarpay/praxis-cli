@@ -23,7 +23,7 @@ describe("buildStatusReportService", () => {
     cleanup();
   });
 
-  it("counts roles, responsibilities, references, and context", async () => {
+  it("counts experts, practices, references, and context", async () => {
     const report = await reportFor(tmpdir);
 
     expect(report.counts.experts).toBeGreaterThanOrEqual(1);
@@ -35,7 +35,7 @@ describe("buildStatusReportService", () => {
   it("excludes _template.md and README.md from counts", async () => {
     const report = await reportFor(tmpdir);
 
-    // Roles dir has README.md + content files; reported count must be less than total .md files
+    // Experts dir has README.md + content files; reported count must be less than total .md files
     const allRoleFiles = readdirSync(join(tmpdir, "content", "experts")).filter((f) =>
       f.endsWith(".md"),
     );
@@ -56,7 +56,7 @@ describe("buildStatusReportService", () => {
     });
   });
 
-  it("detects orphaned responsibilities", async () => {
+  it("detects orphaned practices", async () => {
     writeFileSync(
       join(tmpdir, "content", "practices", "orphan.md"),
       "---\ntitle: Orphan\ntype: practice\nowner: nobody\n---\n# Orphan",
@@ -67,7 +67,7 @@ describe("buildStatusReportService", () => {
     expect(report.orphanedPractices).toContain("orphan.md");
   });
 
-  it("detects roles missing description", async () => {
+  it("detects experts missing description", async () => {
     writeFileSync(
       join(tmpdir, "content", "experts", "no-desc.md"),
       "---\nalias: NoDesc\n---\n# No Description",
@@ -208,7 +208,13 @@ describe("buildStatusReportService", () => {
       const report = await reportFor(root);
 
       expect(report.compilerInUse).toBe(false);
-      expect(report.counts).toEqual({ experts: 0, practices: 0, references: 0, context: 0 });
+      expect(report.counts).toEqual({
+        experts: 0,
+        practices: 0,
+        references: 0,
+        context: 0,
+        axioms: 0,
+      });
       expect(report.orphanedPractices).toEqual([]);
       expect(report.issueCount).toBe(0);
 
@@ -244,7 +250,6 @@ describe("buildStatusReportService", () => {
     expect(report.evalState).toEqual({
       pending_triage: 0,
       awaiting_curation: 0,
-      calibration_stale: true,
       epoch_boundary_detected: false,
       last_run_at: null,
     });

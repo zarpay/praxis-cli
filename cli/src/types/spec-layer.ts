@@ -4,10 +4,10 @@
 import type { CompilerPlugin } from "@/types/extension-points.js";
 
 /**
- * Metadata extracted from role frontmatter for agent compilation.
+ * Metadata extracted from expert frontmatter for agent compilation.
  *
  * Used by plugins to generate platform-specific output (e.g. Claude Code
- * frontmatter). The fields map to role frontmatter keys prefixed with `agent_`.
+ * frontmatter). The fields map to expert frontmatter keys prefixed with `agent_`.
  */
 export interface AgentMetadata {
   /** Agent name (lowercase, hyphenated). */
@@ -22,6 +22,8 @@ export interface AgentMetadata {
   permissionMode?: string;
   /** Glob patterns for files this profile validates (written as paths: in output). */
   validates: string[];
+  /** The eval-layer reporting label — the expert's alias (written as type: in output). */
+  type: string;
   /** How validated targets group into review units (written as cohort: in output). */
   cohort?: string;
   /** Glob patterns structurally excluded from review (written as excludes: in output). */

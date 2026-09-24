@@ -37,6 +37,9 @@ src/
                   shapes live in packages/framework/src/types.ts
   helpers/        plain reusable modules any layer may lean on: files, paths,
                   text, errors, prepare-orchestrator binding ({name}-helper.ts)
+  help/           the long-form --help documents, one markdown file per help
+                  moment, imported as strings by commands/ (agent-grade per
+                  specs/09; only commands/ and index.ts import them)
   models/         data structures and the helpers on that data, valid by
                   construction (Frontmatter, MarkdownFile, Reviewer, SpecFile…)
   services/       one action, one input, one output ({verb}-{noun}-service.ts)
@@ -73,9 +76,10 @@ src/
 
 That handoff between the layers is a real contract: an expert's `validates:` is
 compiled out as the spec's `paths:` (`templates/eval-targeting-template.ts` writes it,
-`services/discover-domains-service.ts` reads it), and `cohort:`/`excludes:`/
-`context:` pass through under the same names. `ExpertFile` and `SpecFile` are
-the two ends of it.
+`services/discover-domains-service.ts` reads it), `cohort:`/`excludes:`/
+`context:` pass through under the same names, and the expert's alias compiles
+out as the spec's `type:` — the label its verdicts group under. `ExpertFile`
+and `SpecFile` are the two ends of it.
 
 ### The layers
 
@@ -155,7 +159,7 @@ at them rather than at captured stdout. Long runs still stream through an
 Expert .md file (with YAML frontmatter)
   → Document parsed (models/markdown-file.ts → models/frontmatter.ts)
   → Referenced content resolved via globs (services/expand-globs-service.ts)
-  → Sections assembled: Expert → Responsibilities → Constitution → Context → Reference
+  → Sections assembled: Expert → Practices → Constitution → Context → Reference
       (services/build-profile-service.ts)
   → Pure profile written to agentProfilesOutputDir/{alias}.md
   → Each plugin receives profile + metadata and writes its own output
@@ -186,7 +190,7 @@ The measurement layer is pure read-side: `eval report` (three scope levels — f
 
 `praxis eval prune` is the epoch structure's other half: a behavioral change writes new cache keys and orphans the old ones, and pruning removes every entry whose reviewer hash matches no configured reviewer.
 
-Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `context:` (assist-only, inlined, joins the hash). The retired `exemplars:` key parses and is ignored — positive examples live in spec prose.
+Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `context:` (assist-only, inlined, joins the hash), `type:` (the reporting label verdicts group under — compiled profiles carry the expert's alias; undeclared, the spec's directory path; never derived from the filename). The retired `exemplars:` key parses and is ignored — positive examples live in spec prose.
 
 Key files: `services/review-target-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile, AxiomFile, PracticeFile, CacheFile), `stores/` (VerdictStore, RunStore, TriageStore, AxiomStore, ExpertStore, PracticeStore, SpecStore, DocumentStore), `services/` (discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
 
@@ -198,6 +202,7 @@ Key files: `services/review-target-service.ts`, `models/` (Reviewer, ReviewSubje
 
 Config lives at `{root}/.praxis/config.json` with these fields:
 
+- `version: string` — the praxis version this project pins, enforced at every dispatch (no pin: warn and adopt the running version; conflict: exit 2 with the install command and the pin-edit alternative). `helpers/version-pin-helper.ts`, wired as the composition root's `beforeDispatch` gate.
 - `sources: string[]` — directories scanned for documents (default: `experts`, `practices`, `reference`, `context`)
 - `expertsDir: string` — where expert `.md` files live (default: `"experts"`)
 - `practicesDir: string` — where practice `.md` files live (default: `"practices"`)

@@ -80,9 +80,18 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 ==================================================
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
-Total documents: 4
+Coverage:
+  ┌───────────────┬───────┬──────┐
+  │ COVERAGE      │ FILES │ RATE │
+  ├───────────────┼───────┼──────┤
+  │ Observed      │ 4/4   │ 100% │
+  │ Passing       │ 2/4   │ 50%  │
+  │ Not validated │ 0/4   │ 0%   │
+  └───────────────┴───────┴──────┘
 
-  ● 2 pass   ● 1 warn   ● 1 fail   ● 0 not validated
+Verdicts:
+
+  ● 2 pass   ● 1 warn   ● 1 fail
 
 By type:
   ┌──────────────┬───────────────┐
@@ -106,7 +115,7 @@ Critiques print raw — the reviewer's own words against the spec. Labels come l
 
 ### `praxis eval ci`
 
-A full run with a structured summary, for pull request pipelines.
+A full run with a structured summary, for pull request pipelines. The summary prints eval coverage beside the conformance tally — observed and passing — so the gate states how much of the corpus it actually gates, and how much of it currently clears. Passing is the number to hold a bar against.
 
 ```bash
 praxis eval ci
@@ -126,7 +135,7 @@ praxis eval ci --strict
 
 ### `--json`: the fast loop's delivery
 
-`praxis eval run <target> --json` emits the outcome as stable JSON on stdout — the feedback a coding agent or a CI hook consumes directly. Critiques carry their raw text (labels are applied later, at triage, and appear in reports); corpus mode emits the run summary. `eval verdict` and bare `praxis` take `--json` too.
+`praxis eval run <target> --json` emits the outcome as stable JSON on stdout — the feedback a coding agent or a CI hook consumes directly. Critiques carry their raw text (labels are applied later, at triage, and appear in reports); corpus mode emits the run summary plus `coverage { sourceFiles, observed { files, rate, display }, passing { files, rate, display } }` — observed is the share of source files any spec governs; passing is the CI-grade score, files every reviewer's verdict passes. `eval verdict` and bare `praxis` take `--json` too.
 
 ## `praxis eval verdict <path>`
 
@@ -215,7 +224,6 @@ The read side of the ledger — never a reviewer call. Scopes compose: `eval rep
 - rates as `violations/opportunities (x%)` with the denominator always shown; cells under the small-n floor (5) render **insufficient data**, never a number. Current stock anchors to the latest *evidenced* corpus run (one with cache misses) and prints its date — an all-hit run proves nothing new and never moves the anchor
 - one reviewer, one series — never pooled; every count qualified by population (pre-spec / post-spec / unknown, derived from git birthdates against each axiom's clock)
 - epoch boundaries as named furniture; nothing trends across one
-- the calibration banner on every report (uncalibrated — numbers are directional)
 - costs, the dismissed-as-invalid rate (the reviewer-trust signal), and the two queues
 - a requested sha that no longer resolves renders the missing-commit note (squash workflows orphan branch shas by policy) — the run's attestation stays usable
 

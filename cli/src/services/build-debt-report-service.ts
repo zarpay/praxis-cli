@@ -9,7 +9,6 @@ import type {
 } from "@/types.js";
 
 import { authorsOfRange } from "@/helpers/git-helper.js";
-import { CALIBRATION_STATUS } from "@/helpers/metrics-helper.js";
 import deriveEpochsService from "@/services/derive-epochs-service.js";
 import joinCritiqueLabelsService from "@/services/join-critique-labels-service.js";
 import { AxiomStore } from "@/stores/axiom-store.js";
@@ -80,7 +79,6 @@ const buildDebtReportService: Service<NoInput, DebtReport> = (cfg) => {
   }
 
   return {
-    calibration: CALIBRATION_STATUS,
     evidence,
     rows: rows.sort((a, b) => a.axiomId.localeCompare(b.axiomId)),
     concentration: [...concentration.entries()]

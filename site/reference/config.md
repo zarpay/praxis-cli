@@ -6,6 +6,7 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
 
 ```json
 {
+  "version": "2.4.0",
   "sources": ["experts", "practices", "reference", "context"],
   "ignore": ["docs/generated/**", "**/.*.md"],
   "expertsDir": "experts",
@@ -42,6 +43,19 @@ All Praxis settings live in `.praxis/config.json`. The presence of the `.praxis/
 ```
 
 (This is Scoop Society's shape: one hosted reviewer, one offline custom-provider reviewer, a frontier curator, and a spec pattern accepting directory READMEs plus its hand-authored `experts.sme.md` spec. Compiled profiles are named `*.expert.md` — a project that wants them discovered as specs uses `"{README.md,*.expert.md}"` instead.)
+
+---
+
+## `version`
+
+**Type:** `string`
+**Default:** adopted from the running CLI on first use
+
+The praxis version this project pins, enforced before every command runs. Praxis is installed globally rather than declared in a `package.json`, so nothing else keeps teammates on one version against one committed cache and ledger — and a praxis upgrade can change reviewer behavior (an [epoch](/validation/caching)).
+
+- **No pin:** the next command warns and writes the running CLI's version into the config — commit the change.
+- **Pin matches:** silence.
+- **Pin conflicts:** the command refuses (exit 2) and names both ways out — install the pinned version (`npm install -g @zarpay/praxis-cli@<pinned>`) or update the pin to the version you run.
 
 ---
 

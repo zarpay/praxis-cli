@@ -13,12 +13,13 @@ export interface StatusReport {
    * projects are never asked about a taxonomy they don't have.
    */
   compilerInUse: boolean;
-  /** Document counts by content type. */
+  /** Knowledge counts: authored documents by type, plus the active axioms. */
   counts: {
     experts: number;
     practices: number;
     references: number;
     context: number;
+    axioms: number;
   };
   /**
    * Cached verdict counts across all spec targets, one row per reviewer —
@@ -41,8 +42,6 @@ export interface StatusReport {
     pending_triage: number;
     /** Unmatched critiques — `axioms curate` works them. */
     awaiting_curation: number;
-    /** Always true: calibration is a roadmap feature. */
-    calibration_stale: boolean;
     epoch_boundary_detected: boolean;
     last_run_at: string | null;
   };
@@ -56,6 +55,52 @@ export interface StatusReport {
   expertsMissingDescription: string[];
   /** Expert glob references that match no files. */
   zeroMatchGlobs: { expert: string; pattern: string }[];
+  /** Spec coverage over the source corpus. */
+  coverage: EvalCoverage;
+  /** The critique lifecycle totals — the feedback the eval loop has produced. */
+  feedback: {
+    /** Every critique on the ledger. */
+    critiques: number;
+    /** Labeled under an active axiom. */
+    labeled: number;
+    /** Never triaged, or triaged against a since-changed axiom set. */
+    untriaged: number;
+    /** Considered by the matcher and unmatched — curate's queue. */
+    awaitingCuration: number;
+    /** Ruled invalid by a human. */
+    dismissed: number;
+    /** From advisory runs — never evidence. */
+    advisory: number;
+  };
+}
+
+/**
+ * Eval coverage over the source corpus — the numbers a team maintains
+ * ("we hold 90% eval coverage") and a CI can rely on. Two slices over
+ * one denominator: `observed` is structural (a spec governs the file),
+ * `passing` is the verdict-backed score (every configured reviewer's
+ * recorded verdict is compliant — an ungoverned, unreviewed, warned, or
+ * failed file counts against it). Spec files, templates, and the
+ * authored taxonomy (experts, practices, compiled profiles) are
+ * direction rather than corpus and count on neither side. A census,
+ * not a sample: the small-n floor does not apply.
+ */
+export interface EvalCoverage {
+  /** Every reviewable file under `sources` minus `ignore`. */
+  sourceFiles: number;
+  /** Files at least one spec governs — what a run would review. */
+  observed: EvalCoverageSlice;
+  /** Files every configured reviewer's recorded verdict passes. */
+  passing: EvalCoverageSlice;
+}
+
+/** One coverage slice: a file count over the corpus. */
+export interface EvalCoverageSlice {
+  files: number;
+  /** files / sourceFiles in 0–1, or null when there are no source files. */
+  rate: number | null;
+  /** Render-ready, per the surface rule: "62% (52/84 files)". */
+  display: string;
 }
 
 /** What the orientation screen shows — bare `praxis`. */
@@ -64,7 +109,6 @@ export interface Orientation {
   pendingTriage: number;
   awaitingCuration: number;
   activeAxioms: number;
-  calibration: string;
   /** Errors at the latest corpus run, per reviewer. */
   debtLine: { reviewerName: string; errors: number }[] | null;
 }
@@ -181,8 +225,6 @@ export interface EvalReport {
     /** Run-indexed cost trend with calendar annotations (07 open q1). */
     costTrend: { runId: string; at: string; costUsd: number | null }[];
   };
-  /** "uncalibrated" until M6; rendered on every report (07 rule 4). */
-  calibration: string;
   axioms: AxiomReportRow[];
   /** Untriaged critiques — the triage queue. */
   pendingTriage: number;
@@ -196,8 +238,6 @@ export interface EvalReport {
 /** The single-axiom drill-down payload. */
 export interface AxiomReport {
   axiomId: string;
-  /** The per-reviewer calibration banner — carried on the payload like every other report. */
-  calibration: string;
   statement: string;
   status: AxiomStatus;
   severity: Severity | null;
@@ -232,7 +272,6 @@ export interface PaydownCredit {
 
 /** The debt report payload. */
 export interface DebtReport {
-  calibration: string;
   /** When each reviewer's stock was last evidenced — the staleness facts. */
   evidence: { reviewerName: string; baselineAt: string; currentAt: string }[];
   rows: DebtRow[];

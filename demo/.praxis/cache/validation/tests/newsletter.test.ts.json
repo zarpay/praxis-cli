@@ -30,6 +30,36 @@
         "issues": [],
         "reason": "The file follows all conventions: top-level describe names the unit, nested describes use 'when' clauses, it blocks form readable sentences, there is one assertion per block, and test data is built fresh without mocking."
       }
+    },
+    "dacac2eb:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-22T21:49:45.478Z",
+      "content_hash": "0f402b1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file follows the three rules: top-level describe names the module, nested describes use 'when' clauses, and it blocks state outcomes plainly. Each it block has exactly one expect. Tests exercise the public API (run), assert on return values, and initialize fresh state per test."
+      }
+    },
+    "dacac2eb:7adec26a": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "7adec26a"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-22T21:49:55.427Z",
+      "content_hash": "0f402b1f",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 502 words."
+      }
     }
   }
 }

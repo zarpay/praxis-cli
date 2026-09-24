@@ -20,7 +20,6 @@ function report(overrides: Partial<EvalReport> = {}): EvalReport {
       elapsedMs: 80_000,
       costTrend: [],
     },
-    calibration: "v32: uninterpretable — recalibrate",
     axioms: [],
     awaitingCuration: 0,
     pendingTriage: 0,
@@ -31,12 +30,6 @@ function report(overrides: Partial<EvalReport> = {}): EvalReport {
 }
 
 describe("evalReportView", () => {
-  it("carries the calibration banner on every render (rule 4)", () => {
-    const text = reportText(evalReportView(report()));
-
-    expect(text).toContain("uninterpretable — recalibrate");
-  });
-
   it("renders suppressed cells as insufficient data, never a number (rule 3)", () => {
     const row = {
       axiomId: "AX-aaaa11",
@@ -73,7 +66,6 @@ describe("evalReportView", () => {
     const parsed = JSON.parse(reportText(lines)) as EvalReport;
 
     expect(parsed.panel.runs).toBe(2);
-    expect(parsed.calibration).toContain("uninterpretable — recalibrate");
   });
 
   it("reports reviewer time beside cost", () => {

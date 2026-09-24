@@ -63,7 +63,7 @@ Praxis uses LLM reviewers, not a schema validator. Schema validators can check f
 
 The boundary is enforced in both directions. Reviewers are explicitly told that mechanical criteria — anything a linter, regex, or type check could decide — are out of scope and must not be reported, *even where the spec states them*. A reviewer that is never asked mechanical questions cannot answer them wrongly, which removes the surface hallucinations grow on; and a team is never tempted to pay LLM prices for what a regex does free. The same rule gates the axiom taxonomy: a draft a linter could enforce comes back held, never accepted. *If you can write the check, write the check.*
 
-The remaining tradeoffs — an API key, per-call cost, non-determinism at the margin — are handled structurally: the content-hash cache makes unchanged targets free, multiple reviewers make disagreement visible instead of hidden, and every report carries its calibration status rather than pretending the instrument is precise.
+The remaining tradeoffs — an API key, per-call cost, non-determinism at the margin — are handled structurally: the content-hash cache makes unchanged targets free, and multiple reviewers make disagreement visible instead of hidden.
 
 ## Evidence over amnesia
 

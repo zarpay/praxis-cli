@@ -37,7 +37,7 @@ description: "Use this agent to review Scoop Society services for convention adh
 tools: Read, Glob, Grep
 model: sonnet
 ---
-# Role
+# Expert
 
 # Service Steward (a.k.a **Scooper**)
 

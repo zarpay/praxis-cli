@@ -30,6 +30,36 @@
         "issues": [],
         "reason": "The document adheres to the Test Conventions specification. It correctly frames subjects with module names and when clauses, ensures each it block has exactly one assertion, tests public functionality using honest collaborators without spying, and initializes data fresh within setup."
       }
+    },
+    "dacac2eb:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-22T21:49:55.366Z",
+      "content_hash": "1d27ad5e",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "File follows test conventions: module naming in top describe, when-clause nesting, one expect per it block, and public API testing without mocking honest implementations."
+      }
+    },
+    "dacac2eb:7adec26a": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "7adec26a"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-22T21:49:55.429Z",
+      "content_hash": "1d27ad5e",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 479 words."
+      }
     }
   }
 }

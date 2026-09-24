@@ -164,29 +164,29 @@ describe("matchesFilename", () => {
 
   it("rejects non-matching exact filename", () => {
     expect(matchesFilename("SPEC.md", "README.md")).toBe(false);
-    expect(matchesFilename("role.md", "README.md")).toBe(false);
+    expect(matchesFilename("expert.md", "README.md")).toBe(false);
   });
 
   it("extracts basename from full path for exact match", () => {
     expect(matchesFilename("/some/dir/README.md", "README.md")).toBe(true);
-    expect(matchesFilename("/some/dir/role.md", "README.md")).toBe(false);
+    expect(matchesFilename("/some/dir/expert.md", "README.md")).toBe(false);
   });
 
   it("matches glob pattern with leading wildcard", () => {
-    expect(matchesFilename("roles.validate.md", "*.validate.md")).toBe(true);
+    expect(matchesFilename("experts.validate.md", "*.validate.md")).toBe(true);
     expect(matchesFilename("test.validate.md", "*.validate.md")).toBe(true);
-    expect(matchesFilename("roles.md", "*.validate.md")).toBe(false);
+    expect(matchesFilename("experts.md", "*.validate.md")).toBe(false);
   });
 
   it("matches glob pattern with middle wildcard", () => {
-    expect(matchesFilename("README.roles.md", "README.*.md")).toBe(true);
+    expect(matchesFilename("README.experts.md", "README.*.md")).toBe(true);
     expect(matchesFilename("README.context.md", "README.*.md")).toBe(true);
     expect(matchesFilename("README.md", "README.*.md")).toBe(false);
   });
 
   it("extracts basename from full path for glob match", () => {
-    expect(matchesFilename("/project/roles/README.roles.md", "README.*.md")).toBe(true);
-    expect(matchesFilename("/project/roles/some-role.md", "README.*.md")).toBe(false);
+    expect(matchesFilename("/project/experts/README.experts.md", "README.*.md")).toBe(true);
+    expect(matchesFilename("/project/experts/some-expert.md", "README.*.md")).toBe(false);
   });
 
   it("matches brace pattern", () => {

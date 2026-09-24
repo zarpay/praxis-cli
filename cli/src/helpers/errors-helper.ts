@@ -14,6 +14,7 @@ export type PraxisErrorCode =
   | "MISSING_OPTION"
   | "TRIAGE_INCOMPLETE"
   | "INVALID_CONFIG_JSON"
+  | "VERSION_CONFLICT"
   | "UNKNOWN_PLUGIN"
   | "UNKNOWN_DOCUMENT_TYPE"
   | "EDITOR_FAILED"
@@ -45,7 +46,6 @@ export type PraxisErrorCode =
   | "CURATOR_NOT_CONFIGURED"
   | "CURATOR_MISSING_FIELD"
   | "PROVIDER_CANNOT_COMPLETE"
-  | "INVALID_CALIBRATION_CASE"
   | "NOT_A_TTY";
 
 /**
@@ -87,6 +87,7 @@ export const USAGE_ERROR_CODES: ReadonlySet<PraxisErrorCode> = new Set<PraxisErr
   "EXPERT_NOT_FOUND",
   "INVALID_CONFIG_JSON",
   "INVALID_REVIEWER_CONFIG",
+  "VERSION_CONFLICT",
   "NOT_A_TTY",
   "PROVIDER_CANNOT_COMPLETE",
   "TRIAGE_INCOMPLETE",
@@ -120,6 +121,17 @@ export const errors = {
   /** `.praxis/config.json` exists but does not parse as JSON. */
   invalidConfigJson(configPath: string, cause: string): PraxisError {
     return new PraxisError("INVALID_CONFIG_JSON", `Invalid JSON in ${configPath}: ${cause}`);
+  },
+
+  /** The config pins a praxis version this binary is not. */
+  versionConflict(pinned: string, running: string): PraxisError {
+    return new PraxisError(
+      "VERSION_CONFLICT",
+      `Praxis version conflict: .praxis/config.json pins ${pinned}, but this is praxis ${running}.\n\n` +
+        `Either install the pinned version:\n` +
+        `  npm install -g @zarpay/praxis-cli@${pinned}\n` +
+        `or move the project to this one: set "version": "${running}" in .praxis/config.json.`,
+    );
   },
 
   // --- Compiler ---
@@ -402,17 +414,6 @@ export const errors = {
     return new PraxisError(
       "NOT_A_TTY",
       "praxis config edit opens an editor and stdin is not a terminal. Edit .praxis/config.json directly.",
-    );
-  },
-
-  // --- Calibration ---
-
-  /** A case directory under .praxis/calibration/cases/ is malformed. */
-  invalidCalibrationCase(caseId: string, problem: string): PraxisError {
-    return new PraxisError(
-      "INVALID_CALIBRATION_CASE",
-      `Calibration case "${caseId}" is malformed: ${problem} — ` +
-        "a case directory holds one input file, the frozen spec as spec.md, and expected.json",
     );
   },
 

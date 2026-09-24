@@ -30,6 +30,36 @@
         "issues": [],
         "reason": "The test file adheres to all conventions: the top-level describe names the module, nested describes use 'when' clauses, and it blocks form readable sentences with their parents. Each it block contains exactly one expect assertion. Tests exercise the public API and assert on return values using fresh data without spying on implementation details."
       }
+    },
+    "dacac2eb:6af9f0d7": {
+      "reviewer": {
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "6af9f0d7"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-22T21:49:42.268Z",
+      "content_hash": "e82dd9b3",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "The file adheres to all test conventions: the top-level describe names the module, nested describes use 'when' clauses, each it block contains exactly one expectation, tests exercise the public API without mocking collaborators, and test data is created fresh inside each test."
+      }
+    },
+    "dacac2eb:7adec26a": {
+      "reviewer": {
+        "name": "counter",
+        "model": "none",
+        "hash": "7adec26a"
+      },
+      "spec_path": "tests/README.md",
+      "cached_at": "2026-09-22T21:49:55.426Z",
+      "content_hash": "e82dd9b3",
+      "result": {
+        "compliant": true,
+        "issues": [],
+        "reason": "Review input has 503 words."
+      }
     }
   }
 }

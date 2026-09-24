@@ -1,13 +1,13 @@
 import type { StatusReport } from "@/types.js";
 import type { ReportLine, View } from "@framework/types.js";
 
-import { verdictTally } from "@framework/views/badges.js";
-import { statLines } from "@framework/views/stats.js";
+import { percent } from "@framework/views/stats.js";
+import { table } from "@framework/views/table.js";
 
 /**
  * The whole health report `praxis status` prints, in reading order:
- * document counts, one review-state block per reviewer, structural
- * findings, and a closing verdict on the project.
+ * the document-count table, the per-reviewer validation table,
+ * structural findings, and a closing verdict on the project.
  *
  * Framework health only renders when the spec-layer compiler is in use —
  * an eval-only project has no taxonomy to be asked about. The closing
@@ -27,16 +27,42 @@ const statusView: View<StatusReport & { json?: boolean }> = (report) => {
   lines.push({ channel: "content", entries: ["", ...evalStateLines(report)] });
 
   if (report.compilerInUse) {
-    lines.push({ channel: "content", entries: ["", ...counts(report)] });
-  }
+    const knowledgeTable = table(knowledgeRows(report), ["KNOWLEDGE", "COUNT"]);
 
-  for (const { reviewer, tally } of reviewBlocks(report)) {
     lines.push(
       { channel: "blank" },
-      { channel: "heading", text: `Validation (reviewer: ${reviewer})` },
-      { channel: "content", entries: [`  ${tally}`] },
+      { channel: "heading", text: "Knowledge" },
+      { channel: "content", entries: knowledgeTable },
     );
   }
+
+  const coverage = table(coverageRows(report.coverage), ["COVERAGE", "FILES", "RATE"]);
+
+  lines.push(
+    { channel: "blank" },
+    { channel: "heading", text: "Coverage" },
+    { channel: "content", entries: coverage },
+  );
+
+  const verdictRows = reviewRows(report);
+
+  if (verdictRows.length > 0) {
+    const verdictsTable = table(verdictRows, ["REVIEWER", "PASS", "WARN", "FAIL", "NOT VALIDATED"]);
+
+    lines.push(
+      { channel: "blank" },
+      { channel: "heading", text: "Verdicts" },
+      { channel: "content", entries: verdictsTable },
+    );
+  }
+
+  const feedbackTable = table(feedbackRows(report.feedback), ["FEEDBACK", "COUNT"]);
+
+  lines.push(
+    { channel: "blank" },
+    { channel: "heading", text: "Feedback" },
+    { channel: "content", entries: feedbackTable },
+  );
 
   if (!report.compilerInUse) return lines;
 
@@ -60,28 +86,42 @@ const statusView: View<StatusReport & { json?: boolean }> = (report) => {
 
 export default statusView;
 
-/** The aligned document-count block. */
-function counts(report: StatusReport): string[] {
-  return statLines([
+/** The knowledge table's rows: authored documents, plus the active axioms. */
+function knowledgeRows(report: StatusReport): (string | number)[][] {
+  return [
     ["Experts", report.counts.experts],
     ["Practices", report.counts.practices],
     ["References", report.counts.references],
     ["Context files", report.counts.context],
-  ]);
+    ["Axioms", report.counts.axioms],
+  ];
+}
+
+/** The feedback table's rows: every critique, and where each stands. */
+function feedbackRows(feedback: StatusReport["feedback"]): (string | number)[][] {
+  return [
+    ["Critiques", feedback.critiques],
+    ["Labeled", feedback.labeled],
+    ["Untriaged", feedback.untriaged],
+    ["Awaiting curation", feedback.awaitingCuration],
+    ["Dismissed", feedback.dismissed],
+    ["Advisory", feedback.advisory],
+  ];
 }
 
 /**
- * One tally block per reviewer that has reviewed anything.
+ * One validation row per reviewer that has reviewed anything.
  *
  * A reviewer with no verdicts at all is dropped rather than rendered as
  * four zeros, which would read as a broken reviewer instead of an unused
  * one. A project with no reviewers configured still gets a row, so its
- * targets are visibly not validated.
+ * targets are visibly not validated. Rows stay per reviewer, never
+ * pooled — reviewers are separate instruments.
  */
-function reviewBlocks(report: StatusReport): { reviewer: string; tally: string }[] {
+function reviewRows(report: StatusReport): (string | number)[][] {
   return report.validation
     .filter((v) => v.pass + v.warn + v.fail + v.notValidated > 0)
-    .map((v) => ({ reviewer: v.reviewer ?? "none configured", tally: verdictTally(v) }));
+    .map((v) => [v.reviewer ?? "none configured", v.pass, v.warn, v.fail, v.notValidated]);
 }
 
 /** The framework-health findings, in display order; empty blocks are dropped. */
@@ -112,13 +152,39 @@ function findings(report: StatusReport): { heading: string; items: string[] }[] 
 /** The situational-poll facts, each naming its command. */
 function evalStateLines(report: StatusReport): string[] {
   const { evalState } = report;
-  const lastRun = evalState.last_run_at === null ? "never" : evalState.last_run_at.slice(0, 10);
+  const lastRun = evalState.last_run_at === null ? "never" : lastRunStamp(evalState.last_run_at);
 
   return [
     `Last run: ${lastRun}`,
-    `Untriaged: ${evalState.pending_triage} · Awaiting curation: ${evalState.awaiting_curation}`,
     ...(evalState.epoch_boundary_detected
       ? ["Epoch boundary detected — the next full run opens a new baseline."]
       : []),
+  ];
+}
+
+/** An ISO timestamp as "YYYY-MM-DD HH:MM UTC" — date and time, minute precision. */
+function lastRunStamp(iso: string): string {
+  const stamp = iso.slice(0, 16).replace("T", " ");
+
+  return `${stamp} UTC`;
+}
+
+/** The coverage slices as rows: governed, clearing, and no spec at all — one denominator. */
+function coverageRows(coverage: StatusReport["coverage"]): string[][] {
+  const unobserved = coverage.sourceFiles - coverage.observed.files;
+  const unobservedRate = coverage.sourceFiles === 0 ? null : unobserved / coverage.sourceFiles;
+
+  return [
+    [
+      "Observed",
+      `${coverage.observed.files}/${coverage.sourceFiles}`,
+      percent(coverage.observed.rate),
+    ],
+    [
+      "Passing",
+      `${coverage.passing.files}/${coverage.sourceFiles}`,
+      percent(coverage.passing.rate),
+    ],
+    ["Not observed", `${unobserved}/${coverage.sourceFiles}`, percent(unobservedRate)],
   ];
 }

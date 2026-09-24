@@ -38,6 +38,7 @@ function metadata(overrides: Partial<AgentMetadata> = {}): AgentMetadata {
   return {
     name: "scooper",
     description: "A steward.",
+    type: "scooper",
     validates: ["src/services/*.ts"],
     excludes: [],
     ...overrides,

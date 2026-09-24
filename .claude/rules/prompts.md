@@ -30,3 +30,13 @@ invalidates every cached verdict under the old hash and writes new ones. That is
 by design (05: no version constant to forget bumping), but it means prompt edits
 are epoch changes, not copy tweaks. Moving these files is safe; the hash covers
 rendered text, not paths.
+
+The tripwire is `tests/prompts/prompt-surface.test.ts`: a locked hash that
+fails on any surface edit, so an epoch roll is always deliberate. Rolling it
+means updating the constant AND extending the epoch-history comment with the
+date and the reason, in the format of the prior rolls. **Bundle epoch-bound
+changes into one release**: every project pays a full re-review per epoch, so
+prompt-surface edits waiting in the wings land in the same commit as the one
+forcing the roll (2026-09-22: the severity-cue sentences rode the owner's
+evaluator-prompt change for exactly this reason), and the changelog entry
+names the epoch and the `eval prune` follow-up.

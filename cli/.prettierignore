@@ -1,0 +1,4 @@
+# Help documents are verbatim terminal output: their indentation and
+# column alignment ARE the rendering, so the markdown formatter must
+# never reflow them. (src/help/README.md is prose and stays formatted.)
+src/help/*-help.md

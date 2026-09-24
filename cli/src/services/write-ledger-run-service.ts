@@ -1,6 +1,5 @@
 import type {
   CacheReviewerIdentity,
-  CalibrationStatus,
   LedgerCritiqueRecord,
   LedgerEntry,
   LedgerRecord,
@@ -23,7 +22,6 @@ interface WriteLedgerRunInput {
   scope: LedgerScope;
   entries: LedgerEntry[];
   /** The reviewer's interpretability state at run time; absent stamps "uncalibrated". */
-  calibrationStatus?: CalibrationStatus;
   /** Evaluated units per governing spec, project-relative paths. */
   specUnits?: Record<string, number>;
 }
@@ -42,7 +40,7 @@ interface WriteLedgerRunInput {
  */
 const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> = (
   cfg,
-  { reviewer, trigger, scope, entries, specUnits, calibrationStatus },
+  { reviewer, trigger, scope, entries, specUnits },
 ) => {
   const root = cfg.root;
   const runStore = new RunStore(cfg);
@@ -106,7 +104,6 @@ const writeLedgerRunService: Service<WriteLedgerRunInput, WriteLedgerRunResult> 
     ...verdictCounts(entries),
     critique_count: critiques.length,
     ...(specUnits && { spec_units: specUnits }),
-    calibration_status_at_run: calibrationStatus ?? "uncalibrated",
     baseline: isBaseline(runStore, scope, reviewer.hash),
   };
 

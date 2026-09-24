@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { statLines } from "@framework/views/stats.js";
+import { percent, statLines } from "@framework/views/stats.js";
 
 describe("statLines", () => {
   it("aligns values to a common column", () => {
@@ -23,5 +23,17 @@ describe("statLines", () => {
 
     expect(line).toContain("A label much longer than the value column:");
     expect(line.trimEnd().endsWith("1")).toBe(true);
+  });
+});
+
+describe("percent", () => {
+  it("renders a 0-1 rate as a whole percent", () => {
+    expect(percent(0.7631)).toBe("76%");
+    expect(percent(0)).toBe("0%");
+    expect(percent(1)).toBe("100%");
+  });
+
+  it("renders a null rate as an em dash — unmeasurable, not zero", () => {
+    expect(percent(null)).toBe("—");
   });
 });

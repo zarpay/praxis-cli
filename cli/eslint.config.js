@@ -484,7 +484,7 @@ export default tseslint.config(
                 "@/templates/*",
               ],
               message:
-                "a command imports its orchestrators and nothing else — no model, service, view or helper.",
+                "a command imports its orchestrators and its help documents (@/help/*.md) and nothing else — no model, service, view or helper.",
             },
           ],
         },

@@ -29,14 +29,14 @@ refs:
 The compiled profile at `agent-profiles/scooper.expert.md` looks like:
 
 ```markdown
-# Role
+# Expert
 
 # Service Steward (a.k.a **Scooper**)
 
 The subject-matter expert on how Scoop Society services are written
 and reviewed. ...
 
-# Responsibilities
+# Practices
 
 # Review Service Quality
 
@@ -127,7 +127,7 @@ excludes:
   - "src/services/legacy-import.ts"
 ---
 
-# Role
+# Expert
 
 # Service Steward (a.k.a **Scooper**)
 

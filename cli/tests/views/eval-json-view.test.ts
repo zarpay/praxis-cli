@@ -71,10 +71,20 @@ describe("evalJsonView", () => {
           byReviewer: {},
         },
         cacheStats: { hits: 18, misses: 0 },
+        coverage: {
+          sourceFiles: 5,
+          observed: { files: 4, rate: 0.8, display: "80% (4/5 files)" },
+          passing: { files: 3, rate: 0.6, display: "60% (3/5 files)" },
+        },
       }),
     );
 
     expect(payload["mode"]).toBe("corpus");
     expect(payload["cache"]).toEqual({ hits: 18, misses: 0 });
+    expect(payload["coverage"]).toEqual({
+      sourceFiles: 5,
+      observed: { files: 4, rate: 0.8, display: "80% (4/5 files)" },
+      passing: { files: 3, rate: 0.6, display: "60% (3/5 files)" },
+    });
   });
 });

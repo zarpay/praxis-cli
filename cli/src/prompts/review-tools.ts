@@ -44,7 +44,7 @@ export default function reviewTools() {
       function: {
         name: "validation_warn",
         description:
-          "The document satisfies the core requirements of the specification but deviates in ways that are non-critical — optional criteria unmet or minor gaps that do not break the intended pattern. Call this when the document is usable but improvement is expected.",
+          "The document satisfies the core requirements of the specification but deviates in ways that are non-critical — optional criteria unmet or minor gaps that do not break the intended pattern. Criteria the specification states in advisory language — 'should', 'prefer', 'recommended' — are optional criteria. Call this when the document is usable but improvement is expected.",
         parameters: {
           type: "object",
           properties: {
@@ -68,7 +68,7 @@ export default function reviewTools() {
       function: {
         name: "validation_fail",
         description:
-          "The document violates one or more required criteria in the specification. Call this when required elements are absent, patterns the spec mandates are broken, or the document fundamentally does not conform to what the spec defines as valid.",
+          "The document violates one or more required criteria in the specification. Criteria the specification states in binding language — 'must', 'never', 'always' — are required criteria. Call this when required elements are absent, patterns the spec mandates are broken, or the document fundamentally does not conform to what the spec defines as valid.",
         parameters: {
           type: "object",
           properties: {

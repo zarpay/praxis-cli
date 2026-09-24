@@ -148,10 +148,10 @@ describe("reviewAllService", () => {
       useCompliantFixture();
 
       const { root, cleanup } = createValidatorTmpdir({
-        sources: ["roles"],
+        sources: ["experts"],
         files: {
-          "roles/SPEC.md": "# Roles Spec\nRequired: name, type",
-          "roles/engineer.md": "---\ntype: role\n---\n# Engineer",
+          "experts/SPEC.md": "# Experts Spec\nRequired: name, type",
+          "experts/engineer.md": "---\ntype: expert\n---\n# Engineer",
         },
         specFilePattern: "SPEC.md",
       });
@@ -227,10 +227,10 @@ describe("reviewAllService", () => {
       useCompliantFixture();
 
       const { root, cleanup } = createValidatorTmpdir({
-        sources: ["roles"],
+        sources: ["experts"],
         files: {
-          "roles/README.md": "# Roles Spec\nNo paths frontmatter",
-          "roles/engineer.md": "# Engineer",
+          "experts/README.md": "# Experts Spec\nNo paths frontmatter",
+          "experts/engineer.md": "# Engineer",
         },
       });
 
@@ -323,7 +323,7 @@ describe("reviewAllService", () => {
       const { root, cleanup } = createValidatorTmpdir({
         sources: ["docs"],
         files: {
-          "docs/valid/roles.praxis.md": "# Spec\nAll docs need a title.",
+          "docs/valid/experts.praxis.md": "# Spec\nAll docs need a title.",
           "docs/valid/counted.md": "# Counted",
           "docs/ignored/spec.praxis.md": "# Ignored spec — should not discover",
           "docs/ignored/doc.md": "# Ignored doc",

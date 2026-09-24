@@ -160,11 +160,11 @@ describe("PraxisConfig", () => {
 
   it("loads custom practicesDir from cfg", () => {
     const dir = makeTmpdir();
-    writeConfig(dir, { practicesDir: "knowledge/responsibilities" });
+    writeConfig(dir, { practicesDir: "knowledge/practices" });
 
     const cfg = new PraxisConfig(dir);
 
-    expect(cfg.practicesDir).toBe(join(dir, "knowledge", "responsibilities"));
+    expect(cfg.practicesDir).toBe(join(dir, "knowledge", "practices"));
   });
 
   it("throws a descriptive error for invalid JSON", () => {
@@ -318,6 +318,24 @@ describe("PraxisConfig", () => {
       const cfg = new PraxisConfig(dir);
 
       expect(cfg.specFilePattern).toBe("README.md");
+    });
+  });
+
+  describe("version", () => {
+    it("loads the pinned praxis version", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, { version: "2.4.0" });
+
+      const cfg = new PraxisConfig(dir);
+
+      expect(cfg.version).toBe("2.4.0");
+    });
+
+    it("is null when the project pins none", () => {
+      const dir = makeTmpdir();
+      const cfg = new PraxisConfig(dir);
+
+      expect(cfg.version).toBeNull();
     });
   });
 

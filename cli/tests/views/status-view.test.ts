@@ -9,12 +9,11 @@ import { reportText } from "@tests/helpers/report-text.js";
 function report(fields: Partial<StatusReport> = {}): StatusReport {
   return {
     compilerInUse: true,
-    counts: { experts: 0, practices: 0, references: 0, context: 0 },
+    counts: { experts: 0, practices: 0, references: 0, context: 0, axioms: 0 },
     validation: [],
     evalState: {
       awaiting_curation: 0,
       pending_triage: 0,
-      calibration_stale: true,
       epoch_boundary_detected: false,
       last_run_at: null,
     },
@@ -24,6 +23,19 @@ function report(fields: Partial<StatusReport> = {}): StatusReport {
     expertsMissingDescription: [],
     invalidExperts: [],
     zeroMatchGlobs: [],
+    coverage: {
+      sourceFiles: 5,
+      observed: { files: 4, rate: 0.8, display: "80% (4/5 files)" },
+      passing: { files: 3, rate: 0.6, display: "60% (3/5 files)" },
+    },
+    feedback: {
+      critiques: 28,
+      labeled: 21,
+      untriaged: 0,
+      awaitingCuration: 7,
+      dismissed: 0,
+      advisory: 0,
+    },
     ...fields,
   };
 }
@@ -33,16 +45,33 @@ function tally(fields: Partial<StatusReport["validation"][number]>) {
   return { reviewer: "flash", pass: 0, warn: 0, fail: 0, notValidated: 0, ...fields };
 }
 
-describe("document counts", () => {
-  it("renders one aligned line per document type", () => {
+describe("knowledge", () => {
+  it("renders the knowledge table — documents by type plus the active axioms", () => {
     const text = reportText(
-      statusView(report({ counts: { experts: 3, practices: 7, references: 1, context: 2 } })),
+      statusView(
+        report({ counts: { experts: 3, practices: 7, references: 1, context: 2, axioms: 5 } }),
+      ),
     );
 
-    expect(text).toContain("  Experts:            3");
-    expect(text).toContain("  Practices:          7");
-    expect(text).toContain("  References:         1");
-    expect(text).toContain("  Context files:      2");
+    expect(text).toMatch(/KNOWLEDGE\s*│\s*COUNT/);
+    expect(text).toMatch(/Experts\s*│\s*3/);
+    expect(text).toMatch(/Practices\s*│\s*7/);
+    expect(text).toMatch(/References\s*│\s*1/);
+    expect(text).toMatch(/Context files\s*│\s*2/);
+    expect(text).toMatch(/Axioms\s*│\s*5/);
+  });
+});
+
+describe("feedback", () => {
+  it("renders the critique lifecycle as a table", () => {
+    const text = reportText(statusView(report()));
+
+    expect(text).toMatch(/FEEDBACK\s*│\s*COUNT/);
+    expect(text).toMatch(/Critiques\s*│\s*28/);
+    expect(text).toMatch(/Labeled\s*│\s*21/);
+    expect(text).toMatch(/Untriaged\s*│\s*0/);
+    expect(text).toMatch(/Awaiting curation\s*│\s*7/);
+    expect(text).toMatch(/Dismissed\s*│\s*0/);
   });
 });
 
@@ -52,37 +81,46 @@ describe("review state", () => {
     return reportText(statusView(report({ validation })));
   }
 
-  it("renders one block per reviewer that has reviewed something", () => {
+  it("renders coverage as a table — observed, passing, and not observed over one denominator", () => {
+    const text = reportText(statusView(report()));
+
+    expect(text).toMatch(/COVERAGE\s*│\s*FILES\s*│\s*RATE/);
+    expect(text).toMatch(/Observed\s*│\s*4\/5\s*│\s*80%/);
+    expect(text).toMatch(/Passing\s*│\s*3\/5\s*│\s*60%/);
+    expect(text).toMatch(/Not observed\s*│\s*1\/5\s*│\s*20%/);
+  });
+
+  it("shows the last run with date and time", () => {
+    const stamped = report();
+    stamped.evalState.last_run_at = "2026-09-22T21:56:09.047Z";
+
+    expect(reportText(statusView(stamped))).toContain("Last run: 2026-09-22 21:56 UTC");
+  });
+
+  it("renders one table row per reviewer that has reviewed something", () => {
     const text = rendered([tally({ reviewer: "flash", pass: 2 }), tally({ reviewer: "v32" })]);
 
-    expect(text).toContain("Validation (reviewer: flash)");
-    expect(text).not.toContain("Validation (reviewer: v32)");
+    expect(text).toMatch(/flash\s*│\s*2/);
+    expect(text).not.toContain("v32");
   });
 
   it("keeps a reviewer whose only verdicts are failures", () => {
-    expect(rendered([tally({ reviewer: "flash", fail: 1 })])).toContain("(reviewer: flash)");
+    expect(rendered([tally({ reviewer: "flash", fail: 1 })])).toContain("flash");
   });
 
   it("keeps a reviewer with nothing but unvalidated targets", () => {
-    expect(rendered([tally({ reviewer: "flash", notValidated: 4 })])).toContain(
-      "(reviewer: flash)",
-    );
+    expect(rendered([tally({ reviewer: "flash", notValidated: 4 })])).toContain("flash");
   });
 
   it("labels the nameless reader when no reviewer is configured", () => {
-    expect(rendered([tally({ reviewer: null, notValidated: 3 })])).toContain(
-      "(reviewer: none configured)",
-    );
+    expect(rendered([tally({ reviewer: null, notValidated: 3 })])).toContain("none configured");
   });
 
-  it("carries the four buckets in a fixed order", () => {
+  it("carries the four buckets as columns in a fixed order", () => {
     const text = rendered([tally({ pass: 1, warn: 2, fail: 3, notValidated: 4 })]);
-    const order = ["1 pass", "2 warn", "3 fail", "4 not validated"];
 
-    expect(order.map((mark) => text.indexOf(mark))).toEqual(
-      order.map((mark) => text.indexOf(mark)).sort((a, b) => a - b),
-    );
-    expect(text.indexOf("1 pass")).toBeGreaterThan(-1);
+    expect(text).toMatch(/REVIEWER\s*│\s*PASS\s*│\s*WARN\s*│\s*FAIL\s*│\s*NOT VALIDATED/);
+    expect(text).toMatch(/flash\s*│\s*1\s*│\s*2\s*│\s*3\s*│\s*4/);
   });
 });
 
@@ -195,7 +233,7 @@ describe("the whole report", () => {
         compilerInUse: false,
         validation: [tally({ reviewer: "flash", pass: 2 })],
       }),
-    ).toContain("Validation (reviewer: flash)");
+    ).toContain("Verdicts");
     expect(lines.some((line) => line.channel === "content")).toBe(true);
   });
 

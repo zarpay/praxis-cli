@@ -29,6 +29,8 @@ Typical flows:
   See what a spec covers:           praxis eval run --type <type>
 ```
 
+The agent-grade help standard (decided 2026-09-22, resolving open question 2 — no extended-help tier, `--help` carries it all): every leaf command's long-form help states **When to use**, **Behavior** an agent must know (writes vs reads, cache and ledger effects), worked **Examples** with expected output shape, the **JSON (`--json`) contract's** fields where the flag exists, **Next** commands, and ends with a **Docs:** link into the site — the deep-dive an agent follows when compact help isn't enough. Group-level `--help` carries the cross-command workflow (the eval loop, the axiom lifecycle). The text lives in `src/help/*.md`, one document per help moment, bundled as strings — content in markdown, wiring in `commands/` — and mirrored tests enforce the Docs link and When-to-use on every leaf.
+
 **Machine-readable everywhere it matters.** Every read surface takes `--json` (07 already requires the build*/display* split that makes this free). JSON output is a **stable contract**: agents parse it, so schema changes are breaking changes and versioned as such.
 
 **Exit codes carry meaning.** `0` = pass/success, `1` = violations found, `2` = usage or configuration error. An agent branches on exit codes before it parses anything; they must be reliable and documented in help.
@@ -90,5 +92,5 @@ Each lands with agent-grade help per the rules above; the inventory stays subord
 ## Open questions
 
 1. Does `--json` become the default when stdout is not a TTY (agents get JSON without asking; humans keep pretty output)? Tempting, but implicit mode-switching can surprise both audiences — leaning toward explicit `--json` only.
-2. Is there a `praxis explain <command>` or extended-help tier for workflow-level documentation, or does `--help` carry it all? (Agents read long help fine; humans may want it terse.)
+2. ~~Is there a `praxis explain <command>` or extended-help tier for workflow-level documentation, or does `--help` carry it all? (Agents read long help fine; humans may want it terse.)~~ Resolved 2026-09-22: `--help` carries it all — one surface, no parallel system to drift. Workflow-level documentation lives in the group's own `--help`; depth beyond that is the site docs, which every help document links. The agent-grade help standard above is the contract.
 3. Output-schema versioning: a `schema_version` field in every `--json` payload, or semver discipline on the CLI as a whole?

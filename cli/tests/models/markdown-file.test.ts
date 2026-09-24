@@ -21,8 +21,8 @@ describe("MarkdownFile", () => {
     it("returns the prose after the frontmatter", () => {
       const body = sample().body;
 
-      expect(body).toContain("# Sample Role");
-      expect(body).toContain("This is the sample role body content.");
+      expect(body).toContain("# Sample Expert");
+      expect(body).toContain("This is the sample expert body content.");
     });
 
     it("excludes the frontmatter itself", () => {

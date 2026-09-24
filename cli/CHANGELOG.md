@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-09-23
+
+The measurement-you-can-gate-on release. Praxis now states the two numbers a team maintains the way it maintains test coverage — **observed**, how much of the corpus any spec governs, and **passing**, how much of it every reviewer's verdict clears — and every report surface was made bullet-proof about units: no number renders without its denominator, no reviewer counts are silently pooled, and nothing ships that pretends to measure what it doesn't.
+
+Recompiling experts under 2.5.0 stamps `type:` into their profiles, which re-reviews their governed targets once — a spec-content change, not an epoch.
+
+### Added
+
+- **Eval coverage: observed and passing over the source corpus.** `praxis status`, `eval run`, and `eval ci` render a Coverage table — observed (files a spec governs), passing (files whose recorded verdict is compliant from *every* configured reviewer; unreviewed, warned, and failed files count against it), and not observed (the remainder) — over one denominator: every file under `sources` minus `ignore`, with specs, templates, and the authored taxonomy counted on neither side. Passing is the score to hold a CI bar against: it can't be raised by writing specs or held by not running. `--json` carries `coverage { sourceFiles, observed, passing }` on the status and corpus payloads.
+
+- **`type:` is a declared reporting label.** A verdict's type was the governing spec's directory, which collapses to one row when compiled profiles share an output directory. Now a spec may declare `type:` in frontmatter, compiled profiles carry their expert's alias automatically, and the directory remains the fallback for README-next-to-code specs — so the by-type table reads one row per expert, and `eval run --type guards.expert` scopes by it.
+
+- **`praxis status` is a four-table dashboard.** Knowledge (documents by type plus active axioms), Coverage, Verdicts (per-reviewer, renamed from Validation), and Feedback — the critique lifecycle: total, labeled, untriaged, awaiting curation, dismissed, advisory, from the same derivation `eval critiques` reports. `--json` gains `counts.axioms` and the `feedback` block; the last run shows date and time.
+
+### Changed
+
+- **The corpus summary never pools reviewers.** A two-reviewer run used to print "40 pass" against 31 total documents — verdict counts and document counts on one line. With several reviewers the tally is now the per-reviewer table, every table carries its label, and the by-type table's label states it counts verdicts from N reviewers. The `Total documents` line is gone — it was a third population; the value stays in `--json` as `summary.total`.
+
+- **The debt report reads in story order and explains itself.** Columns are baseline → appeared → paid down → current; the per-reviewer date lines open with what they are — evidence freshness, with the all-hit caveat spelled out in place — and the stock table carries a title.
+
+### Removed
+
+- **The calibration ghosts.** Calibration withdrew to the roadmap in 2.2 but left shipped surface behind: a static banner on every report, hard-coded `calibration` fields in the eval/axiom/debt report and orientation `--json` payloads, an always-true `calibration_stale` in the status poll, a ledger stamp that only ever said "uncalibrated", and a dead error type. All removed — consumers of those fields should drop them; there is nothing to read until calibration ships for real (M6). Historical ledger records keep their stamp and stay readable.
+
+## [2.4.0] - 2026-09-22
+
+The help release. `--help` is now the API documentation it was always specified to be (09): every command states when to use it, how it behaves — what writes, what reads, what the cache and ledger do — worked examples, its `--json` contract's fields, the commands to run next, and a link into the site docs. There is no separate agent surface and no parallel tier to drift; this is the one surface, written for both audiences, and tests enforce the standard on every command.
+
+**This release opens an epoch.** The verdict tool descriptions now name the severity cue the docs promised — binding language ("must", "never", "always") marks required criteria, advisory language ("should", "prefer") optional ones — which changes the reviewer's prompt surface and therefore its identity. Every project's next run re-reviews and opens a new epoch with a baseline; run `praxis eval prune` afterward to drop the old epoch's orphaned cache entries. The boundary warning now says exactly that.
+
+### Added
+
+- **Agent-grade help on every command.** Long-form help lives in `src/help/`, one markdown document per help moment, bundled into the binary. The root `--help` opens with what Praxis *is* — the standards your linter can't hold — and the setup path; group help carries the cross-command workflows (the eval loop, the axiom lifecycle); every leaf ends with a docs link. Mirrored tests fail the build on a command whose help lacks its "When to use" or its docs link.
+
+- **The config pins the praxis version.** Praxis is installed globally, not declared in a `package.json`, so nothing kept two teammates from running different versions against one committed cache and ledger — and a version change can be an epoch. `.praxis/config.json` now carries `"version"`, enforced before every command: a config with no pin adopts the running version with a warning (commit the change), a matching pin is silence, and a conflicting pin refuses with exit 2 and both ways out — `npm install -g @zarpay/praxis-cli@<pinned>`, or move the pin.
+
+- **An empty corpus run instructs instead of shrugging.** `Total documents: 0` now explains why it happens — specs are discovered in the directories `sources` lists — and gives the three steps to a first review unit, instead of an empty tally table that reads as a clean bill.
+
+### Changed
+
+- **The reviewer is told the severity boundary's language cue.** `validation_warn` and `validation_fail` name the binding-vs-advisory reading (03) that previously worked only because models inferred it. Prompt-surface change: epoch `a0c2757a` → `f956ad7f`.
+
+- **Compiled profiles speak the v2 vocabulary.** Section headings are `# Expert` and `# Practices` (were `# Role` / `# Responsibilities`, the last surfaces still speaking v1). A project that discovers profiles as specs re-reviews their targets on the next run — a content change, not an epoch.
+
+- **The epoch-boundary warning names the cleanup.** After "run a full `praxis eval run` to open the new epoch with a baseline" it now adds `praxis eval prune` for the orphaned entries the old epoch leaves behind.
+
+- **The praxis skill points at `--help` first.** Run the command's help before guessing; the skill is only the orientation.
+
 ## [2.3.0] - 2026-09-15
 
 The agent surface release. Everything Praxis tells a coding agent about itself now lives in one file — the praxis skill — and that file says *when* to run things, not only what exists. The `/praxis-resolve` slash command, which restated the same six commands a second time, is retired, and `praxis compile` clears the copy it left in your project.

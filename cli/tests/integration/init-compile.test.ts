@@ -49,7 +49,7 @@ describe("init → compile integration", () => {
       }),
     );
 
-    // Compile all roles
+    // Compile all experts
     const cfg = new PraxisConfig(dir);
     const plugins = resolvePluginsService(cfg, { logger });
     await compileExpertsService(cfg, { plugins });
@@ -93,7 +93,7 @@ describe("init → compile integration", () => {
     const content = readFileSync(join(dir, "agent-profiles", "stewart.expert.md"), "utf-8");
     expect(content).not.toMatch(/^---\n/);
     expect(content).not.toContain("name: stewart");
-    expect(content).toContain("# Role");
+    expect(content).toContain("# Expert");
   });
 
   it("stewart agent has Claude Code frontmatter", () => {
@@ -110,15 +110,15 @@ describe("init → compile integration", () => {
     expect(content).toContain("description:");
   });
 
-  it("stewart agent contains role section", () => {
+  it("stewart agent contains expert section", () => {
     const content = readFileSync(join(dir, "plugins", "praxis", "agents", "stewart.md"), "utf-8");
-    expect(content).toContain("# Role");
+    expect(content).toContain("# Expert");
     expect(content).toContain("Praxis Steward");
   });
 
-  it("stewart agent contains inlined responsibilities", () => {
+  it("stewart agent contains inlined practices", () => {
     const content = readFileSync(join(dir, "plugins", "praxis", "agents", "stewart.md"), "utf-8");
-    expect(content).toContain("# Responsibilities");
+    expect(content).toContain("# Practices");
     // Stewart references guide-content-placement, review-content-quality, audit-framework-health
     expect(content).toContain("Guide Content Placement");
     expect(content).toContain("Review Content Quality");
@@ -154,10 +154,10 @@ describe("init → compile integration", () => {
       }
     }
 
-    // After the agent frontmatter, there should be no "type: responsibility"
+    // After the agent frontmatter, there should be no "type: practice"
     // or "type: reference" frontmatter blocks (those come from inlined files)
     const body = lines.slice(frontmatterEnd + 1).join("\n");
-    expect(body).not.toMatch(/^type: responsibility$/m);
+    expect(body).not.toMatch(/^type: practice$/m);
     expect(body).not.toMatch(/^type: reference$/m);
     expect(body).not.toMatch(/^owner: /m);
   });

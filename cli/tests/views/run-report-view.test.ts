@@ -10,6 +10,11 @@ function finished(summary: Partial<EvalSummary>) {
   return {
     cached: false,
     elapsedMs: 1_000,
+    coverage: {
+      sourceFiles: 5,
+      observed: { files: 4, rate: 0.8, display: "80% (4/5 files)" },
+      passing: { files: 3, rate: 0.6, display: "60% (3/5 files)" },
+    },
     run: {
       verdicts: [],
       cacheStats: { hits: 0, misses: 0 },
@@ -36,6 +41,63 @@ describe("runReportView", () => {
 
     expect(text).toContain("3 pass");
     expect(text).toContain("2 fail");
+  });
+
+  it("never pools reviewers: two reviewers render as table rows, not one tally", () => {
+    const text = reportText(
+      runReportView(
+        finished({
+          total: 31,
+          compliant: 40,
+          errors: 6,
+          notValidated: 8,
+          byReviewer: {
+            mercury: { compliant: 17, warnings: 0, errors: 6 },
+            counter: { compliant: 23, warnings: 0, errors: 0 },
+          },
+        }),
+      ),
+    );
+
+    expect(text).not.toContain("40 pass");
+    expect(text).toContain("By reviewer:");
+    expect(text).toMatch(/mercury\s*│\s*17\s*│\s*0\s*│\s*6/);
+    expect(text).toMatch(/counter\s*│\s*23\s*│\s*0\s*│\s*0/);
+    expect(text).toMatch(/Not observed\s*│\s*1\/5\s*│\s*20%/);
+    expect(text).toContain("By type (verdicts from 2 reviewers):");
+  });
+
+  it("labels unverified as verdict counts when reviewers render separately", () => {
+    const text = reportText(
+      runReportView(
+        finished({
+          unverified: 2,
+          byReviewer: {
+            mercury: { compliant: 1, warnings: 0, errors: 0 },
+            counter: { compliant: 1, warnings: 0, errors: 0 },
+          },
+        }),
+      ),
+    );
+
+    expect(text).toContain("Unverified: 2 verdict(s)");
+  });
+
+  it("renders coverage as a labeled table beside the conformance tally (07: they render together)", () => {
+    const text = reportText(runReportView(finished({})));
+
+    expect(text).toContain("Coverage:");
+    expect(text).toMatch(/COVERAGE\s*│\s*FILES\s*│\s*RATE/);
+    expect(text).toMatch(/Observed\s*│\s*4\/5\s*│\s*80%/);
+    expect(text).toMatch(/Passing\s*│\s*3\/5\s*│\s*60%/);
+    expect(text).toMatch(/Not observed\s*│\s*1\/5\s*│\s*20%/);
+  });
+
+  it("labels the single-reviewer verdict tally, which no longer repeats not-validated", () => {
+    const text = reportText(runReportView(finished({ notValidated: 1 })));
+
+    expect(text).toContain("Verdicts:");
+    expect(text).not.toContain("not validated");
   });
 
   it("surfaces unverified units when any exist — they are not violations", () => {
@@ -91,5 +153,13 @@ describe("runReportView", () => {
     };
 
     expect(reportText(runReportView(paidRun))).toContain("Time: 1m 20s, Cost: $0.0011");
+  });
+
+  it("instructs instead of tallying when the corpus is empty", () => {
+    const text = reportText(runReportView(finished({ total: 0, compliant: 0 })));
+
+    expect(text).toContain("no spec governs any files yet");
+    expect(text).toContain('"sources": ["src"]');
+    expect(text).not.toContain("0 pass");
   });
 });

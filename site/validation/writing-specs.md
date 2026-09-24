@@ -59,7 +59,7 @@ Every bullet requires reading comprehension to decide — which is exactly what 
 
 ## Severity: must vs. should
 
-The severity boundary the reviewer answers through is drawn in its verdict tools: a violated **core or required** criterion fails, a **non-critical deviation or unmet optional** criterion warns. Which side of that line a standard falls on is the reviewer's reading of your spec — so write the intent into the language. Binding phrasing ("must", "never", "always") reads as core; advisory phrasing ("should", "prefer", "recommended") reads as optional. The words aren't hard-coded anywhere; they work because the reviewer reads them as intent.
+The severity boundary the reviewer answers through is drawn in its verdict tools: a violated **core or required** criterion fails, a **non-critical deviation or unmet optional** criterion warns. Which side of that line a standard falls on is the reviewer's reading of your spec — so write the intent into the language. Binding phrasing ("must", "never", "always") reads as core; advisory phrasing ("should", "prefer", "recommended") reads as optional. The verdict tool descriptions name these cues to the reviewer, so binding and advisory phrasing steer severity by design rather than by the model's own reading.
 
 By default errors fail a run and warnings don't; `eval ci --strict` makes warnings blocking too.
 
@@ -95,7 +95,9 @@ context:
 
 Because context files are part of what the reviewer sees, they join the cached verdict's content hash: editing one invalidates the affected verdicts exactly like editing the target or the spec does.
 
-`excludes:` and `cohort:` also compile through from an expert's `validates:` targeting, the same way `paths:` does.
+**`type:`** — the reporting label this spec's verdicts group under, in the run summary's by-type table and the `--type` run scope. Undeclared, it falls back to the spec's directory path — right for the README-next-to-code layout, where one spec governs its own directory.
+
+`excludes:` and `cohort:` also compile through from an expert's `validates:` targeting, the same way `paths:` does — and the expert's alias compiles through as `type:`, so a project of compiled profiles gets one row per expert instead of one row per output directory.
 
 ## Positive examples live in prose
 

@@ -26,3 +26,14 @@ export function statLines(rows: [string, string | number][]): string[] {
     return `${INDENT}${padded}${separator}${value}`;
   });
 }
+
+/**
+ * A 0–1 rate as a whole percent — "76%" — or an em dash when there is
+ * no rate to show (a null rate is "not measurable", which is a
+ * different fact from 0%).
+ */
+export function percent(rate: number | null): string {
+  if (rate === null) return "—";
+
+  return `${Math.round(rate * 100)}%`;
+}

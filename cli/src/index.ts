@@ -9,12 +9,9 @@ import registerEvalCommand from "@/commands/eval-command.js";
 import registerFeedbackCommand from "@/commands/feedback-command.js";
 import registerInitCommand from "@/commands/init-command.js";
 import registerStatusCommand from "@/commands/status-command.js";
+import praxisHelp from "@/help/praxis-help.md";
 import orientProjectOrchestrator from "@/orchestrators/orient-project-orchestrator.js";
-
-import pkg from "../package.json";
-
-/** CLI version, sourced from package.json and inlined at build time. */
-const VERSION = pkg.version;
+import { CLI_VERSION } from "@/version.js";
 
 /**
  * Creates and configures the root CLI program.
@@ -26,7 +23,7 @@ const VERSION = pkg.version;
 function createProgram(): Command {
   const program = new Command();
 
-  program.name("praxis").description("CLI for the Praxis knowledge framework").version(VERSION);
+  program.name("praxis").description("CLI for the Praxis knowledge framework").version(CLI_VERSION);
 
   // Commander throws instead of exiting, so usage mistakes get exit
   // code 2. Set before the subcommands register — they copy the
@@ -35,20 +32,9 @@ function createProgram(): Command {
   program.showHelpAfterError("(run the command with --help for usage)");
 
   // Help is API documentation (09-l/m): the top level names the
-  // workflows and the exit-code contract, not just the commands.
-  program.addHelpText(
-    "after",
-    `
-Typical flows:
-  Evaluate work you just changed:   praxis eval run <target>
-  Understand a violated standard:   praxis axioms show <id>
-  Check project health:             praxis status
-
-Exit codes:
-  0  success / no violations
-  1  violations found, or a run failure
-  2  usage or configuration error`,
-  );
+  // workflows and the exit-code contract, not just the commands. The
+  // long-form text lives in src/help/, one document per help moment.
+  program.addHelpText("after", `\n${praxisHelp}`);
 
   // Bare `praxis` is the orientation screen — counts and
   // staleness at a glance, each line naming its command; --json is an

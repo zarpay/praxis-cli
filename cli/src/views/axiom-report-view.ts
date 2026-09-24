@@ -34,7 +34,6 @@ const axiomReportView: View<AxiomReport & { json?: boolean }> = (report) => {
   });
 
   return [
-    { channel: "warning", text: `Calibration: ${report.calibration}` },
     {
       channel: "content",
       entries: [

@@ -1,11 +1,12 @@
 ---
 name: sundae
 description: Use this agent to review Scoop Society feature modules for cohesion, or for advice on composing a new feature. Invoke it whenever directories under src/features/ are added or changed.
+type: "Sundae"
 paths:
   - "src/features/*"
 cohort: by_directory
 ---
-# Role
+# Expert
 
 # Feature Steward (a.k.a **Sundae**)
 
@@ -31,7 +32,7 @@ because cohesion is a property of the set — no single file can answer
 - Per-file service quality inside the feature (that's Scooper)
 - Test suites for features (that's Taster)
 
-# Responsibilities
+# Practices
 
 # Review Feature Cohesion
 
