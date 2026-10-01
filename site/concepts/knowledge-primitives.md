@@ -39,6 +39,10 @@ Reference documents are lookup tables, vocabulary lists, policy excerpts, and in
 
 Examples: Scoop Society's API shape reference, a refund policy, a vocabulary list, a team directory.
 
+## Experts and practices are reviewed too
+
+Expert and practice files are themselves governed files. The scaffold's recruiter (`experts/praxis-recruiter.md`) declares `validates:` over both directories, so once compiled its profile is a spec, and `praxis eval run --type praxis-recruiter` reads every definition, one file at a time, against its practices: [Review Expert Definition](https://github.com/zarpay/praxis-cli/blob/main/cli/scaffold/core/practices/review-expert-definition.md) asks whether the definition tells a reviewer which files it covers and how to read them; [Review Practice Definition](https://github.com/zarpay/praxis-cli/blob/main/cli/scaffold/core/practices/review-practice-definition.md) asks whether every criterion is a judgment rather than a lint rule, with the reason stated and one example pair shown. Both are written for a reviewer that sees only the file in front of it. The scaffold's steward takes the other shape: `cohort: by_directory` over `context/*` and `reference`, so it sees a whole folder at once and can judge whether its documents agree with each other. Both are the [spec-writing rules](/validation/writing-specs) applied to the spec layer's own documents. A project without the scaffold gets the same by giving any expert `validates:` over its authoring directories.
+
 ## Why the separation matters
 
 The separation is not cosmetic. It reflects how knowledge actually works:

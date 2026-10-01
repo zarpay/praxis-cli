@@ -83,7 +83,7 @@ describe("ExpertStore", () => {
       expect(created.type).toBe("expert");
       expect(content).toContain('title: "Code Reviewer"');
       expect(content).toContain('alias: "code-reviewer"');
-      expect(content).toContain("# Code Reviewer (a.k.a **Code Reviewer**)");
+      expect(content).toContain("\n# Code Reviewer\n");
     });
 
     it("reports the created path relative to the given root", () => {

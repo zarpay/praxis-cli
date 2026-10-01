@@ -1,3 +1,5 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -34,6 +36,23 @@ describe("expandGlobsService", () => {
         const result = await matches("content/context/constitution/*.md");
 
         expect(result).not.toContain("content/context/constitution/_template.md");
+      });
+
+      it("excludes every underscore-prefixed file, not only _template.md", async () => {
+        const dir = mkdtempSync(join(tmpdir(), "praxis-expand-"));
+        mkdirSync(join(dir, "experts"));
+        writeFileSync(join(dir, "experts", "_draft.md"), "---\ntitle: Draft\n---\n");
+        writeFileSync(join(dir, "experts", "reviewer.md"), "---\ntitle: Reviewer\n---\n");
+
+        try {
+          const [expansion] = await expandGlobsService(testConfig(dir), {
+            patterns: ["experts/**/*.md"],
+          });
+
+          expect(expansion.matches).toEqual(["experts/reviewer.md"]);
+        } finally {
+          rmSync(dir, { recursive: true, force: true });
+        }
       });
 
       it("excludes README.md files", async () => {

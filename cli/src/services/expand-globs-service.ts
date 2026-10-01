@@ -2,8 +2,7 @@ import type { Service } from "@/types.js";
 
 import fg from "fast-glob";
 
-import { hasGlobChars, matchesFilename } from "@/helpers/files-helper.js";
-import { baseName } from "@/helpers/paths-helper.js";
+import { hasGlobChars, isContentFile } from "@/helpers/files-helper.js";
 
 /** The glob patterns to resolve. */
 interface ExpandGlobsInput {
@@ -52,17 +51,10 @@ const expandGlobsService: Service<ExpandGlobsInput, Promise<GlobExpansion[]>> = 
       return {
         pattern,
         isGlob: true,
-        matches: matched.filter((match) => !isExcluded(match, cfg.specFilePattern)).sort(),
+        matches: matched.filter((match) => isContentFile(match, cfg.specFilePattern)).sort(),
       };
     }),
   );
 };
 
 export default expandGlobsService;
-
-/** Whether a matched path is a template or a spec, never inlined content. */
-function isExcluded(filePath: string, specFilePattern: string): boolean {
-  const name = baseName(filePath);
-
-  return name === "_template.md" || matchesFilename(name, specFilePattern);
-}

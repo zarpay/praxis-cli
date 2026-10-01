@@ -115,13 +115,17 @@ describe("initProjectOrchestrator", () => {
       expertsDir: string;
       practicesDir: string;
       reviewers: { name: string; model: string; apiKeyEnvVar: string }[];
+      specFilePattern: string;
     }>(configPath);
     expect(cfg.agentProfilesOutputDir).toBe("./agent-profiles");
     expect(cfg.plugins).toEqual([]);
-    expect(cfg.sources).toEqual(["experts", "practices", "reference", "context"]);
+    // agent-profiles is a source so compiled profiles are discovered as
+    // specs — the recruiter's profile reviews the experts and practices themselves.
+    expect(cfg.sources).toEqual(["experts", "practices", "reference", "context", "agent-profiles"]);
+    expect(cfg.specFilePattern).toBe("{README.md,*.expert.md}");
     expect(cfg.expertsDir).toBe("experts");
     expect(cfg.reviewers).toEqual([
-      { name: "default", model: "x-ai/grok-4.1-fast", apiKeyEnvVar: "OPENROUTER_API_KEY" },
+      { name: "default", model: "x-ai/grok-4.3", apiKeyEnvVar: "OPENROUTER_API_KEY" },
     ]);
   });
 
@@ -218,7 +222,7 @@ describe("initProjectOrchestrator", () => {
     });
 
     // Scaffold files exist
-    expect(existsSync(join(dir, "experts", "README.md"))).toBe(true);
+    expect(existsSync(join(dir, "experts", "praxis-steward.md"))).toBe(true);
 
     // Unrelated files preserved
     expect(readFileSync(join(dir, "src", "app.ts"), "utf-8")).toBe("console.log('hello');\n");

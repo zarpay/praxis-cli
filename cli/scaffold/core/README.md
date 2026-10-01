@@ -54,7 +54,7 @@ my-org/
 praxis compile
 
 # Compile a single agent by alias
-praxis compile --alias stewart
+praxis compile --alias praxis-steward
 
 # Validate all documents
 praxis validate all

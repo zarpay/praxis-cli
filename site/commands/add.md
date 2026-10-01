@@ -50,7 +50,7 @@ title: "Service Steward"
 type: expert
 alias: "service-steward"
 
-description: "Use this agent to {LIST USECASES}. This agent should be invoked {EXPLAIN AUTO INVOCATION CRITERIA}."
+description: "Use this agent to {WHAT IT REVIEWS OR ANSWERS}. Use it when {A FILE UNDER some/path/ IS ADDED OR CHANGED, OR THE QUESTION SOMEONE ASKS}."
 
 constitution:
   - context/constitution/*.md
@@ -62,37 +62,19 @@ practices:
 
 refs:
   - reference/{relevant-reference}.md
+
+validates:
+  - "{glob of the files this expert reviews — delete this key for an expert people only consult}"
 ---
 
-# Service Steward (a.k.a **Service Steward**)
+# Service Steward
 
-Concise description of what this expert does.
+{Who this expert reads as, and what that reader cares about. Say what problem it solves and what it leaves to other experts. Keep it to one or two short paragraphs. Do not list checks here; they belong in the practices.}
 
-## Identity
-
-What this expert is and why it exists.
-
-## Scope
-
-### Responsible For
-
-- Thing this expert owns
-
-### Not Responsible For
-
-- Boundary clarification
-
-## Authorities
-
-- **Can** approve X up to Y threshold
-- **Cannot** commit to A without approval from B
-
-## Interfaces
-
-| With | Interaction |
-|------|-------------|
-| {Other Expert} | Receives X, provides Y |
+{Why each context file above is loaded: what it changes about how this expert reads a file.}
 ```
+
+The shape is the one the scaffold's recruiter reviews for, so a filled-in file passes `praxis eval run --type praxis-recruiter`. The practice template follows the same idea: criteria written as judgment calls, each with its reason, one pass/fail pair, and at least one "never".
 
 ## Does not overwrite
 

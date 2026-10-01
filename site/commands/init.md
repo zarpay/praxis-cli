@@ -40,24 +40,22 @@ my-org/
 ├── context/
 │   ├── README.md
 │   ├── constitution/
-│   │   ├── README.md            ← validation spec
-│   │   ├── identity.md          ← starter: who you are
-│   │   └── principles.md        ← starter: what you value
+│   │   └── README.md            ← validation spec; your identity goes beside it
 │   ├── conventions/
 │   │   ├── README.md
-│   │   └── documentation.md     ← starter: writing conventions
+│   │   └── documentation.md     ← starter: how documents here are written
 │   └── lenses/
 │       └── README.md
 ├── experts/
-│   ├── README.md
 │   ├── praxis-steward.md        ← built-in: knowledge framework steward
-│   └── praxis-recruiter.md      ← built-in: talent and team sourcing
+│   └── praxis-recruiter.md      ← built-in: designs and reviews experts and practices
 ├── practices/
-│   ├── README.md
 │   ├── audit-framework-health.md      ← starter practices
 │   ├── challenge-contributor-design.md
 │   ├── guide-content-placement.md
-│   └── review-content-quality.md
+│   ├── review-content-quality.md
+│   ├── review-expert-definition.md
+│   └── review-practice-definition.md
 ├── reference/
 │   ├── README.md
 │   ├── practices-index.md       ← starter reference docs
@@ -67,6 +65,8 @@ my-org/
 ```
 
 New documents are created with `praxis add`, which writes them from templates compiled into the CLI — the scaffold ships starter content, not template files.
+
+The two starter experts review the scaffold itself. The recruiter (`praxis-recruiter.md`) declares `validates:` over `experts/` and `practices/`, so after `praxis compile` its profile in `agent-profiles/` is a spec, and `praxis eval run --type praxis-recruiter` reviews every expert and practice definition, one file at a time, against its review practices. The steward (`praxis-steward.md`) declares `validates:` over `context/*` and `reference` with `cohort: by_directory`, so `praxis eval run --type praxis-steward` reviews each of those folders as one unit and can catch documents that disagree with their neighbors. The scaffold config lists `agent-profiles` under `sources` and accepts `*.expert.md` as spec files for exactly this.
 
 ## Safe to re-run
 
@@ -97,7 +97,7 @@ The eval-layer `.praxis/config.json` (default init):
   "reviewers": [
     {
       "name": "default",
-      "model": "x-ai/grok-4.1-fast",
+      "model": "x-ai/grok-4.3",
       "apiKeyEnvVar": "OPENROUTER_API_KEY"
     }
   ]
@@ -110,7 +110,7 @@ With `--spec-layer`, the config also wires the authoring taxonomy:
 
 ```json
 {
-  "sources": ["experts", "practices", "reference", "context"],
+  "sources": ["experts", "practices", "reference", "context", "agent-profiles"],
   "expertsDir": "experts",
   "practicesDir": "practices",
   "agentProfilesOutputDir": "./agent-profiles",
@@ -118,10 +118,11 @@ With `--spec-layer`, the config also wires the authoring taxonomy:
   "reviewers": [
     {
       "name": "default",
-      "model": "x-ai/grok-4.1-fast",
+      "model": "x-ai/grok-4.3",
       "apiKeyEnvVar": "OPENROUTER_API_KEY"
     }
-  ]
+  ],
+  "specFilePattern": "{README.md,*.expert.md}"
 }
 ```
 

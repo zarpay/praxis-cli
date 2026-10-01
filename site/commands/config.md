@@ -35,7 +35,7 @@ Example output:
   "reviewers": [
     {
       "name": "default",
-      "model": "x-ai/grok-4.1-fast",
+      "model": "x-ai/grok-4.3",
       "apiKeyEnvVar": "OPENROUTER_API_KEY"
     }
   ]

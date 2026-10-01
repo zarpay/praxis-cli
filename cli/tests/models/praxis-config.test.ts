@@ -207,7 +207,7 @@ describe("PraxisConfig", () => {
     it("ignores the removed v1 validation section — v2 is a breaking release", () => {
       const dir = makeTmpdir();
       writeConfig(dir, {
-        validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "x-ai/grok-4.1-fast" },
+        validation: { apiKeyEnvVar: "OPENROUTER_API_KEY", model: "x-ai/grok-4.3" },
       });
 
       const cfg = new PraxisConfig(dir);

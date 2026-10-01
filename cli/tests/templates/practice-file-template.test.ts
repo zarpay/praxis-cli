@@ -14,8 +14,15 @@ describe("practiceFileTemplate", () => {
     expect(rendered).not.toContain("{practice_title}");
   });
 
-  it("declares only what praxis add fills — no leftover guidance tokens", () => {
+  it("leaves no substituted token behind, only the author's guidance", () => {
     expect(rendered).not.toMatch(/\{[a-z_]+\}/);
+    expect(rendered).toContain("{Why it matters.}");
+  });
+
+  it("takes the shape the recruiter reviews for: a pass/fail pair and a never", () => {
+    expect(rendered).toContain("passes.");
+    expect(rendered).toContain("fails.");
+    expect(rendered).toContain("Never {");
   });
 
   it("declares the frontmatter the compiler requires", () => {

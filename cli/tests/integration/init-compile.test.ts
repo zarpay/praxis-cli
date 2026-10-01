@@ -59,13 +59,13 @@ describe("init → compile integration", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("produces stewart.md Claude Code agent file", () => {
-    const agentFile = join(dir, "plugins", "praxis", "agents", "stewart.md");
+  it("produces praxis-steward.md Claude Code agent file", () => {
+    const agentFile = join(dir, "plugins", "praxis", "agents", "praxis-steward.md");
     expect(existsSync(agentFile)).toBe(true);
   });
 
-  it("produces remy.md Claude Code agent file", () => {
-    const agentFile = join(dir, "plugins", "praxis", "agents", "remy.md");
+  it("produces praxis-recruiter.md Claude Code agent file", () => {
+    const agentFile = join(dir, "plugins", "praxis", "agents", "praxis-recruiter.md");
     expect(existsSync(agentFile)).toBe(true);
   });
 
@@ -89,55 +89,79 @@ describe("init → compile integration", () => {
     expect(files).toHaveLength(2);
   });
 
-  it("pure profiles do not contain Claude Code frontmatter", () => {
-    const content = readFileSync(join(dir, "agent-profiles", "stewart.expert.md"), "utf-8");
-    expect(content).not.toMatch(/^---\n/);
-    expect(content).not.toContain("name: stewart");
+  it("pure profiles carry eval-targeting frontmatter, never Claude Code agent frontmatter", () => {
+    const content = readFileSync(join(dir, "agent-profiles", "praxis-steward.expert.md"), "utf-8");
+    expect(content).toMatch(/^---\ntype: "praxis-steward"\n/);
+    expect(content).toContain("cohort: by_directory");
+    expect(content).not.toContain("name: praxis-steward");
+    expect(content).not.toContain("tools:");
     expect(content).toContain("# Expert");
   });
 
-  it("stewart agent has Claude Code frontmatter", () => {
-    const content = readFileSync(join(dir, "plugins", "praxis", "agents", "stewart.md"), "utf-8");
+  it("praxis-steward agent has Claude Code frontmatter", () => {
+    const content = readFileSync(
+      join(dir, "plugins", "praxis", "agents", "praxis-steward.md"),
+      "utf-8",
+    );
     expect(content).toMatch(/^---\n/);
-    expect(content).toContain("name: stewart");
+    expect(content).toContain("name: praxis-steward");
     expect(content).toContain("description:");
   });
 
-  it("remy agent has Claude Code frontmatter", () => {
-    const content = readFileSync(join(dir, "plugins", "praxis", "agents", "remy.md"), "utf-8");
+  it("praxis-recruiter agent has Claude Code frontmatter", () => {
+    const content = readFileSync(
+      join(dir, "plugins", "praxis", "agents", "praxis-recruiter.md"),
+      "utf-8",
+    );
     expect(content).toMatch(/^---\n/);
-    expect(content).toContain("name: remy");
+    expect(content).toContain("name: praxis-recruiter");
     expect(content).toContain("description:");
   });
 
-  it("stewart agent contains expert section", () => {
-    const content = readFileSync(join(dir, "plugins", "praxis", "agents", "stewart.md"), "utf-8");
+  it("praxis-steward agent contains expert section", () => {
+    const content = readFileSync(
+      join(dir, "plugins", "praxis", "agents", "praxis-steward.md"),
+      "utf-8",
+    );
     expect(content).toContain("# Expert");
     expect(content).toContain("Praxis Steward");
   });
 
-  it("stewart agent contains inlined practices", () => {
-    const content = readFileSync(join(dir, "plugins", "praxis", "agents", "stewart.md"), "utf-8");
+  it("praxis-steward agent contains inlined practices", () => {
+    const content = readFileSync(
+      join(dir, "plugins", "praxis", "agents", "praxis-steward.md"),
+      "utf-8",
+    );
     expect(content).toContain("# Practices");
-    // Stewart references guide-content-placement, review-content-quality, audit-framework-health
+    // The steward references guide-content-placement, review-content-quality, audit-framework-health
     expect(content).toContain("Guide Content Placement");
     expect(content).toContain("Review Content Quality");
     expect(content).toContain("Audit Framework Health");
   });
 
-  it("stewart agent contains inlined constitution", () => {
-    const content = readFileSync(join(dir, "plugins", "praxis", "agents", "stewart.md"), "utf-8");
-    expect(content).toContain("# Constitution");
+  it("praxis-steward agent inlines the starter convention and no constitution until one is written", () => {
+    const content = readFileSync(
+      join(dir, "plugins", "praxis", "agents", "praxis-steward.md"),
+      "utf-8",
+    );
+    expect(content).toContain("Documentation Convention");
+    expect(content).not.toContain("# Constitution");
   });
 
-  it("stewart agent contains inlined reference", () => {
-    const content = readFileSync(join(dir, "plugins", "praxis", "agents", "stewart.md"), "utf-8");
+  it("praxis-steward agent contains inlined reference", () => {
+    const content = readFileSync(
+      join(dir, "plugins", "praxis", "agents", "praxis-steward.md"),
+      "utf-8",
+    );
     expect(content).toContain("# Reference");
     expect(content).toContain("Praxis Vocabulary");
   });
 
   it("compiled agents do not contain raw frontmatter blocks from inlined files", () => {
-    const content = readFileSync(join(dir, "plugins", "praxis", "agents", "stewart.md"), "utf-8");
+    const content = readFileSync(
+      join(dir, "plugins", "praxis", "agents", "praxis-steward.md"),
+      "utf-8",
+    );
     const lines = content.split("\n");
 
     // Find the end of the Claude Code frontmatter (second "---")

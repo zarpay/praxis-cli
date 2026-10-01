@@ -7,7 +7,7 @@ describe("expertFileTemplate", () => {
 
   it("fills the title into the frontmatter and the heading", () => {
     expect(rendered).toContain('title: "Code Reviewer"');
-    expect(rendered).toContain("# Code Reviewer (a.k.a **Code Reviewer**)");
+    expect(rendered).toContain("\n# Code Reviewer\n");
   });
 
   it("fills the alias the compiler keys on, as typed rather than titled", () => {
@@ -26,5 +26,13 @@ describe("expertFileTemplate", () => {
   it("declares the frontmatter the compiler requires", () => {
     expect(rendered.startsWith("---\n")).toBe(true);
     expect(rendered).toContain("type: expert");
+  });
+
+  it("takes the shape the recruiter reviews for: a trigger, validates:, and no persona sections", () => {
+    expect(rendered).toContain("Use it when {");
+    expect(rendered).toContain("validates:");
+    expect(rendered).not.toContain("a.k.a");
+    expect(rendered).not.toContain("## Identity");
+    expect(rendered).not.toContain("## Authorities");
   });
 });

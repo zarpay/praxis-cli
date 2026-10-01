@@ -62,8 +62,8 @@ export const initProjectOrchestrator: Orchestrator<InitProjectOptions> = async (
 function determineNextSteps(specLayer: boolean): string[] {
   if (specLayer) {
     return [
-      "  1. Edit context/constitution/ to define your organization's identity",
-      "  2. Edit context/conventions/ to document your standards",
+      "  1. Write your organization's identity and principles in context/constitution/",
+      "  2. Add your standards to context/conventions/",
       "  3. Run `praxis compile` to generate agent files",
       "  4. Define new experts in experts/ as your organization grows",
     ];

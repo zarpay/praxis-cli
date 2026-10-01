@@ -14,7 +14,10 @@ interface ExpertTemplateVars {
  * is an identifier rather than prose.
  *
  * Every other `{token}` below is guidance the author replaces by hand, so
- * it is literal text here rather than a parameter.
+ * it is literal text here rather than a parameter. The shape is the one
+ * the scaffold's recruiter reviews for: a description that says when to
+ * use the expert, `validates:` naming the files it reviews, and a body
+ * that gives a point of view rather than a list of checks.
  */
 export default function expertFileTemplate({ title, alias }: ExpertTemplateVars): string {
   return `---
@@ -22,7 +25,7 @@ title: "${title}"
 type: expert
 alias: "${alias}"
 
-description: "Use this agent to {LIST USECASES}. This agent should be invoked {EXPLAIN AUTO INVOCATION CRITERIA}."
+description: "Use this agent to {WHAT IT REVIEWS OR ANSWERS}. Use it when {A FILE UNDER some/path/ IS ADDED OR CHANGED, OR THE QUESTION SOMEONE ASKS}."
 
 constitution:
   - context/constitution/*.md
@@ -34,39 +37,15 @@ practices:
 
 refs:
   - reference/{relevant-reference}.md
+
+validates:
+  - "{glob of the files this expert reviews — delete this key for an expert people only consult}"
 ---
 
-# ${title} (a.k.a **${title}**)
+# ${title}
 
-Concise description of what this expert does.
+{Who this expert reads as, and what that reader cares about. Say what problem it solves and what it leaves to other experts. Keep it to one or two short paragraphs. Do not list checks here; they belong in the practices.}
 
-## Identity
-
-What this expert is and why it exists. What value does it provide to the organization?
-
-## Scope
-
-### Responsible For
-
-- Thing this expert owns
-- Another thing this expert owns
-
-### Not Responsible For
-
-- Thing that might be confused as part of this expert but isn't
-- Boundary clarification
-
-## Authorities
-
-- **Can** approve X up to Y threshold
-- **Can** make decisions about Z
-- **Cannot** commit to A without approval from B
-
-## Interfaces
-
-| With | Interaction |
-|------|-------------|
-| {Other Expert} | Receives X, provides Y |
-| {Another Expert} | Collaborates on Z |
+{Why each context file above is loaded: what it changes about how this expert reads a file.}
 `;
 }
