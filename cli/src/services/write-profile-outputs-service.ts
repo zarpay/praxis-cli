@@ -45,7 +45,7 @@ const writeProfileOutputsService: Service<WriteProfileOutputsInput, string | nul
     const targeting = metadata ? evalTargetingTemplate(metadata) : [];
     const content =
       targeting.length > 0 ? `---\n${targeting.join("\n")}\n---\n\n${profile}` : profile;
-    const path = joinPath(agentProfilesOutputDir, `${alias.toLowerCase()}.expert.md`);
+    const path = joinPath(agentProfilesOutputDir, profileFilename(alias));
 
     writeText(path, content);
     output = relativePath(cfg.root, path);
@@ -57,5 +57,22 @@ const writeProfileOutputsService: Service<WriteProfileOutputsInput, string | nul
 
   return output;
 };
+
+/** The profile suffix every compiled expert carries. */
+const PROFILE_SUFFIX = ".expert";
+
+/**
+ * The profile's filename: the lowercased alias with `.expert.md`.
+ *
+ * An alias that already ends in `.expert` (a project naming its
+ * experts by their role in the filename, `guards.expert`) gets the
+ * suffix once — `guards.expert.md`, never `guards.expert.expert.md`.
+ */
+export function profileFilename(alias: string): string {
+  const base = alias.toLowerCase();
+  const stem = base.endsWith(PROFILE_SUFFIX) ? base.slice(0, -PROFILE_SUFFIX.length) : base;
+
+  return `${stem}${PROFILE_SUFFIX}.md`;
+}
 
 export default writeProfileOutputsService;
