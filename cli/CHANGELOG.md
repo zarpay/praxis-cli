@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.2] - 2026-10-01
+
+The numbers release. Every rate Praxis prints now carries two decimals, the coverage table says how much of what the specs cover actually clears, and `praxis compile` names the file it wrote. Nothing about the ledger, the cache, or the exit codes changes; the `--json` payloads gain one field and keep every existing one.
+
+### Added
+
+- **Coverage reports passing over the observed files.** The coverage table had Observed, Passing, and Not observed, all over the whole corpus — so a project with half its files governed and every one of them clean read `Passing 50%`, as if half the covered files were failing. A fourth row, **Passing of observed**, puts the passing count over the observed files instead: how much of what the specs cover currently clears, apart from how much they cover. `praxis status`, `eval run`, and `eval ci` print it, and their `--json` payloads carry it as `coverage.passingOfObserved { files, rate, display }` (rate null when nothing is observed). The three existing rows are unchanged, so a CI holding a bar against `passing` does not move.
+
+### Changed
+
+- **Every rate prints to two decimals.** Coverage rounded to a whole percent and the axiom reports' current stock to one decimal. A corpus of a few hundred files moves coverage by fractions of a percent per file, and a whole percent hid that movement — a team could land a fix and watch the number not change. The framework's percent formatter, `rateCell`, and the coverage slices all print `76.31%`, `3/41 (7.32%)`, `61.90% (52/84 files)` now. Only `display` strings change in `--json`; the `rate` numbers were always full precision.
+
+### Fixed
+
+- **`praxis compile` names the profile it wrote.** The confirmation line rebuilt a filename from the alias and never looked at the writer, so it dropped the directory and, with `agentProfilesOutputDir: false`, named a file that did not exist. The writer now returns the root-relative path it wrote and the line prints it — `Compiled agent-profiles/scooper.expert.md` — or says `plugin output only` when there is no profile directory.
+
+- **An alias ending in `.expert` compiled to `name.expert.expert.md`.** A project that names its experts by role in the alias (`guards.expert`) got the profile suffix twice, on disk and in the log. The suffix is added once, so the profile is `guards.expert.md`.
+
+- **The docs' sample outputs match what the CLI prints.** Every fenced block on the site that claims to be command output was run against the current build and corrected: progress lines indent with two spaces and separate targets with a blank line, targets are named by path, the status page spaces its sections and sizes its columns as the view does, the per-axiom report shows the 74-column card and the critiques that follow it, and the `eval run` flag table lists `--spec` and `--json`. The demo's version pin moves to the current release so it runs against a development build.
+
 ## [2.6.1] - 2026-09-29
 
 ### Fixed
@@ -35,7 +55,7 @@ Recompiling experts under 2.5.0 stamps `type:` into their profiles, which re-rev
 
 ### Added
 
-- **Eval coverage: observed and passing over the source corpus.** `praxis status`, `eval run`, and `eval ci` render a Coverage table — observed (files a spec governs), passing (files whose recorded verdict is compliant from *every* configured reviewer; unreviewed, warned, and failed files count against it), and not observed (the remainder) — over one denominator: every file under `sources` minus `ignore`, with specs, templates, and the authored taxonomy counted on neither side. Passing is the score to hold a CI bar against: it can't be raised by writing specs or held by not running. `--json` carries `coverage { sourceFiles, observed, passing }` on the status and corpus payloads.
+- **Eval coverage: observed and passing over the source corpus.** `praxis status`, `eval run`, and `eval ci` render a Coverage table — observed (files a spec governs), passing (files whose recorded verdict is compliant from _every_ configured reviewer; unreviewed, warned, and failed files count against it), and not observed (the remainder) — over one denominator: every file under `sources` minus `ignore`, with specs, templates, and the authored taxonomy counted on neither side. Passing is the score to hold a CI bar against: it can't be raised by writing specs or held by not running. `--json` carries `coverage { sourceFiles, observed, passing }` on the status and corpus payloads.
 
 - **`type:` is a declared reporting label.** A verdict's type was the governing spec's directory, which collapses to one row when compiled profiles share an output directory. Now a spec may declare `type:` in frontmatter, compiled profiles carry their expert's alias automatically, and the directory remains the fallback for README-next-to-code specs — so the by-type table reads one row per expert, and `eval run --type guards.expert` scopes by it.
 
@@ -59,7 +79,7 @@ The help release. `--help` is now the API documentation it was always specified 
 
 ### Added
 
-- **Agent-grade help on every command.** Long-form help lives in `src/help/`, one markdown document per help moment, bundled into the binary. The root `--help` opens with what Praxis *is* — the standards your linter can't hold — and the setup path; group help carries the cross-command workflows (the eval loop, the axiom lifecycle); every leaf ends with a docs link. Mirrored tests fail the build on a command whose help lacks its "When to use" or its docs link.
+- **Agent-grade help on every command.** Long-form help lives in `src/help/`, one markdown document per help moment, bundled into the binary. The root `--help` opens with what Praxis _is_ — the standards your linter can't hold — and the setup path; group help carries the cross-command workflows (the eval loop, the axiom lifecycle); every leaf ends with a docs link. Mirrored tests fail the build on a command whose help lacks its "When to use" or its docs link.
 
 - **The config pins the praxis version.** Praxis is installed globally, not declared in a `package.json`, so nothing kept two teammates from running different versions against one committed cache and ledger — and a version change can be an epoch. `.praxis/config.json` now carries `"version"`, enforced before every command: a config with no pin adopts the running version with a warning (commit the change), a matching pin is silence, and a conflicting pin refuses with exit 2 and both ways out — `npm install -g @zarpay/praxis-cli@<pinned>`, or move the pin.
 
@@ -77,7 +97,7 @@ The help release. `--help` is now the API documentation it was always specified 
 
 ## [2.3.0] - 2026-09-15
 
-The agent surface release. Everything Praxis tells a coding agent about itself now lives in one file — the praxis skill — and that file says *when* to run things, not only what exists. The `/praxis-resolve` slash command, which restated the same six commands a second time, is retired, and `praxis compile` clears the copy it left in your project.
+The agent surface release. Everything Praxis tells a coding agent about itself now lives in one file — the praxis skill — and that file says _when_ to run things, not only what exists. The `/praxis-resolve` slash command, which restated the same six commands a second time, is retired, and `praxis compile` clears the copy it left in your project.
 
 The skill had drifted: it predated `praxis feedback`, never named the one place a critique is judged invalid, and got two things wrong about the cache. A reference nobody re-reads is where an agent's wrong ideas come from, so this release treats it as shipped surface rather than documentation.
 
