@@ -73,8 +73,9 @@ describe("evalJsonView", () => {
         cacheStats: { hits: 18, misses: 0 },
         coverage: {
           sourceFiles: 5,
-          observed: { files: 4, rate: 0.8, display: "80% (4/5 files)" },
-          passing: { files: 3, rate: 0.6, display: "60% (3/5 files)" },
+          observed: { files: 4, rate: 0.8, display: "80.00% (4/5 files)" },
+          passing: { files: 3, rate: 0.6, display: "60.00% (3/5 files)" },
+          passingOfObserved: { files: 3, rate: 0.75, display: "75.00% (3/4 observed files)" },
         },
       }),
     );
@@ -83,8 +84,9 @@ describe("evalJsonView", () => {
     expect(payload["cache"]).toEqual({ hits: 18, misses: 0 });
     expect(payload["coverage"]).toEqual({
       sourceFiles: 5,
-      observed: { files: 4, rate: 0.8, display: "80% (4/5 files)" },
-      passing: { files: 3, rate: 0.6, display: "60% (3/5 files)" },
+      observed: { files: 4, rate: 0.8, display: "80.00% (4/5 files)" },
+      passing: { files: 3, rate: 0.6, display: "60.00% (3/5 files)" },
+      passingOfObserved: { files: 3, rate: 0.75, display: "75.00% (3/4 observed files)" },
     });
   });
 });

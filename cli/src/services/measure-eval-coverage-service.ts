@@ -8,8 +8,9 @@ import { DocumentStore } from "@/stores/document-store.js";
 import { VerdictStore } from "@/stores/verdict-store.js";
 
 /**
- * Measures eval coverage: two slices over the source corpus — the
- * numbers a team maintains the way it maintains test coverage.
+ * Measures eval coverage: two slices over the source corpus, and the
+ * passing share of what is observed — the numbers a team maintains the
+ * way it maintains test coverage.
  *
  * `observed` is structural: files the eval layer's own discovery would
  * hand to a run, so it counts what a run actually covers rather than a
@@ -18,7 +19,10 @@ import { VerdictStore } from "@/stores/verdict-store.js";
  * a file counts only when every configured reviewer's recorded verdict
  * for its unit is compliant — ungoverned, unreviewed, warned, and
  * failed files all count against it, and reviewers agreeing is the
- * bar, never an average.
+ * bar, never an average. `passingOfObserved` is the same passing count
+ * over the observed files instead of the corpus: how much of what the
+ * specs actually cover currently clears, independent of how much they
+ * cover.
  *
  * Pure read: the denominator is the document store's source sweep with
  * the authoring directories subtracted (an expert or practice is
@@ -36,10 +40,13 @@ const measureEvalCoverageService: Service<NoInput, EvalCoverage> = (cfg) => {
   const passingFiles = filesOf(passingUnitsOf(cfg, units));
 
   const sourceFiles = corpus.size;
-  const observed = sliceOf(intersect(observedFiles, corpus), sourceFiles);
-  const passing = sliceOf(intersect(passingFiles, corpus), sourceFiles);
+  const observedCount = intersect(observedFiles, corpus);
+  const passingCount = intersect(passingFiles, corpus);
+  const observed = sliceOf(observedCount, sourceFiles);
+  const passing = sliceOf(passingCount, sourceFiles);
+  const passingOfObserved = sliceOf(passingCount, observedCount, "observed files");
 
-  return { sourceFiles, observed, passing };
+  return { sourceFiles, observed, passing, passingOfObserved };
 };
 
 export default measureEvalCoverageService;
@@ -102,12 +109,18 @@ function intersect(files: Set<string>, corpus: Set<string>): number {
   return [...files].filter((file) => corpus.has(file)).length;
 }
 
-/** One slice with its render-ready form (09: numbers wear denominators). */
-function sliceOf(files: number, sourceFiles: number): EvalCoverageSlice {
-  if (sourceFiles === 0) return { files, rate: null, display: "no files under sources" };
+/**
+ * One slice with its render-ready form (09: numbers wear denominators).
+ *
+ * @param unit - What the denominator counts, named in the display so a
+ *   rate over the corpus and a rate over the observed files never read
+ *   alike
+ */
+function sliceOf(files: number, denominator: number, unit = "files"): EvalCoverageSlice {
+  if (denominator === 0) return { files, rate: null, display: `no ${unit} under sources` };
 
-  const rate = files / sourceFiles;
-  const percent = Math.round(rate * 100);
+  const rate = files / denominator;
+  const percent = (rate * 100).toFixed(2);
 
-  return { files, rate, display: `${percent}% (${files}/${sourceFiles} files)` };
+  return { files, rate, display: `${percent}% (${files}/${denominator} ${unit})` };
 }

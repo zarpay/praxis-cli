@@ -103,13 +103,14 @@ praxis eval run
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
 Coverage:
-  ┌───────────────┬───────┬──────┐
-  │ COVERAGE      │ FILES │ RATE │
-  ├───────────────┼───────┼──────┤
-  │ Observed      │ 4/4   │ 100% │
-  │ Passing       │ 3/4   │ 75%  │
-  │ Not validated │ 0/4   │ 0%   │
-  └───────────────┴───────┴──────┘
+  ┌─────────────────────┬───────┬─────────┐
+  │ COVERAGE            │ FILES │ RATE    │
+  ├─────────────────────┼───────┼─────────┤
+  │ Observed            │ 4/4   │ 100.00% │
+  │ Passing             │ 3/4   │ 75.00%  │
+  │ Not observed        │ 0/4   │ 0.00%   │
+  │ Passing of observed │ 3/4   │ 75.00%  │
+  └─────────────────────┴───────┴─────────┘
 
 Verdicts:
 

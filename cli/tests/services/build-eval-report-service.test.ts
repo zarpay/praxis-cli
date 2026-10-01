@@ -110,7 +110,7 @@ describe("buildEvalReportService", () => {
 
     const row = report().axioms[0];
 
-    expect(row.rate.display).toBe("2/10 (20.0%)");
+    expect(row.rate.display).toBe("2/10 (20.00%)");
   });
 
   it("suppresses a rate under the small-n floor, never printing a number", () => {

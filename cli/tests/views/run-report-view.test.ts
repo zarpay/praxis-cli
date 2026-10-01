@@ -12,8 +12,9 @@ function finished(summary: Partial<EvalSummary>) {
     elapsedMs: 1_000,
     coverage: {
       sourceFiles: 5,
-      observed: { files: 4, rate: 0.8, display: "80% (4/5 files)" },
-      passing: { files: 3, rate: 0.6, display: "60% (3/5 files)" },
+      observed: { files: 4, rate: 0.8, display: "80.00% (4/5 files)" },
+      passing: { files: 3, rate: 0.6, display: "60.00% (3/5 files)" },
+      passingOfObserved: { files: 3, rate: 0.75, display: "75.00% (3/4 observed files)" },
     },
     run: {
       verdicts: [],
@@ -63,7 +64,7 @@ describe("runReportView", () => {
     expect(text).toContain("By reviewer:");
     expect(text).toMatch(/mercury\s*│\s*17\s*│\s*0\s*│\s*6/);
     expect(text).toMatch(/counter\s*│\s*23\s*│\s*0\s*│\s*0/);
-    expect(text).toMatch(/Not observed\s*│\s*1\/5\s*│\s*20%/);
+    expect(text).toMatch(/Not observed\s*│\s*1\/5\s*│\s*20\.00%/);
     expect(text).toContain("By type (verdicts from 2 reviewers):");
   });
 
@@ -88,9 +89,10 @@ describe("runReportView", () => {
 
     expect(text).toContain("Coverage:");
     expect(text).toMatch(/COVERAGE\s*│\s*FILES\s*│\s*RATE/);
-    expect(text).toMatch(/Observed\s*│\s*4\/5\s*│\s*80%/);
-    expect(text).toMatch(/Passing\s*│\s*3\/5\s*│\s*60%/);
-    expect(text).toMatch(/Not observed\s*│\s*1\/5\s*│\s*20%/);
+    expect(text).toMatch(/Observed\s*│\s*4\/5\s*│\s*80\.00%/);
+    expect(text).toMatch(/Passing\s*│\s*3\/5\s*│\s*60\.00%/);
+    expect(text).toMatch(/Passing of observed\s*│\s*3\/4\s*│\s*75\.00%/);
+    expect(text).toMatch(/Not observed\s*│\s*1\/5\s*│\s*20\.00%/);
   });
 
   it("labels the single-reviewer verdict tally, which no longer repeats not-validated", () => {

@@ -9,8 +9,9 @@ Behavior:
   on warnings. The report prints eval coverage beside the conformance
   tally — observed (the share of source files any spec governs) and
   passing (files every reviewer's verdict passes, the score to hold a
-  bar against) — so the gate states how much of the corpus it actually
-  gates, and how much of it currently clears.
+  bar against), plus passing over the observed files — so the gate
+  states how much of the corpus it actually gates, how much of it
+  currently clears, and how much of what it gates clears.
 
 Exit codes: 0 clean · 1 errors or unverified units · 2 usage.
 

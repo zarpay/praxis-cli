@@ -30,6 +30,6 @@ export function rateCell(numerator: number, denominator: number): RateCell {
     numerator,
     denominator,
     rate,
-    display: `${numerator}/${denominator} (${(rate * 100).toFixed(1)}%)`,
+    display: `${numerator}/${denominator} (${(rate * 100).toFixed(2)}%)`,
   };
 }

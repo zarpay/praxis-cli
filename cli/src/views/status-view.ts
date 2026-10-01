@@ -169,7 +169,7 @@ function lastRunStamp(iso: string): string {
   return `${stamp} UTC`;
 }
 
-/** The coverage slices as rows: governed, clearing, and no spec at all — one denominator. */
+/** The coverage slices as rows: three over the corpus, then passing over the observed files. */
 function coverageRows(coverage: StatusReport["coverage"]): string[][] {
   const unobserved = coverage.sourceFiles - coverage.observed.files;
   const unobservedRate = coverage.sourceFiles === 0 ? null : unobserved / coverage.sourceFiles;
@@ -186,5 +186,10 @@ function coverageRows(coverage: StatusReport["coverage"]): string[][] {
       percent(coverage.passing.rate),
     ],
     ["Not observed", `${unobserved}/${coverage.sourceFiles}`, percent(unobservedRate)],
+    [
+      "Passing of observed",
+      `${coverage.passingOfObserved.files}/${coverage.observed.files}`,
+      percent(coverage.passingOfObserved.rate),
+    ],
   ];
 }

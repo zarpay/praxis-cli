@@ -49,6 +49,7 @@ describe("compileExpertService", () => {
     });
 
     expect(result.alias).toBe("Scooper");
+    expect(result.output).toBe("agent-profiles/scooper.expert.md");
     expect(profileFor(root, "scooper")).toContain("The steward reviews services.");
   });
 

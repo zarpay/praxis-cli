@@ -27,10 +27,10 @@ describe("statLines", () => {
 });
 
 describe("percent", () => {
-  it("renders a 0-1 rate as a whole percent", () => {
-    expect(percent(0.7631)).toBe("76%");
-    expect(percent(0)).toBe("0%");
-    expect(percent(1)).toBe("100%");
+  it("renders a 0-1 rate as a percent to two decimals", () => {
+    expect(percent(0.7631)).toBe("76.31%");
+    expect(percent(0)).toBe("0.00%");
+    expect(percent(1)).toBe("100.00%");
   });
 
   it("renders a null rate as an em dash — unmeasurable, not zero", () => {

@@ -42,7 +42,7 @@ const compileExpertsService: Service<CompileExpertsInput, Promise<CompileExperts
         onProgress?.({ kind: "warning", message });
       }
 
-      onProgress?.({ kind: "compiled", alias: result.alias });
+      onProgress?.({ kind: "compiled", alias: result.alias, output: result.output });
       compiled++;
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);

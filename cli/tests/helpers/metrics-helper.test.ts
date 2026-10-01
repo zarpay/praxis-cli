@@ -6,7 +6,7 @@ describe("rateCell", () => {
   it("renders the rate with its denominator shown — never a bare count", () => {
     const cell = rateCell(3, 41);
 
-    expect(cell.display).toBe("3/41 (7.3%)");
+    expect(cell.display).toBe("3/41 (7.32%)");
     expect(cell.rate).toBeCloseTo(3 / 41);
   });
 
@@ -27,6 +27,6 @@ describe("rateCell", () => {
   it("renders a clean zero rate — zero violations is a claim, not absence", () => {
     const cell = rateCell(0, 20);
 
-    expect(cell.display).toBe("0/20 (0.0%)");
+    expect(cell.display).toBe("0/20 (0.00%)");
   });
 });

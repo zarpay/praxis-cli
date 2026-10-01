@@ -25,8 +25,9 @@ function report(fields: Partial<StatusReport> = {}): StatusReport {
     zeroMatchGlobs: [],
     coverage: {
       sourceFiles: 5,
-      observed: { files: 4, rate: 0.8, display: "80% (4/5 files)" },
-      passing: { files: 3, rate: 0.6, display: "60% (3/5 files)" },
+      observed: { files: 4, rate: 0.8, display: "80.00% (4/5 files)" },
+      passing: { files: 3, rate: 0.6, display: "60.00% (3/5 files)" },
+      passingOfObserved: { files: 3, rate: 0.75, display: "75.00% (3/4 observed files)" },
     },
     feedback: {
       critiques: 28,
@@ -85,9 +86,10 @@ describe("review state", () => {
     const text = reportText(statusView(report()));
 
     expect(text).toMatch(/COVERAGE\s*│\s*FILES\s*│\s*RATE/);
-    expect(text).toMatch(/Observed\s*│\s*4\/5\s*│\s*80%/);
-    expect(text).toMatch(/Passing\s*│\s*3\/5\s*│\s*60%/);
-    expect(text).toMatch(/Not observed\s*│\s*1\/5\s*│\s*20%/);
+    expect(text).toMatch(/Observed\s*│\s*4\/5\s*│\s*80\.00%/);
+    expect(text).toMatch(/Passing\s*│\s*3\/5\s*│\s*60\.00%/);
+    expect(text).toMatch(/Passing of observed\s*│\s*3\/4\s*│\s*75\.00%/);
+    expect(text).toMatch(/Not observed\s*│\s*1\/5\s*│\s*20\.00%/);
   });
 
   it("shows the last run with date and time", () => {
