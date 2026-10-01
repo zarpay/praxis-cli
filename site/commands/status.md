@@ -25,6 +25,7 @@ Praxis Project Status
 
 Last run: 2026-09-03 14:07 UTC
 
+
 Knowledge
   ┌───────────────┬───────┐
   │ KNOWLEDGE     │ COUNT │
@@ -36,15 +37,17 @@ Knowledge
   │ Axioms        │ 12    │
   └───────────────┴───────┘
 
+
 Coverage
-  ┌─────────────────────┬───────┬─────────┐
-  │ COVERAGE            │ FILES │ RATE    │
-  ├─────────────────────┼───────┼─────────┤
-  │ Observed            │ 52/84 │ 61.90%  │
-  │ Passing             │ 40/84 │ 47.62%  │
-  │ Not observed        │ 32/84 │ 38.10%  │
-  │ Passing of observed │ 40/52 │ 76.92%  │
-  └─────────────────────┴───────┴─────────┘
+  ┌─────────────────────┬───────┬────────┐
+  │ COVERAGE            │ FILES │ RATE   │
+  ├─────────────────────┼───────┼────────┤
+  │ Observed            │ 52/84 │ 61.90% │
+  │ Passing             │ 40/84 │ 47.62% │
+  │ Not observed        │ 32/84 │ 38.10% │
+  │ Passing of observed │ 40/52 │ 76.92% │
+  └─────────────────────┴───────┴────────┘
+
 
 Verdicts
   ┌──────────┬──────┬──────┬──────┬───────────────┐
@@ -53,6 +56,7 @@ Verdicts
   │ mercury  │ 15   │ 2    │ 6    │ 0             │
   │ counter  │ 23   │ 0    │ 0    │ 0             │
   └──────────┴──────┴──────┴──────┴───────────────┘
+
 
 Feedback
   ┌───────────────────┬───────┐
@@ -89,17 +93,17 @@ Exit 1 when any structural issue is found — the same count the closing line pr
     "sourceFiles": 84,
     "observed": {
       "files": 52,
-      "rate": 0.619,
+      "rate": 0.6190476190476191,
       "display": "61.90% (52/84 files)"
     },
     "passing": {
       "files": 40,
-      "rate": 0.476,
+      "rate": 0.47619047619047616,
       "display": "47.62% (40/84 files)"
     },
     "passingOfObserved": {
       "files": 40,
-      "rate": 0.769,
+      "rate": 0.7692307692307693,
       "display": "76.92% (40/52 observed files)"
     }
   },

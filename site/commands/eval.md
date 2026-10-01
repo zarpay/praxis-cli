@@ -59,6 +59,8 @@ praxis eval run --fail-fast
 | `--verbose`         | Show full AI reasoning for each document                        |
 | `--no-cache`        | Skip the cache for all documents                                |
 | `--fail-fast`       | Stop at the first error instead of continuing                   |
+| `--spec <path>`     | Review a single target against this spec file                   |
+| `--json`            | Machine-readable outcome on stdout (see below)                  |
 
 With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` tag and the summary adds a `By reviewer:` breakdown — one row per reviewer, never pooled.
 
@@ -66,20 +68,23 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 
 ```
 [1/4] src/services/apply-discount.ts
-	✓ PASS
+  ✓ PASS
+
 [2/4] src/services/rank-parlors.ts
-	⚠ WARN
-	· The happy path begins before the parlor id is validated.
+  ⚠ WARN
+  · The happy path begins before the parlor id is validated.
+
 [3/4] src/services/redeem-coupon.ts
-	✗ FAIL
-	· Error message 'bad input' tells the consumer nothing about what
-	  was wrong or what would be accepted.
+  ✗ FAIL
+  · Error message 'bad input' tells the consumer nothing about what was wrong or what would be accepted.
+
 [4/4] src/services/send-newsletter.ts
-	✓ PASS
+  ✓ PASS
 
 ==================================================
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
+
 Coverage:
   ┌─────────────────────┬───────┬─────────┐
   │ COVERAGE            │ FILES │ RATE    │

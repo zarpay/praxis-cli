@@ -67,8 +67,8 @@ praxis compile
 ```
 
 ```
-[OK] Compiled agent-profiles/scooper.expert.md
 [OK] Compiled agent-profiles/sundae.expert.md
+[OK] Compiled agent-profiles/scooper.expert.md
 [OK] Compiled agent-profiles/taster.expert.md
 
 Compiled 3 agent(s) (up-to-date)
