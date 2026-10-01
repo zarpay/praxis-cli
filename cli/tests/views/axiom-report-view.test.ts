@@ -18,7 +18,7 @@ function report(overrides: Partial<AxiomReport> = {}): AxiomReport {
     rows: [
       {
         reviewerName: "flash",
-        rate: { display: "1/5 (20.0%)", suppressed: false },
+        rate: { display: "1/5 (20.00%)", suppressed: false },
         asOf: "2026-09-08T10:00:00.000Z",
         files: 1,
         byPopulation: { pre_spec: 1, post_spec: 2, unknown: 0 },
@@ -46,7 +46,7 @@ describe("axiomReportView", () => {
     expect(text).toContain("derives from");
     expect(text).toContain("src/services/README.md#behavior");
     expect(text).toContain("flash");
-    expect(text).toContain("1/5 (20.0%)");
+    expect(text).toContain("1/5 (20.00%)");
     expect(text).toContain("Representative critiques");
     expect(text).toContain("src/services/redeem-coupon.ts");
   });

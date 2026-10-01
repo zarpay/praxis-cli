@@ -86,6 +86,8 @@ Compiles to:
 agent-profiles/scooper.expert.md
 ```
 
+An alias that already ends in `.expert` gets the suffix once: `alias: guards.expert` compiles to `agent-profiles/guards.expert.md`, not `guards.expert.expert.md`.
+
 `alias` is required — a file without one is not an expert, and a compile sweep reports it as a problem rather than inventing a fallback name.
 
 ## Pure profiles vs plugin output

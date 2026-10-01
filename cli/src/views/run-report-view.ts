@@ -149,9 +149,10 @@ function summary(totals: EvalSummary, coverage: EvalCoverage): DisplayEntry[] {
 }
 
 /**
- * The coverage slices as rows over one denominator, the corpus:
- * governed, clearing, and no spec at all. Observed and Not observed
- * partition the corpus; Passing is the subset of Observed that clears.
+ * The coverage slices as rows: governed, clearing, and no spec at all
+ * over the corpus, then the clearing share of the governed files.
+ * Observed and Not observed partition the corpus; Passing is the subset
+ * of Observed that clears; the last row is that subset over Observed.
  */
 function coverageTable(coverage: EvalCoverage): string[] {
   const unobserved = coverage.sourceFiles - coverage.observed.files;
@@ -169,6 +170,11 @@ function coverageTable(coverage: EvalCoverage): string[] {
       percent(coverage.passing.rate),
     ],
     ["Not observed", `${unobserved}/${coverage.sourceFiles}`, percent(unobservedRate)],
+    [
+      "Passing of observed",
+      `${coverage.passingOfObserved.files}/${coverage.observed.files}`,
+      percent(coverage.passingOfObserved.rate),
+    ],
   ];
 
   return table(rows, ["COVERAGE", "FILES", "RATE"]);

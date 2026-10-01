@@ -13,7 +13,7 @@ praxis status --json
 
 - **Situational facts** — last run (date and time), and whether an epoch boundary is waiting for a baseline run. Always shown.
 - **Knowledge** — authored documents by type plus the active axioms. Only when the spec-layer compiler is in use (the configured experts directory exists).
-- **Coverage** — three rows over one denominator, every file under `sources` minus `ignore` (spec files, templates, and the authored taxonomy count on neither side): **observed**, files at least one spec governs; **passing**, the score a CI can rely on — files whose recorded verdict is compliant from every configured reviewer, so unreviewed, warned, and failed files count against it; and **not observed**, the remainder no spec governs. Observed and not observed partition the corpus; passing is the subset of observed that clears. These are the numbers a team maintains the way it maintains test coverage.
+- **Coverage** — three rows over one denominator, every file under `sources` minus `ignore` (spec files, templates, and the authored taxonomy count on neither side): **observed**, files at least one spec governs; **passing**, the score a CI can rely on — files whose recorded verdict is compliant from every configured reviewer, so unreviewed, warned, and failed files count against it; and **not observed**, the remainder no spec governs. Observed and not observed partition the corpus; passing is the subset of observed that clears. A fourth row, **passing of observed**, puts that same passing count over the observed files instead of the corpus, so you can read how much of what the specs cover currently clears, apart from how much they cover. Every rate prints to two decimals. These are the numbers a team maintains the way it maintains test coverage.
 - **Verdicts** — pass / warn / fail / not-validated counts per reviewer, read from the committed cache. One row per reviewer, never pooled.
 - **Feedback** — the critique lifecycle: every critique on the ledger, and how many are labeled, untriaged, awaiting curation, dismissed, or advisory.
 - **Structural issues** — found without any LLM call, compiler projects only: dangling references, orphaned practices, experts missing descriptions, experts that fail to parse, globs matching nothing.
@@ -24,6 +24,7 @@ praxis status --json
 Praxis Project Status
 
 Last run: 2026-09-03 14:07 UTC
+
 
 Knowledge
   ┌───────────────┬───────┐
@@ -36,14 +37,17 @@ Knowledge
   │ Axioms        │ 12    │
   └───────────────┴───────┘
 
+
 Coverage
-  ┌──────────────┬───────┬──────┐
-  │ COVERAGE     │ FILES │ RATE │
-  ├──────────────┼───────┼──────┤
-  │ Observed     │ 52/84 │ 62%  │
-  │ Passing      │ 40/84 │ 48%  │
-  │ Not observed │ 32/84 │ 38%  │
-  └──────────────┴───────┴──────┘
+  ┌─────────────────────┬───────┬────────┐
+  │ COVERAGE            │ FILES │ RATE   │
+  ├─────────────────────┼───────┼────────┤
+  │ Observed            │ 52/84 │ 61.90% │
+  │ Passing             │ 40/84 │ 47.62% │
+  │ Not observed        │ 32/84 │ 38.10% │
+  │ Passing of observed │ 40/52 │ 76.92% │
+  └─────────────────────┴───────┴────────┘
+
 
 Verdicts
   ┌──────────┬──────┬──────┬──────┬───────────────┐
@@ -52,6 +56,7 @@ Verdicts
   │ mercury  │ 15   │ 2    │ 6    │ 0             │
   │ counter  │ 23   │ 0    │ 0    │ 0             │
   └──────────┴──────┴──────┴──────┴───────────────┘
+
 
 Feedback
   ┌───────────────────┬───────┐
@@ -86,8 +91,21 @@ Exit 1 when any structural issue is found — the same count the closing line pr
   },
   "coverage": {
     "sourceFiles": 84,
-    "observed": { "files": 52, "rate": 0.62, "display": "62% (52/84 files)" },
-    "passing": { "files": 40, "rate": 0.48, "display": "48% (40/84 files)" }
+    "observed": {
+      "files": 52,
+      "rate": 0.6190476190476191,
+      "display": "61.90% (52/84 files)"
+    },
+    "passing": {
+      "files": 40,
+      "rate": 0.47619047619047616,
+      "display": "47.62% (40/84 files)"
+    },
+    "passingOfObserved": {
+      "files": 40,
+      "rate": 0.7692307692307693,
+      "display": "76.92% (40/52 observed files)"
+    }
   },
   "feedback": {
     "critiques": 118,

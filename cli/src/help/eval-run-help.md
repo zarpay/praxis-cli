@@ -31,11 +31,13 @@ JSON (--json), stable contract, two modes:
               errors, unverified, notValidated, byType, byReviewer },
               cache { hits, misses },
               coverage { sourceFiles, observed { files, rate, display },
-                         passing { files, rate, display } } }
+                         passing { files, rate, display },
+                         passingOfObserved { files, rate, display } } }
   coverage measures the source corpus: observed is the share of files
   any spec governs; passing is the CI-grade score — files every
-  configured reviewer's verdict passes. The corpus report prints both
-  beside the tally.
+  configured reviewer's verdict passes; passingOfObserved is that same
+  count over the observed files rather than the corpus. The corpus
+  report prints all of them beside the tally, rates to two decimals.
 
 Exit codes: 0 no violations · 1 violations or run failure · 2 usage.
 

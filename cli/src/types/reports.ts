@@ -80,7 +80,9 @@ export interface StatusReport {
  * one denominator: `observed` is structural (a spec governs the file),
  * `passing` is the verdict-backed score (every configured reviewer's
  * recorded verdict is compliant — an ungoverned, unreviewed, warned, or
- * failed file counts against it). Spec files, templates, and the
+ * failed file counts against it). A third, `passingOfObserved`, puts
+ * the passing count over the observed files instead, so a team can
+ * read how much of what it covers clears, apart from how much it covers. Spec files, templates, and the
  * authored taxonomy (experts, practices, compiled profiles) are
  * direction rather than corpus and count on neither side. A census,
  * not a sample: the small-n floor does not apply.
@@ -92,14 +94,20 @@ export interface EvalCoverage {
   observed: EvalCoverageSlice;
   /** Files every configured reviewer's recorded verdict passes. */
   passing: EvalCoverageSlice;
+  /**
+   * The same passing files over the observed files instead of the
+   * corpus: the share of what specs cover that currently clears. Null
+   * rate when nothing is observed.
+   */
+  passingOfObserved: EvalCoverageSlice;
 }
 
-/** One coverage slice: a file count over the corpus. */
+/** One coverage slice: a file count over its denominator. */
 export interface EvalCoverageSlice {
   files: number;
-  /** files / sourceFiles in 0–1, or null when there are no source files. */
+  /** files / denominator in 0–1, or null when the denominator is empty. */
   rate: number | null;
-  /** Render-ready, per the surface rule: "62% (52/84 files)". */
+  /** Render-ready, per the surface rule: "61.90% (52/84 files)". */
   display: string;
 }
 
@@ -160,7 +168,7 @@ export interface RateCell {
   denominator: number;
   /** Null when the cell is below the small-n floor. */
   rate: number | null;
-  /** "3/41 (7.3%)" or "insufficient data (n<5)". */
+  /** "3/41 (7.32%)" or "insufficient data (n<5)". */
   display: string;
 }
 

@@ -27,8 +27,10 @@ interface CompileExpertInput {
 
 /** What compiling one expert produced. */
 interface CompileExpertResult {
-  /** The expert's alias, and the compiled file's basename. */
+  /** The expert's alias. */
   alias: string;
+  /** Root-relative path of the written profile, or null when only plugins wrote. */
+  output: string | null;
   /** Author-facing problems encountered while inlining content. */
   warnings: string[];
 }
@@ -81,14 +83,14 @@ const compileExpertService: Service<CompileExpertInput, Promise<CompileExpertRes
     reference: reference.bodies,
   });
 
-  writeProfileOutputsService(cfg, {
+  const output = writeProfileOutputsService(cfg, {
     profile,
     metadata,
     alias: expert.alias,
     plugins,
   });
 
-  return { alias: expert.alias, warnings };
+  return { alias: expert.alias, output, warnings };
 };
 
 export default compileExpertService;

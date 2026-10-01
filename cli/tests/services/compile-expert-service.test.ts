@@ -49,7 +49,20 @@ describe("compileExpertService", () => {
     });
 
     expect(result.alias).toBe("Scooper");
+    expect(result.output).toBe("agent-profiles/scooper.expert.md");
     expect(profileFor(root, "scooper")).toContain("The steward reviews services.");
+  });
+
+  it("adds the .expert suffix once when the alias already carries it", async () => {
+    const { root, result } = await compile({
+      "knowledge/experts/steward.md": expert(
+        'title: G\ntype: expert\nalias: guards.expert\ndescription: "d"',
+      ),
+    });
+
+    expect(result.output).toBe("agent-profiles/guards.expert.md");
+    expect(existsSync(join(root, "agent-profiles", "guards.expert.md"))).toBe(true);
+    expect(existsSync(join(root, "agent-profiles", "guards.expert.expert.md"))).toBe(false);
   });
 
   it("inlines what the expert references, so the profile stands alone", async () => {

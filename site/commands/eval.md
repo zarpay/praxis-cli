@@ -59,6 +59,8 @@ praxis eval run --fail-fast
 | `--verbose`         | Show full AI reasoning for each document                        |
 | `--no-cache`        | Skip the cache for all documents                                |
 | `--fail-fast`       | Stop at the first error instead of continuing                   |
+| `--spec <path>`     | Review a single target against this spec file                   |
+| `--json`            | Machine-readable outcome on stdout (see below)                  |
 
 With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` tag and the summary adds a `By reviewer:` breakdown — one row per reviewer, never pooled.
 
@@ -66,28 +68,32 @@ With multiple reviewers configured, progress lines carry a `[reviewer: <name>]` 
 
 ```
 [1/4] src/services/apply-discount.ts
-	✓ PASS
+  ✓ PASS
+
 [2/4] src/services/rank-parlors.ts
-	⚠ WARN
-	· The happy path begins before the parlor id is validated.
+  ⚠ WARN
+  · The happy path begins before the parlor id is validated.
+
 [3/4] src/services/redeem-coupon.ts
-	✗ FAIL
-	· Error message 'bad input' tells the consumer nothing about what
-	  was wrong or what would be accepted.
+  ✗ FAIL
+  · Error message 'bad input' tells the consumer nothing about what was wrong or what would be accepted.
+
 [4/4] src/services/send-newsletter.ts
-	✓ PASS
+  ✓ PASS
 
 ==================================================
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
+
 Coverage:
-  ┌───────────────┬───────┬──────┐
-  │ COVERAGE      │ FILES │ RATE │
-  ├───────────────┼───────┼──────┤
-  │ Observed      │ 4/4   │ 100% │
-  │ Passing       │ 2/4   │ 50%  │
-  │ Not validated │ 0/4   │ 0%   │
-  └───────────────┴───────┴──────┘
+  ┌─────────────────────┬───────┬─────────┐
+  │ COVERAGE            │ FILES │ RATE    │
+  ├─────────────────────┼───────┼─────────┤
+  │ Observed            │ 4/4   │ 100.00% │
+  │ Passing             │ 2/4   │ 50.00%  │
+  │ Not observed        │ 0/4   │ 0.00%   │
+  │ Passing of observed │ 2/4   │ 50.00%  │
+  └─────────────────────┴───────┴─────────┘
 
 Verdicts:
 
@@ -115,7 +121,7 @@ Critiques print raw — the reviewer's own words against the spec. Labels come l
 
 ### `praxis eval ci`
 
-A full run with a structured summary, for pull request pipelines. The summary prints eval coverage beside the conformance tally — observed and passing — so the gate states how much of the corpus it actually gates, and how much of it currently clears. Passing is the number to hold a bar against.
+A full run with a structured summary, for pull request pipelines. The summary prints eval coverage beside the conformance tally — observed, passing, and passing of observed — so the gate states how much of the corpus it actually gates, how much of it currently clears, and how much of what it gates clears. Passing is the number to hold a bar against.
 
 ```bash
 praxis eval ci
@@ -135,7 +141,7 @@ praxis eval ci --strict
 
 ### `--json`: the fast loop's delivery
 
-`praxis eval run <target> --json` emits the outcome as stable JSON on stdout — the feedback a coding agent or a CI hook consumes directly. Critiques carry their raw text (labels are applied later, at triage, and appear in reports); corpus mode emits the run summary plus `coverage { sourceFiles, observed { files, rate, display }, passing { files, rate, display } }` — observed is the share of source files any spec governs; passing is the CI-grade score, files every reviewer's verdict passes. `eval verdict` and bare `praxis` take `--json` too.
+`praxis eval run <target> --json` emits the outcome as stable JSON on stdout — the feedback a coding agent or a CI hook consumes directly. Critiques carry their raw text (labels are applied later, at triage, and appear in reports); corpus mode emits the run summary plus `coverage { sourceFiles, observed { files, rate, display }, passing { files, rate, display }, passingOfObserved { files, rate, display } }` — observed is the share of source files any spec governs; passing is the CI-grade score, files every reviewer's verdict passes; passingOfObserved is that count over the observed files instead of the corpus. `eval verdict` and bare `praxis` take `--json` too.
 
 ## `praxis eval verdict <path>`
 
@@ -245,7 +251,7 @@ A target that cannot be reviewed at all — unreadable, or a cohort too large fo
 
 The read side of the ledger — never a reviewer call. Scopes compose: `eval report [path|glob]` for files (a bare directory reads as everything under it), `--commit <sha>` / `--commits <shas...>` for a commit or a PR's set, `--branch`, `--since <date|ref>`, and `--axiom <id>` for the single-category drill-down. Every invocation prints the same discipline:
 
-- rates as `violations/opportunities (x%)` with the denominator always shown; cells under the small-n floor (5) render **insufficient data**, never a number. Current stock anchors to the latest *evidenced* corpus run (one with cache misses) and prints its date — an all-hit run proves nothing new and never moves the anchor
+- rates as `violations/opportunities (x.xx%)`, two decimals, with the denominator always shown; cells under the small-n floor (5) render **insufficient data**, never a number. Current stock anchors to the latest *evidenced* corpus run (one with cache misses) and prints its date — an all-hit run proves nothing new and never moves the anchor
 - one reviewer, one series — never pooled; every count qualified by population (pre-spec / post-spec / unknown, derived from git birthdates against each axiom's clock)
 - epoch boundaries as named furniture; nothing trends across one
 - costs, the dismissed-as-invalid rate (the reviewer-trust signal), and the two queues

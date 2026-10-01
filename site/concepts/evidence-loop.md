@@ -62,19 +62,24 @@ praxis eval report --axiom AX-b951db
 
 ```
 
-  ╭─ AX-b951db v1 ────────────────────────────────────────────────────╮
-  │ status        ● active                                            │
-  │ derives from  src/services/README.md#behavior                     │
-  │ introduced    2026-09-02                                          │
-  │                                                                   │
-  │ Error messages written for the implementer, not the API consumer. │
-  ╰───────────────────────────────────────────────────────────────────╯
+  ╭─ AX-b951db v1 ───────────────────────────────────────────────────────────╮
+  │ status        ● active                                                   │
+  │ derives from  src/services/README.md#behavior                            │
+  │ introduced    2026-09-02                                                 │
+  │                                                                          │
+  │ Error messages written for the implementer, not the API consumer.        │
+  ╰──────────────────────────────────────────────────────────────────────────╯
 
-  ┌──────────┬────────────────────────────────┬───────┬──────────┬───────────┬─────────┐
-  │ REVIEWER │ CURRENT STOCK                  │ FILES │ PRE-SPEC │ POST-SPEC │ UNKNOWN │
-  ├──────────┼────────────────────────────────┼───────┼──────────┼───────────┼─────────┤
-  │ flash    │ 3/41 (7.3%) (as of 2026-09-05) │ 3     │ 2        │ 1         │ 0       │
-  └──────────┴────────────────────────────────┴───────┴──────────┴───────────┴─────────┘
+  ┌──────────┬─────────────────────────────────┬───────┬──────────┬───────────┬─────────┐
+  │ REVIEWER │ CURRENT STOCK                   │ FILES │ PRE-SPEC │ POST-SPEC │ UNKNOWN │
+  ├──────────┼─────────────────────────────────┼───────┼──────────┼───────────┼─────────┤
+  │ flash    │ 3/41 (7.32%) (as of 2026-09-05) │ 3     │ 2        │ 1         │ 0       │
+  └──────────┴─────────────────────────────────┴───────┴──────────┴───────────┴─────────┘
+
+Representative critiques
+
+src/services/rank-parlors.ts [flash] 20260905T120055686Z-539cf1af:6
+  The error message 'invalid input' violates the specification's requirement that error messages must name what was wrong and what would be accepted instead.
 ```
 
 This is what naming buys you: a failure mode with an id can never recur quietly again — every new instance is labeled, counted, and visible. Whatever triage can't confidently label lands in the curation queue for the next human curate session — today's raw critique is tomorrow's category. And because axioms never enter the review, activating one costs nothing: no cache invalidation, no re-review — the reviewer's question changes only when the spec does.
@@ -85,7 +90,7 @@ For a developer or an agent, the label is a link, not a lecture: `praxis axioms 
 
 A raw critique can't be charted: its wording varies by run and by reviewer. An axiom can. `praxis eval report` computes over the ledger (never calling a reviewer):
 
-- **Rates with denominators, always** — `3/41 (7.3%)` violations per applicable opportunity; any cell under the small-n floor renders *insufficient data*, never a number.
+- **Rates with denominators, always** — `3/41 (7.32%)` violations per applicable opportunity, to two decimals; any cell under the small-n floor renders *insufficient data*, never a number.
 - **One reviewer, one series** — reviewers are separate instruments; their numbers are never pooled.
 - **Populations** — every count is qualified pre-spec / post-spec against the axiom's `introduced` date, so old debt is never dressed up as new failure. `praxis debt report` charts that pre-spec backlog honestly: baseline stock, paydown, who paid it down, where it concentrates.
 - **Epochs** — a reviewer's behavioral identity (config + prompt surface) is hashed onto every run. Change the model and you've changed the instrument: praxis announces the boundary, the next full run opens a new baseline, and no trend line crosses it.

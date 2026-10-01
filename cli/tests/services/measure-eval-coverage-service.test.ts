@@ -63,7 +63,7 @@ describe("observed — the structural slice", () => {
     expect(coverage.sourceFiles).toBe(4);
     expect(coverage.observed.files).toBe(2);
     expect(coverage.observed.rate).toBe(0.5);
-    expect(coverage.observed.display).toBe("50% (2/4 files)");
+    expect(coverage.observed.display).toBe("50.00% (2/4 files)");
   });
 
   it("honors ignore patterns on the denominator", () => {
@@ -73,7 +73,7 @@ describe("observed — the structural slice", () => {
     const coverage = measureEvalCoverageService(cfg, {});
 
     expect(coverage.sourceFiles).toBe(2);
-    expect(coverage.observed.display).toBe("100% (2/2 files)");
+    expect(coverage.observed.display).toBe("100.00% (2/2 files)");
   });
 
   it("excludes the authored taxonomy from the corpus — direction, not corpus", () => {
@@ -98,7 +98,7 @@ describe("observed — the structural slice", () => {
     const coverage = measureEvalCoverageService(cfg, {});
 
     expect(coverage.sourceFiles).toBe(1);
-    expect(coverage.observed.display).toBe("100% (1/1 files)");
+    expect(coverage.observed.display).toBe("100.00% (1/1 files)");
   });
 
   it("a spec's excludes: leave files in the corpus but unobserved", () => {
@@ -119,7 +119,7 @@ describe("observed — the structural slice", () => {
     const coverage = measureEvalCoverageService(cfg, {});
 
     expect(coverage.sourceFiles).toBe(2);
-    expect(coverage.observed.display).toBe("50% (1/2 files)");
+    expect(coverage.observed.display).toBe("50.00% (1/2 files)");
   });
 
   it("reports no corpus rather than a rate when sources hold no files", () => {
@@ -147,7 +147,7 @@ describe("passing — the verdict-backed score", () => {
 
     expect(coverage.observed.files).toBe(2);
     expect(coverage.passing.files).toBe(0);
-    expect(coverage.passing.display).toBe("0% (0/4 files)");
+    expect(coverage.passing.display).toBe("0.00% (0/4 files)");
   });
 
   it("counts a file only when every configured reviewer's verdict passes", () => {
@@ -162,7 +162,38 @@ describe("passing — the verdict-backed score", () => {
     const coverage = measureEvalCoverageService(cfg, {});
 
     expect(coverage.passing.files).toBe(1);
-    expect(coverage.passing.display).toBe("25% (1/4 files)");
+    expect(coverage.passing.display).toBe("25.00% (1/4 files)");
+  });
+
+  it("also reports passing over the observed files, apart from how much is observed", () => {
+    const root = partiallyGovernedProject();
+    const cfg = testConfig(root, { sources: ["src"], reviewers: REVIEWERS });
+
+    cache(root, REVIEWERS[0], "a.ts", PASS);
+    cache(root, REVIEWERS[1], "a.ts", PASS);
+
+    const coverage = measureEvalCoverageService(cfg, {});
+
+    // 1 of 4 corpus files passes, but 1 of the 2 observed files does.
+    expect(coverage.passing.rate).toBe(0.25);
+    expect(coverage.passingOfObserved.files).toBe(1);
+    expect(coverage.passingOfObserved.rate).toBe(0.5);
+    expect(coverage.passingOfObserved.display).toBe("50.00% (1/2 observed files)");
+  });
+
+  it("passing over observed is not measurable when no spec governs anything", () => {
+    const { root, cleanup } = createValidatorTmpdir({
+      sources: ["src"],
+      files: { "src/a.ts": "a\n" },
+    });
+    cleanups.push(cleanup);
+    const cfg = testConfig(root, { sources: ["src"], reviewers: REVIEWERS });
+
+    const coverage = measureEvalCoverageService(cfg, {});
+
+    expect(coverage.observed.files).toBe(0);
+    expect(coverage.passingOfObserved.rate).toBeNull();
+    expect(coverage.passingOfObserved.display).toBe("no observed files under sources");
   });
 
   it("a failed verdict from any reviewer keeps the file out of passing", () => {

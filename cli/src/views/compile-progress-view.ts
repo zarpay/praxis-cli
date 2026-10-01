@@ -1,6 +1,8 @@
 import type { CompileProgress } from "@/types.js";
 import type { View } from "@framework/types.js";
 
+import { compiledLine } from "@/views/compile-result-view.js";
+
 /**
  * One compile event as it happens.
  *
@@ -9,7 +11,7 @@ import type { View } from "@framework/types.js";
  */
 const compileProgressView: View<CompileProgress> = (event) => {
   if (event.kind === "compiled") {
-    return [{ channel: "success", text: `Compiled ${event.alias.toLowerCase()}.expert.md` }];
+    return [{ channel: "success", text: compiledLine(event.alias, event.output) }];
   }
 
   if (event.kind === "skipped") {

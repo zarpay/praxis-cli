@@ -40,7 +40,7 @@ export interface CompileExpertsInput {
 
 /** What happened to one expert during a full compile. */
 export type CompileProgress =
-  | { kind: "compiled"; alias: string }
+  | { kind: "compiled"; alias: string; output: string | null }
   | { kind: "skipped"; file: string; reason: string }
   | { kind: "warning"; message: string };
 

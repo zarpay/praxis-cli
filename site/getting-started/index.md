@@ -87,29 +87,33 @@ praxis eval run
 ```
 
 ```
-[1/4] apply-discount.ts
-	✓ PASS
-[2/4] rank-parlors.ts
-	✓ PASS
-[3/4] redeem-coupon.ts
-	✗ FAIL
-	· Error message 'bad input' tells the consumer nothing about what
-	  was wrong or what would be accepted.
-	· Work begins before the coupon code is validated.
-[4/4] send-newsletter.ts
-	✓ PASS
+[1/4] src/services/apply-discount.ts
+  ✓ PASS
+
+[2/4] src/services/rank-parlors.ts
+  ✓ PASS
+
+[3/4] src/services/redeem-coupon.ts
+  ✗ FAIL
+  · Error message 'bad input' tells the consumer nothing about what was wrong or what would be accepted.
+  · Work begins before the coupon code is validated.
+
+[4/4] src/services/send-newsletter.ts
+  ✓ PASS
 
 ==================================================
 Summary — corpus conformance (includes pre-spec debt)
 ==================================================
+
 Coverage:
-  ┌───────────────┬───────┬──────┐
-  │ COVERAGE      │ FILES │ RATE │
-  ├───────────────┼───────┼──────┤
-  │ Observed      │ 4/4   │ 100% │
-  │ Passing       │ 3/4   │ 75%  │
-  │ Not validated │ 0/4   │ 0%   │
-  └───────────────┴───────┴──────┘
+  ┌─────────────────────┬───────┬─────────┐
+  │ COVERAGE            │ FILES │ RATE    │
+  ├─────────────────────┼───────┼─────────┤
+  │ Observed            │ 4/4   │ 100.00% │
+  │ Passing             │ 3/4   │ 75.00%  │
+  │ Not observed        │ 0/4   │ 0.00%   │
+  │ Passing of observed │ 3/4   │ 75.00%  │
+  └─────────────────────┴───────┴─────────┘
 
 Verdicts:
 
@@ -121,6 +125,10 @@ By type:
   ├──────────────┼───────────────┤
   │ src/services │ 3/4 compliant │
   └──────────────┴───────────────┘
+
+[CACHE] Hits: 0, Misses: 4
+
+[SPEND] Time: 58s, Cost: $0.0041
 ```
 
 Notice what *isn't* here: `legacy-import.ts`. An exclusion in frontmatter is structural — the file never becomes a review unit, and the reviewer never sees it.

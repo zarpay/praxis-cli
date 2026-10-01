@@ -1,6 +1,7 @@
 When to use: a health check in one call, as four tables — Knowledge
 (documents by type, active axioms), Coverage (observed / passing / not
-observed over the source corpus), Verdicts (per-reviewer review
+observed over the source corpus, and passing over the observed files),
+Verdicts (per-reviewer review
 state), and Feedback (the critique lifecycle) — plus structural
 issues.
 
@@ -14,15 +15,19 @@ Behavior:
   observed — files at least one spec governs — passing, the score a CI
   can rely on (a compliant recorded verdict from every configured
   reviewer; unreviewed, warned, and failed files count against it),
-  and not observed, the remainder no spec governs. These are the
-  numbers a team maintains the way it maintains test coverage.
+  and not observed, the remainder no spec governs. A fourth row,
+  passing of observed, puts the same passing count over the observed
+  files: how much of what the specs cover currently clears, apart
+  from how much they cover. Rates print to two decimals. These are
+  the numbers a team maintains the way it maintains test coverage.
 
 JSON (--json):
   { compilerInUse,
     counts { experts, practices, references, context, axioms },
     validation [ { reviewer, pass, warn, fail, notValidated } ],
     coverage { sourceFiles, observed { files, rate, display },
-               passing { files, rate, display } },
+               passing { files, rate, display },
+               passingOfObserved { files, rate, display } },
     feedback { critiques, labeled, untriaged, awaitingCuration,
                dismissed, advisory },
     issueCount,
@@ -32,7 +37,8 @@ JSON (--json):
     expertsMissingDescription, zeroMatchGlobs }
   Stable contract. evalState is the situational poll: what needs doing,
   from one call, before any discovery crawl. A coverage slice's rate is
-  0-1 or null when sources hold no files; display is the render-ready
+  0-1 or null when its denominator is empty (no source files; for
+  passingOfObserved, no observed files); display is the render-ready
   form; not observed derives as sourceFiles minus observed.files.
 
 Examples:
