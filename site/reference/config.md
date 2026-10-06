@@ -239,7 +239,12 @@ export default function internalProvider() {
       //          baseUrl, apiKey (resolved), options
       // call anything; return the normalized contract:
       return {
-        verdict: { compliant: true, issues: [], reason: "..." },
+        verdict: {
+          compliant: false,
+          severity: "warning", // "warning" | "error" — see below
+          issues: ["the error message does not say what would be accepted"],
+          reason: "One advisory deviation.",
+        },
         usage: { promptTokens: 812, completionTokens: 41, costUsd: null },
       };
     },
@@ -247,7 +252,20 @@ export default function internalProvider() {
 }
 ```
 
+**The verdict contract**, field by field:
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `compliant` | yes | Whether the target satisfies its spec |
+| `reason` | yes | The overall explanation, shown with the verdict |
+| `issues` | yes | The specific deviations; `[]` when compliant. Each entry is a plain string, or `{ text }` |
+| `severity` | on a **non-compliant** verdict | `"warning"` (advisory, does not fail a run) or `"error"` (fails the run, and CI). **Omitted on a non-compliant verdict it defaults to `"error"`** — so a provider that never sets it can only ever produce failures |
+
+`usage` is `{ promptTokens, completionTokens, costUsd }`, each `null` where your backend does not report it; return `null` for the whole object if it reports none.
+
 A provider may also implement `complete(request)` — the raw structured-output call the [curator](#curator) uses. Only providers that implement it can back the curator.
+
+A complete, runnable example ships with the project: the demo's [`word-count.js`](https://github.com/zarpay/praxis-cli/blob/main/demo/praxis-providers/word-count.js) is a real configured reviewer that makes no network call at all.
 
 `options` is passed to the provider verbatim. For the built-in OpenRouter provider it is spread into the request body first, so it can add backend fields (routing, reasoning settings) but never overrides `model`, `temperature`, or the tool-calling protocol. `stream` is owned too and pinned off: the provider reads one whole JSON body to get one tool call out of it, and a streamed response cannot be parsed that way. Praxis shows a live elapsed line while a call runs instead — a tool call's arguments are not usable until they are complete. Both `provider` and `options` are part of the reviewer's behavioral identity: changing them re-reviews that reviewer's targets. A local provider module is code your project runs — treat it with the same trust as an npm script.
 

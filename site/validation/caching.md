@@ -23,15 +23,15 @@ Each target has exactly one cache file — its complete review state, across all
 {
   "version": "5.0",
   "verdicts": {
-    "a1b2c3d4:f83a92f1": {
+    "0311531a:e028f7f6": {
       "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "f83a92f1"
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T14:30:45.123Z",
-      "content_hash": "abcd1234",
+      "cached_at": "2026-09-14T21:41:44.993Z",
+      "content_hash": "ecc6b3c2",
       "context_files": [{ "path": "src/domain/types.ts", "hash": "f1d20738" }],
       "result": {
         "compliant": false,

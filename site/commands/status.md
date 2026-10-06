@@ -21,9 +21,10 @@ praxis status --json
 ## Example output
 
 ```
+
 Praxis Project Status
 
-Last run: 2026-09-03 14:07 UTC
+Last run: 2026-10-06 11:39 UTC
 
 
 Knowledge
@@ -34,7 +35,7 @@ Knowledge
   │ Practices     │ 3     │
   │ References    │ 1     │
   │ Context files │ 4     │
-  │ Axioms        │ 12    │
+  │ Axioms        │ 16    │
   └───────────────┴───────┘
 
 
@@ -42,10 +43,10 @@ Coverage
   ┌─────────────────────┬───────┬────────┐
   │ COVERAGE            │ FILES │ RATE   │
   ├─────────────────────┼───────┼────────┤
-  │ Observed            │ 52/84 │ 61.90% │
-  │ Passing             │ 40/84 │ 47.62% │
-  │ Not observed        │ 32/84 │ 38.10% │
-  │ Passing of observed │ 40/52 │ 76.92% │
+  │ Observed            │ 29/38 │ 76.32% │
+  │ Passing             │ 22/38 │ 57.89% │
+  │ Not observed        │ 9/38  │ 23.68% │
+  │ Passing of observed │ 22/29 │ 75.86% │
   └─────────────────────┴───────┴────────┘
 
 
@@ -53,7 +54,7 @@ Verdicts
   ┌──────────┬──────┬──────┬──────┬───────────────┐
   │ REVIEWER │ PASS │ WARN │ FAIL │ NOT VALIDATED │
   ├──────────┼──────┼──────┼──────┼───────────────┤
-  │ mercury  │ 15   │ 2    │ 6    │ 0             │
+  │ mercury  │ 17   │ 0    │ 6    │ 0             │
   │ counter  │ 23   │ 0    │ 0    │ 0             │
   └──────────┴──────┴──────┴──────┴───────────────┘
 
@@ -62,12 +63,12 @@ Feedback
   ┌───────────────────┬───────┐
   │ FEEDBACK          │ COUNT │
   ├───────────────────┼───────┤
-  │ Critiques         │ 118   │
-  │ Labeled           │ 96    │
-  │ Untriaged         │ 11    │
-  │ Awaiting curation │ 11    │
-  │ Dismissed         │ 0     │
-  │ Advisory          │ 0     │
+  │ Critiques         │ 320   │
+  │ Labeled           │ 235   │
+  │ Untriaged         │ 76    │
+  │ Awaiting curation │ 5     │
+  │ Dismissed         │ 1     │
+  │ Advisory          │ 3     │
   └───────────────────┴───────┘
 
 [OK] No issues found
@@ -79,47 +80,93 @@ Exit 1 when any structural issue is found — the same count the closing line pr
 
 ## `--json`: the situational poll
 
-`praxis status --json` is an agent's cheapest situational poll. Alongside the full report, `evalState` answers "what needs doing" in one call:
+`praxis status --json` is an agent's cheapest situational poll — the whole report as one object, structural issues included. `evalState` is the part that answers "what needs doing" in one call:
 
 ```json
 {
+  "compilerInUse": true,
+  "counts": {
+    "experts": 3,
+    "practices": 3,
+    "references": 1,
+    "context": 4,
+    "axioms": 16
+  },
+  "validation": [
+    {
+      "reviewer": "mercury",
+      "pass": 17,
+      "warn": 0,
+      "fail": 6,
+      "notValidated": 0
+    },
+    {
+      "reviewer": "counter",
+      "pass": 23,
+      "warn": 0,
+      "fail": 0,
+      "notValidated": 0
+    }
+  ],
   "evalState": {
-    "pending_triage": 11,
-    "awaiting_curation": 0,
+    "pending_triage": 76,
+    "awaiting_curation": 5,
     "epoch_boundary_detected": false,
-    "last_run_at": "2026-09-03T23:21:21.989Z"
+    "last_run_at": "2026-10-06T11:53:18.345Z"
   },
   "coverage": {
-    "sourceFiles": 84,
+    "sourceFiles": 38,
     "observed": {
-      "files": 52,
-      "rate": 0.6190476190476191,
-      "display": "61.90% (52/84 files)"
+      "files": 29,
+      "rate": 0.7631578947368421,
+      "display": "76.32% (29/38 files)"
     },
     "passing": {
-      "files": 40,
-      "rate": 0.47619047619047616,
-      "display": "47.62% (40/84 files)"
+      "files": 22,
+      "rate": 0.5789473684210527,
+      "display": "57.89% (22/38 files)"
     },
     "passingOfObserved": {
-      "files": 40,
-      "rate": 0.7692307692307693,
-      "display": "76.92% (40/52 observed files)"
+      "files": 22,
+      "rate": 0.7586206896551724,
+      "display": "75.86% (22/29 observed files)"
     }
   },
   "feedback": {
-    "critiques": 118,
-    "labeled": 96,
-    "untriaged": 11,
-    "awaitingCuration": 11,
-    "dismissed": 0,
-    "advisory": 0
+    "critiques": 320,
+    "labeled": 235,
+    "untriaged": 76,
+    "awaitingCuration": 5,
+    "dismissed": 1,
+    "advisory": 3
   },
-  "issueCount": 0
+  "issueCount": 0,
+  "orphanedPractices": [],
+  "danglingRefs": [],
+  "expertsMissingDescription": [],
+  "invalidExperts": [],
+  "zeroMatchGlobs": []
 }
 ```
 
-Bare `praxis` is the same orientation for humans — counts and staleness at a glance, each line naming the command that acts on it.
+`counts` and `validation` carry the Knowledge and Verdicts tables; `coverage` and `feedback` carry theirs. The five arrays — `orphanedPractices`, `danglingRefs`, `expertsMissingDescription`, `invalidExperts`, `zeroMatchGlobs` — are the structural issues, each empty on a healthy project, and `issueCount` is their total: the number the exit code follows.
+
+Bare `praxis` is the same orientation for humans — counts and staleness at a glance, each line naming the command that acts on it. It takes `--json` too, and is the smaller poll of the two: the queues and the debt line, without the structural report.
+
+```json
+{
+  "lastRun": { "at": "2026-10-06T11:56:36.448Z", "reviewerName": "counter", "anchored": true },
+  "pendingTriage": 76,
+  "awaitingCuration": 5,
+  "activeAxioms": 16,
+  "debtLine": [
+    { "reviewerName": "counter", "errors": 0 },
+    { "reviewerName": "mercury", "errors": 6 }
+  ]
+}
+```
+
+`lastRun` is `null` before the first run, and `anchored` reports whether that run was tied to a commit — an unanchored run is feedback, not measurement.
 
 ## Everything without keys
 

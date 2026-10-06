@@ -12,7 +12,16 @@ Per reviewer, over the latest epoch:
 - **Concentration** — current stock by directory, worst first.
 - **Re-baseline deltas** — stock across the last two epochs' baselines, with the boundary named: numbers never cross an epoch boundary as a trend.
 
-`--json` emits the built payload verbatim as a stable contract.
+`--json` emits the built payload verbatim as a stable contract, one key per section of the printed report:
+
+| Key | Shape |
+| --- | --- |
+| `evidence` | One entry per reviewer: `{ reviewerName, baselineAt, currentAt }` — the freshness panel. `currentAt` is the last *evidenced* run, so an all-hit run never moves it |
+| `rows` | The per-axiom stock table: `{ axiomId, statement, reviewerName, baselineStock, currentStock, appearedSinceBaseline, paydown }`, one row per (axiom, reviewer) — never pooled |
+| `concentration` | `{ directory, violations }`, current stock by directory |
+| `credits` | `{ author, resolved }`, paydown credit by git author; empty when it cannot be attributed |
+| `creditNote` | Why credit is unavailable, or `null` when it is |
+| `rebaseline` | `{ boundaryLabel, before, after }` — the deltas across an epoch boundary |
 
 ## Example
 

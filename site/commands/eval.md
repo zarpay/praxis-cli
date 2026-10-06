@@ -33,6 +33,9 @@ praxis eval run src/services/redeem-coupon.ts --no-cache
 | `--reviewer <name>` | Run only the named reviewer (default: all configured reviewers) |
 | `--verbose`         | Print the full AI reasoning after the result                    |
 | `--no-cache`        | Skip the cache and always call the API                          |
+| `--json`            | Machine-readable outcome on stdout — the fast loop's feedback   |
+
+`--type` and `--fail-fast` are full-run flags and are ignored here.
 
 **Exit code:** 0 unless a target has errors (warnings pass). A directory is refused with the glob hint (exit 2) — name files or a glob (`praxis eval run "src/services/*"`), or run the whole corpus with a bare `praxis eval run`.
 

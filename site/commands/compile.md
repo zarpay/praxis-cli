@@ -48,7 +48,7 @@ The watcher debounces rapid saves (e.g., during an autosave burst) to avoid redu
 
 Written to `{agentProfilesOutputDir}/{alias lowercased}.expert.md`. Default: `agent-profiles/` — Scooper compiles to `agent-profiles/scooper.expert.md`.
 
-The profile opens with eval-targeting frontmatter (`paths:`, plus any `cohort:`, `excludes:` the expert declared), which makes the compiled profile a spec in its own right: point a `specFilePattern` like `"{README.md,*.expert.md}"` at it and `praxis eval run` reviews the expert's `validates:` targets against it.
+The profile opens with eval-targeting frontmatter (`type:` carrying the expert's alias, `paths:` from its `validates:`, plus any `cohort:` and `excludes:` it declared), which makes the compiled profile a spec in its own right: point a `specFilePattern` like `"{README.md,*.expert.md}"` at it and `praxis eval run` reviews the expert's `validates:` targets against it.
 
 Set `agentProfilesOutputDir: false` in config to disable pure profile output.
 
