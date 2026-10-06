@@ -5,29 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.7.0] - 2026-10-06
 
-The hash covers exactly what the reviewer saw. A spec's frontmatter — `paths:`, `excludes:`, `cohort:`, `type:` — declares where a spec applies, never how a target is judged, and it no longer reaches the reviewer or the cache key. Retargeting a spec now reaches new files without re-reviewing the ones it already governed.
+The routing release. A spec's frontmatter says *where* a standard applies; its body says *what* the standard is. Only the body ever reaches a reviewer now, and only what reaches a reviewer is hashed — so retargeting a spec reaches new files without re-reviewing the ones it already governed.
 
-**On upgrading, every spec with frontmatter re-hashes once**: the first `eval run` after this release is a full re-review of the corpus, and every run after it is cached as before. No `eval prune` is needed — the cache keys are unchanged, so the new verdicts overwrite the old entries in place. This is not an epoch roll: the reviewer-facing prompt surface and every reviewer hash are byte-identical, so longitudinal data is continuous across the upgrade.
+**On upgrading, every spec with frontmatter re-hashes once**: the first `eval run` after this release is a full re-review of the corpus, and every run after it is cached as before. No `eval prune` is needed — the cache keys are unchanged, so new verdicts overwrite the old entries in place. This is **not an epoch roll**: the reviewer-facing prompt surface and every reviewer hash are byte-identical, so longitudinal data is continuous across the upgrade.
 
 ### Changed
 
-- **A reviewer is shown the spec's body, not the spec file.** The whole file went into the `## SPECIFICATION` block, so a reviewer judging a service file read `paths: - "src/services/*.ts"` as part of the standard it was applying. Only the prose reaches the prompt now. The cache hash follows it: target + spec body + resolved `context:` files, which is exactly the material the prompt interpolates.
+- **A reviewer is shown the spec's body, not the spec file.** The whole file went into the `## SPECIFICATION` block, so a reviewer judging a service file read `paths: - "src/services/*.ts"` as part of the standard it was applying. Only the prose reaches the prompt now, and the cache hash follows it: target + spec body + resolved `context:` files, which is exactly the material the prompt interpolates.
 
-- **Retargeting a spec keeps its verdicts.** Adding one glob to `paths:` invalidated every verdict under that spec — a spec governing fifty files cost fifty re-reviews to reach a fifty-first. `paths:`, `excludes:`, `cohort:` and `type:` are routing, and routing is outside the hash.
+- **Retargeting a spec keeps its verdicts.** Adding one glob to `paths:` invalidated every verdict under that spec — a spec governing fifty files cost fifty re-reviews to reach a fifty-first. `paths:`, `excludes:`, `cohort:` and `type:` are routing, and routing is outside the hash. Broadening a spec is free; write freely there.
 
 - **A `context:` glob rewritten over the same files keeps its verdicts too.** The resolved file contents join the hash, as they always have; the pattern that found them no longer does. A glob that starts matching a different set of files still invalidates, because the prompt genuinely changed.
 
-- **The ledger's `spec_content_hash` is over the spec's body.** "The spec changed" in provenance must mean the standard changed, not that someone added a glob no verdict could reflect. Epoch detection is unaffected — it keys on the reviewer hash, never on spec content.
+- **The ledger's `spec_content_hash` is over the spec's body.** "The spec changed" in provenance must mean the standard changed, not that someone added a glob no verdict could reflect. Epoch detection is unaffected — it keys on the reviewer hash, never on spec content. Anything computing against stored `spec_content_hash` values will see them move once.
 
 - **The curator reads the same body.** Clustering (`axioms curate`) and the traceability check at acceptance were given the raw spec file; they ground against the standard now, like the reviewer does.
 
 ### Fixed
 
-- **A provider answering 200 with no `choices` threw a TypeError.** OpenRouter renders some upstream faults into a 200 body — `{"error":{"message":"Upstream idle timeout exceeded","code":504}}` and no `choices` key — and `data.choices[0]` read straight through the guard, so the unit came back `UNVERIFIED` with `Cannot read properties of undefined (reading '0')`: a programming error at the one moment the response needed explaining. The access is guarded and the error names what the backend sent. The verdict was always correctly unverified and never cached; only the message was useless. Found in the 2026-10-06 demo audit, where mercury hit it on roughly one in five of the long `by_directory` cohort prompts.
+- **A provider answering HTTP 200 with no `choices` threw a TypeError.** OpenRouter renders some upstream faults into a 200 body — `{"error":{"message":"Upstream idle timeout exceeded","code":504}}` and no `choices` key — and the guarded read went through it anyway, so the unit came back `UNVERIFIED` with `Cannot read properties of undefined (reading '0')`: a programming error at the one moment the response needed explaining. The error now names what the backend sent. The verdict was always correctly unverified and never cached; only the message was useless.
 
-- **The demo's version pin lagged a release.** 2.6.2 claimed to move it to the current release and moved it to 2.6.1, so `praxis` in `demo/` exited 2 with a version conflict. It pins 2.6.2.
+- **The published provider contract could only describe failures.** `severity` is required on a non-compliant verdict and defaults to `"error"` when omitted — so a third-party provider written against the documented example could never emit a warning, and nothing said so. The verdict contract is published in full, `issues` string entries included, alongside a pointer to the demo's runnable provider.
+
+- **Three `--json` payloads called themselves stable contracts without publishing their fields.** `status --json` showed four of its twelve top-level keys as a complete object; `debt report --json` named none at all; `praxis --json`, the orientation poll, appeared in `--help` and nowhere in the docs. All three are published, field by field.
+
+- **`praxis eval run <target>` did not document `--json`** — the fast loop's whole point — and the docs described the spec's frontmatter as something a reviewer reads. Both corrected, along with the three causes of an `UNVERIFIED` unit and what to do about each.
+
+- **The demo's version pin lagged a release.** 2.6.2 claimed to move it to the current release and moved it to 2.6.1, so `praxis` in `demo/` exited 2 with a version conflict.
 
 ## [2.6.2] - 2026-10-01
 
