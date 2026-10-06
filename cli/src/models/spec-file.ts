@@ -16,6 +16,13 @@ const COHORT_MODES: readonly CohortMode[] = ["by_file", "by_directory"];
  * `validates:` after compilation (see `evalTargetingLines`); this model
  * and `ExpertFile` are the read and write ends of that one contract.
  *
+ * The split between `body()` and the frontmatter fields is the one the
+ * eval layer rests on: the body is the standard a target is judged
+ * against, the frontmatter is routing — which files this spec reaches,
+ * how they group, what label their verdicts carry. Only the body
+ * reaches a reviewer, and only what reaches a reviewer is hashed
+ * (`ReviewSubject.contentHash`).
+ *
  * Every field is read and validated in the constructor, so a SpecFile
  * that exists is a valid spec. Patterns come back as written, for the
  * caller to resolve against a root: resolving paths is not a document's
@@ -32,7 +39,6 @@ export class SpecFile {
   readonly cohort: CohortMode;
   /** Patterns structurally excluded from review, as written. */
   readonly excludes: string[];
-  /** Spec-blessed positive examples, as written. */
   /** Assist-only material inlined into the review, as written. */
   readonly context: string[];
   /**
@@ -42,8 +48,11 @@ export class SpecFile {
    */
   readonly type: string | undefined;
 
-  private constructor(fields: Frontmatter, path: string) {
+  private readonly bodyText: string;
+
+  private constructor(fields: Frontmatter, path: string, body: string) {
     this.path = path;
+    this.bodyText = body;
     this.paths = fields.stringList("paths");
     this.cohort = fields.enumValue("cohort", COHORT_MODES) ?? "by_file";
     this.excludes = fields.stringList("excludes");
@@ -58,7 +67,21 @@ export class SpecFile {
    * pay for a second filesystem read.
    */
   static fromContent(content: string, path: string, root?: string): SpecFile {
-    return new SpecFile(MarkdownFile.fromContent(content, display(path, root)).frontmatter, path);
+    const document = MarkdownFile.fromContent(content, display(path, root));
+
+    return new SpecFile(document.frontmatter, path, document.body);
+  }
+
+  /**
+   * The standard itself: the spec's prose, frontmatter stripped.
+   *
+   * What a reviewer is shown and what the content hash covers. The
+   * frontmatter is excluded by construction rather than by a list of
+   * non-behavioral keys — it declares where this spec applies, never
+   * how a target is judged.
+   */
+  body(): string {
+    return this.bodyText;
   }
 
   /**

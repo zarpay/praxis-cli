@@ -55,7 +55,7 @@ One file means:
 - Documentation and enforcement are synchronized — they can't drift from each other
 - There is no separate "spec format" to learn
 
-The tradeoff is that the README must serve two audiences — human readers and the LLM validator. In practice, writing clearly for humans also works well for LLMs. If you prefer to separate them, use `specFilePattern: "SPEC.md"` in config to point at a dedicated spec file instead.
+The tradeoff is that the README must serve two audiences — human readers and the LLM reviewer. In practice, writing clearly for humans also works well for LLMs. If you prefer to separate them, use `specFilePattern: "SPEC.md"` in config to point at a dedicated spec file instead.
 
 ## LLM review, not schema validation — and the judgment boundary
 

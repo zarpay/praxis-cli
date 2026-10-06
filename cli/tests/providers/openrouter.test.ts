@@ -106,6 +106,26 @@ describe("OpenRouterProvider", () => {
       await expect(review).rejects.toThrow("Unexpected validation tool call");
     });
 
+    it("explains a 200 that carries no choices instead of throwing a TypeError", async () => {
+      // Seen live 2026-10-06: mercury answered 200 with no `choices`, and
+      // `choices[0]` threw "Cannot read properties of undefined" — a
+      // programming error where the response needed explaining.
+      useOpenRouterResponse(server, { error: { message: "rate limited", code: 429 } });
+
+      const review = new OpenRouterProvider().review(request());
+
+      await expect(review).rejects.toThrow("response carried no choices");
+      await expect(review).rejects.not.toThrow("Cannot read properties");
+    });
+
+    it("shows what the backend sent when it carries no choices", async () => {
+      useOpenRouterResponse(server, { error: { message: "rate limited", code: 429 } });
+
+      const review = new OpenRouterProvider().review(request());
+
+      await expect(review).rejects.toThrow("rate limited");
+    });
+
     it("reports API failures with the provider's name", async () => {
       useOpenRouterResponse(server, { error: "upstream unavailable" }, 502);
 

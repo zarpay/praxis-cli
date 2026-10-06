@@ -47,6 +47,11 @@ records loosely, and the type keeps it as an optional historical member.
 
 `diff` (historical — withdrawn 2026-09-07, roadmap; optional, on withdrawn scope `"diff"` runs only): the measured range and its coverage — `base_ref`, `base_sha`, `head_sha`, `changed_files`, `covered`, `uncovered_count`, `uncovered_paths`, `resolved_count`. The head sha is the run's anchor even on a dirty tree, because both sides are read via `git show`, never disk (12). `spec_units` (added 2026-09-03, optional): evaluated units per governing spec, stamped at write time — the applicable-opportunity denominator 07's rates divide by. Absent on older records, whose per-run rates suppress honestly. `reviewer_hash` (added at implementation, 2026-09-02) is what makes the derived-epoch promise true: `reviewer_model` alone cannot see a temperature, prompt-surface, or options change. `unverified` counts units that could not be reviewed at all (03) — never violations.
 
+A record's `spec_content_hash` is over the spec's **body** (2026-10-06):
+"the spec changed" must mean the standard changed, not that a glob was
+added — a provenance hash that moves on routing edits reports churn no
+verdict could reflect.
+
 Epochs (02) are **derived, not stored**: an epoch is a maximal run-sequence with stable (spec content hashes, reviewer config), computable from the provenance fields above. Reports segment by epoch; the ledger just records facts.
 
 **Runs are per reviewer.** With multiple reviewers configured (06), one CLI invocation fans out into one run record per reviewer; every critique record already names its reviewer via `reviewer_model` plus its configured `reviewer_name`. Epoch derivation, baselines, and metrics then work per reviewer with no special cases — the multi-reviewer ledger is just more of the same records.

@@ -45,7 +45,7 @@ The agents drift for a structural reason, not a careless one. A coding model is 
 
 Praxis asks the question nothing else in your pipeline asks: not *does it work*, but *does it match what you said correct looks like*.
 
-**It enforces judgment standards.** A spec is a README that states what correct looks like for the files around it. `praxis eval run` has one or more LLM reviewers read each file against its spec and return a verdict — pass, warn, or fail — with specific critiques. Verdicts are cached by content hash: unchanged files are free, and editing a file (or its spec) re-reviews exactly what changed.
+**It enforces judgment standards.** A spec is a README that states what correct looks like for the files around it. `praxis eval run` has one or more LLM reviewers read each file against its spec and return a verdict — pass, warn, or fail — with specific critiques. Verdicts are cached by content hash: unchanged files are free, and editing a file (or what its spec actually says) re-reviews exactly what changed.
 
 **It refuses the mechanical.** Reviewers are told the *judgment boundary*: anything a linter, regex, or type check could decide is out of scope, even when the spec states it. If you can write the check, write the check. Praxis holds the standards you can only describe.
 

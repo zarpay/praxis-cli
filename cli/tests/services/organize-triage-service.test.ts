@@ -49,7 +49,7 @@ async function organize(organization: unknown, axioms = [{ id: "AX-aaaaaa", stat
 
   return await organizeTriageService(cfg, {
     specPath: "docs/README.md",
-    specContent: "# Spec\n",
+    specBody: "# Spec",
     critiques: [critique("r1:1"), critique("r1:2")],
     axioms,
   });

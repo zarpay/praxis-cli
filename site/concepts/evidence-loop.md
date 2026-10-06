@@ -10,7 +10,7 @@ A reviewer reads `redeem-coupon.ts` against `src/services/README.md` and fails i
 
 > Error message 'bad input' tells the consumer nothing about what was wrong or what would be accepted.
 
-Two things happen. The verdict lands in the **cache** (`.praxis/cache/validation/`), keyed by a content hash of everything the reviewer saw — so the finding never has to be paid for twice. And a **critique record** lands in the **ledger** (`.praxis/ledger/runs/`), carrying full provenance: the run id, the exact content hashes of target and spec, and the reviewer's name, model, and behavioral hash. The run record it points to holds the rest — the commit, the branch, the costs and counts.
+Two things happen. The verdict lands in the **cache** (`.praxis/cache/validation/`), keyed by a content hash of everything the reviewer saw — the target, the spec's body, the spec's `context:` files — so the finding never has to be paid for twice. And a **critique record** lands in the **ledger** (`.praxis/ledger/runs/`), carrying full provenance: the run id, the exact content hashes of target and spec, and the reviewer's name, model, and behavioral hash. The run record it points to holds the rest — the commit, the branch, the costs and counts.
 
 The cache answers *"is this compliant now"* and overwrites. The ledger answers *"what has ever happened"* and never does — run files are written once and never touched again, and both are committed to git.
 

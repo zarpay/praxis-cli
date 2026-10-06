@@ -58,12 +58,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-22T21:48:41.748Z",
-      "content_hash": "60a083d7",
+      "cached_at": "2026-10-06T11:17:50.811Z",
+      "content_hash": "37248ef9",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The cohort satisfies all specification criteria. The directory uses exactly one entry point (index.ts) to re-export the public API. Types reside in the dedicated <feature>-types.ts file. The logic file uses verb-first kebab-case naming and follows service conventions by exporting a single run function that uses Result for error handling with descriptive messages. All files are reachable from index.ts, confirming no orphaned files."
+        "reason": "The cohort adheres to the feature module conventions. It has exactly one entry point (`index.ts`) that re-exports the public API, types are isolated in `loyalty-types.ts`, and logic resides in `track-punches.ts` following service conventions (verb-first kebab-case, single `run` export, `Result` type). All files are reachable from the entry point, satisfying cohesion requirements."
       },
       "context_files": [
         {
@@ -83,12 +83,12 @@
         "hash": "7adec26a"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-22T21:49:55.412Z",
-      "content_hash": "60a083d7",
+      "cached_at": "2026-10-06T11:01:05.778Z",
+      "content_hash": "37248ef9",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 815 words."
+        "reason": "Review input has 803 words."
       },
       "context_files": [
         {

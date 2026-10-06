@@ -174,7 +174,7 @@ The **Claude Code plugin** (`plugins/claude-code.ts`) wraps the profile with YAM
 Spec discovered (specFilePattern match, frontmatter read)
   → Units resolved: paths:/cohort: expand; excludes: shielded from review
   → Assist inputs resolved: context: files (ReviewSubject, at construction)
-  → Content hash computed over the full review input: target + spec + assist (SHA256, 8-char prefix)
+  → Content hash computed over the full review input: target + spec body + assist (SHA256, 8-char prefix)
   → Cache checked: one file per target at .praxis/cache/validation/<target-path>.json,
       verdicts keyed <specHash>:<reviewerHash> (format 5.0)
   → On miss: one call per configured reviewer via its provider (default: OpenRouter, tool_choice: required)
@@ -192,7 +192,9 @@ The measurement layer is pure read-side: `eval report` (three scope levels — f
 
 `praxis eval compact` is the ledger's housekeeping, and touches no record: one file per run is a write-time property (it keeps concurrent runs from clobbering each other), so once history is sealed `RunStore.compact()` folds those files into one `.praxis/ledger/runs/<id>-compacted.jsonl`, stamped with a minted `sortableId` rather than named for its contents. A source file's bytes are appended verbatim, so the record set is byte-identical and every derived report is unchanged — `RunFile` reads a file as a sequence of records either way, since every record already carries the `run_id` that places it. Nothing is dropped or summarized; this is layout, not retention. Two contributors compacting independently produce two archives that merge without a conflict and share history, so `RunStore.runs()`/`critiques()` take the first record per id — deduplication is a merge concern, and the read side is where the merge is observed.
 
-Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `context:` (assist-only, inlined, joins the hash), `type:` (the reporting label verdicts group under — compiled profiles carry the expert's alias; undeclared, the spec's directory path; never derived from the filename). The retired `exemplars:` key parses and is ignored — positive examples live in spec prose.
+Spec frontmatter keys the eval layer honors: `paths:`, `cohort: by_file | by_directory`, `excludes:` (never evaluated), `context:` (assist-only, inlined — the resolved *files* join the hash, the glob does not), `type:` (the reporting label verdicts group under — compiled profiles carry the expert's alias; undeclared, the spec's directory path; never derived from the filename). The retired `exemplars:` key parses and is ignored — positive examples live in spec prose.
+
+**A reviewer is shown the spec's body, never its frontmatter** (`SpecFile.body()`), and the content hash covers exactly the materials interpolated into the prompt — no more, so routing metadata cannot force a re-review; no less, so a changed prompt can never hit a cached verdict. That invariant replaces any list of non-behavioral frontmatter keys: a future key that changed a review would change the prompt and join the hash for free, while one that changes a reviewer's behavior without changing the prompt belongs in `Reviewer.hash()`, which stays exclusion-based. The curator reads the same body, so clustering and traceability ground against the standard too.
 
 Key files: `services/review-target-service.ts`, `models/` (Reviewer, ReviewSubject, SpecFile, AxiomFile, PracticeFile, CacheFile), `stores/` (VerdictStore, RunStore, TriageStore, AxiomStore, ExpertStore, PracticeStore, SpecStore, DocumentStore), `services/` (discover-domains, resolve-units), `orchestrators/run-eval-orchestrator.ts`, `views/`, `prompts/`.
 

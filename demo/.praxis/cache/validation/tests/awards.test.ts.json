@@ -38,12 +38,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-22T21:49:34.184Z",
-      "content_hash": "61183485",
+      "cached_at": "2026-10-06T11:18:07.345Z",
+      "content_hash": "52351d07",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file adheres to the specification's subject framing patterns, uses exactly one expect call per it block, and focuses on functional outcomes without implementation spies or mocks. Test data is initialized fresh within each suite setup."
+        "reason": "The test file adheres to all specified conventions: the top-level describe names the unit under test, nested describes use when clauses, each it block states a single observable outcome with one expectation, and tests exercise public APIs with fresh setup."
       }
     },
     "dacac2eb:7adec26a": {
@@ -53,12 +53,12 @@
         "hash": "7adec26a"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-22T21:49:55.425Z",
-      "content_hash": "61183485",
+      "cached_at": "2026-10-06T11:01:05.784Z",
+      "content_hash": "52351d07",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 539 words."
+        "reason": "Review input has 532 words."
       }
     }
   }

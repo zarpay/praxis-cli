@@ -38,12 +38,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-22T21:49:42.268Z",
-      "content_hash": "e82dd9b3",
+      "cached_at": "2026-10-06T11:17:16.111Z",
+      "content_hash": "8de2b948",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file adheres to all test conventions: the top-level describe names the module, nested describes use 'when' clauses, each it block contains exactly one expectation, tests exercise the public API without mocking collaborators, and test data is created fresh inside each test."
+        "reason": "The test file adheres to all specifications: it levels describe the unit by module name, nested describes use when-clauses, it statements form readable sentences with their parents, each it block contains exactly one assertion using compound matchers, and tests exercise the public API with fresh state without mocking honest implementations."
       }
     },
     "dacac2eb:7adec26a": {
@@ -53,12 +53,12 @@
         "hash": "7adec26a"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-22T21:49:55.426Z",
-      "content_hash": "e82dd9b3",
+      "cached_at": "2026-10-06T11:01:05.785Z",
+      "content_hash": "8de2b948",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 503 words."
+        "reason": "Review input has 496 words."
       }
     }
   }

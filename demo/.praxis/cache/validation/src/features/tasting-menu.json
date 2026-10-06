@@ -58,12 +58,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-22T21:48:52.595Z",
-      "content_hash": "cbd707ee",
+      "cached_at": "2026-10-06T11:12:26.382Z",
+      "content_hash": "d59b09ec",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The feature module forms a cohesive unit where all files are reachable from index.ts, no files are orphaned, and they collectively implement a single capability (curated tasting tours) with appropriate separation of logic and types."
+        "reason": "The feature module strictly adheres to the specified conventions. It resides under src/features/ with a single entry point (index.ts) that re-exports the public API. Types are isolated in tasting-menu-types.ts, and logic is in build-menu.ts, which exports run and returns a Result. All files are reachable from the entry point, and the capability is cohesive."
       },
       "context_files": [
         {
@@ -83,12 +83,12 @@
         "hash": "7adec26a"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-22T21:49:55.416Z",
-      "content_hash": "cbd707ee",
+      "cached_at": "2026-10-06T11:01:05.780Z",
+      "content_hash": "d59b09ec",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 883 words."
+        "reason": "Review input has 871 words."
       },
       "context_files": [
         {

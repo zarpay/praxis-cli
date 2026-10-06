@@ -313,6 +313,111 @@ describe("reviewTargetService", () => {
     });
   });
 
+  describe("spec frontmatter", () => {
+    /** A spec whose frontmatter routes and whose body states the standard. */
+    function routedProject(
+      targeting: string[],
+      body = "# Events Spec\n\nEvery event names its emitter.",
+    ) {
+      return createValidatorTmpdir({
+        sources: ["docs"],
+        files: {
+          "docs/events.sme.md": ["---", ...targeting, "---", "", body].join("\n"),
+          "src/events/signup_event.rb": "SIGNUP_CONTENT",
+        },
+        specFilePattern: "*.sme.md",
+      });
+    }
+
+    /** Evaluates the routed project's target against a cache. */
+    function reviewRouted(root: string, abs: (p: string) => string) {
+      return evaluate({
+        targetPath: abs("src/events/signup_event.rb"),
+        specPath: abs("docs/events.sme.md"),
+        root,
+        cache: new VerdictStore(testConfig(root)),
+      });
+    }
+
+    it("shows the reviewer the standard, never the routing that found it", async () => {
+      const bodies: string[] = [];
+      server.use(
+        http.post(OPENROUTER_URL, async ({ request }) => {
+          bodies.push(await request.text());
+          return HttpResponse.json(fixtures.pass);
+        }),
+      );
+      const { root, abs, cleanup } = routedProject([
+        'type: "events"',
+        "paths:",
+        '  - "src/events/**/*.rb"',
+        "excludes:",
+        '  - "src/events/legacy/**"',
+      ]);
+
+      await evaluate({
+        targetPath: abs("src/events/signup_event.rb"),
+        specPath: abs("docs/events.sme.md"),
+        root,
+      });
+
+      expect(bodies[0]).toContain("Every event names its emitter.");
+      expect(bodies[0]).not.toContain("src/events/**/*.rb");
+      expect(bodies[0]).not.toContain("excludes");
+
+      cleanup();
+    });
+
+    it("retargeting a spec leaves every verdict it already holds", async () => {
+      // The whole point: broadening `paths:` reaches new files without
+      // paying to re-review the ones already governed.
+      useOpenRouterResponse(server, fixtures.pass);
+      const { root, abs, cleanup } = routedProject(["paths:", '  - "src/events/*.rb"']);
+
+      await reviewRouted(root, abs);
+
+      const retargeted = [
+        "---",
+        "paths:",
+        '  - "src/events/**/*.rb"',
+        '  - "src/jobs/*.rb"',
+        "---",
+        "",
+        "# Events Spec",
+        "",
+        "Every event names its emitter.",
+      ];
+      writeFileSync(abs("docs/events.sme.md"), retargeted.join("\n"));
+
+      expect((await reviewRouted(root, abs)).cacheHit).toBe(true);
+
+      cleanup();
+    });
+
+    it("editing the standard itself invalidates the cached verdict", async () => {
+      useOpenRouterResponse(server, fixtures.pass);
+      const { root, abs, cleanup } = routedProject(["paths:", '  - "src/events/*.rb"']);
+
+      await reviewRouted(root, abs);
+
+      const amended = [
+        "---",
+        "paths:",
+        '  - "src/events/*.rb"',
+        "---",
+        "",
+        "# Events Spec",
+        "",
+        "Every event names its emitter and its schema version.",
+      ];
+      writeFileSync(abs("docs/events.sme.md"), amended.join("\n"));
+
+      expect((await reviewRouted(root, abs)).cacheHit).toBe(false);
+
+      cleanup();
+    });
+  });
+
   describe("context", () => {
     /** A single-target project whose spec declares assist-only context. */
     function contextProject() {

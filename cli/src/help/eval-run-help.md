@@ -6,9 +6,12 @@ reviewers without recording evidence.
 
 Behavior:
   Reviewer calls happen only on cache misses: the cache key is a
-  content hash over everything the reviewer saw (target + spec + assist
-  context), so editing any of them re-reviews and unchanged content is
-  free. Never delete .praxis/cache/ — it is committed, valid evidence.
+  content hash over everything the reviewer saw (target + spec body +
+  assist context), so editing any of them re-reviews and unchanged
+  content is free. A spec's frontmatter is not part of it — retargeting
+  a spec with paths:/excludes: reaches new files and leaves every
+  verdict it already holds. Never delete .praxis/cache/ — it is
+  committed, valid evidence.
   Every run appends run and critique records to .praxis/ledger/
   (append-only, committed). A reviewer whose config or prompt surface
   changed prints an epoch-boundary warning — deliberate events only.

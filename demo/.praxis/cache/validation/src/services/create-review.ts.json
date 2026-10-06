@@ -38,12 +38,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-22T21:49:03.895Z",
-      "content_hash": "a6771057",
+      "cached_at": "2026-10-06T11:12:41.723Z",
+      "content_hash": "f51cf897",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The module exports a single `run` function with the correct signature and return type. Inputs are validated before any side effects, domain failures return explicit value objects with actionable error messages, and the doc comment documents the purpose and failure modes."
+        "reason": "The file exports a single `run` function with the required signature and return type. It validates all inputs before executing business logic, returns domain errors as values with clear messages, relies only on the injected Store, and includes a doc comment that states the purpose and lists failure modes."
       }
     },
     "0311531a:7adec26a": {
@@ -53,12 +53,12 @@
         "hash": "7adec26a"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-22T21:49:55.419Z",
-      "content_hash": "a6771057",
+      "cached_at": "2026-10-06T11:35:57.904Z",
+      "content_hash": "f51cf897",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 463 words."
+        "reason": "Review input has 455 words."
       }
     }
   }

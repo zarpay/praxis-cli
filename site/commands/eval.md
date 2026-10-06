@@ -33,6 +33,9 @@ praxis eval run src/services/redeem-coupon.ts --no-cache
 | `--reviewer <name>` | Run only the named reviewer (default: all configured reviewers) |
 | `--verbose`         | Print the full AI reasoning after the result                    |
 | `--no-cache`        | Skip the cache and always call the API                          |
+| `--json`            | Machine-readable outcome on stdout — the fast loop's feedback   |
+
+`--type` and `--fail-fast` are full-run flags and are ignored here.
 
 **Exit code:** 0 unless a target has errors (warnings pass). A directory is refused with the glob hint (exit 2) — name files or a glob (`praxis eval run "src/services/*"`), or run the whole corpus with a bare `praxis eval run`.
 
@@ -245,7 +248,13 @@ Two things never write the ledger: `eval ci` (CI verifies without writing — th
 
 **Evidence grades**: a run made from a clean tree on a branch records its `commit_sha`, and that sha reconstructs everything — the target and the spec live in that commit. A fast-loop run on a dirty tree is _attested_ (content hashes prove what the reviewers saw) but not reconstructable, and praxis says so at run start. Praxis never creates commits — when you want archive-grade evidence on every run, run eval from a hook or CI, where clean trees are free.
 
-A target that cannot be reviewed at all — unreadable, or a cohort too large for the model's context window — is reported **UNVERIFIED**: counted separately, never as a violation, and the run fails so it cannot pass unseen.
+A target that cannot be reviewed at all is reported **UNVERIFIED**: counted separately, never as a violation, and the run fails so it cannot pass unseen. Three causes, and the message names which:
+
+- the file is **unreadable**, or the cohort is **too large** for the model's context window
+- the model **answered without calling a tool**, or returned tool arguments that are not valid JSON (the error quotes the payload around the parse failure, and says whether `max_tokens` cut it off)
+- the **provider or its upstream failed** — including a backend that returns HTTP 200 carrying an error instead of a completion, which the error reports verbatim: `response carried no choices — {"error":{"message":"Upstream idle timeout exceeded","code":504…`
+
+The last one is transient and concentrated on long prompts — large cohorts are where it shows up. An unverified unit is **never cached**, so simply running again re-reviews exactly those units and leaves the rest on cache. If a model does it persistently, that is a signal about the model: switch reviewers, or split the cohort.
 
 ## praxis eval report
 
@@ -273,12 +282,12 @@ Team note: the hash is content-addressed, so teammates on different praxis versi
 
 ## How a review works
 
-1. The spec file (default: `README.md`) defines the standards — plus any scoping frontmatter (`paths`, `cohort`, `excludes`, `context`).
-2. Praxis sends the spec, the target, and any context files to each configured reviewer via its provider (OpenRouter by default).
+1. The spec file (default: `README.md`) defines the standards — plus any scoping frontmatter (`paths`, `cohort`, `excludes`, `context`), which decides what is reviewed without being reviewed against.
+2. Praxis sends the spec's **body**, the target, and any context files to each configured reviewer via its provider (OpenRouter by default). The frontmatter stays behind: it routes the review, it is not part of the standard.
 3. The reviewer answers through a required tool call — pass, warn, or fail — with specific issues.
 4. The verdict is written to the cache at `.praxis/cache/validation/`, keyed by spec and reviewer.
 
-On subsequent runs, cached verdicts are used for any target whose review input (target, spec, context) has not changed. See [Caching](/validation/caching).
+On subsequent runs, cached verdicts are used for any target whose review input (target, spec body, context files) has not changed — the hash covers exactly the material that reaches the prompt, so retargeting a spec re-reviews nothing. See [Caching](/validation/caching).
 
 ## See also
 

@@ -55,9 +55,14 @@ during the servus adoption):
 4. **One source of truth.** Ratifying an axiom changed review outcomes
    without changing the spec — editing the spec through a side door.
 
-Consequences: the content hash covers target + spec + assists only, so
-**activation never invalidates a verdict and never re-reviews
+Consequences: the content hash covers target + spec body + assists
+only, so **activation never invalidates a verdict and never re-reviews
 anything**; the reviewer's question changes only when the spec does.
+Sharpened 2026-10-06: the hash covers exactly the materials
+interpolated into the prompt, which puts the spec's frontmatter outside
+it too — `paths:`, `excludes:`, `cohort:` and `type:` declare where a
+spec applies, never how a target is judged, so retargeting a spec
+reaches new files without re-reviewing the ones it already governed.
 
 ## Format
 

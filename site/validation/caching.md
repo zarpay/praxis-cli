@@ -6,12 +6,14 @@ Every verdict is cached. Unchanged targets are never re-reviewed — only files 
 
 When `praxis eval run` reviews a target, each configured reviewer:
 
-1. Computes a content hash over the **full review input** — the target, the spec, and the spec's resolved `context:` files
+1. Computes a content hash over the **full review input** — the target, the spec's body, and the spec's resolved `context:` files
 2. Looks up `.praxis/cache/validation/{target-relative-path}.json`
 3. If the file holds an entry for this (spec, reviewer) pair and the hash matches — returns the cached verdict without any API call
 4. If there is no entry, or the hash doesn't match — calls the provider and writes the verdict
 
-The hash covers everything the reviewer saw. Editing the target, the spec, or a context file invalidates exactly the verdicts those inputs produced — and nothing else does: activating an axiom has no cache effect, because axioms never enter the review. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
+The hash covers everything the reviewer saw, and nothing else. Editing the target, the spec's prose, or a context file invalidates exactly the verdicts those inputs produced. Activating an axiom has no cache effect, because axioms never enter the review. Cohort units hash the assembled member set, so editing any member invalidates the cohort's verdict.
+
+A spec's **frontmatter is not part of the hash** — and a reviewer is never shown it. `paths:`, `excludes:`, `cohort:` and `type:` declare where a spec applies, not how a target is judged, so retargeting a spec reaches new files while every verdict it already holds stands. The same goes for a `context:` glob rewritten over the same files: the resolved contents join the hash, the pattern that found them does not.
 
 ## Cache file structure
 
@@ -21,15 +23,15 @@ Each target has exactly one cache file — its complete review state, across all
 {
   "version": "5.0",
   "verdicts": {
-    "a1b2c3d4:f83a92f1": {
+    "0311531a:e028f7f6": {
       "reviewer": {
-        "name": "flash",
-        "model": "deepseek/deepseek-v4-flash-0731",
-        "hash": "f83a92f1"
+        "name": "mercury",
+        "model": "inception/mercury-2.5",
+        "hash": "e028f7f6"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-02T14:30:45.123Z",
-      "content_hash": "abcd1234",
+      "cached_at": "2026-09-14T21:41:44.993Z",
+      "content_hash": "ecc6b3c2",
       "context_files": [{ "path": "src/domain/types.ts", "hash": "f1d20738" }],
       "result": {
         "compliant": false,
@@ -57,8 +59,8 @@ The reviewer's hash is its **behavioral identity**: the whole config entry minus
 The cache invalidates automatically when:
 
 - The target content changes (any member, for cohort units)
-- The spec file content changes
-- A context file the spec declares changes
+- The spec's body changes — its prose, not its frontmatter
+- A context file the spec declares changes, or a `context:` glob starts resolving to a different set of files
 
 - The reviewer's behavioral settings change (model, temperature, baseUrl, provider, options) — this rolls the reviewer's [epoch](/concepts/evidence-loop) and invalidates all of its entries at once
 

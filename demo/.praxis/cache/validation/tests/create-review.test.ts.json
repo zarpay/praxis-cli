@@ -38,12 +38,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-22T21:49:38.860Z",
-      "content_hash": "9d212d01",
+      "cached_at": "2026-10-06T11:17:11.923Z",
+      "content_hash": "2c98bd87",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The test file adheres to all specification conventions: subject framing uses correct naming patterns, each test contains a single assertion, functionality is tested via public APIs without mocking collaborators, and test data is instantiated fresh per case."
+        "reason": "The file adheres to all framing conventions, maintains one expectation per block, exercises the public API with observable state checks, and ensures fresh test data per case."
       }
     },
     "dacac2eb:7adec26a": {
@@ -53,12 +53,12 @@
         "hash": "7adec26a"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-22T21:49:55.426Z",
-      "content_hash": "9d212d01",
+      "cached_at": "2026-10-06T11:01:05.785Z",
+      "content_hash": "2c98bd87",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 681 words."
+        "reason": "Review input has 674 words."
       }
     }
   }
