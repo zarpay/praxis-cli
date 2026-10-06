@@ -72,7 +72,7 @@ By default errors fail a run and warnings don't; `eval ci --strict` makes warnin
 
 ## Scoping frontmatter
 
-A spec's frontmatter shapes exactly what the reviewer sees. These are structural decisions, executed before any evaluation — never prose instructions the reviewer has to notice and obey:
+A spec's frontmatter decides exactly what the reviewer sees — without itself being seen. These are structural decisions, executed before any evaluation; the reviewer is shown the spec's **body**, so a scoping key is never a prose instruction it has to notice and obey:
 
 ```yaml
 ---
@@ -96,6 +96,8 @@ context:
 Because context files are part of what the reviewer sees, they join the cached verdict's content hash: editing one invalidates the affected verdicts exactly like editing the target or the spec's prose does. The glob itself does not — rewrite it over the same files and the verdicts stand.
 
 **`type:`** — the reporting label this spec's verdicts group under, in the run summary's by-type table and the `--type` run scope. Undeclared, it falls back to the spec's directory path — right for the README-next-to-code layout, where one spec governs its own directory.
+
+Because the frontmatter is routing rather than standard, **retargeting a spec keeps every verdict it already holds**: add a glob to `paths:`, exclude a file, switch the reporting label, and the files the spec already governed are not re-reviewed. Only the body — the standard itself — invalidates. Write freely here; it costs nothing.
 
 `excludes:` and `cohort:` also compile through from an expert's `validates:` targeting, the same way `paths:` does — and the expert's alias compiles through as `type:`, so a project of compiled profiles gets one row per expert instead of one row per output directory.
 

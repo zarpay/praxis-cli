@@ -13,7 +13,9 @@ Exit codes are a contract across the whole CLI: **0** success or no violations, 
   run: praxis eval ci
 ```
 
-Exit 0: no errors. Exit 1: at least one error verdict — or any target that could not be reviewed at all (**UNVERIFIED**): a gate that could not look is not a gate, so an unreadable file or an oversized cohort fails CI rather than passing unseen.
+Exit 0: no errors. Exit 1: at least one error verdict — or any target that could not be reviewed at all (**UNVERIFIED**): a gate that could not look is not a gate, so an unreadable file, an oversized cohort, or a provider fault fails CI rather than passing unseen.
+
+A provider fault is transient, and CI is where that stings: the build fails on an upstream timeout that has nothing to do with the branch. Unverified units are never cached, so a re-run reviews only those units — cheap, and usually green. If it recurs on the same unit, it is the unit (too large) or the model, not the weather. See [the three UNVERIFIED causes](/commands/eval#the-ledger).
 
 ## Strict mode
 
