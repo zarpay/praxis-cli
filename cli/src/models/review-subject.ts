@@ -10,7 +10,6 @@ import { SpecFile } from "@/models/spec-file.js";
 
 /** A spec's resolved assist inputs, one list per frontmatter key. */
 interface AssistInputs {
-  /** Spec-blessed positive examples — shielded from adverse review. */
   /** Assist-only context — informs the review, never receives a verdict. */
   context: AssistFile[];
 }
@@ -23,6 +22,16 @@ interface AssistInputs {
  * and the cache provenance all derive from the same resolved state, so
  * a verdict can never be keyed on inputs the reviewer did not see.
  *
+ * The hash covers exactly the materials interpolated into the prompt:
+ * no more, so routing metadata cannot force a re-review; no less, so a
+ * changed prompt can never hit a cached verdict. That invariant is
+ * what makes a spec's frontmatter absent from both — it declares where
+ * the spec applies, never how a target is judged. A future frontmatter
+ * key that genuinely changed a review would change the prompt, and the
+ * hash would follow it for free; one that changes a reviewer's
+ * behavior without changing the prompt belongs in the reviewer's
+ * behavioral hash (`Reviewer.hash`), which stays exclusion-based.
+ *
  * A cohort arrives here already assembled (`targetContent` supplied);
  * a plain file is read from disk. `kind` distinguishes them for the
  * prompt, which frames a set differently from a single file.
@@ -34,8 +43,8 @@ export class ReviewSubject {
   readonly specPath: string;
   /** Target content as read (or assembled) at construction time. */
   readonly targetContent: string;
-  /** Spec content as read at construction time. */
-  readonly specContent: string;
+  /** The spec's prose, frontmatter stripped: the standard being applied. */
+  readonly specBody: string;
   /** Whether the target is one file or a pre-assembled cohort. */
   readonly kind: "file" | "cohort";
   /** The spec's resolved assist inputs: context files. */
@@ -45,14 +54,14 @@ export class ReviewSubject {
     targetPath: string;
     specPath: string;
     targetContent: string;
-    specContent: string;
+    specBody: string;
     kind: "file" | "cohort";
     assist: AssistInputs;
   }) {
     this.targetPath = fields.targetPath;
     this.specPath = fields.specPath;
     this.targetContent = fields.targetContent;
-    this.specContent = fields.specContent;
+    this.specBody = fields.specBody;
     this.kind = fields.kind;
     this.assist = fields.assist;
   }
@@ -79,26 +88,30 @@ export class ReviewSubject {
     /** Project root; required when the spec declares scoping globs. */
     root?: string;
   }): ReviewSubject {
-    const specContent = readText(specPath);
+    const spec = SpecFile.fromContent(readText(specPath), specPath);
 
     return new ReviewSubject({
       targetPath,
       specPath,
       targetContent: targetContent ?? readText(targetPath),
-      specContent,
+      specBody: spec.body(),
       kind,
-      assist: resolveAssist(specContent, specPath, root),
+      assist: resolveAssist(spec, root),
     });
   }
 
   /**
    * The cache-invalidation hash over the full review input.
    *
-   * Target, spec, and assist all participate, so editing any input the
-   * reviewer saw invalidates the verdict keyed on it.
+   * Target, spec body, and assist all participate — everything the
+   * reviewer saw and nothing else. The spec's frontmatter is out:
+   * retargeting a spec with `paths:` changes which files are reviewed,
+   * never the verdict on any one of them, and a `context:` glob
+   * rewritten to resolve to the same files leaves the prompt identical.
+   * Both used to cost a full re-review for no change in question.
    */
   contentHash(): string {
-    return hash8(this.targetContent + this.specContent + this.assistInput());
+    return hash8(this.targetContent + this.specBody + this.assistInput());
   }
 
   /** Provenance hash of the target alone, for the ledger. */
@@ -106,9 +119,15 @@ export class ReviewSubject {
     return hash8(this.targetContent);
   }
 
-  /** Provenance hash of the spec alone, for the ledger. */
+  /**
+   * Provenance hash of the spec alone, for the ledger.
+   *
+   * Over the body, like the cache hash: "the spec changed" in the
+   * ledger must mean the standard changed, not that someone added a
+   * glob no verdict could reflect.
+   */
   specContentHash(): string {
-    return hash8(this.specContent);
+    return hash8(this.specBody);
   }
 
   /**
@@ -141,32 +160,25 @@ export class ReviewSubject {
  * nothing stops an edit to the exemplar from turning a bad example
  * exemplary. Positive examples belong in the spec's own prose.)
  *
+ * Resolved files are sorted, so the content hash is stable across
+ * machines.
+ *
  * @throws PraxisError when the spec declares the key and no project root
  *   is available to resolve the root-relative globs against
  */
-function resolveAssist(specContent: string, specPath: string, root?: string): AssistInputs {
-  const spec = SpecFile.fromContent(specContent, specPath);
-
-  return {
-    context: resolveAssistKey(spec, root),
-  };
-}
-
-/**
- * Resolves the context globs into labeled file contents, sorted so
- * the content hash is stable across machines.
- */
-function resolveAssistKey(spec: SpecFile, root?: string): AssistFile[] {
+function resolveAssist(spec: SpecFile, root?: string): AssistInputs {
   const patterns = spec.contextPatterns();
 
-  if (patterns.length === 0) return [];
+  if (patterns.length === 0) return { context: [] };
 
   if (!root) throw errors.missingProjectRoot("context", spec.path);
 
-  return fg
+  const context = fg
     .sync(patterns, { cwd: root, onlyFiles: true, absolute: true, dot: true })
     .sort()
     .map((file) => ({ path: relativePath(root, file), content: readText(file) }));
+
+  return { context };
 }
 
 /**

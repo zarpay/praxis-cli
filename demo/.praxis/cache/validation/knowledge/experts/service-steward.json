@@ -53,12 +53,12 @@
         "hash": "7adec26a"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-22T22:23:26.867Z",
-      "content_hash": "98f9eb54",
+      "cached_at": "2026-10-06T11:01:05.775Z",
+      "content_hash": "14e9b648",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 289 words."
+        "reason": "Review input has 285 words."
       }
     }
   }

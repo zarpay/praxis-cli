@@ -10,13 +10,13 @@ import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
  */
 interface TraceabilityQuestionVariables {
   specPath: string;
-  specContent: string;
+  specBody: string;
   statement: string;
 }
 
 const TEMPLATE = `## THE SPECIFICATION ({specPath})
 
-{specContent}
+{specBody}
 
 ## THE PROPOSED AXIOM
 

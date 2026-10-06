@@ -133,7 +133,7 @@ By type:
 
 Notice what *isn't* here: `legacy-import.ts`. An exclusion in frontmatter is structural — the file never becomes a review unit, and the reviewer never sees it.
 
-Each verdict is cached by a content hash covering everything the reviewer saw — the target, the spec, and any `context:` files the spec declares. Run it again and it's four cache hits, zero API calls. Fix `redeem-coupon.ts` and only that file re-reviews:
+Each verdict is cached by a content hash covering everything the reviewer saw — the target, the spec's body, and any `context:` files the spec declares. Run it again and it's four cache hits, zero API calls. Fix `redeem-coupon.ts` and only that file re-reviews:
 
 ```bash
 praxis eval run src/services/redeem-coupon.ts

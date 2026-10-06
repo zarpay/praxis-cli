@@ -19,7 +19,8 @@ import requestCuratorCompletionService from "@/services/request-curator-completi
 interface OrganizeTriageInput {
   /** Project-relative spec path, as the critiques record it. */
   specPath: string;
-  specContent: string;
+  /** The spec's prose, frontmatter stripped — the standard, not its routing. */
+  specBody: string;
   critiques: PendingCritique[];
   /** Established axioms the critiques may fold into: id + statement. */
   axioms: { id: string; statement: string }[];
@@ -74,7 +75,7 @@ const organizeTriageService: Service<OrganizeTriageInput, Promise<TriageOrganiza
   const axiomLines = axiomItems.length === 0 ? triageAxiomsFallback() : axiomItems.join("\n");
   const userPrompt = triageQuestion({
     specPath: input.specPath,
-    specContent: input.specContent,
+    specBody: input.specBody,
     axiomLines,
     critiqueLines,
   });

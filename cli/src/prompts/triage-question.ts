@@ -14,7 +14,7 @@ import { preparePrompt } from "@/helpers/prepare-prompt-helper.js";
  */
 interface TriageQuestionVariables {
   specPath: string;
-  specContent: string;
+  specBody: string;
   axiomLines: string;
   critiqueLines: string;
 }
@@ -22,7 +22,7 @@ interface TriageQuestionVariables {
 const TEMPLATE = `## THE SPECIFICATION ({specPath})
 
 \`\`\`
-{specContent}
+{specBody}
 \`\`\`
 
 ## ESTABLISHED AXIOMS

@@ -83,12 +83,12 @@
         "hash": "7adec26a"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-22T21:49:55.412Z",
-      "content_hash": "60a083d7",
+      "cached_at": "2026-10-06T11:01:05.778Z",
+      "content_hash": "37248ef9",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 815 words."
+        "reason": "Review input has 803 words."
       },
       "context_files": [
         {

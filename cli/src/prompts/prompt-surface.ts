@@ -23,7 +23,7 @@ const SENTINEL_FILE = { path: "«path»", content: "«content»" };
 export default function promptSurface(): string {
   const contextBlocks = contextBlock(SENTINEL_FILE);
   const sections = {
-    specContent: "«spec»",
+    specBody: "«spec»",
     contextSection: contextSection({ blocks: contextBlocks }),
     targetContent: "«target»",
   };

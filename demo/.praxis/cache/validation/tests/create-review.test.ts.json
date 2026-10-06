@@ -53,12 +53,12 @@
         "hash": "7adec26a"
       },
       "spec_path": "tests/README.md",
-      "cached_at": "2026-09-22T21:49:55.426Z",
-      "content_hash": "9d212d01",
+      "cached_at": "2026-10-06T11:01:05.785Z",
+      "content_hash": "2c98bd87",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "Review input has 681 words."
+        "reason": "Review input has 674 words."
       }
     }
   }

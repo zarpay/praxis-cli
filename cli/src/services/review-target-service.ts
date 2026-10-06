@@ -156,7 +156,7 @@ function renderValidationQuestion(target: ReviewSubject): string {
     target.assist.context.length === 0 ? "" : contextSection({ blocks: contextBlocks });
 
   return validationQuestion({
-    specContent: target.specContent,
+    specBody: target.specBody,
     contextSection: context,
     subject: renderSubject(target),
     targetContent: target.targetContent,

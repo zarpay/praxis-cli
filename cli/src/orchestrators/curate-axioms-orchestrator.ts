@@ -13,6 +13,7 @@ import { errors } from "@/helpers/errors-helper.js";
 import { exists, readText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { prepareOrchestrator } from "@/helpers/prepare-orchestrator-helper.js";
+import { MarkdownFile } from "@/models/markdown-file.js";
 import assessTraceabilityService from "@/services/assess-traceability-service.js";
 import deriveTriageStateService from "@/services/derive-triage-state-service.js";
 import organizeTriageService from "@/services/organize-triage-service.js";
@@ -209,7 +210,7 @@ async function organizeAndDecide(
     for (const cohort of cohorts) {
       await organizeCohort(session, {
         specPath,
-        specContent: readText(specFile),
+        specBody: specBodyAt(specFile),
         cohort,
         established,
         versions,
@@ -223,13 +224,13 @@ async function organizeCohort(
   session: CurateSession,
   input: {
     specPath: string;
-    specContent: string;
+    specBody: string;
     cohort: DedupedCritique[];
     established: { id: string; statement: string }[];
     versions: Map<string, number>;
   },
 ): Promise<void> {
-  const { specPath, specContent, cohort, established, versions } = input;
+  const { specPath, specBody, cohort, established, versions } = input;
   const memberCount = cohort.reduce((sum, entry) => sum + entry.members.length, 0);
 
   let organization;
@@ -240,7 +241,7 @@ async function organizeCohort(
       () =>
         organizeTriageService(session.cfg, {
           specPath,
-          specContent,
+          specBody,
           critiques: cohort.map((entry) => entry.representative),
           axioms: [...established, ...session.activatedThisSession],
         }),
@@ -284,7 +285,7 @@ async function organizeCohort(
 
     await decideCluster(session, cluster, clusterCritiques, versions, {
       path: specPath,
-      content: specContent,
+      body: specBody,
     });
   }
 
@@ -373,7 +374,7 @@ async function decideCluster(
   cluster: TriageCluster,
   critiques: PendingCritique[],
   versions: Map<string, number>,
-  spec: { path: string; content: string },
+  spec: { path: string; body: string },
 ): Promise<void> {
   // A hold suggestion has no accept/skip to make: both would write
   // nothing and leave the critiques exactly where they are, so offering
@@ -449,7 +450,7 @@ async function acceptSuggestion(
   cluster: TriageCluster,
   critiques: PendingCritique[],
   versions: Map<string, number>,
-  spec: { path: string; content: string },
+  spec: { path: string; body: string },
 ): Promise<void> {
   const { suggestion } = cluster;
 
@@ -502,7 +503,7 @@ async function activate(
   session: CurateSession,
   critiques: PendingCritique[],
   draft: AxiomDraft,
-  spec: { path: string; content: string },
+  spec: { path: string; body: string },
 ): Promise<void> {
   let traceability;
 
@@ -510,7 +511,7 @@ async function activate(
     traceability = await session.waiting.during(`Checking traceability against ${spec.path}`, () =>
       assessTraceabilityService(session.cfg, {
         specPath: spec.path,
-        specContent: spec.content,
+        specBody: spec.body,
         statement: draft.statement,
       }),
     );
@@ -556,6 +557,22 @@ async function activate(
       text: `${id} is active, derived from ${traceability.grounding}. The next \`praxis axioms triage\` labels against it.`,
     },
   ]);
+}
+
+/**
+ * The spec as the curator should read it: its prose, frontmatter
+ * stripped.
+ *
+ * The same spec a reviewer is shown (`ReviewSubject`), so clustering
+ * and traceability ground against the standard rather than against the
+ * globs declaring where it applies. Read through `MarkdownFile` rather
+ * than `SpecFile`: the curator needs the prose, not the keys, and a
+ * malformed spec must not take down an interactive session mid-walk.
+ */
+function specBodyAt(path: string): string {
+  const document = MarkdownFile.fromContent(readText(path), path);
+
+  return document.body;
 }
 
 /** Groups the queue per governing spec — grounding is per-spec. */

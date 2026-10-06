@@ -20,7 +20,8 @@ interface TraceabilityAssessment {
 interface AssessTraceabilityInput {
   /** Project-relative spec path the proposal claims to belong to. */
   specPath: string;
-  specContent: string;
+  /** The spec's prose, frontmatter stripped — the standard, not its routing. */
+  specBody: string;
   statement: string;
 }
 
@@ -35,10 +36,10 @@ interface AssessTraceabilityInput {
 const assessTraceabilityService: Service<
   AssessTraceabilityInput,
   Promise<TraceabilityAssessment>
-> = async (cfg, { specPath, specContent, statement }) => {
+> = async (cfg, { specPath, specBody, statement }) => {
   const completion = await requestCuratorCompletionService(cfg, {
     systemPrompt: curatorSystemPrompt(),
-    userPrompt: traceabilityQuestion({ specPath, specContent, statement }),
+    userPrompt: traceabilityQuestion({ specPath, specBody, statement }),
     tools: traceabilityTools(),
   });
 

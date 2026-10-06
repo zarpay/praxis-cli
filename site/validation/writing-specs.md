@@ -93,7 +93,7 @@ context:
 
 **`cohort: by_directory`** — reviews whole directories as single units, for relational standards no single file can answer. See [Cross-Directory Review](/validation/cross-directory).
 
-Because context files are part of what the reviewer sees, they join the cached verdict's content hash: editing one invalidates the affected verdicts exactly like editing the target or the spec does.
+Because context files are part of what the reviewer sees, they join the cached verdict's content hash: editing one invalidates the affected verdicts exactly like editing the target or the spec's prose does. The glob itself does not — rewrite it over the same files and the verdicts stand.
 
 **`type:`** — the reporting label this spec's verdicts group under, in the run summary's by-type table and the `--type` run scope. Undeclared, it falls back to the spec's directory path — right for the README-next-to-code layout, where one spec governs its own directory.
 

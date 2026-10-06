@@ -37,7 +37,7 @@ async function assess(traceability: CuratorPlan["traceability"]) {
 
   return await assessTraceabilityService(cfg, {
     specPath: "docs/README.md",
-    specContent: "# Spec\n",
+    specBody: "# Spec",
     statement: "Error messages name what would be accepted.",
   });
 }

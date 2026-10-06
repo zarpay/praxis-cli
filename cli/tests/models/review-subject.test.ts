@@ -11,11 +11,15 @@ afterEach(() => {
 });
 
 /** A subject for `specs/doc.md`, governed by a spec with the given frontmatter. */
-function subjectWith(frontmatter: string[], files: Record<string, string> = {}): ReviewSubject {
+function subjectWith(
+  frontmatter: string[],
+  files: Record<string, string> = {},
+  body = "# Spec",
+): ReviewSubject {
   const { root, abs, cleanup } = createValidatorTmpdir({
     sources: ["specs"],
     files: {
-      "specs/README.md": ["---", ...frontmatter, "---", "", "# Spec"].join("\n"),
+      "specs/README.md": ["---", ...frontmatter, "---", "", body].join("\n"),
       "specs/doc.md": "# Doc",
       ...files,
     },
@@ -150,11 +154,59 @@ describe("contentHash", () => {
     expect(before.contentHash()).not.toBe(after.contentHash());
   });
 
-  it("changes when the spec changes", () => {
+  it("changes when the spec's standard changes", () => {
     const before = subjectWith(["paths:", '  - "specs/*.md"']);
-    const after = subjectWith(["paths:", '  - "specs/**/*.md"']);
+    const after = subjectWith(
+      ["paths:", '  - "specs/*.md"'],
+      {},
+      "# Spec\n\nEvery doc has a title.",
+    );
 
     expect(before.contentHash()).not.toBe(after.contentHash());
+  });
+
+  it("is unchanged when the spec is retargeted", () => {
+    // Routing, not standard: adding a path changes which files are
+    // reviewed, never the verdict on any one of them. The whole cost of
+    // broadening a spec used to be a re-review of every file it already
+    // governed.
+    const before = subjectWith(["paths:", '  - "specs/*.md"']);
+    const after = subjectWith(["paths:", '  - "specs/*.md"', '  - "docs/*.md"']);
+
+    expect(before.contentHash()).toBe(after.contentHash());
+  });
+
+  it("is unchanged by the reporting label, cohort mode and exclusions", () => {
+    const before = subjectWith(["paths:", '  - "specs/*.md"']);
+    const after = subjectWith([
+      'type: "writer"',
+      "paths:",
+      '  - "specs/*.md"',
+      "cohort: by_directory",
+      "excludes:",
+      '  - "specs/draft.md"',
+    ]);
+
+    expect(before.contentHash()).toBe(after.contentHash());
+  });
+
+  it("is unchanged by a context glob rewritten over the same files", () => {
+    // The prompt is byte-identical, so the verdict stands: the resolved
+    // contents join the hash, the pattern that found them does not.
+    const byName = subjectWith(["context:", '  - "src/a.ts"'], { "src/a.ts": "A" });
+    const byGlob = subjectWith(["context:", '  - "src/*.ts"'], { "src/a.ts": "A" });
+
+    expect(byName.contentHash()).toBe(byGlob.contentHash());
+  });
+
+  it("changes when a context glob reaches a different file set", () => {
+    const narrow = subjectWith(["context:", '  - "src/a.ts"'], {
+      "src/a.ts": "A",
+      "src/b.ts": "B",
+    });
+    const wide = subjectWith(["context:", '  - "src/*.ts"'], { "src/a.ts": "A", "src/b.ts": "B" });
+
+    expect(narrow.contentHash()).not.toBe(wide.contentHash());
   });
 
   it("is unchanged by a spec that declares no assist inputs", () => {
@@ -195,17 +247,27 @@ describe("ledger provenance hashes", () => {
     expect(subject.targetContentHash()).not.toBe(subject.specContentHash());
   });
 
-  it("keeps the combined contentHash byte-identical to before the split (cache pin)", () => {
+  it("hashes the spec's body, not its file (cache pin)", () => {
     const subject = subjectWith(["paths:", '  - "specs/*.md"']);
 
-    // sha256("# Doc" + spec text + "")[0:8] — the cache key every committed
+    // sha256("# Doc" + spec body + "")[0:8] — the cache key every committed
     // verdict is stored under. If this assertion breaks, every user's cache
-    // misses: that is an epoch roll and must be deliberate.
+    // misses: that must be deliberate. It last moved on 2026-10-06, when
+    // the spec's frontmatter left both the prompt and the hash.
     expect(subject.contentHash()).toBe(
       createHash("sha256")
-        .update("# Doc" + ["---", "paths:", '  - "specs/*.md"', "---", "", "# Spec"].join("\n"))
+        .update("# Doc" + "# Spec")
         .digest("hex")
         .slice(0, 8),
+    );
+  });
+
+  it("hashes the spec body alone for the ledger", () => {
+    const subject = subjectWith(["paths:", '  - "specs/*.md"']);
+
+    // "The spec changed" in the ledger must mean the standard changed.
+    expect(subject.specContentHash()).toBe(
+      createHash("sha256").update("# Spec").digest("hex").slice(0, 8),
     );
   });
 });
