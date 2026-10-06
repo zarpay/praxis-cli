@@ -55,29 +55,24 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-22T21:49:29.141Z",
-      "content_hash": "67aeedb2",
+      "cached_at": "2026-10-06T11:15:06.048Z",
+      "content_hash": "45f3b76f",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "Missing doc comment: Every service must have a doc comment stating its purpose and enumerating domain failure modes, but none is present.",
+            "text": "Error messages do not specify accepted inputs: Messages like 'opensAt failed the regex' and 'no' state what was wrong but omit what would be accepted instead, violating the requirement that errors help consumers know valid values.",
             "axiomId": null,
             "axiomVersion": null
           },
           {
-            "text": "Validation order: Work (reading from store, computing labels) occurs before validating inputs (parlorId existence, time format). The spec requires validation before any work happens.",
-            "axiomId": null,
-            "axiomVersion": null
-          },
-          {
-            "text": "Error message quality: Error messages like 'no' and 'failed the regex' do not name what was wrong or specify what inputs would be accepted instead.",
+            "text": "Missing documentation: Every service requires a doc comment stating its purpose and enumerating domain failure modes; none is present here.",
             "axiomId": null,
             "axiomVersion": null
           }
         ],
-        "reason": "The file fails required criteria in the Specification regarding documentation, input validation ordering, and error message clarity."
+        "reason": "The service fails to meet specification requirements for error message clarity and required documentation."
       }
     },
     "0311531a:7adec26a": {
@@ -87,7 +82,7 @@
         "hash": "7adec26a"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-10-06T11:01:44.402Z",
+      "cached_at": "2026-10-06T11:35:57.907Z",
       "content_hash": "45f3b76f",
       "result": {
         "compliant": true,

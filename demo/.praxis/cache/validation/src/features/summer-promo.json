@@ -58,12 +58,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-22T21:48:46.245Z",
-      "content_hash": "ae35b04c",
+      "cached_at": "2026-10-06T11:17:54.959Z",
+      "content_hash": "78d8d69e",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The cohort satisfies all structural and cohesion requirements. It contains exactly one entry point (index.ts) that re-exports the public API. Types reside in a dedicated summer-promo-types.ts file matching the feature name. The logic file build-banner.ts follows verb-first kebab-case naming, exports run, and returns Results. All files in the cohort are reachable from index.ts."
+        "reason": "The cohort conforms to the feature module conventions. It provides an index.ts entry point that re-exports the public API, uses a dedicated types file named <feature>-types.ts, and contains logic in verb-first kebab-case files exporting run with Result types. All files are reachable from the entry point."
       },
       "context_files": [
         {

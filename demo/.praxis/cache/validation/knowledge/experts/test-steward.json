@@ -53,12 +53,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "knowledge/experts/experts.sme.md",
-      "cached_at": "2026-09-22T22:23:26.823Z",
-      "content_hash": "53765490",
+      "cached_at": "2026-10-06T11:08:07.109Z",
+      "content_hash": "6cecba82",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The document includes all required frontmatter fields (title, type, alias, description) and content elements (H1 heading with expert and alias name, prose describing subject-matter expertise). It contains no prohibited placeholder text."
+        "reason": "The document includes all required frontmatter fields and the body starts with a level-1 heading naming the expert and alias, followed by prose stating the subject-matter expertise. No placeholder text is used."
       }
     }
   }

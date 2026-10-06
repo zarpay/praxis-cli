@@ -50,24 +50,24 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-22T21:49:07.839Z",
-      "content_hash": "42489a1f",
+      "cached_at": "2026-10-06T11:18:02.181Z",
+      "content_hash": "2c8185fb",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "The file uses `console.log`, `fetch`, and `AbortSignal.timeout`. The specification mandates 'No I/O except through the injected Store. No timers, no fetch, no console.'",
+            "text": "The code uses `console.log` for output, which is forbidden under the rule 'No I/O except through the injected Store. No timers, no fetch, no console.'",
             "axiomId": null,
             "axiomVersion": null
           },
           {
-            "text": "The file exports `NotifyParlorInput` alongside `run`. The specification mandates a service module exports 'exactly one entry point: a function named `run`'.",
+            "text": "The code uses `fetch` for network requests, which violates the prohibition on direct I/O outside the Store interface.",
             "axiomId": null,
             "axiomVersion": null
           }
         ],
-        "reason": "The file violates mandatory behavioral constraints regarding I/O and structural constraints regarding exports."
+        "reason": "The service violates the architectural requirement that all I/O must flow through the injected Store."
       }
     },
     "0311531a:7adec26a": {
@@ -77,7 +77,7 @@
         "hash": "7adec26a"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-10-06T11:01:44.400Z",
+      "cached_at": "2026-10-06T11:35:57.905Z",
       "content_hash": "2c8185fb",
       "result": {
         "compliant": true,

@@ -65,12 +65,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-22T21:48:07.826Z",
-      "content_hash": "385839e6",
+      "cached_at": "2026-10-06T11:08:14.263Z",
+      "content_hash": "19fd0df7",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The fileset satisfies all specification criteria: it contains a single entry point (index.ts) that re-exports the complete public API; types reside in award-types.ts; logic files use verb-first kebab-case naming and follow service conventions (one exported run, Result type, consumer-grade errors); and all files are reachable from the entry point with a single cohesive capability."
+        "reason": "The feature contains a single entry point (index.ts) that re-exports the public API, isolates types in a dedicated file, implements logic consistent with service conventions (single exported run, results pattern, consumer errors), and maintains internal cohesion with all files reachable from the entry point."
       },
       "context_files": [
         {

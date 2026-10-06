@@ -25,6 +25,8 @@ The hash covers exactly what the reviewer saw. A spec's frontmatter — `paths:`
 
 ### Fixed
 
+- **A provider answering 200 with no `choices` threw a TypeError.** OpenRouter renders some upstream faults into a 200 body — `{"error":{"message":"Upstream idle timeout exceeded","code":504}}` and no `choices` key — and `data.choices[0]` read straight through the guard, so the unit came back `UNVERIFIED` with `Cannot read properties of undefined (reading '0')`: a programming error at the one moment the response needed explaining. The access is guarded and the error names what the backend sent. The verdict was always correctly unverified and never cached; only the message was useless. Found in the 2026-10-06 demo audit, where mercury hit it on roughly one in five of the long `by_directory` cohort prompts.
+
 - **The demo's version pin lagged a release.** 2.6.2 claimed to move it to the current release and moved it to 2.6.1, so `praxis` in `demo/` exited 2 with a version conflict. It pins 2.6.2.
 
 ## [2.6.2] - 2026-10-01

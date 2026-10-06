@@ -55,29 +55,29 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-22T21:49:00.995Z",
-      "content_hash": "f52a41bc",
+      "cached_at": "2026-10-06T11:12:37.602Z",
+      "content_hash": "44a731c7",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "Domain failures are raised as exceptions (throw Error/RangeError) instead of returning { ok: false, error }, violating the rule that 'Domain failures are values, never exceptions'.",
+            "text": "Domain failures (missing review, invalid amount) are raised via `throw` instead of returning `{ ok: false, error }`.",
             "axiomId": null,
             "axiomVersion": null
           },
           {
-            "text": "Error messages ('bad id', 'bad amount') do not name what was wrong and what would be accepted instead.",
+            "text": "Missing doc comment stating the service purpose and enumerating domain failure modes.",
             "axiomId": null,
             "axiomVersion": null
           },
           {
-            "text": "Missing required doc comment stating the service's purpose and enumerating domain failure modes.",
+            "text": "Error messages do not name what was wrong and what would be accepted instead.",
             "axiomId": null,
             "axiomVersion": null
           }
         ],
-        "reason": "The file violates required behaviors for error handling and documentation."
+        "reason": "The file violates required behavioral and documentation standards."
       }
     },
     "0311531a:7adec26a": {
@@ -87,7 +87,7 @@
         "hash": "7adec26a"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-10-06T11:01:44.399Z",
+      "cached_at": "2026-10-06T11:35:57.904Z",
       "content_hash": "44a731c7",
       "result": {
         "compliant": true,

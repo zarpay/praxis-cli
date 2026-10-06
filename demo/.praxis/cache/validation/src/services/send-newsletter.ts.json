@@ -38,12 +38,12 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-09-22T21:49:24.461Z",
-      "content_hash": "f96b0e7f",
+      "cached_at": "2026-10-06T11:14:58.613Z",
+      "content_hash": "926fd7bf",
       "result": {
         "compliant": true,
         "issues": [],
-        "reason": "The file exports a single 'run' entry point with the correct signature, follows value-based error handling with clear error messages, validates input before logic, and includes a doc comment with the purpose and enumerated failure modes."
+        "reason": "The service follows the required structure (run function, Store first, Result return), handles domain failures as values with clear consumer-facing error messages, validates inputs before returning results, and includes a doc comment documenting purpose and failure modes."
       }
     },
     "0311531a:7adec26a": {
@@ -53,7 +53,7 @@
         "hash": "7adec26a"
       },
       "spec_path": "src/services/README.md",
-      "cached_at": "2026-10-06T11:01:44.402Z",
+      "cached_at": "2026-10-06T11:35:57.906Z",
       "content_hash": "926fd7bf",
       "result": {
         "compliant": true,

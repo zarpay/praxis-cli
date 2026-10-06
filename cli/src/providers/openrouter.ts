@@ -26,7 +26,13 @@ interface ChatCompletionUsage {
 }
 
 interface ChatCompletionResponse {
-  choices: {
+  /**
+   * Optional because a backend can answer 200 without it — a rate
+   * limit, a moderation stop or an upstream fault rendered into the
+   * body. Typing it as always-present is what let `choices[0]` throw a
+   * TypeError at the one moment the response needed explaining.
+   */
+  choices?: {
     message: { role: string; content: string | null; tool_calls?: ToolCall[] };
   }[];
   usage?: ChatCompletionUsage;
@@ -122,7 +128,17 @@ export class OpenRouterProvider implements ReviewProvider {
     }
 
     const data = (await response.json()) as ChatCompletionResponse;
-    const toolCall = data.choices[0]?.message?.tool_calls?.[0];
+    const choice = data.choices?.[0];
+
+    if (!choice) {
+      throw errors.reviewerApiError(
+        this.name,
+        response.status,
+        `response carried no choices — ${clip(JSON.stringify(data), 0, EXCERPT_RADIUS * 2)}`,
+      );
+    }
+
+    const toolCall = choice.message?.tool_calls?.[0];
 
     if (!toolCall) {
       throw errors.noToolCall();
@@ -195,7 +211,7 @@ export class OpenRouterProvider implements ReviewProvider {
       return JSON.parse(raw) as unknown;
     } catch (err) {
       const finishReason =
-        (data.choices[0] as { finish_reason?: string }).finish_reason ?? "unknown";
+        (data.choices?.[0] as { finish_reason?: string } | undefined)?.finish_reason ?? "unknown";
       const reason = err instanceof Error ? err.message : String(err);
       const advice = truncationAdvice(raw, reason, finishReason);
 

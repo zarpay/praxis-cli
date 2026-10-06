@@ -110,29 +110,29 @@
         "hash": "6af9f0d7"
       },
       "spec_path": "src/features/README.md",
-      "cached_at": "2026-09-22T21:56:09.031Z",
-      "content_hash": "67edd1dd",
+      "cached_at": "2026-10-06T11:08:21.484Z",
+      "content_hash": "b4114a17",
       "result": {
         "compliant": false,
         "severity": "error",
         "issues": [
           {
-            "text": "Missing index.ts entry point: The specification requires exactly one entry point, index.ts, to re-export the public API, but this file is absent from the directory.",
+            "text": "The required entry point index.ts is missing, preventing the import graph from being traversed and violating the rule that exactly one entry point must exist.",
             "axiomId": null,
             "axiomVersion": null
           },
           {
-            "text": "Orphaned files: The file old-rotation.ts is marked as legacy code (Kept around in case we go back) and is not reachable from an entry point, violating the requirement that all files must be reachable from index.ts.",
+            "text": "The file old-rotation.ts is unreachable and serves a distinct legacy purpose, violating the one capability per feature and no orphaned files rules.",
             "axiomId": null,
             "axiomVersion": null
           },
           {
-            "text": "Service convention violations: The logic files export multiple functions instead of a single run entry point, and they return primitive strings instead of the mandated Result<T> type found in the domain context.",
+            "text": "Logic files export multiple verbs and return raw strings instead of adhering to the service convention of a single exported run function and using Result over exceptions.",
             "axiomId": null,
             "axiomVersion": null
           }
         ],
-        "reason": "The directory lacks the mandated entry point and contains legacy logic that violates service conventions and cohesion requirements."
+        "reason": "The feature module fails to meet structural and cohesion requirements defined in the specification."
       },
       "context_files": [
         {
