@@ -51,7 +51,7 @@ A file can be governed by more than one spec — a local README plus a cross-dir
 
 ## What is never a target
 
-Spec files themselves, `_`-prefixed templates, files matched by the config's `ignore` patterns, and anything in a spec's `excludes:`.
+Spec files themselves, `_`-prefixed templates in `expertsDir` or `practicesDir`, files matched by the config's `ignore` patterns, and anything in a spec's `excludes:`.
 
 ## See also
 

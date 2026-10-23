@@ -111,7 +111,7 @@ This applies to all spec discovery — both local and cross-directory.
 
 ## Excluding files from `paths`
 
-Files prefixed with `_` and files matching the `specFilePattern` are always excluded from `paths` results, even when the glob matches them — as is anything in the config's `ignore` patterns or the spec's own `excludes:`. You never need explicit exclusions for templates or spec files.
+`_`-prefixed templates in `expertsDir` or `practicesDir` and files matching the `specFilePattern` are always excluded from `paths` results, even when the glob matches them — as is anything in the config's `ignore` patterns or the spec's own `excludes:`. You never need explicit exclusions for templates or spec files.
 
 ## See also
 
