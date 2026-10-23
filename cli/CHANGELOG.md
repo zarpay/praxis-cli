@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Underscore-prefixed files are reviewed.** Only `_` files directly in `expertsDir` or `practicesDir` are skipped, as templates; Rails partials and the like were silently dropped. On upgrading, `eval ci` reports such files `UNVERIFIED` until one `eval run` reviews them.
+
 ## [2.7.0] - 2026-10-06
 
 The routing release. A spec's frontmatter says *where* a standard applies; its body says *what* the standard is. Only the body ever reaches a reviewer now, and only what reaches a reviewer is hashed — so retargeting a spec reaches new files without re-reviewing the ones it already governed.

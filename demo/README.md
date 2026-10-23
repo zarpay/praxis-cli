@@ -114,8 +114,8 @@ FAILs and WARNs to report, and real shields to prove:
   tests implementation (flagged)
 - `src/services/legacy-import.ts` — awful, but `excludes:`-shielded:
   never reviewed
-- `src/services/_wip-refund.ts`, `knowledge/experts/_expert-template.md`
-  — underscore-prefixed: never reviewed, never compiled
+- `knowledge/experts/_expert-template.md` — underscore-prefixed: never
+  reviewed, never compiled
 - `src/generated/` — covered by the config's `ignore:` patterns
 
 Do not "fix" these files; the eval layer's output depends on them.

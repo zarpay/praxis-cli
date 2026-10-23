@@ -32,17 +32,35 @@ describe("DocumentStore", () => {
   }
 
   describe("files", () => {
-    it("sweeps documents across sources, never specs or underscore templates", () => {
+    it("sweeps documents across sources, never specs", () => {
       seed("docs/guide.md", "# Guide");
       seed("docs/nested/deep.md", "# Deep");
       seed("docs/README.md", "# The spec");
-      seed("docs/_template.md", "# Template");
       seed("reference/api.md", "# API");
 
       const paths = new DocumentStore(testConfig(root, { sources: ["docs", "reference"] })).files();
 
       expect(paths).toHaveLength(3);
       expect(paths.every((path) => !path.endsWith("README.md"))).toBe(true);
+    });
+
+    it("never sweeps an expert or practice template", () => {
+      seed("experts/scooper.md", "# Scooper");
+      seed("experts/_draft.md", "# Draft");
+      seed("practices/_draft.md", "# Draft");
+
+      const config = testConfig(root, { sources: ["experts", "practices"] });
+      const paths = new DocumentStore(config).files();
+
+      expect(paths).toEqual([join(root, "experts", "scooper.md")]);
+    });
+
+    it("sweeps an underscore-prefixed file outside the authoring directories", () => {
+      seed("docs/_partial.md", "# Partial");
+
+      const paths = new DocumentStore(testConfig(root, { sources: ["docs"] })).files();
+
+      expect(paths).toEqual([join(root, "docs", "_partial.md")]);
     });
 
     it("includes documents in directories with no spec at all", () => {

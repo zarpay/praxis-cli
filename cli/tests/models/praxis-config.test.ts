@@ -303,6 +303,65 @@ describe("PraxisConfig", () => {
     });
   });
 
+  describe("isTarget", () => {
+    it("rejects an underscore-prefixed file in the experts directory", () => {
+      const dir = makeTmpdir();
+      const cfg = new PraxisConfig(dir);
+      const template = join(dir, "experts", "_draft.md");
+
+      expect(cfg.isTarget(template)).toBe(false);
+    });
+
+    it("rejects an underscore-prefixed file in the practices directory", () => {
+      const dir = makeTmpdir();
+      const cfg = new PraxisConfig(dir);
+      const template = join(dir, "practices", "_draft.md");
+
+      expect(cfg.isTarget(template)).toBe(false);
+    });
+
+    it("follows a configured experts directory", () => {
+      const dir = makeTmpdir();
+      writeConfig(dir, { expertsDir: "knowledge/agents" });
+      const cfg = new PraxisConfig(dir);
+      const template = join(dir, "knowledge", "agents", "_draft.md");
+
+      expect(cfg.isTarget(template)).toBe(false);
+    });
+
+    it("accepts an underscore-prefixed file elsewhere, like a Rails partial", () => {
+      const dir = makeTmpdir();
+      const cfg = new PraxisConfig(dir);
+      const partial = join(dir, "app", "views", "_form.html.erb");
+
+      expect(cfg.isTarget(partial)).toBe(true);
+    });
+
+    it("accepts an underscore-prefixed file in a subdirectory of experts", () => {
+      const dir = makeTmpdir();
+      const cfg = new PraxisConfig(dir);
+      const nested = join(dir, "experts", "views", "_form.html.erb");
+
+      expect(cfg.isTarget(nested)).toBe(true);
+    });
+
+    it("rejects a spec file", () => {
+      const dir = makeTmpdir();
+      const cfg = new PraxisConfig(dir);
+      const spec = join(dir, "app", "views", "README.md");
+
+      expect(cfg.isTarget(spec)).toBe(false);
+    });
+
+    it("accepts an ordinary expert", () => {
+      const dir = makeTmpdir();
+      const cfg = new PraxisConfig(dir);
+      const expert = join(dir, "experts", "scooper.md");
+
+      expect(cfg.isTarget(expert)).toBe(true);
+    });
+  });
+
   describe("specFilePattern", () => {
     it("loads a top-level specFilePattern", () => {
       const dir = makeTmpdir();

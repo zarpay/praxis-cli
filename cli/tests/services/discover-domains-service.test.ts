@@ -63,6 +63,30 @@ describe("discoverDomainsService", () => {
     expect(targets.some((t) => t.endsWith("/c.ts"))).toBe(false);
   });
 
+  it("targets an underscore-prefixed file, like a Rails partial", () => {
+    const root = project({
+      "src/views/README.md": '---\npaths:\n  - "src/views/*.erb"\n---\n\n# Views\n',
+      "src/views/show.html.erb": "<p>show</p>\n",
+      "src/views/_form.html.erb": "<form></form>\n",
+    });
+    const targets = domains(root)[0]?.targetFiles ?? [];
+
+    expect(targets).toHaveLength(2);
+    expect(targets.some((t) => t.endsWith("/_form.html.erb"))).toBe(true);
+  });
+
+  it("never targets a template in the experts directory", () => {
+    const root = project({
+      "src/README.md": '---\npaths:\n  - "experts/*.md"\n---\n\n# Experts\n',
+      "experts/scooper.md": "# Scooper\n",
+      "experts/_draft.md": "# Draft\n",
+    });
+    const targets = domains(root)[0]?.targetFiles ?? [];
+
+    expect(targets).toHaveLength(1);
+    expect(targets[0]).toMatch(/scooper\.md$/);
+  });
+
   it("shields `excludes:` from the target list — the reviewer never sees them", () => {
     const root = project({
       "src/services/README.md":

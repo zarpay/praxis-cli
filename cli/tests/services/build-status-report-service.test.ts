@@ -32,7 +32,7 @@ describe("buildStatusReportService", () => {
     expect(report.counts.context).toBeGreaterThanOrEqual(2); // identity.md, principles.md, documentation.md
   });
 
-  it("excludes _template.md and README.md from counts", async () => {
+  it("excludes expert templates and README.md from counts", async () => {
     const report = await reportFor(tmpdir);
 
     // Experts dir has README.md + content files; reported count must be less than total .md files

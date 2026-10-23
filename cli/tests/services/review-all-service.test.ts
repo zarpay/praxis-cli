@@ -196,7 +196,7 @@ describe("reviewAllService", () => {
       cleanup();
     });
 
-    it("excludes spec files and templates from paths results", async () => {
+    it("excludes spec files, never underscore-prefixed files, from paths results", async () => {
       useCompliantFixture();
 
       const { root, abs, cleanup } = createValidatorTmpdir({
@@ -204,7 +204,7 @@ describe("reviewAllService", () => {
         files: {
           "specs/README.md": "---\npaths:\n  - docs/**/*.md\n---\n# Spec",
           "docs/good.md": "# Good doc",
-          "docs/_template.md": "# Template",
+          "docs/_partial.md": "# Partial",
         },
       });
 
@@ -217,8 +217,8 @@ describe("reviewAllService", () => {
       const filenames = results.map((r) => r.filename);
       const paths = results.map((r) => r.path);
 
-      expect(filenames).toEqual(["good.md"]);
-      expect(paths).toEqual([abs("docs/good.md")]);
+      expect(filenames).toEqual(["_partial.md", "good.md"]);
+      expect(paths).toEqual([abs("docs/_partial.md"), abs("docs/good.md")]);
 
       cleanup();
     });

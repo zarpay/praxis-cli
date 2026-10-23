@@ -2,7 +2,7 @@ import type { PraxisConfig } from "@/models/praxis-config.js";
 
 import fg from "fast-glob";
 
-import { isContentFile, readText } from "@/helpers/files-helper.js";
+import { readText } from "@/helpers/files-helper.js";
 import { joinPath } from "@/helpers/paths-helper.js";
 import { DocumentFile } from "@/models/document-file.js";
 
@@ -19,8 +19,9 @@ interface DocumentCounts {
  *
  * The other document stores each own one directory of one kind; this
  * one owns the sweep across every source directory — the listing rules
- * (a spec file is direction and an underscore-prefixed file is a
- * template, so neither is a document; ignore patterns honored; a
+ * (a spec file is direction and an underscore-prefixed file in the
+ * experts or practices directory is a template, so neither is a
+ * document; ignore patterns honored; a
  * missing directory yields nothing, because an unused part of the
  * taxonomy is a normal state), the classifying counts `praxis status`
  * reports, and the run-summary denominator: a document no spec covers
@@ -29,14 +30,14 @@ interface DocumentCounts {
 export class DocumentStore {
   private readonly root: string;
   private readonly sources: string[];
-  private readonly specFilePattern: string;
   private readonly ignore: string[];
+  private readonly isTarget: (path: string) => boolean;
 
   constructor(cfg: PraxisConfig) {
     this.root = cfg.root;
     this.sources = cfg.sources;
-    this.specFilePattern = cfg.specFilePattern;
     this.ignore = cfg.absoluteIgnore;
+    this.isTarget = (path) => cfg.isTarget(path);
   }
 
   /** Absolute paths of every document across the source directories. */
@@ -65,7 +66,7 @@ export class DocumentStore {
           dot: true,
           ignore: this.ignore,
         })
-        .filter((file) => isContentFile(file, this.specFilePattern)),
+        .filter(this.isTarget),
     );
   }
 

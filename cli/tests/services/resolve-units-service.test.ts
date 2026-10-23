@@ -103,6 +103,18 @@ describe("resolveUnitsService", () => {
     expect(units.every((u) => u.path.endsWith(".md"))).toBe(true);
   });
 
+  it("keeps an underscore-prefixed file in a cohort, like a Rails partial", () => {
+    const { units } = unitsOf({
+      "src/views/README.md": '---\ncohort: by_directory\npaths:\n  - "src/views/*"\n---\n\n# V\n',
+      "src/views/orders/show.html.erb": "<p>show</p>\n",
+      "src/views/orders/_form.html.erb": "<form></form>\n",
+    });
+    const members = units[0]?.files ?? [];
+
+    expect(members).toHaveLength(2);
+    expect(members.some((f) => f.endsWith("/_form.html.erb"))).toBe(true);
+  });
+
   it("never makes the spec file a unit of itself", () => {
     const { units } = unitsOf({ "src/docs/README.md": "# Docs\n", "src/docs/guide.md": "# G\n" });
 

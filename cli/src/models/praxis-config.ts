@@ -7,8 +7,8 @@ import type {
 } from "@/types.js";
 
 import { errors } from "@/helpers/errors-helper.js";
-import { exists, readJson } from "@/helpers/files-helper.js";
-import { resolvePath } from "@/helpers/paths-helper.js";
+import { exists, matchesFilename, readJson } from "@/helpers/files-helper.js";
+import { baseName, parentDir, resolvePath } from "@/helpers/paths-helper.js";
 import { configFile } from "@/models/project-paths.js";
 
 /** Config shape after defaults are applied. */
@@ -173,6 +173,10 @@ export class PraxisConfig {
     return this.data.specFilePattern;
   }
 
+  isTarget(path: string): boolean {
+    return !matchesFilename(path, this.specFilePattern) && !this.isAuthoringTemplate(path);
+  }
+
   /**
    * The scope a full run covers, projected from this config.
    *
@@ -187,6 +191,13 @@ export class PraxisConfig {
       specFilePattern: this.specFilePattern,
       absoluteIgnore: this.absoluteIgnore,
     };
+  }
+
+  private isAuthoringTemplate(path: string): boolean {
+    const dir = parentDir(path);
+    const inAuthoringDir = dir === this.expertsDir || dir === this.practicesDir;
+
+    return inAuthoringDir && baseName(path).startsWith("_");
   }
 
   /**

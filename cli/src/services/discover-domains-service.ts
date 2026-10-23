@@ -3,7 +3,6 @@ import type { NoInput, Service, ValidationDomain } from "@/types.js";
 
 import fg from "fast-glob";
 
-import { isContentFile } from "@/helpers/files-helper.js";
 import { baseName, joinPath, parentDir, relativePath } from "@/helpers/paths-helper.js";
 import { SpecStore } from "@/stores/spec-store.js";
 
@@ -52,7 +51,7 @@ function domainFor(store: SpecStore, specPath: string, cfg: PraxisConfig): Valid
   } else if (spec.paths.length > 0) {
     domain.targetFiles = fg
       .sync(spec.paths, { cwd: root, onlyFiles: true, absolute: true, dot: true, ignore })
-      .filter((file) => isContentFile(file, cfg.specFilePattern));
+      .filter((file) => cfg.isTarget(file));
   }
 
   return domain;

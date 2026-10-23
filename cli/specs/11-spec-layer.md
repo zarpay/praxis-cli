@@ -37,7 +37,7 @@ The simplest path through the spec layer is no tooling at all: the thesis (READM
 
 ## The rule
 
-**Nothing in the eval layer may depend on the content taxonomy.** No eval data structure, metric, report, or cache key may require that a spec was born from an expert definition, or that documents are experts, practices, conventions, or constitutions. The working instance already demonstrates the taxonomy-free path: one `*.sme.md` spec over `backend/app/events/**/*.rb` — no roles directory in sight from the eval's perspective.
+**Nothing in the eval layer may depend on the content taxonomy.** No eval data structure, metric, report, or cache key may require that a spec was born from an expert definition, or that documents are experts, practices, conventions, or constitutions. The working instance already demonstrates the taxonomy-free path: one `*.sme.md` spec over `backend/app/events/**/*.rb` — no roles directory in sight from the eval's perspective. (Decided 2026-10-23: the eval layer may read `expertsDir`/`practicesDir` to skip `_`-prefixed templates, never to require them.)
 
 The dependency runs one way: the spec layer produces artifacts the eval layer consumes as plain specs. The eval layer never calls back into the spec layer.
 
