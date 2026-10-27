@@ -81,7 +81,15 @@ export class MarkdownFile {
   get rawYaml(): string {
     const end = this.frontmatterEnd();
 
-    return end === null ? "" : this.content.slice(DELIMITER.length + 1, end - DELIMITER.length - 2);
+    if (end === null) return "";
+
+    // The opening fence is `---\n` or `---\r\n`; skip exactly what was
+    // there so the YAML block never starts with a stray carriage return.
+    const open = this.openingFence();
+
+    if (open === null) return "";
+
+    return this.content.slice(open.length, end - DELIMITER.length - 2);
   }
 
   /**
@@ -89,12 +97,34 @@ export class MarkdownFile {
    * frontmatter block to close.
    */
   private frontmatterEnd(): number | null {
-    if (!this.content.startsWith(`${DELIMITER}\n`)) return null;
+    // Accept both LF and CRLF line endings. A checkout with
+    // `core.autocrlf=true` (the default on Windows) rewrites every
+    // tracked markdown file to CRLF, and an LF-only check would make
+    // every spec, expert and practice look like it had no frontmatter
+    // at all.
+    const open = this.openingFence();
 
-    const closing = this.content.indexOf(`\n${DELIMITER}`, DELIMITER.length);
+    if (open === null) return null;
+
+    const closing = this.content.indexOf(`\n${DELIMITER}`, open.length);
 
     if (closing === -1) return null;
 
     return closing + DELIMITER.length + 2;
+  }
+
+  /**
+   * The opening fence as it is actually written, or null when the
+   * document has no frontmatter block.
+   *
+   * Both `---\n` and `---\r\n` are accepted; the exact bytes are
+   * returned so the caller can skip precisely what was there.
+   */
+  private openingFence(): string | null {
+    if (this.content.startsWith(`${DELIMITER}\r\n`)) return `${DELIMITER}\r\n`;
+
+    if (this.content.startsWith(`${DELIMITER}\n`)) return `${DELIMITER}\n`;
+
+    return null;
   }
 }
