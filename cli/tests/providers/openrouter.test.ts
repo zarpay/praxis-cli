@@ -32,6 +32,9 @@ function request(overrides: Partial<ProviderRequest> = {}): ProviderRequest {
   };
 }
 
+/** Resolves at once, so tests exercising retryable failures do not wait out the backoff. */
+const noWait = async (): Promise<void> => {};
+
 /** Captures the JSON body of the next OpenRouter request. */
 function captureBody(bodies: Record<string, unknown>[]): void {
   server.use(
@@ -112,7 +115,7 @@ describe("OpenRouterProvider", () => {
       // programming error where the response needed explaining.
       useOpenRouterResponse(server, { error: { message: "rate limited", code: 429 } });
 
-      const review = new OpenRouterProvider().review(request());
+      const review = new OpenRouterProvider({ sleep: noWait }).review(request());
 
       await expect(review).rejects.toThrow("response carried no choices");
       await expect(review).rejects.not.toThrow("Cannot read properties");
@@ -121,7 +124,7 @@ describe("OpenRouterProvider", () => {
     it("shows what the backend sent when it carries no choices", async () => {
       useOpenRouterResponse(server, { error: { message: "rate limited", code: 429 } });
 
-      const review = new OpenRouterProvider().review(request());
+      const review = new OpenRouterProvider({ sleep: noWait }).review(request());
 
       await expect(review).rejects.toThrow("rate limited");
     });
@@ -129,7 +132,7 @@ describe("OpenRouterProvider", () => {
     it("reports API failures with the provider's name", async () => {
       useOpenRouterResponse(server, { error: "upstream unavailable" }, 502);
 
-      const review = new OpenRouterProvider().review(request());
+      const review = new OpenRouterProvider({ sleep: noWait }).review(request());
 
       await expect(review).rejects.toThrow('Reviewer provider "openrouter" API error (502)');
     });
@@ -328,6 +331,110 @@ describe("OpenRouterProvider", () => {
       const result = await new OpenRouterProvider().review(request());
 
       expect(result.usage).toBeNull();
+    });
+  });
+  describe("transient failures", () => {
+    const RATE_LIMITED = { error: { message: "rate limited upstream", code: 429 } };
+
+    /** A provider whose waits resolve at once, recording each requested delay. */
+    function retryingProvider(waits: number[] = []): OpenRouterProvider {
+      return new OpenRouterProvider({
+        sleep: (ms) => {
+          waits.push(ms);
+
+          return Promise.resolve();
+        },
+      });
+    }
+
+    /** Answers each request with the next response in order, then repeats the last. */
+    function respondInTurn(...responses: Response[]): { calls: () => number } {
+      let calls = 0;
+      server.use(
+        http.post(OPENROUTER_URL, () => {
+          const response = responses[Math.min(calls, responses.length - 1)];
+          calls += 1;
+          return response.clone();
+        }),
+      );
+      return { calls: () => calls };
+    }
+
+    const passing = () =>
+      HttpResponse.json(validationToolCallResponse("validation_pass", { reason: "Fine." }));
+
+    it("reviews once a 429 clears", async () => {
+      const exchange = respondInTurn(HttpResponse.json(RATE_LIMITED, { status: 429 }), passing());
+
+      const result = await retryingProvider().review(request());
+
+      expect(result.verdict.compliant).toBe(true);
+      expect(exchange.calls()).toBe(2);
+    });
+
+    it("retries a rate limit OpenRouter delivers inside a 200", async () => {
+      const exchange = respondInTurn(HttpResponse.json(RATE_LIMITED), passing());
+
+      const result = await retryingProvider().review(request());
+
+      expect(result.verdict.compliant).toBe(true);
+      expect(exchange.calls()).toBe(2);
+    });
+
+    it("retries transient upstream faults", async () => {
+      const exchange = respondInTurn(
+        HttpResponse.text("bad gateway", { status: 502 }),
+        HttpResponse.text("unavailable", { status: 503 }),
+        passing(),
+      );
+
+      await retryingProvider().review(request());
+
+      expect(exchange.calls()).toBe(3);
+    });
+
+    it("waits as long as Retry-After asks", async () => {
+      const waits: number[] = [];
+      respondInTurn(
+        HttpResponse.json(RATE_LIMITED, { status: 429, headers: { "Retry-After": "7" } }),
+        passing(),
+      );
+
+      await retryingProvider(waits).review(request());
+
+      expect(waits).toEqual([7_000]);
+    });
+
+    it("waits longer before each further attempt", async () => {
+      const waits: number[] = [];
+      respondInTurn(
+        HttpResponse.json(RATE_LIMITED, { status: 429 }),
+        HttpResponse.json(RATE_LIMITED, { status: 429 }),
+        passing(),
+      );
+
+      await retryingProvider(waits).review(request());
+
+      expect(waits).toHaveLength(2);
+      expect(waits[1]).toBeGreaterThan(waits[0]);
+    });
+
+    it("gives up after a bounded number of attempts with the upstream error", async () => {
+      const exchange = respondInTurn(HttpResponse.json(RATE_LIMITED, { status: 429 }));
+
+      const review = retryingProvider().review(request());
+
+      await expect(review).rejects.toThrow(
+        'Reviewer provider "openrouter" API error (429): {"error":{"message":"rate limited upstream"',
+      );
+      expect(exchange.calls()).toBe(5);
+    });
+
+    it("does not retry a request the backend rejected", async () => {
+      const exchange = respondInTurn(HttpResponse.text("bad request", { status: 400 }));
+
+      await expect(retryingProvider().review(request())).rejects.toThrow("API error (400)");
+      expect(exchange.calls()).toBe(1);
     });
   });
 });

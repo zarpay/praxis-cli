@@ -1,4 +1,5 @@
 import type {
+  OpenRouterProviderOptions,
   ProviderCompletion,
   ProviderRequest,
   ProviderResult,
@@ -36,7 +37,20 @@ interface ChatCompletionResponse {
     message: { role: string; content: string | null; tool_calls?: ToolCall[] };
   }[];
   usage?: ChatCompletionUsage;
+  /** OpenRouter renders an upstream fault into a 200 body as `{ error: { code } }`. */
+  error?: { code?: unknown };
 }
+
+/** Rate limits and transient upstream faults: worth another attempt. */
+const RETRYABLE_CODES = new Set([429, 502, 503, 504]);
+
+/** The wait before each retry; shared upstream pools clear within seconds. */
+const RETRY_DELAYS_MS = [2_000, 4_000, 8_000, 16_000];
+
+/** The longest server-requested Retry-After this provider will honour. */
+const MAX_RETRY_AFTER_MS = 60_000;
+
+const sleepFor = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * The default reviewer provider: OpenAI-compatible chat completions with
@@ -57,6 +71,12 @@ interface ChatCompletionResponse {
  */
 export class OpenRouterProvider implements ReviewProvider {
   readonly name = "openrouter";
+
+  private readonly sleep: (ms: number) => Promise<void>;
+
+  constructor(options: OpenRouterProviderOptions = {}) {
+    this.sleep = options.sleep ?? sleepFor;
+  }
 
   /**
    * Calls the chat-completions endpoint and normalizes the response.
@@ -101,7 +121,43 @@ export class OpenRouterProvider implements ReviewProvider {
   private async requestToolCall(
     request: ProviderRequest,
   ): Promise<{ toolCall: ToolCall; data: ChatCompletionResponse }> {
-    const response = await fetch(`${request.baseUrl}/chat/completions`, {
+    for (let attempt = 0; ; attempt += 1) {
+      const response = await this.post(request);
+
+      if (!response.ok) {
+        const body = await response.text();
+
+        if (this.canRetry(response.status, attempt)) {
+          await this.sleep(this.retryDelay(attempt, response));
+          continue;
+        }
+
+        throw errors.reviewerApiError(this.name, response.status, body);
+      }
+
+      const data = (await response.json()) as ChatCompletionResponse;
+      const choice = data.choices?.[0];
+
+      if (!choice) {
+        if (this.canRetry(data.error?.code, attempt)) {
+          await this.sleep(this.retryDelay(attempt, response));
+          continue;
+        }
+
+        throw errors.reviewerApiError(
+          this.name,
+          response.status,
+          `response carried no choices — ${clip(JSON.stringify(data), 0, EXCERPT_RADIUS * 2)}`,
+        );
+      }
+
+      return { toolCall: this.toolCallOf(choice), data };
+    }
+  }
+
+  /** One chat-completions POST. */
+  private post(request: ProviderRequest): Promise<Response> {
+    return fetch(`${request.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${request.apiKey}`,
@@ -121,30 +177,36 @@ export class OpenRouterProvider implements ReviewProvider {
         ...(this.supportsUsageAccounting(request.baseUrl) && { usage: { include: true } }),
       }),
     });
+  }
 
-    if (!response.ok) {
-      const body = await response.text();
-      throw errors.reviewerApiError(this.name, response.status, body);
+  /** Whether a failure with this status or error code earns another attempt. */
+  private canRetry(code: unknown, attempt: number): boolean {
+    return (
+      typeof code === "number" && RETRYABLE_CODES.has(code) && attempt < RETRY_DELAYS_MS.length
+    );
+  }
+
+  /** Retry-After in seconds when the backend sends it, else jittered exponential backoff. */
+  private retryDelay(attempt: number, response: Response): number {
+    const retryAfter = Number(response.headers.get("retry-after") ?? NaN);
+
+    if (Number.isFinite(retryAfter) && retryAfter >= 0) {
+      return Math.min(retryAfter * 1_000, MAX_RETRY_AFTER_MS);
     }
 
-    const data = (await response.json()) as ChatCompletionResponse;
-    const choice = data.choices?.[0];
+    const base = RETRY_DELAYS_MS[attempt] ?? RETRY_DELAYS_MS[RETRY_DELAYS_MS.length - 1];
+    return base + Math.floor(Math.random() * (base / 2));
+  }
 
-    if (!choice) {
-      throw errors.reviewerApiError(
-        this.name,
-        response.status,
-        `response carried no choices — ${clip(JSON.stringify(data), 0, EXCERPT_RADIUS * 2)}`,
-      );
-    }
-
+  /** The choice's tool call, which the protocol requires. */
+  private toolCallOf(choice: NonNullable<ChatCompletionResponse["choices"]>[number]): ToolCall {
     const toolCall = choice.message?.tool_calls?.[0];
 
     if (!toolCall) {
       throw errors.noToolCall();
     }
 
-    return { toolCall, data };
+    return toolCall;
   }
 
   /**

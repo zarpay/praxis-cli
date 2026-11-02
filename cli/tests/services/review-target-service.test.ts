@@ -159,11 +159,11 @@ describe("reviewTargetService", () => {
 
     it("throws with status and body when the API responds with an error", async () => {
       server.use(
-        http.post(OPENROUTER_URL, () => HttpResponse.text("upstream unavailable", { status: 502 })),
+        http.post(OPENROUTER_URL, () => HttpResponse.text("bad request", { status: 400 })),
       );
 
       await expect(evaluate()).rejects.toThrow(
-        'Reviewer provider "openrouter" API error (502): upstream unavailable',
+        'Reviewer provider "openrouter" API error (400): bad request',
       );
     });
 
