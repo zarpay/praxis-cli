@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.1] - 2026-11-02
+
+The retry release. A rate-limited or briefly unavailable reviewer no longer fails the files it was reviewing. This also ships `templateFilePattern`: the `v2.8.0` GitHub release was cut while `package.json` still read `2.7.0`, so it never reached npm.
+
+**On upgrading from 2.6.x**, the first `eval run` re-reviews the whole corpus once (the 2.7.0 spec re-hash), and the change below starts reviewing underscore-prefixed files that aren't markdown.
+
+### Fixed
+
+- **A rate-limited reviewer call is retried instead of failing the file.** The OpenRouter provider made one request and threw on any non-OK response, so a burst of `429`s from a shared upstream pool (seen for hours with `inception/mercury-2.5` on 2026-11-02) marked files `UNVERIFIED` and failed CI across every repo using it. `429`, `502`, `503` and `504` — including a rate limit OpenRouter renders into a `200` body — are now retried up to four times with jittered exponential backoff (about 2 s, 4 s, 8 s, 16 s), or as long as `Retry-After` asks, capped at 60 s. A file is still `UNVERIFIED` once the retries run out. Retrying lives inside the provider, not in reviewer config, so no reviewer hash or cache entry changes.
+
 ### Changed
 
 - **`templateFilePattern` (default `_*.md`) replaces the hardcoded `_` skip.** Underscore-prefixed files that are not markdown, like Rails partials, are now reviewed. Set `"_*"` for the old behavior.

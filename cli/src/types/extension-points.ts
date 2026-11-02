@@ -84,6 +84,12 @@ export interface ReviewProvider {
  */
 export type ReviewProviderFactory = () => ReviewProvider;
 
+/** Seams the built-in OpenRouter provider's tests replace; production uses the defaults. */
+export interface OpenRouterProviderOptions {
+  /** Waits before a retry; defaults to a real timer. */
+  sleep?: (ms: number) => Promise<void>;
+}
+
 /**
  * Interface for output plugins that transform compiled agent profiles
  * into platform-specific formats.
